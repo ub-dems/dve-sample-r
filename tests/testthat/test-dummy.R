@@ -1,0 +1,17 @@
+context("dummy")
+
+test_that("function exports works", {
+  salutation <- dummy_hello()
+  expect_that(salutation, equals("Hello World!"))
+})
+
+test_that("arg1 works", {
+  salutation <- dummy_hello("Earth")
+  expect_that(salutation, equals("Hello Earth!"))
+})
+
+test_that("arg2 works", {
+  salutation <- dummy_hello("Moon", "'Night")
+  expect_that(salutation, equals("'Night Moon!"))
+})
+
