@@ -2,11 +2,11 @@
 # data reader
 #
 
-rm(list=ls())
-devtools::load_all(".") # caricatì tutti quelli che sono script
+#rm(list=ls())
+#devtools::load_all(".") 
 
 
-require(ldcnrgrp60)
+require(dvesimpler)
 
 library(readr)
 library(ggplot2)
