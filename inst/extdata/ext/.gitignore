@@ -1,0 +1,6 @@
+# ignore all data and symbilic links
+
+*
+
+!.gitignore
+
