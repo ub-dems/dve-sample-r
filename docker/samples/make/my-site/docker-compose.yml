@@ -1,0 +1,34 @@
+version: '3.3'
+
+services:
+   db:
+     build: 
+      context: ./my-site.db
+      image: ${REGISTRY_HOST}/dslab/pw/my-site.db:latest
+     volumes:
+       - db_store:/var/lib/mysql
+     environment:
+       MYSQL_ROOT_PASSWORD: DsDoc-111!
+       MYSQL_DATABASE: mysitewp
+       MYSQL_USER: wordpress
+       MYSQL_PASSWORD: DsDoc.111
+
+   wp:
+     build: 
+      context: ./my-site.wp
+      image: ${REGISTRY_HOST}/dslab/pw/my-site.wp:latest
+     depends_on:
+       - db
+     volumes:
+       - wp_store:/var/www/html
+     ports:
+       - "31080:80"
+     restart: "no"
+     environment:
+       WORDPRESS_DB_HOST: db:3306
+       WORDPRESS_DB_NAME: mysitewp
+       WORDPRESS_DB_USER: wordpress
+       WORDPRESS_DB_PASSWORD: DsDoc.111
+volumes:
+    db_store: {}
+    wp_store: {}

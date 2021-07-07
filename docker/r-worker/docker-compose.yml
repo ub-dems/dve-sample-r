@@ -1,0 +1,116 @@
+version: '3.9'
+
+services:
+
+   db:
+     build: 
+       context: ./db
+     image: ${REGISTRY_HOST}/dslab/dvesimpler.r-worker.db:latest
+     environment:
+       POSTGRES_USER: ${POSTGRES_USER:-postgres}
+       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+       PGDATA: /data/postgres
+     volumes:
+       - db_logs:/var/log
+       - db_store:/data/postgres
+     ports:
+       - "5432:5432"
+     networks:
+       - postgres
+     restart: unless-stopped
+
+   pm:
+     build: 
+       context: ./pm
+     image: ${REGISTRY_HOST}/dslab/dvesimpler.r-worker.pm:latest
+     depends_on:
+       - db
+     environment:
+       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
+       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+       PGADMIN_CONFIG_SERVER_MODE: 'False'
+     volumes:
+       - pm_logs:/var/log
+       - pm_store:/root/.pgadmin
+     ports:
+        - "${PGADMIN_PORT:-5050}:80"
+     networks:
+        - postgres
+     restart: unless-stopped
+
+   rw:
+     build: 
+       context: ./rw
+     image: ${REGISTRY_HOST}/dslab/dvesimpler.r-worker.rw:latest
+     depends_on:
+       - db
+     configs:
+       - source: rw_conf
+         target: /etc/r-worker/r-worker.conf
+         uid: '0'
+         gid: '0'
+         mode: 0440
+     volumes:
+       - rw_logs:/var/log
+       - rw_store:/var/www/html
+       - px_ca:/etc/nginx/ca
+       - px_certs:/etc/nginx/certs
+     ports:
+       - "8080:80"
+     restart: "no"
+
+   px:
+     build: 
+       context: ./px
+     image: ${REGISTRY_HOST}/dslab/dvesimpler.r-worker.px:latest
+     depends_on:
+       - rw
+     volumes:
+       - px_logs:/var/log
+       - px_elog:/var/lib/nginx/logs
+       - px_ca:/etc/nginx/ca
+       - px_certs:/etc/nginx/certs
+       - px_lenc:/etc/letsencrypt
+     ports:
+       - "38080:80"
+       - "38443:443"
+     restart: "no"
+             
+       
+   cli:
+     build: 
+       context: ./rw-cli
+     image: ${REGISTRY_HOST}/dslab/dvesimpler.r-worker.rw-cli:latest
+     volumes:
+       - rw_logs:/var/log
+       - rw_store:/var/www/html
+       - rw_cli:/var/www/wp-cli
+       - px_ca:/etc/nginx/ca
+       - px_certs:/etc/nginx/certs
+     user: www-data
+     command: >
+       /bin/sh -c '
+          set -x;
+          sleep 10;
+          set +x ;
+          while true; do echo "== $$(date)"; uptime; free; df -h | head -n2; sleep 60; done
+       '     
+                                                                                                
+configs:                                                                                        
+    rw_conf:                                                                                   
+       file: ./rw/etc/r-worker/r-worker.conf
+                        
+volumes:
+    db_logs: {}
+    pm_logs: {}
+    rw_logs: {}
+    px_logs: {}
+    db_store: {}
+    pm_store: {}
+    rw_store: {}
+    rw_cli: {}
+    px_ca: {}
+    px_certs: {}
+    px_elog: {}
+    px_lenc: {}
+

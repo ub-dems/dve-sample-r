@@ -4,6 +4,8 @@
 ^\.travis\.yml$
 ^.Rprofile$
 ^Rplots.*
+^docker$
+^Makefile.*$
 ^inst/db$
 ^inst/bench$
 ^inst/extdata$
