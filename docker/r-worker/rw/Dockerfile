@@ -7,6 +7,10 @@ FROM rocker/r-ver:4.0.2
 # @see: https://github.com/RMHogervorst/invertedushape
 #
 
+##
+# ref: How to run a cron job inside a docker container?
+# @see: https://stackoverflow.com/questions/37458287/how-to-run-a-cron-job-inside-a-docker-container 
+#
 
 # before step (in gitlab)
 # - update, and set for maximum cpu use
