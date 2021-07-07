@@ -4,9 +4,11 @@ docs
 /src/*.d
 /src/*.so
 *.dll
+*.log
 .RData
 .Rproj.user
 .Rhistory
+Rplots.*
 inst/doc
 .httr-oauth
 vignettes/*.R

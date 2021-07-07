@@ -1,6 +1,5 @@
 rm(list=ls())
-devtools::load_all(".") # caricatì tutti quelli che sono script
-
+devtools::load_all(".") 
 
 require(dvesimpler)
 

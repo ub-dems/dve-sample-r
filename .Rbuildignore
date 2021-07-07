@@ -3,8 +3,10 @@
 ^\.Rproj\.user$
 ^\.travis\.yml$
 ^.Rprofile$
+^Rplots.*
 ^inst/db$
 ^inst/bench$
+^inst/extdata$
 ^man-roxygen$
 ^README\.Rmd$
 ^README-.*\.png$
@@ -15,5 +17,6 @@
 ^docs$
 ^\.github$
 ^\.gitlab$
+.*log$
 ^doc$
 ^Meta$
