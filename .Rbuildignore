@@ -6,6 +6,8 @@
 ^Rplots.*
 ^docker$
 ^Makefile.*$
+^Jenkinsfile.*$
+^.dockerignore.*$
 ^inst/db$
 ^inst/bench$
 ^inst/extdata$
