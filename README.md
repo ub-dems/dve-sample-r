@@ -3,11 +3,11 @@
 
 ## Overview
 
-The dvesimpler package offers a project template:
+The `dvesimpler` package offers a project template:
 
 -   supporting R package builder `as-cran`,
 -   externalize data directories symlinked relative to project root,
--   demo scrites, funcions and tests.
+-   demo scripts, functions and tests.
 
 ``` r
 
