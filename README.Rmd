@@ -1,15 +1,30 @@
+---
+output: github_document
+---
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/"
+)
+library(dvesimpler)
+```
+
 
 ## Overview
 
 The dvesimpler package offers a project template:
 
--   supporting R package builder `as-cran`,
--   externalize data directories symlinked relative to project root,
--   demo scrites, funcions and tests.
+* supporting R package builder `as-cran`,
+* externalize data directories symlinked relative to project root, 
+* demo scrites, funcions and tests.
 
-``` r
+
+```{r, eval = FALSE}
+
 
 salutation <- c( 
   dummy_hello(),
@@ -19,11 +34,14 @@ salutation <- c(
 
 cat(salutation)
   
+
 ```
+
 
 ## Installation
 
-``` r
+```{r, eval = FALSE}
+
 # install from gitlab
 # install.packages("devtools")
 devtools::install_gitlab("ub-dems-public/ds-labs/dve-sample-r")
@@ -32,5 +50,7 @@ devtools::install_gitlab("ub-dems-public/ds-labs/dve-sample-r")
 ## Usage
 
 ### Basic demo
+  
+* `dummy_hello()` get default salutation
 
--   `dummy_hello()` get default salutation
+
