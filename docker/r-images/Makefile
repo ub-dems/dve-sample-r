@@ -57,7 +57,7 @@ TAG ?= "latest"
 BLD_RUNTIME ?= runtime
 BLD_WORKER ?= worker
 BLD_RUNTIME_IMAGES ?= anchor base ${BLD_RUNTIME}
-BLD_WORKER_IMAGES ?= ${BLD_BLD_WORKER}
+BLD_WORKER_IMAGES ?= ${BLD_WORKER}
 BLD_ALL_IMAGES ?= ${BLD_RUNTIME_IMAGES} ${BLD_WORKER_IMAGES}
 
 IMG_RUNTIME ?= ${ID_PROJECT}.${BLD_RUNTIME}
@@ -122,7 +122,7 @@ build_image = {\
 
 # ---(commands)------------------------------------------------
 
-.PHONY: all clean setup test build shell server push pull update 
+.PHONY: all clean setup test pack build shell server push pull update 
 
 all: # @HELP ...
 all: init 
@@ -148,6 +148,9 @@ runtime: init run/runtime
 
 shell: # @HELP ...
 shell:
+
+pack: # @HELP ...
+pack: init build-image-worker
 
 build: # @HELP ...
 build: init build-image-all
