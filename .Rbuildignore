@@ -28,6 +28,7 @@
 ^LICENSE\.md$
 .*log$
 ^logo\.png$
+^logs$
 ^Makefile.*$
 ^Makefile$
 ^man-roxygen$
@@ -49,6 +50,7 @@
 ^src/\.clang-format$
 ^src/\.ycm_extra_conf\.pyc?$
 ^TAGS$
+^temp$
 ^travis$
 ^travis/check_format\.sh$
 ^\.travis\.yml$

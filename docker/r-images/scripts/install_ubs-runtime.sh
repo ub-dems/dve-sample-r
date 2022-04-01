@@ -5,13 +5,14 @@ NCPUS=${NCPUS:--1}
 
 set -e
 apt-get update -qq && apt-get -y --no-install-recommends install \
+    libudunits2-dev \
     libreadline-dev \
     libssl-dev && \
   rm -rf /var/lib/apt/lists/*
 
 ## R dependencies
 install2.r --error --skipmissing --skipinstalled -n $NCPUS \
-    cvt \
+    units \
     utils
 
 

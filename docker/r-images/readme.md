@@ -22,9 +22,32 @@ Image Build
 -----------
 
 ```
-podman build -t ubdems/dve-base    -f dockerfiles/dve-base_devel.Dockerfile . 
 
-podman build -t ubdems/dve-default -f dockerfiles/dve-default_devel.Dockerfile . 
+# environment
+
+export E_ROOT_DIR=$(git rev-parse --show-toplevel)
+export E_DOCKER_DIR=${E_ROOT_DIR}/docker/r-images
+export E_ID_PROJECT="$(basename ${E_ROOT_DIR})"
+
+env | grep ^E_ | sort
+
+
+# runtime images
+
+cd $E_DOCKER_DIR && pwd
+
+podman build -t localhost/${E_ID_PROJECT}.anchor    -f dockerfiles/anchor.Dockerfile . 
+podman build -t localhost/${E_ID_PROJECT}.base      -f dockerfiles/base.Dockerfile . 
+podman build -t localhost/${E_ID_PROJECT}.runtime   -f dockerfiles/runtime.Dockerfile . 
+
+
+# package images
+
+cd $E_ROOT_DIR && pwd
+
+podman build -t localhost/${ID_PROJECT}.worker      -f dockerfiles/worker.Dockerfile . 
+
+
 
 ```
 
@@ -33,12 +56,45 @@ Run rstudio
 
 ```
 
-#podman run --rm --ulimit=host -p 8787:8787 -e PASSWORD=Sec3et -v ~/work:/root/work:Z  -e USER=root -e USERID=0 -e GROUPID=0 -e ROOT=true  ubdems/dve-base 
+# set password
 
-podman  run --rm --ulimit=host -p 8787:8787 -e PASSWORD=Sec3et -v ~/work:/root/work:Z  -e USER=root -e USERID=0 -e GROUPID=0 -e ROOT=true  ubdems/dve-default
+: ${E_RUN_USER_PASSWORD:=$(mkpasswd $RANDOM)}; echo "passwd=${E_RUN_USER_PASSWORD}"
+
+# run rstudio server
+
+RS=1; \
+   export E_RUN_USER_NAME="root"; \
+   export E_RUN_USER_HOME="/{E_RUN_USER_NAME}"; \
+   export E_RUN_USER_UID="0"; \
+   export E_RUN_USER_GID="0"; \
+   export E_ROOT_DIR=$(git rev-parse --show-toplevel); \
+   export E_DOCKER_DIR=${E_ROOT_DIR}/docker/r-images; \
+   export E_ID_PROJECT="$(basename ${E_ROOT_DIR})"; \
+   : ${E_IMG_RUNTIME:="${E_ID_PROJECT}.runtime"}; \
+   echo "" \ 
+   echo "======================" \ 
+   echo "=== rstudio server ===" \ 
+   echo "======================" \ 
+   echo "user: ${E_RUN_USER_NAME}" \ 
+   echo "pass: ${E_RUN_USER_PASSWORD}" \ 
+   echo "" \ 
+   echo " url: http://localhost:28787/" \ 
+   echo "" \ 
+   podman run \
+		--rm \
+		--ulimit=host \
+		-p 28787:8787 \
+		-v ~/work:${E_RUN_USER_HOME}/work:Z  \
+		-v ~/data:${E_RUN_USER_HOME}/data:Z  \
+		-e PASSWORD=${E_RUN_USER_PASSWORD} \
+		-e USER=${E_RUN_USER_NAME} \
+		-e USERID=${E_RUN_USER_UID} \
+		-e GROUPID=${E_RUN_USER_GID} \
+		-e ROOT=true  \
+		${E_IMG_RUNTIME}
 
 
-# firefox http://localhost:8787
+
 
 ```
 

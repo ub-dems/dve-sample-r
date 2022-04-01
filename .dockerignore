@@ -1,0 +1,5 @@
+docker/
+inst/extdata/ext/
+logs/
+temp/
+
