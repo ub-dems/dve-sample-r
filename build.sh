@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 E_ROOT_DIR="$(dirname $0)"
 E_DOCKER_DIR="${E_ROOT_DIR}/docker/r-images"
@@ -59,9 +59,9 @@ _log() {
     lwho=$(printf '%s@%s' ${USER} $(hostname))
     mess="${C_BICyan}$(date '+%Y-%m-%d %H:%M:%S %s') ${C_OFF}${CLOG}| $lwho | $llev | ${LCTX} | $$ | $* ${C_OFF}"
     if [ -z "${X_LOGFILE}" ]; then
-        echo ${mess}
+        echo -e ${mess}
     else
-        echo ${mess} | tee -a ${X_LOGFILE} 1>&2
+        echo -e ${mess} | tee -a ${X_LOGFILE} 1>&2
     fi
 }
 trace() { [ "${EX_TRACE}" = "1" ] && LOG_LEVEL='TRACE' CLOG="$C_Black" _log $*; }
@@ -84,6 +84,12 @@ run_make() {
    return $rc
 }
 
+run_self() {
+   $0 $@
+   rc=$?
+   return $rc
+}
+
 do_make() {
     info "> make $@ -- ${E_MAKE_FILE}"
     run_make $@
@@ -91,11 +97,33 @@ do_make() {
 
 }
 
+do_self() {
+    info "> exec $@ -- ${0}"
+    run_self $@
+    info "< exec $@ (rc: $rc)"
+
+}
+
+do_list() {
+    info "> BUILD $@ -- ${E_MAKE_FILE}"
+    cmds=("$@")
+    for cmd in "${cmds[@]}";
+    do
+        do_self $cmd
+        rc=$?
+        [ $rc ] || die "exec cmd: $cmd failed! (rc=$rc)"
+    done
+    info "< BUILD $@ (rc: $rc)"
+
+}
+
+
+
 exit_usage() {
 
 cat <<EOF    
 
-usage $0 "target"
+usage $0 target[,target,target ...]
 
 where "target" is one of:
 
@@ -112,7 +140,19 @@ if [ $# = '0' ]; then
     exit_usage
 fi    
 
+commands=(${1//,/ })
 
-do_make $@
+case "${#commands[@]}" in
+    0)
+        exit_usage
+        ;;
+    1)
+        do_make $@
+        ;;
+    *)
+        do_list "${commands[@]}"
+        ;;
+esac    
+
 exit $rc
 

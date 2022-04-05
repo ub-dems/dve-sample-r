@@ -10,10 +10,10 @@ apt-get update -qq && apt-get -y --no-install-recommends install \
     mc \
     ranger \
     silversearcher-ag \
-    hwloc && \
-    tasksel && \
-    numactl && \
-    inxi && \
+    hwloc \
+    tasksel \
+    numactl \
+    inxi \
     htop && \
   rm -rf /var/lib/apt/lists/*
 

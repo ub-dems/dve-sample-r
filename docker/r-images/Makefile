@@ -25,6 +25,7 @@
 MAKEFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
 MAKE_DIR := $(patsubst %/,%,$(dir $(MAKEFILE_PATH)))
 ROOT_DIR := $(shell (cd ${MAKE_DIR} && git rev-parse --show-toplevel))
+WORK_DIR := $(patsubst ${HOME}/%,./%,${ROOT_DIR})
 MAKEFILE_FOLDER := $(notdir ${MAKE_DIR})
 
 
@@ -56,7 +57,8 @@ TAG ?= "latest"
 
 BLD_RUNTIME ?= runtime
 BLD_WORKER ?= worker
-BLD_RUNTIME_IMAGES ?= anchor base ${BLD_RUNTIME}
+BLD_REMOTE_IMAGES ?= anchor
+BLD_RUNTIME_IMAGES ?= ${BLD_REMOTE_IMAGES} base ${BLD_RUNTIME}
 BLD_WORKER_IMAGES ?= ${BLD_WORKER}
 BLD_ALL_IMAGES ?= ${BLD_RUNTIME_IMAGES} ${BLD_WORKER_IMAGES}
 
@@ -99,7 +101,7 @@ endif
 ifdef PODMAN_MODE
 DOCKER := podman
 DOCKER_BUILD_OPTIONS := 
-DOCKER_BUILD_PULL := --pull=always
+DOCKER_BUILD_PULL := --pull
 DOCKER_RUNTIME_OPTIONS := --ulimit=host
 endif
 
@@ -145,6 +147,15 @@ upgrade: update
 
 runtime: # @HELP ...
 runtime: init run/runtime
+
+runtime-repl: # @HELP ...
+runtime-repl: init run/r-repl
+
+runtime-cli: # @HELP ...
+runtime-cli: init run/rscript-cli
+
+runtime-rstudio: # @HELP ...
+runtime-rstudio: init run/rstudio-server
 
 shell: # @HELP ...
 shell:
@@ -206,7 +217,7 @@ build-image/%:
 	$(DOCKER) build \
 		-f $(patsubst %,${MAKE_DIR}/dockerfiles/%.Dockerfile,$*) \
 		-t $(patsubst %,${ID_PROJECT}.%,$*) \
-		$(if ${COND_FORCE_PULL},${DOCKER_BUILD_PULL}) \
+		$(if ${COND_FORCE_PULL},$(if $(findstring $*,$(BLD_REMOTE_IMAGES)),${DOCKER_BUILD_PULL},)) \
 		$(BUILD_OPTIONS) \
 		.
 build-image-runtime: $(foreach I, $(BLD_RUNTIME_IMAGES), build-image/$(I))
@@ -229,6 +240,39 @@ build-image/${BLD_WORKER}: build-image/${BLD_RUNTIME}
 
 .PHONY: run/%
 
+run/r-repl:
+	$(DOCKER)  run \
+		--rm \
+		${DOCKER_RUNTIME_OPTIONS} \
+		-p ${RUN_PORT_EXT}:${RUN_PORT_INT} \
+		-v ~/work:${RUN_USER_HOME}/work:Z  \
+		-v ~/data:${RUN_USER_HOME}/data:Z  \
+		-w ${RUN_USER_HOME}/${WORK_DIR}  \
+		-e PASSWORD=$$_passw_ \
+		-e USER=${RUN_USER_NAME} \
+		-e USERID=${RUN_USER_UID} \
+		-e GROUPID=${RUN_USER_GID} \
+		-e ROOT=true  \
+		-ti  \
+		${IMG_RUNTIME} \
+		'/usr/local/bin/R' ${RUNTIME_R_OPTS} ${RUNTIME_ARGS}
+
+run/rscript-cli:
+	@echo "CLI: Rscript ${RUNTIME_ARGS}"
+	$(DOCKER)  run \
+		--rm \
+		${DOCKER_RUNTIME_OPTIONS} \
+		-p ${RUN_PORT_EXT}:${RUN_PORT_INT} \
+		-v ~/work:${RUN_USER_HOME}/work:Z  \
+		-v ~/data:${RUN_USER_HOME}/data:Z  \
+		-w ${RUN_USER_HOME}/${WORK_DIR}  \
+		-e PASSWORD=$$_passw_ \
+		-e USER=${RUN_USER_NAME} \
+		-e USERID=${RUN_USER_UID} \
+		-e GROUPID=${RUN_USER_GID} \
+		-e ROOT=true  \
+		${IMG_RUNTIME} '/usr/local/bin/Rscript' ${RUNTIME_RSCRIPT_OPTS} ${RUNTIME_ARGS}
+
 run/rstudio-server:
 	@echo "======================"
 	@echo "=== rstudio-server ==="
@@ -237,6 +281,11 @@ run/rstudio-server:
 	@echo "PASS: <user-pass>"
 	@echo ""
 	@echo "URL: http://localhost:${RUN_PORT_EXT}"
+	@echo ""
+	@echo "View:"
+	@echo ""
+	@echo " X2Go:      chromium-browser http://localhost:${RUN_PORT_EXT}"
+	@echo " nomachine: firefox          http://localhost:${RUN_PORT_EXT}"
 	@echo ""
 	@export _passw_=$$(cat ~/.rup/*); \
 	$(DOCKER)  run \
@@ -250,7 +299,7 @@ run/rstudio-server:
 		-e USERID=${RUN_USER_UID} \
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
-		${IMG_RUNTIME}
+		${IMG_RUNTIME} ${RUNTIME_ARGS}
 
 run/runtime: run/rstudio-server
 
