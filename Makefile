@@ -51,24 +51,6 @@ RSCRIPT := Rscript
 
 #}}} \\\
 
-#{{{ [ CONTAINERS.* ] /////////////////////////////////////////////////////////////////
-
-# ---(commands)------------------------------------------------
-
-.PHONY: setup update upgrade
-
-setup: # @HELP ...
-setup:  cd ${IMG_MAKE_DIR} && $(MAKE) $@
-
-update: # @HELP ...
-update: cd ${IMG_MAKE_DIR} && $(MAKE) $@
-
-upgrade: # @HELP ...
-upgrade: cd ${IMG_MAKE_DIR} && $(MAKE) $@
-
-
-#}}} \\\
-
 #{{{ [ COMMANDS.* ] /////////////////////////////////////////////////////////////////
 
 # ---(commands)------------------------------------------------
@@ -77,7 +59,7 @@ upgrade: cd ${IMG_MAKE_DIR} && $(MAKE) $@
 
 
 all: # @HELP ...
-all: init check test docs install
+all: init check test docs build
 
 test: # @HELP ...
 test: init
@@ -97,7 +79,7 @@ man: init
 	${RSCRIPT} -e "devtools::document()"
 
 vignettes: # @HELP ...
-vignettes: vignettes/*.Rmd
+vignettes: 
 	${RSCRIPT} -e 'devtools::build_vignettes()'
 
 README.md: README.Rmd
@@ -116,6 +98,10 @@ install: # @HELP ...
 install:
 	${RSCRIPT} -e 'devtools::install()'
 
+uninstall: # @HELP ...
+uninstall:
+	${RSCRIPT} -e 'devtools::uninstall()'
+
 clean: # @HELP ...
 	rm -f src/*.o src/*.so src/*.dll
 
@@ -125,6 +111,27 @@ init: # @HELP ...
 
 #}}} \\\
 
+
+#{{{ [ CONTAINERS.* ] /////////////////////////////////////////////////////////////////
+
+# ---(commands)------------------------------------------------
+
+.PHONY: setup update upgrade
+
+setup: # @HELP ...
+setup:
+	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+
+update: # @HELP ...
+update:
+	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+
+upgrade: # @HELP ...
+upgrade:
+	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+
+
+#}}} \\\
 
 #{{{ [ UTILS.* ] /////////////////////////////////////////////////////////////////
 

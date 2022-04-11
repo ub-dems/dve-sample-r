@@ -10,6 +10,7 @@ apt-get update -qq && apt-get -y --no-install-recommends install \
     mc \
     ranger \
     silversearcher-ag \
+    parallel \
     hwloc \
     tasksel \
     numactl \
