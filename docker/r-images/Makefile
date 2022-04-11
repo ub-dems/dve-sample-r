@@ -33,6 +33,7 @@ WORKER_DIR := '/worker'
 # ---(project)------------------------------------------------
 
 ID_PROJECT ?= "$(notdir ${ROOT_DIR})"
+ID_PACKAGE ?= $(shell grep '^Package:' ${ROOT_DIR}/DESCRIPTION | sed -E 's/^Package:[[:space:]]+//')
 
 RG_USER ?= "${USER}"
 NS_USER ?= "${RG_USER}"

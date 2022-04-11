@@ -12,23 +12,13 @@
 
 # ---(base)------------------------------------------------
 
-MAKEFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
-MAKE_DIR := $(patsubst %/,%,$(dir $(MAKEFILE_PATH)))
-ROOT_DIR := $(shell (cd ${MAKE_DIR} && git rev-parse --show-toplevel))
-WORK_DIR := $(patsubst ${HOME}/%,./%,${ROOT_DIR})
-MAKEFILE_FOLDER := $(notdir ${MAKE_DIR})
+ROOT_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
 
 # ---(project)------------------------------------------------
 
-ID_PROJECT ?= "$(notdir ${ROOT_DIR})"
 PACKAGE := $(shell grep '^Package:' DESCRIPTION | sed -E 's/^Package:[[:space:]]+//')
 
-BRANCH_NAME := $(shell (cd ${MAKE_DIR} && git rev-parse --abbrev-ref HEAD))
-COMMIT_HASH := $(shell (cd ${MAKE_DIR} && git rev-parse HEAD))
-
-
-TAG ?= "latest"
 
 # ---(IMAGES)------------------------------------------------
 
