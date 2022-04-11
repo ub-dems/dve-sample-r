@@ -9,6 +9,101 @@ Project Quick Start
 ===================
 
 
+DEVELOPMENT Environment
+=======================
+
+Project Actions
+---------------
+
+
+### `./build.sh` script
+
+
+#### Project "global" (container) actions
+
+
+`setup`
+: aaaa
+
+`update`
+: aaaa
+
+`upgrade`
+: aaaa
+
+
+#### Project "standard" (devtools) actions
+
+`all`
+: aaaa
+
+`clean`
+: aaaa
+
+`check`
+: aaaa
+
+`test`
+: aaaa
+
+`roxygen`
+: aaaa
+
+`vignettes`
+: aaaa
+
+`readme`
+: aaaa
+
+`build`
+: aaaa
+
+`install`
+: aaaa
+
+
+
+
+
+#### Examples
+
+```bash
+
+
+##
+# project "global" actions
+#
+
+./build.sh setup
+./build.sh update
+./build.sh upgrade
+
+
+
+##
+# project "standard" actions
+#
+
+./build.sh all
+./build.sh clean
+./build.sh check
+./build.sh test
+./build.sh roxygen
+./build.sh vignettes
+./build.sh readme
+./build.sh build
+./build.sh install
+
+
+
+
+
+```
+
+
+
+
+
 DATA Sources
 ============
 

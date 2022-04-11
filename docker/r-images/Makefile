@@ -28,6 +28,7 @@ ROOT_DIR := $(shell (cd ${MAKE_DIR} && git rev-parse --show-toplevel))
 WORK_DIR := $(patsubst ${HOME}/%,./%,${ROOT_DIR})
 MAKEFILE_FOLDER := $(notdir ${MAKE_DIR})
 
+WORKER_DIR := '/worker'
 
 # ---(project)------------------------------------------------
 
@@ -63,6 +64,7 @@ BLD_WORKER_IMAGES ?= ${BLD_WORKER}
 BLD_ALL_IMAGES ?= ${BLD_RUNTIME_IMAGES} ${BLD_WORKER_IMAGES}
 
 IMG_RUNTIME ?= ${ID_PROJECT}.${BLD_RUNTIME}
+IMG_WORKER ?= ${ID_PROJECT}.${BLD_WORKER}
 
 # ---(runtime)------------------------------------------------
 
@@ -127,7 +129,7 @@ build_image = {\
 .PHONY: all clean setup test pack build shell server push pull update 
 
 all: # @HELP ...
-all: init 
+all: init build
 
 clean: # @HELP ...
 clean: clean-all
@@ -157,17 +159,36 @@ runtime-cli: init run/rscript-cli
 runtime-rstudio: # @HELP ...
 runtime-rstudio: init run/rstudio-server
 
+
+
+
+worker-pack: # @HELP ...
+worker-pack: init build-image-worker
+
+worker-make: # @HELP ...
+worker-make: init wrk/make
+
+
+
 shell: # @HELP ...
 shell:
 
 pack: # @HELP ...
-pack: init build-image-worker
+pack: worker-pack
+
+make: # @HELP ...
+make: worker-make
 
 build: # @HELP ...
 build: init build-image-all
 
+check: # @HELP ...
+check: MAKE_ARGS := 'check'
+check: make
+
 test: # @HELP ...
-test:
+test: MAKE_ARGS := 'test'
+test: make
 
 push: # @HELP ...
 push:
@@ -305,6 +326,77 @@ run/runtime: run/rstudio-server
 
 
 #}}} \\\
+
+
+
+#{{{ [ WORKER.* ] /////////////////////////////////////////////////////////////////
+
+
+# ---(build)------------------------------------------------
+
+.PHONY: wrk/%
+
+wrk/make:
+	$(DOCKER)  run \
+		--rm \
+		${DOCKER_RUNTIME_OPTIONS} \
+		-v ~/data:${RUN_USER_HOME}/data:Z  \
+		-w ${WORKER_DIR}  \
+		-e USER=${RUN_USER_NAME} \
+		-e USERID=${RUN_USER_UID} \
+		-e GROUPID=${RUN_USER_GID} \
+		-e ROOT=true  \
+		${IMG_WORKER} \
+		'make' ${WORKER_MAKE_OPTS} ${MAKE_ARGS}
+
+wrk/runner:
+	@echo "CLI: Rscript ${RUNTIME_ARGS}"
+	$(DOCKER)  run \
+		--rm \
+		${DOCKER_RUNTIME_OPTIONS} \
+		-p ${RUN_PORT_EXT}:${RUN_PORT_INT} \
+		-v ~/work:${RUN_USER_HOME}/work:Z  \
+		-v ~/data:${RUN_USER_HOME}/data:Z  \
+		-w ${WORKER_DIR}  \
+		-e PASSWORD=$$_passw_ \
+		-e USER=${RUN_USER_NAME} \
+		-e USERID=${RUN_USER_UID} \
+		-e GROUPID=${RUN_USER_GID} \
+		-e ROOT=true  \
+		${IMG_RUNTIME} '/usr/local/bin/Rscript' ${RUNTIME_RSCRIPT_OPTS} ${MAKE_ARGS}
+
+wrk/shell:
+	@echo "======================"
+	@echo "=== rstudio-server ==="
+	@echo "======================"
+	@echo "USER: ${RUN_USER_NAME}"
+	@echo "PASS: <user-pass>"
+	@echo ""
+	@echo "URL: http://localhost:${RUN_PORT_EXT}"
+	@echo ""
+	@echo "View:"
+	@echo ""
+	@echo " X2Go:      chromium-browser http://localhost:${RUN_PORT_EXT}"
+	@echo " nomachine: firefox          http://localhost:${RUN_PORT_EXT}"
+	@echo ""
+	@export _passw_=$$(cat ~/.rup/*); \
+	$(DOCKER)  run \
+		--rm \
+		${DOCKER_RUNTIME_OPTIONS} \
+		-p ${RUN_PORT_EXT}:${RUN_PORT_INT} \
+		-v ~/work:${RUN_USER_HOME}/work:Z  \
+		-v ~/data:${RUN_USER_HOME}/data:Z  \
+		-e PASSWORD=$$_passw_ \
+		-e USER=${RUN_USER_NAME} \
+		-e USERID=${RUN_USER_UID} \
+		-e GROUPID=${RUN_USER_GID} \
+		-e ROOT=true  \
+		${IMG_RUNTIME} ${RUNTIME_ARGS}
+
+
+
+#}}} \\\
+
 
 
 #{{{ [ UTILS.* ] /////////////////////////////////////////////////////////////////

@@ -4,6 +4,8 @@ E_ROOT_DIR="$(dirname $0)"
 E_DOCKER_DIR="${E_ROOT_DIR}/docker/r-images"
 E_MAKE_FILE="${E_DOCKER_DIR}/Makefile"
 
+: ${PAGER:="less"}
+
 # --------------------------------------------------------------
 C_OFF='\033[0m'
 C_Green='\033[0;32m'
@@ -85,27 +87,82 @@ run_make() {
 }
 
 do_make() {
-    info "> make $@ -- ${E_MAKE_FILE}"
-    run_make $@
-    info "< make $@ (rc: $rc)"
+    info "> make $target $@ -- ${E_MAKE_FILE}"
+    export RUNTIME_ARGS="$@"
+    run_make $target
+    info "< make $target $@ (rc: $rc)"
 
 }
 
 exit_usage() {
 
-cat <<EOF    
+cat <<EOF | $PAGER   
 
-usage $0 [args, ...]
+usage $0 [target] [args, ...]
 
-runs rstudio-server bound on port 28787
+runs commands in r runtime
 
-(server port can be forwarded via ssh -L28787:localhost:28787 user@vm from remote PC)
+where "target" is
 
-Open URL in Browser
+  rstudio (default): runs rstudio-server bound on port 28787
+  repl             : runs interactive R console
+  cli [args,...]   : runs RScript with args,...
 
-   http://localhost:28787
 
-with user root, and default user password as password
+Target aliases:
+
+   rstudio => ide, RStudio
+   repl    => r, R
+   cli     => rscript, Rscript
+
+
+EXAMPLES
+========
+
+RStudio
+-------
+
+ ./runtime.sh ide
+ ./runtime.sh rstudio
+ ./runtime.sh RStudio
+
+ then (depending on client),
+
+ if X2Go,   
+   chromium-browser http://localhost:28787
+
+ if nomachine,
+   firefox http://localhost:28787
+
+ if remote (with ssh port forwarding) from remote PC
+   ssh -L28787:localhost:28787 user@vm 
+   then open in browser: http://localhost:28787
+
+RStudio login with user root, and default user password as password
+
+R Console
+---------
+
+ ./runtime.sh repl
+ ./runtime.sh r
+ ./runtime.sh R
+
+then check 'getwd()' and exit 'q()'
+
+
+R Script
+---------
+
+ ./runtime.sh cli     exec/dummy_runner.R  
+ ./runtime.sh rscript exec/dummy_runner.R  
+ ./runtime.sh Rscript exec/dummy_runner.R  
+
+to run scripts from ./exec directory 
+
+
+
+MAPPING
+=======
 
 default volume mapping:
 
@@ -117,6 +174,8 @@ user UID/GID => root:root (0:0)
 path:
   ~ := /home/$USER => ~ := /root (volatile, not shared)
 
+workdir: 
+   /root/work/../....: current project directory
 
 EOF
 
@@ -124,15 +183,30 @@ exit 1
 
 }
 
+target=''
 
 case "$1" in
-    -h|--help)
+    repl|r|R)
+        shift
+        target=runtime-repl
+        ;;
+    cli|rscript|Rscript)
+        shift
+        target=runtime-cli
+        ;;
+    ide|rstudio|RStudio)
+        shift
+        target=runtime-rstudio
+        ;;
+    
+    -?|/h|-h|--help)
         exit_usage
         ;;
-    *) ;;
+    *)
+        target=runtime
+        ;;
 esac
 
-
-do_make runtime $@
+do_make $@
 exit $rc
 

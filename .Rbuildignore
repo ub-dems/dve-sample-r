@@ -8,6 +8,7 @@
 ^cran-comments\.md$
 ^CRAN-RELEASE$
 ^[^/]+.csv
+^[^/]+.sh
 ^data-raw$
 ^\.dir-locals\.el$
 ^doc$

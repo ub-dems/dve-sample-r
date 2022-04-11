@@ -1,6 +1,6 @@
 Type: Package
 Package: dvesimpler
-Title: Todo:title
+Title: TODO:title
 Version: 1.0.0.9000
 Authors@R: 
     c(person(given = "datalab",
@@ -8,7 +8,7 @@ Authors@R:
              role = c("aut", "cre"),
              email = "datalab@unimib.it",
              comment = c()))
-Description: todo:description.
+Description: TODO:description.
 License: MIT + file LICENSE
 URL: https://www.unimib.it,
      https://gitlab.com/ub-dems-public/ds-labs/dve-sample-r
@@ -32,4 +32,4 @@ VignetteBuilder:
 Encoding: UTF-8
 LazyData: yes
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.2

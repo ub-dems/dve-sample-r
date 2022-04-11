@@ -4,7 +4,7 @@
 \name{dvesimpler-package}
 \alias{dvesimpler}
 \alias{dvesimpler-package}
-\title{dvesimpler: Todo:title}
+\title{dvesimpler: TODO:title}
 \description{
 To learn more about simlab, start with the vignettes:
 \code{browseVignettes(package = "dvesimpler")}
