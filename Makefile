@@ -48,27 +48,27 @@ RSCRIPT := Rscript
 .PHONY: all test check docs man vignettes readme build install clean init
 
 
-all: # @HELP ...
+all: # @HELP/base ...
 all: init check test docs build
 
-test: # @HELP ...
+test: # @HELP/base ...
 test: init
 	${RSCRIPT} -e 'devtools::test()'
 
 
-check: # @HELP ...
+check: # @HELP/base ...
 check: init
 	${RSCRIPT} -e 'devtools::check()'
 
-docs: # @HELP ...
+docs: # @HELP/base ...
 docs: man readme vignettes
 
-man: # @HELP ...
+man: # @HELP/base ...
 man: init
 	@mkdir -p man
 	${RSCRIPT} -e "devtools::document()"
 
-vignettes: # @HELP ...
+vignettes: # @HELP/base ...
 vignettes: 
 	${RSCRIPT} -e 'devtools::build_vignettes()'
 
@@ -77,25 +77,25 @@ README.md: README.Rmd
 	sed -i.bak 's/[[:space:]]*$$//' $@
 	rm -f $@.bak
 
-readme: # @HELP ...
+readme: # @HELP/base ...
 readme: README.md
 
-build: # @HELP ...
+build: # @HELP/base ...
 build: 
 	${RSCRIPT} -e 'devtools::build()'
 
-install: # @HELP ...
+install: # @HELP/base ...
 install:
 	${RSCRIPT} -e 'devtools::install()'
 
-uninstall: # @HELP ...
+uninstall: # @HELP/base ...
 uninstall:
 	${RSCRIPT} -e 'devtools::uninstall()'
 
-clean: # @HELP ...
+clean: # @HELP/base ...
 	rm -f src/*.o src/*.so src/*.dll
 
-init: # @HELP ...
+init: # @HELP/base ...
 	@mkdir -p ${LOGS_DIR}
 	@mkdir -p ${TEMP_DIR}
 
@@ -104,22 +104,96 @@ init: # @HELP ...
 
 #{{{ [ CONTAINERS.* ] /////////////////////////////////////////////////////////////////
 
-# ---(commands)------------------------------------------------
+# ---(build)------------------------------------------------
 
-.PHONY: setup update upgrade
+.PHONY: setup update upgrade build-help
 
-setup: # @HELP ...
+setup: # @HELP/build ...
 setup:
 	cd ${IMG_MAKE_DIR} && $(MAKE) $@
 
-update: # @HELP ...
+update: # @HELP/build ...
 update:
 	cd ${IMG_MAKE_DIR} && $(MAKE) $@
 
-upgrade: # @HELP ...
+upgrade: # @HELP/build ...
 upgrade:
 	cd ${IMG_MAKE_DIR} && $(MAKE) $@
 
+build-help:
+	help/build
+
+# ---(run)------------------------------------------------
+
+.PHONY: runtime-repl runtime-cli runtime-rstudio runtime-help
+
+runtime-repl: # @HELP/runtime ...
+runtime-repl:
+	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+
+runtime-cli: # @HELP/runtime ...
+runtime-cli:
+	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+
+runtime-rstudio: # @HELP/runtime ...
+runtime-rstudio:
+	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+
+runtime-help:
+	help/runtime
+
+# ---(worker)------------------------------------------------
+
+.PHONY: worker-pack worker-push worker-pull
+.PHONY: worker-make worker-test worker-check worker-docs
+.PHONY: worker-build worker-install
+.PHONY: worker-exec worker-shell
+
+worker-pack: # @HELP/worker ...
+worker-pack:
+	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+
+worker-push: # @HELP/worker ...
+worker-push:
+	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+
+worker-pull: # @HELP/worker ...
+worker-pull:
+	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+
+worker-make: # @HELP/worker ...
+worker-make:
+	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+
+worker-test: # @HELP/worker ...
+worker-test:
+	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+
+worker-check: # @HELP/worker ...
+worker-check:
+	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+
+worker-docs: # @HELP/worker ...
+worker-docs:
+	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+
+worker-build: # @HELP/worker ...
+worker-build:
+	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+
+worker-install: # @HELP/worker ...
+worker-install:
+	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+
+worker-exec: # @HELP/worker ...
+worker-exec:
+	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+
+worker-shell: # @HELP/worker ...
+worker-shell:
+	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+
+worker-help:  help/worker
 
 #}}} \\\
 
@@ -137,10 +211,9 @@ print-%:
 
 # ---(help)------------------------------------------------
 
-.PHONY: help
+.PHONY: help help%
 
-help: # @HELP prints this message
-help:
+help/%:
 	@echo "NOTE: Use BUILDARCH/BUILDOS variables to override OS/ARCH"
 	@echo
 	@echo "VARIABLES:"
@@ -151,12 +224,15 @@ help:
 	@echo "  HOSTARCH = $(HOSTARCH)"
 	@echo
 	@echo "TARGETS:"
-	@grep -E '^.*: *# *@HELP' $(MAKEFILE_LIST)    \
+	@grep -E '^.*: *# *@HELP/$*' $(MAKEFILE_LIST) \
 	    | awk '                                   \
-	        BEGIN {FS = ": *# *@HELP"};           \
-	        { printf "  %-30s %s\n", $$1, $$2 };  \
+	        BEGIN {FS = ": *# *@HELP/$*"};        \
+	        { sub(/$*-/,"",$$1); printf "  %-30s %s\n", $$1, $$2 };  \
 	    '
 
+help: # @HELP/base prints this message
+help:
+	help-base
 
 
 #}}} \\\

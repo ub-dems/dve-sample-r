@@ -1,10 +1,13 @@
 #!/bin/bash
 
 E_ROOT_DIR="$(dirname $0)"
-E_DOCKER_DIR="${E_ROOT_DIR}/docker/r-images"
-E_MAKE_FILE="${E_DOCKER_DIR}/Makefile"
+E_MAKE_FILE="${E_ROOT_DIR}/Makefile"
+#E_DOCKER_DIR="${E_ROOT_DIR}/docker/r-images"
+#E_MAKE_FILE="${E_DOCKER_DIR}/Makefile"
 
-# --------------------------------------------------------------
+#{{{ [ UTILS ] /////////////////////////////////////////////////////////////////
+
+# ---(colors)------------------------------------------------
 C_OFF='\033[0m'
 C_Green='\033[0;32m'
 C_IGreen='\033[0;92m'
@@ -27,6 +30,7 @@ C_IRed='\033[0;91m'
 C_URed='\033[4;31m'
 C_BIRed='\033[1;91m'
 
+# ---(logs)------------------------------------------------
 CLOG=""
 LCTX="-"
 LOG_LEVEL=""
@@ -75,17 +79,18 @@ die ()  { fatal $*; ask_exit; }
 fail () { fatal $@; } # halt ...
 todo () { warn "#TODO: " $*; }
 # --------------------------------------------------------------
+#}}} \\\
 
 
 
 run_make() {
-   make -f ${E_MAKE_FILE} $@
+   make -f ${E_MAKE_FILE} $MAKE_OPTS "worker-$@" $MAKE_REST
    rc=$?
    return $rc
 }
 
 run_self() {
-   $0 $@
+   $0 $MAKE_OPTS $@ $MAKE_REST
    rc=$?
    return $rc
 }
@@ -109,8 +114,7 @@ do_self() {
 do_list() {
     info "> BUILD $@ -- ${E_MAKE_FILE}"
     cmds=("$@")
-    for cmd in "${cmds[@]}";
-    do
+    for cmd in "${cmds[@]}"; do
         do_self $cmd
         rc=$?
         [ $rc ] || die "exec cmd: $cmd failed! (rc=$rc)"
@@ -143,7 +147,28 @@ if [ $# = '0' ]; then
 fi    
 
 
-commands=(${1//,/ })
+MAKE_OPTS=""
+MAKE_CMDS=""
+MAKE_REST=""
+
+args=("$@")
+for arg in "${args[@]}"; do
+    case $arg in
+        -*) MAKE_OPTS="$MAKE_OPTS $arg" ;;
+        *) if [ -z "$MAKE_CMDS" ]; then
+               MAKE_CMDS="$arg"
+           else
+               MAKE_REST="$MAKE_REST $arg"
+           fi
+           ;;
+    esac
+done
+export MAKE_OPTS
+export MAKE_CMDS
+export MAKE_REST
+
+
+commands=(${MAKE_CMDS//,/ })
 shift
 if [ -n "$_in_self_" ] ; then
     : # re-enter

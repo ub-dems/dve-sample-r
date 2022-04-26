@@ -129,11 +129,19 @@ build_image = {\
 
 .PHONY: all clean setup test pack build shell server push pull update 
 
+# ---(generic)-------------------------------------------
+
+.PHONY: all clean
+
 all: # @HELP ...
 all: init build
 
 clean: # @HELP ...
 clean: clean-all
+
+# ---(run)------------------------------------------------
+
+.PHONY: prepare setup update upgrade
 
 prepare: # @HELP ...
 prepare: init
@@ -148,6 +156,10 @@ upgrade: # @HELP ...
 upgrade: COND_FORCE_PULL := 1
 upgrade: update
 
+# ---(run)------------------------------------------------
+
+.PHONY: runtime runtime-repl runtime-cli runtime-rstudio
+
 runtime: # @HELP ...
 runtime: init run/runtime
 
@@ -161,41 +173,48 @@ runtime-rstudio: # @HELP ...
 runtime-rstudio: init run/rstudio-server
 
 
+# ---(worker)------------------------------------------------
 
-
-worker-pack: # @HELP ...
+worker-pack: # @HELP/worker ...
 worker-pack: init build-image-worker
 
-worker-make: # @HELP ...
+worker-push: # @HELP/worker ...
+worker-push: init wrk/push
+
+worker-pull: # @HELP/worker ...
+worker-pull: init wrk/pull
+
+worker-make: # @HELP/worker ...
 worker-make: init wrk/make
 
+worker-test: # @HELP/worker ...
+worker-test: MAKE_ARGS := 'test'
+worker-test: worker-make
 
+worker-check: # @HELP/worker ...
+worker-check: MAKE_ARGS := 'check'
+worker-check: worker-make
 
-shell: # @HELP ...
-shell:
+worker-docs: # @HELP/worker ...
+worker-docs: MAKE_ARGS := 'docs'
+worker-docs: worker-make
 
-pack: # @HELP ...
-pack: worker-pack
+worker-build: # @HELP/worker ...
+worker-build: MAKE_ARGS := 'build'
+worker-build: worker-make
 
-make: # @HELP ...
-make: worker-make
+worker-install: # @HELP/worker ...
+worker-install: MAKE_ARGS := 'install'
+worker-install: worker-make
 
-build: # @HELP ...
-build: init build-image-all
+worker-exec: # @HELP/worker ...
+worker-exec: init wrk/exec
 
-check: # @HELP ...
-check: MAKE_ARGS := 'check'
-check: make
+worker-shell: # @HELP/worker ...
+worker-shell: init wrk/shell
 
-test: # @HELP ...
-test: MAKE_ARGS := 'test'
-test: make
+worker-help:  help/worker
 
-push: # @HELP ...
-push:
-
-pull: # @HELP ...
-pull:
 
 
 #}}} \\\

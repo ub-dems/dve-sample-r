@@ -1,12 +1,15 @@
 #!/bin/bash
 
 E_ROOT_DIR="$(dirname $0)"
-E_DOCKER_DIR="${E_ROOT_DIR}/docker/r-images"
-E_MAKE_FILE="${E_DOCKER_DIR}/Makefile"
+E_MAKE_FILE="${E_ROOT_DIR}/Makefile"
+#E_DOCKER_DIR="${E_ROOT_DIR}/docker/r-images"
+#E_MAKE_FILE="${E_DOCKER_DIR}/Makefile"
 
 : ${PAGER:="less"}
 
-# --------------------------------------------------------------
+#{{{ [ UTILS ] /////////////////////////////////////////////////////////////////
+
+# ---(colors)------------------------------------------------
 C_OFF='\033[0m'
 C_Green='\033[0;32m'
 C_IGreen='\033[0;92m'
@@ -29,6 +32,7 @@ C_IRed='\033[0;91m'
 C_URed='\033[4;31m'
 C_BIRed='\033[1;91m'
 
+# ---(logs)------------------------------------------------
 CLOG=""
 LCTX="-"
 LOG_LEVEL=""
@@ -77,6 +81,7 @@ die ()  { fatal $*; ask_exit; }
 fail () { fatal $@; } # halt ...
 todo () { warn "#TODO: " $*; }
 # --------------------------------------------------------------
+#}}} \\\
 
 
 
@@ -199,11 +204,11 @@ case "$1" in
         target=runtime-rstudio
         ;;
     
-    -?|/h|-h|--help)
+    -?|/h|-h|--help|help)
         exit_usage
         ;;
     *)
-        target=runtime
+        target="runtime-$1"
         ;;
 esac
 
