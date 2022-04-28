@@ -208,7 +208,9 @@ worker-install: MAKE_ARGS := 'install'
 worker-install: worker-make
 
 worker-exec: # @HELP/worker ...
-worker-exec: init wrk/exec
+worker-exec: WORKER_SCRIPT_FILE := "./starter.sh"
+worker-exec: WORKER_SCRIPT_ARGS := ${MAKE_REST}
+worker-exec: init wrk/runner
 
 worker-shell: # @HELP/worker ...
 worker-shell: init wrk/shell
@@ -357,6 +359,7 @@ run/runtime: run/rstudio-server
 .PHONY: wrk/%
 
 wrk/make:
+	@echo "WORKER: make -- ${WORKER_SCRIPT_FILE} ${WORKER_SCRIPT_ARGS}"
 	$(DOCKER)  run \
 		--rm \
 		${DOCKER_RUNTIME_OPTIONS} \
@@ -369,50 +372,48 @@ wrk/make:
 		${IMG_WORKER} \
 		'make' ${WORKER_MAKE_OPTS} ${MAKE_ARGS}
 
-wrk/runner:
-	@echo "CLI: Rscript ${RUNTIME_ARGS}"
+wrk/build:
+	@echo "WORKER: build.sh -- ${WORKER_SCRIPT_FILE} ${WORKER_SCRIPT_ARGS}"
 	$(DOCKER)  run \
 		--rm \
 		${DOCKER_RUNTIME_OPTIONS} \
-		-p ${RUN_PORT_EXT}:${RUN_PORT_INT} \
-		-v ~/work:${RUN_USER_HOME}/work:Z  \
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
 		-w ${WORKER_DIR}  \
-		-e PASSWORD=$$_passw_ \
 		-e USER=${RUN_USER_NAME} \
 		-e USERID=${RUN_USER_UID} \
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
-		${IMG_RUNTIME} '/usr/local/bin/Rscript' ${RUNTIME_RSCRIPT_OPTS} ${MAKE_ARGS}
+		${IMG_WORKER} \
+		'./build.sh' ${WORKER_MAKE_OPTS} ${MAKE_ARGS}
 
-wrk/shell:
-	@echo "======================"
-	@echo "=== rstudio-server ==="
-	@echo "======================"
-	@echo "USER: ${RUN_USER_NAME}"
-	@echo "PASS: <user-pass>"
-	@echo ""
-	@echo "URL: http://localhost:${RUN_PORT_EXT}"
-	@echo ""
-	@echo "View:"
-	@echo ""
-	@echo " X2Go:      chromium-browser http://localhost:${RUN_PORT_EXT}"
-	@echo " nomachine: firefox          http://localhost:${RUN_PORT_EXT}"
-	@echo ""
-	@export _passw_=$$(cat ~/.rup/*); \
+wrk/runner:
+	@echo "WORKER: exec -- ${WORKER_SCRIPT_FILE} ${WORKER_SCRIPT_ARGS}"
 	$(DOCKER)  run \
 		--rm \
 		${DOCKER_RUNTIME_OPTIONS} \
-		-p ${RUN_PORT_EXT}:${RUN_PORT_INT} \
-		-v ~/work:${RUN_USER_HOME}/work:Z  \
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
-		-e PASSWORD=$$_passw_ \
+		-w ${WORKER_DIR}  \
 		-e USER=${RUN_USER_NAME} \
 		-e USERID=${RUN_USER_UID} \
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
-		${IMG_RUNTIME} ${RUNTIME_ARGS}
+		${IMG_WORKER} \
+		${WORKER_SCRIPT_FILE} ${WORKER_SCRIPT_ARGS}
 
+wrk/shell:
+	@echo "WORKER: shell -- ${WORKER_SCRIPT_FILE} ${WORKER_SCRIPT_ARGS}"
+	$(DOCKER)  run \
+		--rm \
+		-it \
+		${DOCKER_RUNTIME_OPTIONS} \
+		-v ~/data:${RUN_USER_HOME}/data:Z  \
+		-w ${WORKER_DIR}  \
+		-e USER=${RUN_USER_NAME} \
+		-e USERID=${RUN_USER_UID} \
+		-e GROUPID=${RUN_USER_GID} \
+		-e ROOT=true  \
+		${IMG_WORKER} \
+		'bash' ${WORKER_SCRIPT_FILE} ${WORKER_SCRIPT_ARGS}
 
 
 #}}} \\\
