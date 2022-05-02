@@ -1,0 +1,14 @@
+docker/
+.dockerignore
+inst/extdata/ext/
+.git/
+.github/
+.gitignore
+.gitlab/
+logs/
+temp/
+.RData/
+.Rproj.user/
+.Rhistory
+*.Rproj
+
