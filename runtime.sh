@@ -132,9 +132,11 @@ do_make() {
 
 main() {
     
-target=''
+    target=''
+    
+    : ${command:=${1:-'rstudio'}}
 
-case "$1" in
+case "${command}" in
     repl|r|R)
         shift
         target=runtime-repl
@@ -152,7 +154,7 @@ case "$1" in
         exit_usage
         ;;
     *)
-        target="runtime-$1"
+        target="runtime-${command}"
         ;;
 esac
 

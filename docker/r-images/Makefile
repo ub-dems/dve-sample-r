@@ -78,10 +78,11 @@ RUN_USER_HOME = /root
 
 # ---(paths)------------------------------------------------
 
+HOME_DIR ?= ${ROOT_DIR}/home/user
 LOGS_DIR ?= ${ROOT_DIR}/logs
 TEMP_DIR ?= ${ROOT_DIR}/temp
 
-BUILD_DIRS = ${TEMP_DIR} ${LOGS_DIR}
+BUILD_DIRS = ${TEMP_DIR} ${LOGS_DIR} ${HOME_DIR} 
 CLEAN_DIRS = ${TEMP_DIR}
 
 # ---(progs)------------------------------------------------
@@ -288,6 +289,7 @@ run/r-repl:
 		--rm \
 		${DOCKER_RUNTIME_OPTIONS} \
 		-p ${RUN_PORT_EXT}:${RUN_PORT_INT} \
+		-v ${HOME_DIR}:${RUN_USER_HOME}:Z  \
 		-v ~/work:${RUN_USER_HOME}/work:Z  \
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
 		-w ${RUN_USER_HOME}/${WORK_DIR}  \
@@ -306,6 +308,7 @@ run/rscript-cli:
 		--rm \
 		${DOCKER_RUNTIME_OPTIONS} \
 		-p ${RUN_PORT_EXT}:${RUN_PORT_INT} \
+		-v ${HOME_DIR}:${RUN_USER_HOME}:Z  \
 		-v ~/work:${RUN_USER_HOME}/work:Z  \
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
 		-w ${RUN_USER_HOME}/${WORK_DIR}  \
@@ -335,6 +338,7 @@ run/rstudio-server:
 		--rm \
 		${DOCKER_RUNTIME_OPTIONS} \
 		-p ${RUN_PORT_EXT}:${RUN_PORT_INT} \
+		-v ${HOME_DIR}:${RUN_USER_HOME}:Z  \
 		-v ~/work:${RUN_USER_HOME}/work:Z  \
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
 		-e PASSWORD=$$_passw_ \
