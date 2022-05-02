@@ -135,6 +135,14 @@ runtime-cli: # @HELP/runtime ...
 runtime-cli:
 	cd ${IMG_MAKE_DIR} && $(MAKE) $@
 
+runtime-shell: # @HELP/runtime ...
+runtime-shell:
+	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+
+runtime-command: # @HELP/runtime ...
+runtime-command:
+	@cd ${IMG_MAKE_DIR} && $(MAKE) --silent $@
+
 runtime-rstudio: # @HELP/runtime ...
 runtime-rstudio:
 	cd ${IMG_MAKE_DIR} && $(MAKE) $@

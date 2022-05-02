@@ -170,6 +170,12 @@ runtime-repl: init run/r-repl
 runtime-cli: # @HELP ...
 runtime-cli: init run/rscript-cli
 
+runtime-shell: # @HELP ...
+runtime-shell: init run/shell
+
+runtime-command: # @HELP ...
+runtime-command: init run/command
+
 runtime-rstudio: # @HELP ...
 runtime-rstudio: init run/rstudio-server
 
@@ -318,6 +324,41 @@ run/rscript-cli:
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
 		${IMG_RUNTIME} '/usr/local/bin/Rscript' ${RUNTIME_RSCRIPT_OPTS} ${RUNTIME_ARGS}
+
+run/shell:
+	@echo "CLI: shell ${RUNTIME_ARGS}"
+	$(DOCKER)  run \
+		--rm \
+		${DOCKER_RUNTIME_OPTIONS} \
+		-p ${RUN_PORT_EXT}:${RUN_PORT_INT} \
+		-v ${HOME_DIR}:${RUN_USER_HOME}:Z  \
+		-v ~/work:${RUN_USER_HOME}/work:Z  \
+		-v ~/data:${RUN_USER_HOME}/data:Z  \
+		-w ${RUN_USER_HOME}/${WORK_DIR}  \
+		-e PASSWORD=$$_passw_ \
+		-e USER=${RUN_USER_NAME} \
+		-e USERID=${RUN_USER_UID} \
+		-e GROUPID=${RUN_USER_GID} \
+		-e ROOT=true  \
+		-ti  \
+		${IMG_RUNTIME} '/bin/bash' ${RUNTIME_RSCRIPT_OPTS} ${RUNTIME_ARGS}
+
+run/command:
+        #@echo "CLI: command ${RUNTIME_ARGS}"
+	$(DOCKER)  run \
+		--rm \
+		${DOCKER_RUNTIME_OPTIONS} \
+		-p ${RUN_PORT_EXT}:${RUN_PORT_INT} \
+		-v ${HOME_DIR}:${RUN_USER_HOME}:Z  \
+		-v ~/work:${RUN_USER_HOME}/work:Z  \
+		-v ~/data:${RUN_USER_HOME}/data:Z  \
+		-w ${RUN_USER_HOME}/${WORK_DIR}  \
+		-e PASSWORD=$$_passw_ \
+		-e USER=${RUN_USER_NAME} \
+		-e USERID=${RUN_USER_UID} \
+		-e GROUPID=${RUN_USER_GID} \
+		-e ROOT=true  \
+		${IMG_RUNTIME} ${RUNTIME_ARGS} ${RUNTIME_RSCRIPT_OPTS}
 
 run/rstudio-server:
 	@echo "======================"

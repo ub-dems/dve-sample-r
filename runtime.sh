@@ -32,7 +32,8 @@ where "target" is
 
   rstudio (default): runs rstudio-server bound on port 28787
   repl             : runs interactive R console
-  cli [args,...]   : runs RScript with args,...
+  shell            : runs interactive shell prompt
+  bash args,...    : runs shell with args,...
 
 
 Target aliases:
@@ -40,6 +41,8 @@ Target aliases:
    rstudio => ide, RStudio
    repl    => r, R
    cli     => rscript, Rscript
+   shell   => sh, prompt
+   bash    => do, command
 
 
 EXAMPLES
@@ -84,6 +87,27 @@ R Script
  ./runtime.sh Rscript exec/dummy_runner.R  
 
 to run scripts from ./exec directory 
+
+
+Shell Prompt
+------------
+
+ ./runtime.sh sh
+ ./runtime.sh shell
+ ./runtime.sh prompt
+
+for interactive shell prompt
+
+Shell Command
+-------------
+
+or with command args
+
+ ./runtime.sh do bash -c 'echo "$$(date)" ; df -h ; ip a'
+ ./runtime.sh do ( inxi -F | grep -i nvidia )
+ ./runtime.sh do whoami
+
+to run execute shell commands
 
 
 
@@ -144,6 +168,15 @@ case "${command}" in
     cli|rscript|Rscript)
         shift
         target=runtime-cli
+        ;;
+    sh|shell|prompt)
+        shift
+        target=runtime-shell
+        ;;
+    do|command)
+        shift
+        export LOG_ACTIVE='OFF'  
+        target=runtime-command
         ;;
     ide|rstudio|RStudio)
         shift

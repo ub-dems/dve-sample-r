@@ -1,8 +1,18 @@
 #!/bin/bash
 
+#{{{ [ OPTIONS ] /////////////////////////////////////////////////////////////////
+
+# ---(logging)------------------------------------------------
+
+: ${LOG_ACTIVE="DEBUG"}
+: ${X_ASK:="0"}
+
+# ---(user)------------------------------------------------
+
 : ${PAGER:="less"}
 
-
+# --------------------------------------------------------------
+#}}} \\\
 #{{{ [ UTILS ] /////////////////////////////////////////////////////////////////
 
 # ---(colors)------------------------------------------------
@@ -29,11 +39,12 @@ C_URed='\033[4;31m'
 C_BIRed='\033[1;91m'
 
 # ---(logs)------------------------------------------------
+
 CLOG=""
 LCTX="-"
 LOG_LOGGER="$(basename $0 .sh)"
 LOG_LEVEL=""
-: ${X_ASK:="0"}
+
 
 ask_exit() {
     if [ "$X_ASK" != "1" ]; then
@@ -62,6 +73,33 @@ _log() {
     llev=$(printf '%-5s' ${LOG_LEVEL:-'LOG'})
     lwho=$(printf '%s@%s' ${USER} $(hostname))
     mess="${C_BICyan}$(date '+%Y-%m-%d %H:%M:%S %s') ${C_OFF}${CLOG}| $lwho | $lcat | $llev | ${LCTX} | $$ | $* ${C_OFF}"
+    case "$LOG_LEVEL" in
+        OFF*)  LOG_NLEVEL=0;;
+        FATAL) LOG_NLEVEL=1;;
+        ERROR) LOG_NLEVEL=2;;
+        WARN*) LOG_NLEVEL=3;;
+        INFO*) LOG_NLEVEL=4;;
+        DEBUG) LOG_NLEVEL=5;;
+        TRACE) LOG_NLEVEL=6;;
+        ALL*)  LOG_NLEVEL=9;;
+        *)     LOG_NLEVEL=9;;
+    esac
+    case "$LOG_ACTIVE" in
+        OFF*)  LOG_NACTIVE=0;;
+        FATAL) LOG_NACTIVE=1;;
+        ERROR) LOG_NACTIVE=2;;
+        WARN*) LOG_NACTIVE=3;;
+        INFO*) LOG_NACTIVE=4;;
+        DEBUG) LOG_NACTIVE=5;;
+        TRACE) LOG_NACTIVE=6;;
+        ALL*)  LOG_NACTIVE=9;;
+        *)     LOG_NACTIVE=9;;
+    esac
+
+    if [ "$LOG_NLEVEL" -gt "$LOG_NACTIVE" ]; then
+        return
+    fi
+    
     if [ -z "${X_LOGFILE}" ]; then
         echo -e ${mess}
     else
