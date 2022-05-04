@@ -5,6 +5,7 @@ NCPUS=${NCPUS:--1}
 
 set -e
 apt-get update -qq && apt-get -y --no-install-recommends install \
+    ssh \
     vim \
     zsh \
     mc \
