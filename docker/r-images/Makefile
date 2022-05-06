@@ -30,6 +30,10 @@ MAKEFILE_FOLDER := $(notdir ${MAKE_DIR})
 
 WORKER_DIR := '/worker'
 
+# ---(registry)------------------------------------------------
+
+REGISTRY_HOST := svsi680reg.azurecr.io
+
 # ---(project)------------------------------------------------
 
 ID_PROJECT ?= "$(notdir ${ROOT_DIR})"
