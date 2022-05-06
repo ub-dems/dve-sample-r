@@ -21,11 +21,13 @@ Imports:
     logger,
     lubridate,
     magrittr,
+    pacs,
     purrr,
     readr,
     stringr,
     yaml
 Suggests: 
+    cli (>= 3.3.0),
     knitr,
     microbenchmark,
     rmarkdown,

@@ -39,6 +39,9 @@
 ^pkgdown$
 ^_pkgdown\.yml$
 ^rcon$
+^renv$
+^renv\.lock$
+^.renvignore$
 ^README-.*\.png$
 ^README\.Rmd$
 ^resources\.txt$
