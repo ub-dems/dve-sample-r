@@ -143,6 +143,10 @@ runtime-command: # @HELP/runtime ...
 runtime-command:
 	@cd ${IMG_MAKE_DIR} && $(MAKE) --silent $@
 
+runtime-term: # @HELP/runtime ...
+runtime-term:
+	@cd ${IMG_MAKE_DIR} && $(MAKE) --silent $@
+
 runtime-rstudio: # @HELP/runtime ...
 runtime-rstudio:
 	cd ${IMG_MAKE_DIR} && $(MAKE) $@

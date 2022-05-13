@@ -34,6 +34,7 @@ where "target" is
   repl             : runs interactive R console
   shell            : runs interactive shell prompt
   bash args,...    : runs shell with args,...
+  term             : attach interactive shell to running runtime
 
 
 Target aliases:
@@ -43,6 +44,7 @@ Target aliases:
    cli     => rscript, Rscript
    shell   => sh, prompt
    bash    => do, command
+   term    => in, attach
 
 
 EXAMPLES
@@ -177,6 +179,11 @@ case "${command}" in
         shift
         export LOG_ACTIVE='OFF'  
         target=runtime-command
+        ;;
+    in|term|attach)
+        shift
+        export LOG_ACTIVE='OFF'  
+        target=runtime-term
         ;;
     ide|rstudio|RStudio)
         shift

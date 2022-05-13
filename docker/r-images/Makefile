@@ -180,6 +180,9 @@ runtime-shell: init run/shell
 runtime-command: # @HELP ...
 runtime-command: init run/command
 
+runtime-term: # @HELP ...
+runtime-term: init run/term
+
 runtime-rstudio: # @HELP ...
 runtime-rstudio: init run/rstudio-server
 
@@ -363,6 +366,13 @@ run/command:
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
 		${IMG_RUNTIME} ${RUNTIME_ARGS} ${RUNTIME_RSCRIPT_OPTS}
+
+run/term:
+        #@echo "CLI: term ${RUNTIME_ARGS}"
+	$(DOCKER)  exec \
+		-ti  \
+		$(shell ${DOCKER} ps | grep ${IMG_RUNTIME} | cut -d' ' -f1 ) \
+		'/bin/bash' ${RUNTIME_RSCRIPT_OPTS} ${RUNTIME_ARGS}
 
 run/rstudio-server:
 	@echo "======================"
