@@ -36,7 +36,8 @@ REGISTRY_HOST := svsi680reg.azurecr.io
 
 # ---(project)------------------------------------------------
 
-ID_PROJECT ?= "$(notdir ${ROOT_DIR})"
+ID_PROJECT_DIR ?= "$(notdir ${ROOT_DIR})"
+ID_PROJECT ?= $(shell echo "${ID_PROJECT_DIR}" | perl -pe 's/(.*?\.)?([^+]+)\+?(.*)$$/$$2/' )
 ID_PACKAGE ?= $(shell grep '^Package:' ${ROOT_DIR}/DESCRIPTION | sed -E 's/^Package:[[:space:]]+//')
 
 RG_USER ?= "${USER}"

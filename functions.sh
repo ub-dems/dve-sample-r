@@ -69,9 +69,13 @@ _log() {
     local mess
     local llev
     local lwho
+    local lhost
+    local luser
     lcat="$LOG_LOGGER"
     llev=$(printf '%-5s' ${LOG_LEVEL:-'LOG'})
-    lwho=$(printf '%s@%s' ${USER} $(hostname))
+    luser="${USER}"
+    lhost="${HOSTNAME:-$(hostname)}"
+    lwho=$(printf '%s@%s' ${luser} ${lhost})
     mess="${C_BICyan}$(date '+%Y-%m-%d %H:%M:%S %s') ${C_OFF}${CLOG}| $lwho | $lcat | $llev | ${LCTX} | $$ | $* ${C_OFF}"
     case "$LOG_LEVEL" in
         OFF*)  LOG_NLEVEL=0;;
