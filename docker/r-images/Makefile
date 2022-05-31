@@ -39,6 +39,8 @@ REGISTRY_HOST := svsi680reg.azurecr.io
 ID_PROJECT_DIR ?= "$(notdir ${ROOT_DIR})"
 ID_PROJECT ?= $(shell echo "${ID_PROJECT_DIR}" | perl -pe 's/(.*?\.)?([^+]+)\+?(.*)$$/$$2/' )
 ID_PACKAGE ?= $(shell grep '^Package:' ${ROOT_DIR}/DESCRIPTION | sed -E 's/^Package:[[:space:]]+//')
+ID_PARENT ?= $(shell git remote show  origin | grep 'Fetch URL' | cut -d ':' -f3 | perl -pe 's{.*/([^\/]+)\/([^\/]+)\.git}{$$1}' )
+ID_USER ?= $(shell case "${ID_PARENT}" in ('ds-labs') echo 'ubdems';; ('') echo 'ubdems.misc';; (*)  echo "$${ID_PARENT}";; esac )
 
 RG_USER ?= "${USER}"
 NS_USER ?= "${RG_USER}"
@@ -69,8 +71,8 @@ BLD_RUNTIME_IMAGES ?= ${BLD_REMOTE_IMAGES} base ${BLD_RUNTIME}
 BLD_WORKER_IMAGES ?= ${BLD_WORKER}
 BLD_ALL_IMAGES ?= ${BLD_RUNTIME_IMAGES} ${BLD_WORKER_IMAGES}
 
-IMG_RUNTIME ?= ${ID_PROJECT}.${BLD_RUNTIME}
-IMG_WORKER ?= ${ID_PROJECT}.${BLD_WORKER}
+IMG_RUNTIME ?= ${ID_USER}/${ID_PROJECT}.${BLD_RUNTIME}
+IMG_WORKER ?= ${ID_USER}/${ID_PROJECT}.${BLD_WORKER}
 
 # ---(runtime)------------------------------------------------
 
@@ -274,7 +276,7 @@ build-image/%:
 	cd $(if $(findstring $*,$(BLD_WORKER_IMAGES)),${ROOT_DIR},${MAKE_DIR}); \
 	$(DOCKER) build \
 		-f $(patsubst %,${MAKE_DIR}/dockerfiles/%.Dockerfile,$*) \
-		-t $(patsubst %,${ID_PROJECT}.%,$*) \
+		-t $(patsubst %,${ID_USER}/${ID_PROJECT}.%,$*) \
 		$(if ${COND_FORCE_PULL},$(if $(findstring $*,$(BLD_REMOTE_IMAGES)),${DOCKER_BUILD_PULL},)) \
 		$(BUILD_OPTIONS) \
 		.

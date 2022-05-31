@@ -1,4 +1,4 @@
-FROM dve-sample-r.runtime
+FROM ubdems/dve-sample-r.runtime
 
 LABEL org.opencontainers.image.licenses="GPL-2.0-or-later" \
       org.opencontainers.image.source="https://gitlab.com/ub-dems-public/ds-labs/dve-sample-r" \
