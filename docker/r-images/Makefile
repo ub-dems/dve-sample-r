@@ -71,8 +71,11 @@ BLD_RUNTIME_IMAGES ?= ${BLD_REMOTE_IMAGES} base ${BLD_RUNTIME}
 BLD_WORKER_IMAGES ?= ${BLD_WORKER}
 BLD_ALL_IMAGES ?= ${BLD_RUNTIME_IMAGES} ${BLD_WORKER_IMAGES}
 
-IMG_RUNTIME ?= ${ID_USER}/${ID_PROJECT}.${BLD_RUNTIME}
-IMG_WORKER ?= ${ID_USER}/${ID_PROJECT}.${BLD_WORKER}
+DKF_RUNTIME ?= $(patsubst %,${MAKE_DIR}/dockerfiles/%.Dockerfile,${BLD_RUNTIME})
+DKF_WORKER ?= $(patsubst %,${MAKE_DIR}/dockerfiles/%.Dockerfile,${BLD_WORKER})
+
+IMG_RUNTIME ?= $(shell (grep 'org.opencontainers.image.title' ${DKF_RUNTIME} | cut -d\" -f2))
+IMG_WORKER ?= $(shell (grep 'org.opencontainers.image.title' ${DKF_WORKER} | cut -d\" -f2))
 
 # ---(runtime)------------------------------------------------
 
@@ -115,6 +118,36 @@ DOCKER_BUILD_OPTIONS :=
 DOCKER_BUILD_PULL := --pull
 DOCKER_RUNTIME_OPTIONS := --ulimit=host
 endif
+
+# ---(colors)------------------------------------------------
+
+C_OFF=\033[0m
+C_Green=\033[0;32m
+C_IGreen=\033[0;92m
+C_Blue=\033[0;34m
+C_BBlue=\033[1;34m
+C_UBlue=\033[4;34m
+C_On_Blue=\033[44m
+C_IBlue=\033[0;94m
+C_On_IBlue=\033[0;104m
+C_BIBlue=\033[1;94m
+C_BCyan=\033[1;36m
+C_ICyan=\033[0;96m
+C_UCyan=\033[4;36m
+C_BICyan=\033[1;96m
+C_BYellow=\033[1;33m
+C_IYellow=\033[0;93m
+C_BIYellow=\033[1;93m
+C_BRed=\033[1;31m
+C_IRed=\033[0;91m
+C_URed=\033[4;31m
+C_BIRed=\033[1;91m
+C_BWhite=\033[1;37m
+C_IWhite=\033[0;97m
+C_UWhite=\033[4;37m
+C_BIWhite=\033[1;97m
+
+
 
 #}}} \\\
 
@@ -274,12 +307,22 @@ BUILD_OPTIONS ?= ${DOCKER_BUILD_OPTIONS}
 
 build-image/%:
 	cd $(if $(findstring $*,$(BLD_WORKER_IMAGES)),${ROOT_DIR},${MAKE_DIR}); \
+	export X_BLD_DOCKERFILE="$(patsubst %,${MAKE_DIR}/dockerfiles/%.Dockerfile,$*)"; \
+	export X_BLD_IMAGE_NAME="$$(grep 'org.opencontainers.image.title' $$X_BLD_DOCKERFILE | cut -d\" -f2)"; \
+	: $${X_BLD_IMAGE_NAME:=$(patsubst %,${ID_USER}/${ID_PROJECT}.%,$*)}; \
+	echo -e "# ${C_BWhite}#BUILD[*]:>> $$(date -Isec) - ${C_BYellow}$$X_BLD_IMAGE_NAME${C_BWhite} <<- $$X_BLD_DOCKERFILE ${C_OFF}"; \
 	$(DOCKER) build \
-		-f $(patsubst %,${MAKE_DIR}/dockerfiles/%.Dockerfile,$*) \
-		-t $(patsubst %,${ID_USER}/${ID_PROJECT}.%,$*) \
+		-f $$X_BLD_DOCKERFILE \
+		-t $$X_BLD_IMAGE_NAME \
+		--label="it.unimib.datalab.project=${ID_PROJECT}" \
+		--label="it.unimib.datalab.branch=${BRANCH_NAME}" \
+		--label="it.unimib.datalab.commit=${COMMIT_HASH}" \
+		--label="it.unimib.datalab.package=${ID_PACKAGE}" \
 		$(if ${COND_FORCE_PULL},$(if $(findstring $*,$(BLD_REMOTE_IMAGES)),${DOCKER_BUILD_PULL},)) \
 		$(BUILD_OPTIONS) \
-		.
+		. ; \
+	echo -e "# ${C_BWhite}#BUILD($$?):<< $$(date -Isec) - ${C_BYellow}$$X_BLD_IMAGE_NAME${C_BWhite} <<- $$X_BLD_DOCKERFILE ${C_OFF}"
+
 build-image-runtime: $(foreach I, $(BLD_RUNTIME_IMAGES), build-image/$(I))
 build-image-worker: $(foreach I, $(BLD_WORKER_IMAGES), build-image/$(I))
 
@@ -450,6 +493,7 @@ wrk/build:
 
 wrk/runner:
 	@echo "WORKER: exec -- ${WORKER_SCRIPT_FILE} ${WORKER_SCRIPT_ARGS}"
+	echo -e "# ${C_BWhite}#WORKER[*]:>> $$(date -Isec) - exec --  ${C_BYellow}${WORKER_SCRIPT_FILE} ${WORKER_SCRIPT_ARGS}${C_BWhite} ${C_OFF}"; \
 	$(DOCKER)  run \
 		--rm \
 		${DOCKER_RUNTIME_OPTIONS} \
@@ -460,7 +504,8 @@ wrk/runner:
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
 		${IMG_WORKER} \
-		${WORKER_SCRIPT_FILE} ${WORKER_SCRIPT_ARGS}
+		${WORKER_SCRIPT_FILE} ${WORKER_SCRIPT_ARGS} ;\
+	echo -e "# ${C_BWhite}#WORKER($$?):<< $$(date -Isec) - exec --  ${C_BYellow}${WORKER_SCRIPT_FILE} ${WORKER_SCRIPT_ARGS}${C_BWhite} ${C_OFF}"
 
 wrk/shell:
 	@echo "WORKER: shell -- ${WORKER_SCRIPT_FILE} ${WORKER_SCRIPT_ARGS}"
