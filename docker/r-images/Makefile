@@ -30,38 +30,6 @@ MAKEFILE_FOLDER := $(notdir ${MAKE_DIR})
 
 WORKER_DIR := '/worker'
 
-# ---(registry)------------------------------------------------
-
-REGISTRY_HOST := svsi680reg.azurecr.io
-
-# ---(project)------------------------------------------------
-
-ID_PROJECT_DIR ?= "$(notdir ${ROOT_DIR})"
-ID_PROJECT ?= $(shell echo "${ID_PROJECT_DIR}" | perl -pe 's/(.*?\.)?([^+]+)\+?(.*)$$/$$2/' )
-ID_PACKAGE ?= $(shell grep '^Package:' ${ROOT_DIR}/DESCRIPTION | sed -E 's/^Package:[[:space:]]+//')
-ID_PARENT ?= $(shell git remote show  origin | grep 'Fetch URL' | cut -d ':' -f3 | perl -pe 's{.*/([^\/]+)\/([^\/]+)\.git}{$$1}' )
-ID_USER ?= $(shell case "${ID_PARENT}" in ('ds-labs') echo 'ubdems';; ('') echo 'ubdems.misc';; (*)  echo "$${ID_PARENT}";; esac )
-
-RG_USER ?= "${USER}"
-NS_USER ?= "${RG_USER}"
-
-RG_INTERNAL ?= "${REGISTRY_HOST}"
-
-NS_PRIVATE ?= "dslab/u/${NS_USER}"
-NS_PUBLIC ?= "ubdems"
-
-RG_LOCAL ?= "localhost"
-RG_PRIVATE ?= "${RG_INTERNAL}"
-RG_PUBLIC ?= "docker.io"
-
-
-BRANCH_NAME := $(shell (cd ${MAKE_DIR} && git rev-parse --abbrev-ref HEAD))
-COMMIT_HASH := $(shell (cd ${MAKE_DIR} && git rev-parse HEAD))
-IMAGE_REVISION ?= $(COMMIT_HASH)
-
-
-TAG ?= "latest"
-
 # ---(modules)------------------------------------------------
 
 BLD_RUNTIME ?= runtime
@@ -76,6 +44,44 @@ DKF_WORKER ?= $(patsubst %,${MAKE_DIR}/dockerfiles/%.Dockerfile,${BLD_WORKER})
 
 IMG_RUNTIME ?= $(shell (grep 'org.opencontainers.image.title' ${DKF_RUNTIME} | cut -d\" -f2))
 IMG_WORKER ?= $(shell (grep 'org.opencontainers.image.title' ${DKF_WORKER} | cut -d\" -f2))
+
+# ---(registry)------------------------------------------------
+
+REGISTRY_HOST := svsi680reg.azurecr.io
+
+# ---(project)------------------------------------------------
+
+ID_PROJECT_DIR ?= "$(notdir ${ROOT_DIR})"
+ID_PROJECT ?= $(shell echo "${ID_PROJECT_DIR}" | perl -pe 's/(.*?\.)?([^+]+)\+?(.*)$$/$$2/' )
+ID_PACKAGE ?= $(shell grep '^Package:' ${ROOT_DIR}/DESCRIPTION | sed -E 's/^Package:[[:space:]]+//')
+
+ID_PATH ?= $(shell (grep 'it.unimib.datalab.path' ${DKF_WORKER} | tr '/' '.' | cut -d\" -f2))
+ID_PARENT ?= $(shell (grep 'it.unimib.datalab.path' ${DKF_WORKER} | cut -d\" -f2 | perl -pe 's{.*/([^\/]+)\/([^\/]+)$$}{$$1}'))
+#ID_PARENT ?= $(shell git remote show  origin | grep 'Fetch URL' | cut -d ':' -f3 | perl -pe 's{.*/([^\/]+)\/([^\/]+)\.git}{$$1}' )
+#ID_USER ?= $(shell case "${ID_PARENT}" in ('ds-labs') echo 'ubdems';; ('') echo 'ubdems.misc';; (*)  echo "$${ID_PARENT}";; esac )
+ID_USER ?= $(shell (grep 'org.opencontainers.image.vendor' ${DKF_WORKER} | cut -d\" -f2))
+
+RG_USER ?= "${ID_USER}"
+NS_USER ?= "${RG_USER}"
+
+RG_INTERNAL ?= "${REGISTRY_HOST}"
+
+NS_PRIVATE ?= "dslab/u/${NS_USER}"
+NS_PUBLIC ?= "${RG_USER}"
+
+RG_LOCAL ?= "localhost"
+RG_PRIVATE ?= "${RG_INTERNAL}"
+RG_PUBLIC ?= "docker.io"
+
+
+# ---(tag)------------------------------------------------
+
+BRANCH_NAME := $(shell (cd ${MAKE_DIR} && git rev-parse --abbrev-ref HEAD))
+COMMIT_HASH := $(shell (cd ${MAKE_DIR} && git rev-parse HEAD))
+IMAGE_REVISION ?= $(COMMIT_HASH)
+
+
+TAG ?= "latest"
 
 # ---(runtime)------------------------------------------------
 
