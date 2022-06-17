@@ -108,20 +108,19 @@ init: # @HELP/base ...
 
 .PHONY: setup update upgrade build-help
 
-setup: # @HELP/build ...
+setup: # @HELP/build initial build of all podman images
 setup:
 	cd ${IMG_MAKE_DIR} && $(MAKE) $@
 
-update: # @HELP/build ...
+update: # @HELP/build rebuild of modified podman images
 update:
 	cd ${IMG_MAKE_DIR} && $(MAKE) $@
 
-upgrade: # @HELP/build ...
+upgrade: # @HELP/build fresh rebuild of all podman images (pull)
 upgrade:
 	cd ${IMG_MAKE_DIR} && $(MAKE) $@
 
-build-help:
-	help/build
+build-help: help/build
 
 # ---(run)------------------------------------------------
 
@@ -151,8 +150,7 @@ runtime-rstudio: # @HELP/runtime ...
 runtime-rstudio:
 	cd ${IMG_MAKE_DIR} && $(MAKE) $@
 
-runtime-help:
-	help/runtime
+runtime-help: help/runtime
 
 # ---(worker)------------------------------------------------
 
@@ -243,8 +241,7 @@ help/%:
 	    '
 
 help: # @HELP/base prints this message
-help:
-	help-base
+help:  help/base
 
 
 #}}} \\\

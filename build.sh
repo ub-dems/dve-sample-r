@@ -62,7 +62,7 @@ where "target" is one of:
 
 EOF
 
-run_make help | perl -ne 'print if /^TARGETS:/../EOF/' | sed '1d'
+run_make build-help | perl -ne 'print if /^TARGETS:/../EOF/' | sed '1d'
 
 exit 1
 
@@ -71,7 +71,15 @@ exit 1
 
 if [ $# = '0' ]; then
     exit_usage
-fi    
+fi
+
+case "$1" in
+    help|--help)
+        exit_usage
+        ;;
+    *) ;;
+esac
+        
 
 commands=(${1//,/ })
 
