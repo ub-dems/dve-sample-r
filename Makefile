@@ -48,27 +48,27 @@ RSCRIPT := Rscript
 .PHONY: all test check docs man vignettes readme build install clean init
 
 
-all: # @HELP/base ...
+all: # @HELP/base make: "init,check,test,docs,build"  targets
 all: init check test docs build
 
-test: # @HELP/base ...
+test: # @HELP/base runs: `devtools::test()`
 test: init
 	${RSCRIPT} -e 'devtools::test()'
 
 
-check: # @HELP/base ...
+check: # @HELP/base runs: `devtools::check()`
 check: init
 	${RSCRIPT} -e 'devtools::check()'
 
-docs: # @HELP/base ...
+docs: # @HELP/base make: "man,readme,vignettes"  targets
 docs: man readme vignettes
 
-man: # @HELP/base ...
+man: # @HELP/base runs: `devtools::document()`
 man: init
 	@mkdir -p man
 	${RSCRIPT} -e "devtools::document()"
 
-vignettes: # @HELP/base ...
+vignettes: # @HELP/base runs: `devtools::build_vignettes()`
 vignettes: 
 	${RSCRIPT} -e 'devtools::build_vignettes()'
 
@@ -77,25 +77,25 @@ README.md: README.Rmd
 	sed -i.bak 's/[[:space:]]*$$//' $@
 	rm -f $@.bak
 
-readme: # @HELP/base ...
+readme: # @HELP/base runs: `knitr::knit("README.Rmd")` 
 readme: README.md
 
-build: # @HELP/base ...
+build: # @HELP/base runs: `devtools::build()`
 build: 
 	${RSCRIPT} -e 'devtools::build()'
 
-install: # @HELP/base ...
+install: # @HELP/base runs: `devtools::install()`
 install:
 	${RSCRIPT} -e 'devtools::install()'
 
-uninstall: # @HELP/base ...
+uninstall: # @HELP/base runs: `devtools::uninstall()`
 uninstall:
 	${RSCRIPT} -e 'devtools::uninstall()'
 
-clean: # @HELP/base ...
+clean: # @HELP/base clean generated build files
 	rm -f src/*.o src/*.so src/*.dll
 
-init: # @HELP/base ...
+init: # @HELP/base initialize local (temp,logs) directories
 	@mkdir -p ${LOGS_DIR}
 	@mkdir -p ${TEMP_DIR}
 
@@ -241,7 +241,7 @@ help/%:
 	    '
 
 help: # @HELP/base prints this message
-help:  help/base
+help:  help/base help/build
 
 
 #}}} \\\

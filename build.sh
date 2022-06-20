@@ -60,9 +60,18 @@ usage $0 target[,target,target ...]
 
 where "target" is one of:
 
+$(run_make help/base | perl -ne 'print if /^TARGETS:/../EOF/' | sed '1d')
+
+
+CONTAINERS (podman)
+-------------------
+
+$(run_make help/build | perl -ne 'print if /^TARGETS:/../EOF/' | sed '1d')
+
 EOF
 
-run_make build-help | perl -ne 'print if /^TARGETS:/../EOF/' | sed '1d'
+
+
 
 exit 1
 
