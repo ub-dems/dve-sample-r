@@ -16,15 +16,21 @@ BugReports: https://gitlab.com/ub-dems-public/ds-labs/dve-sample-r/-/issues
 Depends: 
     R (>= 3.6.0)
 Imports:
-    readr,
-    ggplot2,
     dplyr,
+    ggplot2,
+    logging,
     lubridate,
+    magrittr,
+    purrr,
+    readr,
     stringr,
-    purrr
+    yaml
 Suggests: 
+    assertthat,
+    cli (>= 3.3.0),
     knitr,
     microbenchmark,
+    pacs,
     rmarkdown,
     testthat (>= 2.1.0)
 VignetteBuilder: 
@@ -32,4 +38,4 @@ VignetteBuilder:
 Encoding: UTF-8
 LazyData: yes
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.0

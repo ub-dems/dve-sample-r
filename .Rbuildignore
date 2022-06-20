@@ -20,6 +20,7 @@
 ^\.github/workflows/pr-commands\.yaml$
 ^\.github/workflows/R-CMD-check\.yaml$
 ^\.gitlab$
+^home$
 ^\.httr-oauth$
 ^inst/bench$
 ^inst/db$
@@ -38,6 +39,9 @@
 ^pkgdown$
 ^_pkgdown\.yml$
 ^rcon$
+^renv$
+^renv\.lock$
+^.renvignore$
 ^README-.*\.png$
 ^README\.Rmd$
 ^resources\.txt$
