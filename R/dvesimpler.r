@@ -7,7 +7,7 @@
 # Suppress R CMD check note
 #' @importFrom dplyr tbl
 #' @importFrom ggplot2 ggplot
-#' @importFrom logger log_info
+#' @importFrom logging loginfo
 #' @importFrom lubridate ymd
 #' @importFrom magrittr %>%
 #' @importFrom purrr map

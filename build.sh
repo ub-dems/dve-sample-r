@@ -60,9 +60,18 @@ usage $0 target[,target,target ...]
 
 where "target" is one of:
 
+$(run_make help/base | perl -ne 'print if /^TARGETS:/../EOF/' | sed '1d')
+
+
+CONTAINERS (podman)
+-------------------
+
+$(run_make help/build | perl -ne 'print if /^TARGETS:/../EOF/' | sed '1d')
+
 EOF
 
-run_make help | perl -ne 'print if /^TARGETS:/../EOF/' | sed '1d'
+
+
 
 exit 1
 
@@ -71,7 +80,15 @@ exit 1
 
 if [ $# = '0' ]; then
     exit_usage
-fi    
+fi
+
+case "$1" in
+    help|--help)
+        exit_usage
+        ;;
+    *) ;;
+esac
+        
 
 commands=(${1//,/ })
 

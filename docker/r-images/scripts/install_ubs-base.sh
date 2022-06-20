@@ -23,7 +23,11 @@ apt-get update -qq && apt-get -y --no-install-recommends install \
 install2.r --error --skipmissing --skipinstalled -n $NCPUS \
     cli \
     logger \
+    pak \
+    remotes \
+    renv \
     ps \
+    sysreqs \
     benchmarkme \
     benchmarkmeData \
     rbenchmark \

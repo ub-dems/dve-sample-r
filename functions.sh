@@ -37,6 +37,10 @@ C_BRed='\033[1;31m'
 C_IRed='\033[0;91m'
 C_URed='\033[4;31m'
 C_BIRed='\033[1;91m'
+C_BWhite='\033[1;37m'
+C_IWhite='\033[0;97m'
+C_UWhite='\033[4;37m'
+C_BIWhite='\033[1;97m'
 
 # ---(logs)------------------------------------------------
 
@@ -69,9 +73,13 @@ _log() {
     local mess
     local llev
     local lwho
+    local lhost
+    local luser
     lcat="$LOG_LOGGER"
     llev=$(printf '%-5s' ${LOG_LEVEL:-'LOG'})
-    lwho=$(printf '%s@%s' ${USER} $(hostname))
+    luser="${USER}"
+    lhost="${HOSTNAME:-$(hostname)}"
+    lwho=$(printf '%s@%s' ${luser} ${lhost})
     mess="${C_BICyan}$(date '+%Y-%m-%d %H:%M:%S %s') ${C_OFF}${CLOG}| $lwho | $lcat | $llev | ${LCTX} | $$ | $* ${C_OFF}"
     case "$LOG_LEVEL" in
         OFF*)  LOG_NLEVEL=0;;
