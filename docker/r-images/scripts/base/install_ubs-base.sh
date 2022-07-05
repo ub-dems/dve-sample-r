@@ -21,18 +21,22 @@ apt-get update -qq && apt-get -y --no-install-recommends install \
 
 ## R benchmarks
 install2.r --error --skipmissing --skipinstalled -n $NCPUS \
+    remotes \
+    renv \
+    devtools \
     cli \
     logging \
     logger \
     pak \
-    remotes \
-    renv \
     ps \
     sysreqs \
     benchmarkme \
     benchmarkmeData \
     rbenchmark \
-    microbenchmark
+    microbenchmark \
+    ragg \
+    reprex \
+    styler
 
 ## a bridge to far? -- brings in another 60 packages
 # install2.r --error --skipinstalled -n $NCPUS tidymodels

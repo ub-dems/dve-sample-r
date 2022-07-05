@@ -19,7 +19,7 @@ LABEL org.opencontainers.image.vendor="ubdems" \
 
 ENV TERM=xterm
 
-COPY scripts /rocker_scripts
+COPY scripts/base /rocker_scripts
 
 RUN /rocker_scripts/init_ubs-userconf.sh
 RUN /rocker_scripts/install_ubs-base.sh
