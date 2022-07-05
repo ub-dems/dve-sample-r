@@ -22,6 +22,7 @@ apt-get update -qq && apt-get -y --no-install-recommends install \
 ## R benchmarks
 install2.r --error --skipmissing --skipinstalled -n $NCPUS \
     cli \
+    logging \
     logger \
     pak \
     remotes \
