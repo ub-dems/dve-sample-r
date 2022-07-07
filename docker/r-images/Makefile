@@ -353,7 +353,6 @@ run/r-repl:
 	$(DOCKER)  run \
 		--rm \
 		${DOCKER_RUNTIME_OPTIONS} \
-		-p ${RUN_PORT_EXT}:${RUN_PORT_INT} \
 		-v ${HOME_DIR}:${RUN_USER_HOME}:Z  \
 		-v ~/work:${RUN_USER_HOME}/work:Z  \
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
@@ -372,7 +371,6 @@ run/rscript-cli:
 	$(DOCKER)  run \
 		--rm \
 		${DOCKER_RUNTIME_OPTIONS} \
-		-p ${RUN_PORT_EXT}:${RUN_PORT_INT} \
 		-v ${HOME_DIR}:${RUN_USER_HOME}:Z  \
 		-v ~/work:${RUN_USER_HOME}/work:Z  \
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
@@ -389,7 +387,6 @@ run/shell:
 	$(DOCKER)  run \
 		--rm \
 		${DOCKER_RUNTIME_OPTIONS} \
-		-p ${RUN_PORT_EXT}:${RUN_PORT_INT} \
 		-v ${HOME_DIR}:${RUN_USER_HOME}:Z  \
 		-v ~/work:${RUN_USER_HOME}/work:Z  \
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
@@ -407,7 +404,6 @@ run/command:
 	$(DOCKER)  run \
 		--rm \
 		${DOCKER_RUNTIME_OPTIONS} \
-		-p ${RUN_PORT_EXT}:${RUN_PORT_INT} \
 		-v ${HOME_DIR}:${RUN_USER_HOME}:Z  \
 		-v ~/work:${RUN_USER_HOME}/work:Z  \
 		-v ~/data:${RUN_USER_HOME}/data:Z  \

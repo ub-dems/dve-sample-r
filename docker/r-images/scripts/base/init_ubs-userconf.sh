@@ -41,6 +41,11 @@ echo    'auth-minimum-user-id = 0' >> /etc/rstudio/rserver.conf
 sed -i '/auth-minimum-user-id/d'      /etc/rstudio/disable_auth_rserver.conf
 echo    'auth-minimum-user-id = 0' >> /etc/rstudio/disable_auth_rserver.conf
 
+
+sed -i 's/"$USER" != "$DEFAULT_USER"/ "$USER" != "$DEFAULT_USER" -a "$USER" != "root"/g'      \
+                                      /etc/cont-init.d/02_userconf
+
+
 ##
 # enable 'info' logging
 #

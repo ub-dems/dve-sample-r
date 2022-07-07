@@ -17,6 +17,6 @@ LABEL org.opencontainers.image.vendor="ubdems" \
       it.unimib.datalab.owner="ab21010" \
       it.unimib.datalab.cdc="ds-101"
 
-COPY scripts /rocker_scripts
+COPY scripts/runtime /rocker_scripts
 
 RUN /rocker_scripts/install_ubs-runtime.sh
