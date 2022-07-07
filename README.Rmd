@@ -13,18 +13,56 @@ knitr::opts_chunk$set(
 library(dvesimpler)
 ```
 
-
 ## Overview
 
-The `dvesimpler` package offers a project template:
+The `dvesimpler` package is a simple R project template:
 
 * supporting R package builder `as-cran`,
+* packagine runtime environment (rstudio, dependencies) as a container image
+* packagine project contents (code, scripts) as an executable container image
 * externalize data directories symlinked relative to project root, 
 * demo scripts, functions and tests.
 
+## Development Environment
 
-```{r, eval = FALSE}
+### Project Dwevelopment Guides
 
+* Build environment and execution scripts are documented in `./notes/usage`.
+
+### Readme document update
+
+This README.md is generated from README.Rmd. Please edit that file. To rebuild:
+
+```{sh, eval = FALSE}
+
+# in project base directory
+
+./build.sh readme
+
+```
+
+This command can be run in container, by entering a shell in the inner environment
+
+```{sh, eval = FALSE}
+
+# externally, in project base directory
+
+./runtime.sh sh
+
+# internally, in project base directory
+
+./build.sh readme
+
+```
+
+
+
+  
+## Document Sample
+
+### Code Evaluation
+
+```{r, eval = TRUE}
 
 salutation <- c( 
   dummy_hello(),
@@ -33,21 +71,58 @@ salutation <- c(
 )
 
 cat(salutation)
-  
 
 ```
 
 
-## Installation
+
+## Script Execution
+
+### in Rsession
+
+```{r, eval = TRUE}
+
+# in project base directory
+
+source("exec/dummy_runner.R")
+
+```
+
+### from command-line (inside container)
+
+```{sh, eval = FALSE}
+
+# in project base directory
+
+./starter.sh
+
+
+```
+
+### from command-line (outside container)
+
+```{sh, eval = FALSE}
+
+# in project base directory
+
+./worker.sh pack,exec
+
+
+```
+
+
+## Sample Usage
+
+## GitLab Installation
+
 
 ```{r, eval = FALSE}
 
 # install from gitlab
 # install.packages("devtools")
 devtools::install_gitlab("ub-dems-public/ds-labs/dve-sample-r")
-```
 
-## Usage
+```
 
 ### Basic demo
   
