@@ -15,6 +15,14 @@ library(dvesimpler)
 
 ## Overview
 
+### Projct Notes
+
+The development guides are available under `./notes/`, see:
+
+* [Project Usage Notes](notes/usare/README.md)
+
+
+
 ### Features
 
 The `dvesimpler` package is a simple R project template:
