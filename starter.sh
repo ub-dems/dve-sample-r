@@ -1,4 +1,4 @@
-#!/bin/bash
+.#!/bin/bash
 ##{{{
 # starter.sh: project script invoker
 # ==================================

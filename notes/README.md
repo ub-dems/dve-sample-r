@@ -12,8 +12,6 @@ PROJECT NOTES
 Index
 -----
 
-* [usage notes](usage/readme.md)
-* [GitLab readme](gitlab/readme.md)
-* []()
+* [Project Usage Notes](usage/README.md)
 
 

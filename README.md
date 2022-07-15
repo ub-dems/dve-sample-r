@@ -6,16 +6,38 @@ output: github_document
 
 
 
-
 ## Overview
 
-The `dvesimpler` package offers a project template:
+### Features
+
+The `dvesimpler` package is a simple R project template:
 
 * supporting R package builder `as-cran`,
-* packagine runtime environment (rstudio, dependencies) as a container image
-* packagine project contents (code, scripts) as an executable container image
+* packagin runtime environment (rstudio, dependencies) as a container image
+* packagin project contents (code, scripts) as an executable container image
 * externalize data directories symlinked relative to project root,
 * demo scripts, functions and tests.
+
+### Runtime Environments
+
+This project supports two different execution environments:
+
+* `direct`: traditional execution environment that runs system installed R/RStudio (desktop).
+* `containerized`: execution environment that runs a container image with a fully customizable R/RStudio (server) setup.
+
+
+The `direct` model is simpler but with many limitations:
+- it is "bound" to a single host and is based to a predefined R setup
+- the system installed environment is periodically upgraded by management scripts, not customizable.
+- these is no support for dependency versioning and remote execution.
+
+The `containerized` model more complex, but presents many advantages:
+- full control in runtime definition (R version, predefined packages)
+- container images based on: [Rocker Project Images](https://www.rocker-project.org/images/)
+- [renv](https://rstudio.github.io/renv/articles/renv.html) support for [Reproducible research](https://en.wikipedia.org/wiki/Reproducibility#Reproducible_research) project specification
+- [Podman](https://podman.io/) containers enable remote execution and distribution, prerequisite for shared computaional resource access.
+
+
 
 ## Development Environment
 
@@ -84,7 +106,7 @@ cat(salutation)
 
 source("exec/dummy_runner.R")
 #> ℹ Loading dvesimpler
-#> 2022-07-07 16:05:16 INFO::#> start:
+#> 2022-07-15 09:40:13 INFO::#> start:
 #> R version 4.2.1 (2022-06-23)
 #> Platform: x86_64-pc-linux-gnu (64-bit)
 #> Running under: Ubuntu 20.04.4 LTS
@@ -124,8 +146,8 @@ source("exec/dummy_runner.R")
 #> [53] prettyunits_1.1.1 lubridate_1.8.0   assertthat_0.2.1  rstudioapi_0.13
 #> [57] R6_2.5.1          compiler_4.2.1
 #>    user  system elapsed
-#>   0.005   0.000   0.005
-#> 2022-07-07 16:05:17 INFO::#< end(0): 0.00500000000000034,0,0.00499999999999989
+#>   0.006   0.000   0.006
+#> 2022-07-15 09:40:13 INFO::#< end(0): 0.00599999999999978,0,0.00600000000000023
 ```
 
 ### from command-line (inside container)
@@ -168,5 +190,6 @@ devtools::install_gitlab("ub-dems-public/ds-labs/dve-sample-r")
 ### Basic demo
 
 * `dummy_hello()` get default salutation
+
 
 

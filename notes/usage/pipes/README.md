@@ -8,6 +8,13 @@ date: 2022-05-17
 CI/CD PIPELINES
 ===============
 
+Status
+------
+
+_Project Batch execution/tracking and build/deploy procedures (CI/CD pipelines) are still in "work in progress" status_
+
+_This draft document collects online refences and unreleased commands_
+
 
 References
 ----------
