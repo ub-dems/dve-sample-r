@@ -19,7 +19,7 @@ library(dvesimpler)
 
 The development guides are available under `notes/`, see:
 
-* [*Project Usage Notes*](notes/usage/README.md)
+* [**Project Usage Notes**](notes/usage/README.md)
 
 
 
