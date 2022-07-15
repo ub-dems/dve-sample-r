@@ -4,8 +4,9 @@ subtitle: quick start meno
 author: --
 date: 2021-10-29
 ---
-[Next: Development Environment](devel/README.md) [[Contents]](../../README.md)
-----------------------------------------------------------------------------------------------------------------------------------------------------------
+|                                                  |                               |
+|--------------------------------------------------|-------------------------------|
+| [Next: Development Environment](devel/README.md) | [[Contents]](../../README.md) |
 
 Project Usage Guides
 ====================

@@ -1,11 +1,12 @@
 ---
-title: project notes
+title: Project Notes
 subtitle: index to internal notes
 author: --
 date: 2021-10-29
 ---
-[Next: Project Usage](../devel/README.md) [Up: Top](../README.md)
-------------------------------------------------------------------
+|                                        |                         |
+|----------------------------------------|-------------------------|
+| [Next: Project Usage](usage/README.md) | [Up: Top](../README.md) |
 
 PROJECT NOTES
 =============
