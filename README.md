@@ -10,9 +10,9 @@ output: github_document
 
 ### Projct Notes
 
-The development guides are available under `./notes/`, see:
+The development guides are available under `notes/`, see:
 
-* [Project Usage Notes](notes/usare/README.md)
+* [*Project Usage Notes*](notes/usage/README.md)
 
 
 
@@ -114,7 +114,7 @@ cat(salutation)
 
 source("exec/dummy_runner.R")
 #> ℹ Loading dvesimpler
-#> 2022-07-15 14:17:16 INFO::#> start:
+#> 2022-07-15 14:20:01 INFO::#> start:
 #> R version 4.2.1 (2022-06-23)
 #> Platform: x86_64-pc-linux-gnu (64-bit)
 #> Running under: Ubuntu 20.04.4 LTS
@@ -154,8 +154,8 @@ source("exec/dummy_runner.R")
 #> [53] prettyunits_1.1.1 lubridate_1.8.0   assertthat_0.2.1  rstudioapi_0.13
 #> [57] R6_2.5.1          compiler_4.2.1
 #>    user  system elapsed
-#>   0.005   0.000   0.005
-#> 2022-07-15 14:17:16 INFO::#< end(0): 0.00499999999999989,0,0.00499999999999989
+#>   0.005   0.001   0.006
+#> 2022-07-15 14:20:01 INFO::#< end(0): 0.00499999999999989,0.001,0.00599999999999978
 ```
 
 ### from command-line (inside container)

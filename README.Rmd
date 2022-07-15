@@ -17,9 +17,9 @@ library(dvesimpler)
 
 ### Projct Notes
 
-The development guides are available under `./notes/`, see:
+The development guides are available under `notes/`, see:
 
-* [Project Usage Notes](notes/usare/README.md)
+* [*Project Usage Notes*](notes/usage/README.md)
 
 
 
