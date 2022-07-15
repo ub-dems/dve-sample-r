@@ -4,6 +4,8 @@ subtitle: Jenkis+podman builds
 author: --
 date: 2022-05-17
 ---
+[Next: GitLab Quick Start](../gitlab/README.md) [Prev: Data Source Configuration](../data/README.md) [Up: Usage](../README.md)  [[Contents]](../../README.md)
+----------------------------------------------------------------------------------------------------------------------------------------------------------
 
 CI/CD PIPELINES
 ===============

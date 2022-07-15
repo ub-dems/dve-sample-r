@@ -1,12 +1,14 @@
 ---
-title: Project DATA Configuration Guide
+title: DATA SOURCE Configuration Guide
 subtitle: filesystem data source setup
 author: --
 date: 2021-10-29
 ---
+[Next: CI/CD Pipelines](../pipes/README.md) [Prev: Development Environment](../devel/README.md) [Up: Usage](../README.md)  [[Contents]](../../README.md)
+----------------------------------------------------------------------------------------------------------------------------------------------------------
 
 Filesystem DATA Sources Setup
-============================
+==============================
 
 ## Project Directory Mapping
 

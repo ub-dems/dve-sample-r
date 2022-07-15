@@ -1,3 +1,11 @@
+---
+title: GitLab Notes
+subtitle: GitLab Quick Start Guide
+author: gitlab
+date: 2021-01-15
+---
+[Prev: CI/CD Piplines](../pipes/README.md) [Up: Usage](../README.md)  [[Contents]](../../README.md)
+----------------------------------------------------------------------------------------------------------------------------------------------------------
 # GitLab Notes
 
 

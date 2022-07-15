@@ -5,6 +5,7 @@ docs
 /src/*.so
 *.dll
 *.log
+*.~undo-tree~
 .RData
 .Rproj.user
 .Rhistory
