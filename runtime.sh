@@ -32,6 +32,7 @@ where "target" is
 
   rstudio (default): runs rstudio-server bound on port 28787
   repl             : runs interactive R console
+  cli ...          : runs Rscript with arguments
   shell            : runs interactive shell prompt
   bash args,...    : runs shell with args,...
   term             : attach interactive shell to running runtime
@@ -57,7 +58,7 @@ RStudio
  ./runtime.sh rstudio
  ./runtime.sh RStudio
 
- then (depending on client),
+ then (depending on connection client),
 
  if X2Go,   
    chromium-browser http://localhost:28787
