@@ -13,8 +13,8 @@ Project Usage Guides - Index
 
 | Group                                           | Entry                                            | Section                                                 |
 |-------------------------------------------------|--------------------------------------------------|---------------------------------------------------------|
-| [/](../../../../notes/..)                       |                                                  |                                                         |
-|                                                 | [DESCRTIPTION](../../../../DESCRTIPTION)         | [R Packages/Metadata](https://r-pkgs.org/Metadata.html) |
+| [/](../../../../notes/../)                      |                                                  |                                                         |
+|                                                 | [DESCRIPTION](../../../../DESCTIPTION)           | [R Packages/Metadata](https://r-pkgs.org/Metadata.html) |
 |                                                 | [build.sh](../../../../build.sh)                 | [DEVELOPMENT environment](devel/README.md)              |
 |                                                 | [Makefile](../../../../Makefile)                 | [DEVELOPMENT environment](devel/README.md)              |
 |                                                 |                                                  |                                                         |
