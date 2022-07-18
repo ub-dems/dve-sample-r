@@ -33,10 +33,10 @@ Project "standard" (devtools) actions
 -------------------------------------
 
   
-**help**
+/**help**/
 : describe "targets" (actions)
   
-**all**
+/*all*/
 : make: "init,check,test,docs,build"  targets
 
 **clean**
