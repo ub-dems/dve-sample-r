@@ -4,9 +4,9 @@ subtitle: development environment actions
 author: --
 date: 2021-10-29
 ---
-|                                               |                                             |                            |                                |
-|-----------------------------------------------|---------------------------------------------|----------------------------|--------------------------------|
-| [Next: Worker Actions](../worker/README.md) | [Up: Development Environment](../README.md) | [[Contents]](../README.md) | [[Index]](../_index/README.md) |
+|                                             |                                            |                                             |                            |                                |
+|---------------------------------------------|--------------------------------------------|---------------------------------------------|----------------------------|--------------------------------|
+| [Next: Worker Actions](../worker/README.md) | [Prev:  Build Actions](../build/README.md) | [Up: Development Environment](../README.md) | [[Contents]](../README.md) | [[Index]](../_index/README.md) |
 
 
 Project "runtime" Actions
@@ -15,7 +15,7 @@ The `./runtime.sh` script
 -----------------------
 
 In `containerized` projects, the runtime script enter the execution context 
-enabling developmet activities on the project.
+enabling development activities on the project.
 
 The [`runtime.sh`](../../../../runtime.sh) script invokes (thru [`Makefile`](../../../../decker/r-images/Makefile)) 
 all [podman "run"](https://docs.podman.io/en/latest/markdown/podman-run.1.html)  actions for the project.
