@@ -11,11 +11,12 @@ date: 2021-10-29
 Project Usage Guides - Index
 ============================
 
-| Group                          | Entry    | Section                                    |
-|--------------------------------|----------|--------------------------------------------|
-| [/](../../../../)              |          |                                            |
-|                                | Makefile | [DEVELOPMENT environment](devel/README.md) |
-|--------------------------------|----------|--------------------------------------------|
-| [/docker](../../../../docker/) |          |                                            |
-|                                |          |                                            |
+| Group                                           | Entry                                            | Section                                    |
+|-------------------------------------------------|--------------------------------------------------|--------------------------------------------|
+| [/](../../../../)                               |                                                  |                                            |
+|                                                 | [Makefile](../../../../Makefile)                 | [DEVELOPMENT environment](devel/README.md) |
+|                                                 |                                                  |                                            |
+| [/docker/r-images](../../../../docker/r-images) |                                                  |                                            |
+|                                                 | [Makefile](../../../../docker/r-images/Makefile) | [DEVELOPMENT environment](devel/README.md) |
+|                                                 |                                                  |                                            |
 
