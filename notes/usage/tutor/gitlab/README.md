@@ -4,9 +4,9 @@ subtitle: GitLab Quick Start Guide
 author: gitlab
 date: 2021-01-15
 ---
-|                                            |                           |                               |
-|--------------------------------------------|---------------------------|-------------------------------|
-| [Prev: CI/CD Piplines](../pipes/README.md) | [Up: Usage](../README.md) | [[Contents]](../../README.md) |
+|   |                                   |                               |                                   |
+|---|-----------------------------------|-------------------------------|-----------------------------------|
+|   | [Up: Git Tutorials](../README.md) | [[Contents]](../../README.md) | [[Index]](../../_index/README.md) |
 
 # GitLab Notes
 
