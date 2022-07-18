@@ -16,5 +16,5 @@ Project Usage Guides
 
 
 * [CI/CD Piplines](pipes/README.md)
-* [GitLab readme](gitlab/README.md)
+* [Git Tutorials](tutor/README.md)
 

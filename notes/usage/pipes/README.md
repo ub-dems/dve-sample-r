@@ -4,9 +4,9 @@ subtitle: Batch builds and deployments
 author: --
 date: 2021-10-29
 ---
-|                                                 |                                                      |                           |                            |                                |
-|-------------------------------------------------|------------------------------------------------------|---------------------------|----------------------------|--------------------------------|
-| [Next: GitLab Quick Start](../gitlab/README.md) | [Prev: Data Source Configuration](../data/README.md) | [Up: Usage](../README.md) | [[Contents]](../README.md) | [[Index]](../_index/README.md) |
+|                                           |                                                      |                           |                            |                                |
+|-------------------------------------------|------------------------------------------------------|---------------------------|----------------------------|--------------------------------|
+| [Next: Git Tutorials](../tutor/README.md) | [Prev: Data Source Configuration](../data/README.md) | [Up: Usage](../README.md) | [[Contents]](../README.md) | [[Index]](../_index/README.md) |
 
 
 CI/CD Pipelines
