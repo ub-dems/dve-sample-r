@@ -33,43 +33,43 @@ Project "standard" (devtools) actions
 -------------------------------------
 
   
-*help*
+**help**
 : describe "targets" (actions)
   
-*all*
+**all**
 : make: "init,check,test,docs,build"  targets
 
-*clean*
+**clean**
 : clean generated build files
 
-*init*
+**init**
 : initialize local (temp,logs) directories
 
-*check*
+**check**
 : runs: `devtools::check()`
 
-*test*
+**test**
 : runs: `devtools::test()`
 
-*docs*
+**docs**
 : make: "man,readme,vignettes"  targets
 
-*man*
+**man**
 : runs: `devtools::document()`
 
-*vignettes*
+**vignettes**
 : runs: `devtools::build_vignettes()`
 
-*readme*
+**readme**
 : runs: `knitr::knit("README.Rmd")`
 
-*build*
+**build**
 : runs: `devtools::build()`
 
-*install*
+**install**
 : runs: `devtools::install()`
 
-*uninstall*
+**uninstall**
 : runs: `devtools::uninstall()`
 
 
