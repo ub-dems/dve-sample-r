@@ -8,7 +8,7 @@ date: 2021-10-29
 |-----------------------------------------------|-----------------------------------------------|---------------------------------------------|----------------------------|--------------------------------|
 | [Next: Starter Actions](../starter/README.md) | [Prev: Runtime Actions](../runtime/README.md) | [Up: Development Environment](../README.md) | [[Contents]](../README.md) | [[Index]](../_index/README.md) |
 
-_**WARNING:**_ *this script isn't released yet ...*
+**WARNING:**_ *this script isn't released yet ...*
 
 Project "worker" Actions
 =======================
