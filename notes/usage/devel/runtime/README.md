@@ -39,22 +39,22 @@ For `runtime.sh` usage info:
 Runtime actions (containerized)
 -------------------------------
 
-`rstudio` (default), aliases: `ide`, `RStudio`
+***rstudio*** (default), aliases: `ide`, `RStudio`
 : runs rstudio-server bound on port 28787
 
-`repl`, aliases: `r`, `R`
+***repl***, aliases: `r`, `R`
 : runs interactive R console
 
-`cli`, aliases: `rscript`, `Rscript`
+***cli***, aliases: `rscript`, `Rscript`
 : runs interactive shell prompt
 
-`shell`, aliases: `sh`, `prompt`
+***shell***, aliases: `sh`, `prompt`
 : runs interactive shell prompt
 
-`bash`, aliases: `do`, `command`
+***bash***, aliases: `do`, `command`
 : runs shell with args,...
 
-`term`, aliases: `in`, `attach`
+***term***, aliases: `in`, `attach`
 : attach interactive shell to running runtime
 
 
@@ -87,6 +87,7 @@ default volume mapping:
 
 ./runtime.sh
 
+# aliases
 ./runtime.sh ide
 ./runtime.sh rstudio
 ./runtime.sh RStudio
@@ -121,9 +122,13 @@ _(please contact support fot details)_
 #### R Console
 
 ```bash
- ./runtime.sh repl
+
+./runtime.sh repl
+
+# aliases
  ./runtime.sh r
  ./runtime.sh R
+ 
 ``` 
 
 then check 'getwd()' and exit 'q()'
@@ -133,9 +138,13 @@ R Script
 ---------
 
 ```bash
- ./runtime.sh cli     exec/dummy_runner.R
- ./runtime.sh rscript exec/dummy_runner.R
- ./runtime.sh Rscript exec/dummy_runner.R
+
+./runtime.sh cli     exec/dummy_runner.R
+
+# aliases
+./runtime.sh rscript exec/dummy_runner.R
+./runtime.sh Rscript exec/dummy_runner.R
+
 ```
 
 to run scripts from ./exec directory 
@@ -144,11 +153,16 @@ to run scripts from ./exec directory
 Shell Prompt
 ------------
 
-```
+```bash
+
  ./runtime.sh sh
+ 
+# aliases
  ./runtime.sh shell
  ./runtime.sh prompt
+ 
 ``` 
+
 for interactive shell prompt
 
 Shell Command
@@ -157,9 +171,11 @@ Shell Command
 or with command args
 
 ```bash
+
  ./runtime.sh do bash -c 'echo "$$(date)" ; df -h ; ip a'
  ./runtime.sh do ( inxi -F | grep -i nvidia )
  ./runtime.sh do whoami
+ 
 ``` 
 to run execute shell commands
 
