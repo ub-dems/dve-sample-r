@@ -96,3 +96,27 @@ Project "standard" (devtools) actions
 ```
 
 
+Project "(containerized) runtime" (podman) actions
+--------------------------------------------------
+
+***setup***
+: initial build of all runtime images
+
+***update***
+: rebuild of modified runtime images
+
+***upgrade***
+: fresh rebuild of all runtime images (pull)
+
+
+
+### Examples
+
+```bash
+
+./build.sh setup
+./build.sh update
+./build.sh upgrade
+
+```
+

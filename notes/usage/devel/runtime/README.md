@@ -14,7 +14,6 @@ Project "runtime" Actions
 The `./runtime.sh` script
 -----------------------
 
-
 In `containerized` projects, the runtime script enter the execution context 
 enabling developmet activities on the project.
 
@@ -32,7 +31,6 @@ For `runtime.sh` usage info:
 ./runtime.sh --help
 
 # usage ./runtime.sh [target] [args, ...]
-
 
 ```
 
@@ -78,6 +76,20 @@ default volume mapping:
 *workdir*: 
    `/root/work/../....`: current project directory
 
+
+### Mapping Definition
+
+Runtime [Volume mapping](https://docs.podman.io/en/latest/markdown/podman-run.1.html#volume-v-source-volume-host-dir-container-dir-options) if defined in [`Makefile`](../../../../decker/r-images/Makefile)), in lines
+
+```
+	$(DOCKER)  run \
+    ...
+		-v ${HOME_DIR}:${RUN_USER_HOME}:Z  \
+		-v ~/work:${RUN_USER_HOME}/work:Z  \
+		-v ~/data:${RUN_USER_HOME}/data:Z  \
+    ...
+
+```
 
 ### Examples
 
