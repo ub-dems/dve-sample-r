@@ -45,16 +45,16 @@ Project "standard" (devtools) actions
 **/init/**
 : initialize local (temp,logs) directories
 
-**check**
+***check***
 : runs: `devtools::check()`
 
-**test**
+****test****
 : runs: `devtools::test()`
 
-**docs**
+*_docs_*
 : make: "man,readme,vignettes"  targets
 
-**man**
+_*man*_
 : runs: `devtools::document()`
 
 **vignettes**
