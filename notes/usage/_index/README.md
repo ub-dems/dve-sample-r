@@ -15,6 +15,7 @@ Project Usage Guides - Index
 |-------------------------------------------------|--------------------------------------------------|---------------------------------------------------------|
 | [/](../../../../notes/../)                      |                                                  |                                                         |
 |                                                 | [DESCRIPTION](../../../../DESCRIPTION)           | [R Packages/Metadata](https://r-pkgs.org/Metadata.html) |
+|                                                 | [README.Rmd](../../../../README.Rmd)             | [DEVELOPMENT environment](devel/README.md)              |
 |                                                 | [build.sh](../../../../build.sh)                 | [DEVELOPMENT environment](devel/README.md)              |
 |                                                 | [Makefile](../../../../Makefile)                 | [DEVELOPMENT environment](devel/README.md)              |
 |                                                 |                                                  |                                                         |
