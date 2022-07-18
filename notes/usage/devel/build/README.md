@@ -39,10 +39,10 @@ Project "standard" (devtools) actions
 /*all*/
 : make: "init,check,test,docs,build"  targets
 
-**clean**
+*/clean/*
 : clean generated build files
 
-**init**
+**/init/**
 : initialize local (temp,logs) directories
 
 **check**
