@@ -43,3 +43,9 @@ The `containerized` model more complex, but presents many advantages:
 - [Podman](https://podman.io/) containers enable remote execution and distribution, prerequisite for shared computaional resource access.
 
 
+Developers's Guides
+-------------------
+
+- ["direct" (legacy) environment](../legacy/README.md): for "un-containerized" *"good ol' days"* projects
+- ["containerized" environment](../build/README.md): for "containerized" projects 
+

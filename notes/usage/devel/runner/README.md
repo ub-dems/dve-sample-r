@@ -8,9 +8,9 @@ date: 2021-10-29
 |---|-----------------------------------------------|---------------------------------------------|----------------------------|--------------------------------|
 |   | [Prev: Starter Actions](../starter/README.md) | [Up: Development Environment](../README.md) | [[Contents]](../README.md) | [[Index]](../_index/README.md) |
 
-***WARNING:*** *this script isn't released yet ...*
+_**WARNING:**_ *this script isn't released yet ...*
 
-**@TODO:**
+_**TODO:**_
 - enable yaml file for arguments and generic script invocation
 - enable standard tracking logs with performace metrics
 - could be extended to include [MlFlow](https://mlflow.org/) [experiment tracking](https://mlflow.org/docs/latest/tracking.html) support.
@@ -21,7 +21,7 @@ Project "runner" Actions
 The `./runner.sh` script
 -------------------------
 
-The [`runner.sh`](../../../../runner.sh) script is the *"entry-point"* for 
+The [`runner.sh`](../../../../exec/runner.sh) script is the *"entry-point"* for 
 project script execution.
 
 Current behaviour in to execute an executable `R` script name, 
@@ -29,7 +29,7 @@ that defaults to:
 
   `./exec/runner.R` : runs default script [`runner.R`](../../../../exec/runner.R) from project root
 
-This `R` is a *"wrapper"* scripts, that supports execition tracking and logging around custome scripts 
+This `R` is a *"wrapper"* scripts, that supports execition tracking and logging around custom scripts 
 (like [`dummy_runner.R`](../../../../exec/dummy_runner.R) in template example).
 
 
@@ -39,7 +39,7 @@ For `runner.sh` usage info:
 
 ./exec/runner.sh --help
 
-# usage ./exec/runner.sh [-x script] [args, ...]
+# usage exec/runner.sh [-e r-script] [args, ...]
 
 ```
 
