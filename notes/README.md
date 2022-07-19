@@ -15,6 +15,6 @@ PROJECT NOTES
 Index
 -----
 
-* [Project Usage Notes](usage/README.md)
+* [Project Usage Guide](usage/README.md)
 
 
