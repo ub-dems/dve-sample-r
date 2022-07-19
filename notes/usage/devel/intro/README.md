@@ -6,7 +6,7 @@ date: 2021-10-29
 ---
 |                                             |                                             |                            |                                |
 |---------------------------------------------|---------------------------------------------|----------------------------|--------------------------------|
-| [Next: "build" Actions](../build/README.md) | [Up: Development Environment](../README.md) | [[Contents]](../README.md) | [[Index]](../_index/README.md) |
+| [Next: Development Actions](../actions/README.md) | [Up: Development Environment](../README.md) | [[Contents]](../../README.md) | [[Index]](../../_index/README.md) |
 
 Overview
 ========
@@ -46,6 +46,6 @@ The `containerized` model more complex, but presents many advantages:
 Developers's Guides
 -------------------
 
-- ["direct" (legacy) environment](../legacy/README.md): for "un-containerized" *"good ol' days"* projects
-- ["containerized" environment](../build/README.md): for "containerized" projects 
+- ["direct" (legacy) environment](legacy/README.md): for "un-containerized" *"good ol' days"* projects
+- ["containerized" environment](containers/README.md): for "containerized" projects 
 
