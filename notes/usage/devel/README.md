@@ -21,11 +21,11 @@ Development Commands (Actions)
 
 The development environment defines several actions for the projects, grouped in 4 categories:
 
-- [Project Actions](action/README.md)
-  - ["build" actions](action/build/README.md): to initialize project runtime environment and to runs checks and tests
-  - ["runtime" actions](action/runtime/README.md): for "containerized" projects only, to control R/RStudio (customized) container execution
-  - ["worker" actions](action/worker/README.md): for "containerized" projects only, to embend and run project code in a executable image 
-  - ["starter" actions](action/starter/README.md): project execution "entry-point", to trigger scripts invocations or service startup (shiny, plumber)
+- [Project Actions](actions/README.md)
+  - ["build" actions](actions/build/README.md): to initialize project runtime environment and to runs checks and tests
+  - ["runtime" actions](actions/runtime/README.md): for "containerized" projects only, to control R/RStudio (customized) container execution
+  - ["worker" actions](actions/worker/README.md): for "containerized" projects only, to embend and run project code in a executable image 
+  - ["starter" actions](actions/starter/README.md): project execution "entry-point", to trigger scripts invocations or service startup (shiny, plumber)
 
 
 Execution Context
