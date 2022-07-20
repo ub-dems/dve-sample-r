@@ -12,8 +12,8 @@ date: 2021-10-29
 Containerized Environment
 =========================
 
-This devloment model is now the "default" model for progect usage, described in:
+This develoment model is now the "default" model for progect usage, described in:
 
 - [Library Dependencies](../../libs/README.md)
-- [Project Actions](../../action/README.md) for "Containerized" commands
+- [Project Actions](../../actions/README.md) for "Containerized" commands
 - [Execution Context](../../exec/README.md) for project scripts execution

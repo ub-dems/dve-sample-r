@@ -22,13 +22,13 @@ The `dvesimpler` package is a simple R project template:
 * externalize data directories symlinked relative to project root,
 * demo scripts, functions and tests.
 
-Runtime Environments
---------------------
+Developments Models
+------------------
 
-This project supports two different execution environments:
+This project supports two different development models:
 
-* `direct`: traditional execution environment that runs system installed R/RStudio (desktop).
-* `containerized`: execution environment that runs a container image with a fully customizable R/RStudio (server) setup.
+- ["direct" (legacy) environment](legacy/README.md): traditional execution environment that runs system installed R/RStudio (desktop).
+- ["containerized" environment](containers/README.md): execution environment that runs a container image with a fully customizable R/RStudio (server) setup.
 
 
 The `direct` model is simpler but with many limitations:
@@ -46,6 +46,4 @@ The `containerized` model more complex, but presents many advantages:
 Developers's Guides
 -------------------
 
-- ["direct" (legacy) environment](legacy/README.md): for "un-containerized" *"good ol' days"* projects
-- ["containerized" environment](containers/README.md): for "containerized" projects 
 
