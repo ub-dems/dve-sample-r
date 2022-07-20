@@ -17,7 +17,7 @@ Before initial runtime image build, runtime inheritance must be checked.
 For "containerized" projects, tipically based on a ["rocker project" image](https://rocker-project.org/images/),
 inheritance is specified in "anchor" image:
 
-* [docker/r-images//dockerfiles/anchor.Dockerfile](../../../../../../docker/r-images/dockerfiles/anchor.Dockerfile)]
+* [docker/r-images/dockerfiles/anchor.Dockerfile](../../../../../../docker/r-images/dockerfiles/anchor.Dockerfile)]
 
 Default configuration specifies `tidyverse` rolling release:
 
