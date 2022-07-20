@@ -4,9 +4,9 @@ subtitle: project build/runtime/deploy operations
 author: --
 date: 2021-10-29
 ---
-|                                               |                           |                               |                        |
-|-----------------------------------------------|---------------------------|-------------------------------|------------------------|
-| [Next: DATA SOURCE Configuration](../data/README.md) | [Up: Usage](../README.md) | [[Contents]](../README.md) | [[Index]](../_index/README.md) |
+|                                                      |                                      |                           |                            |                                |
+|------------------------------------------------------|--------------------------------------|---------------------------|----------------------------|--------------------------------|
+| [Next: DATA SOURCE Configuration](../data/README.md) | [Prev: QUICK Start](quick/README.md) | [Up: Usage](../README.md) | [[Contents]](../README.md) | [[Index]](../_index/README.md) |
 
 Introduction
 ------------

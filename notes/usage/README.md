@@ -6,11 +6,12 @@ date: 2021-10-29
 ---
 |                                                  |                          |                           |                               |
 |--------------------------------------------------|--------------------------|---------------------------|-------------------------------|
-| [Next: Development Environment](devel/README.md) | [UP:(dir)](../README.md) | [[Contents]](./README.md) | [[Index]](./_index/README.md) |
+| [Next: DEVELOPMENT Environment](devel/README.md) | [UP:(dir)](../README.md) | [[Contents]](./README.md) | [[Index]](./_index/README.md) |
 
 Project Usage Guide
 ===================
 
+1. [QUICK Start](quick/README.md)
 1. [DEVELOPMENT environment](devel/README.md)
    1. [Introduction](devel/intro/README.md)
       - ["legacy" environment](devel/intro/legacy/README.md)
