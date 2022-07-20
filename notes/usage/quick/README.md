@@ -60,7 +60,7 @@ After successfud build, runtime image can be started, with one of "runtime.sh" c
 ```
 
 
-### Depndency Configuration
+### Dependency Configuration
 
 
 In order to declare package dependencies, it is required to list package dependencies, under "Imports" or "Suggest" section,
