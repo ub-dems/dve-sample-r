@@ -4,9 +4,9 @@ subtitle: development environment actions
 author: --
 date: 2021-10-29
 ---
-|   |                                               |                                             |                            |                                |
-|---|-----------------------------------------------|---------------------------------------------|----------------------------|--------------------------------|
-|   | [Prev: Starter Actions](../starter/README.md) | [Up: Development Environment](../README.md) | [[Contents]](../README.md) | [[Index]](../_index/README.md) |
+|   |   |                                       |                                  |                                      |
+|---|---|---------------------------------------|----------------------------------|--------------------------------------|
+|   |   | [Up: Execution Context](../README.md) | [[Contents]](../../../README.md) | [[Index]](../../../_index/README.md) |
 
 _**WARNING:**_ *this script isn't released yet ...*
 
