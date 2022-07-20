@@ -1,11 +1,11 @@
 ---
 title: Development Commands (Actions)
-subtitle: development environment project actions
+subtitle: project build/runtime/deploy/execution actions
 author: --
 date: 2021-10-29
 ---
-|                                               |                           |                               |                        |
-|-----------------------------------------------|---------------------------|-------------------------------|------------------------|
+|                                              |                                          |                                                   |                               |                                   |
+|----------------------------------------------|------------------------------------------|---------------------------------------------------|-------------------------------|-----------------------------------|
 | [Next: Execution Context](../exec/README.md) | [Prev: Introduction](../intro/README.md) | [Up: Development Environment](../devel/README.md) | [[Contents]](../../README.md) | [[Index]](../../_index/README.md) |
 
 Development Commands (Actions)

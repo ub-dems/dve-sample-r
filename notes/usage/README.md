@@ -1,6 +1,6 @@
 ---
-title: Project Usage Guides
-subtitle: quick start meno
+title: Project Usage Guide
+subtitle: development reference manual
 author: --
 date: 2021-10-29
 ---
@@ -14,14 +14,14 @@ Project Usage Guide
 1. [DEVELOPMENT environment](devel/README.md)
    1. [Introduction](devel/intro/README.md)
       - ["legacy" environment](devel/intro/legacy/README.md)
-      - ["containerized" environment](devel/intro/legacy/README.md)
+      - ["containerized" environment](devel/intro/containers/README.md)
    1. [Project Actions](devel/action/README.md)
       - ["build" actions](devel/action/build/README.md)
       - ["runtime" actions](devel/action/runtime/README.md)
       - ["worker" actions](devel/action/worker/README.md)
       - ["starter" actions](devel/action/starter/README.md)
    1. [Execution Context](devel/exec/README.md)
-      - ["runner" actions](devel/exec/runner/README.md): to initialize project runtime environment and to runs checks and tests
+      - ["runner" actions](devel/exec/runner/README.md)
 1. [DATA SOURCE configuration](data/README.md)
    1. [Local Filesystem Data](data/local/README.md)
 1. [CI/CD Piplines](pipes/README.md)
