@@ -14,13 +14,13 @@ Project "starter" Actions
 The `./starter.sh` script
 -------------------------
 
-The [`starter.sh`](../../../../starter.sh) script is the *"entry-point"* for 
+The [`starter.sh`](../../../../../starter.sh) script is the *"entry-point"* for 
 project script execution or service startup (shiny, plumber).
 
 Current behaviour in to execute n executable shell script name, 
 that defaults to:
 
-  `./exec/runner.sh` : runs default script [`runner.sh`](../../../../exec/runner.sh) from project root
+  `./exec/runner.sh` : runs default script [`runner.sh`](../../../../../exec/runner.sh) from project root
 
 
 For `starter.sh` usage info:

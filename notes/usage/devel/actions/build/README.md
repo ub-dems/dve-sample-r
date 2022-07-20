@@ -14,10 +14,10 @@ Project "build" Actions
 The `./build.sh` script
 -----------------------
 
-The [`build.sh`](../../../../build.sh) script invokes (thru [`Makefile`](../../../../Makefile)) 
+The [`build.sh`](../../../../../build.sh) script invokes (thru [`Makefile`](../../../../../Makefile)) 
 all [devtools](https://devtools.r-lib.org/) actions for the project.
 
-For `containerized` actions,  [`build.sh`](../../../../build.sh) script invokes (thru [`Makefile`](../../../../decker/r-images/Makefile)) 
+For `containerized` actions,  [`build.sh`](../../../../../build.sh) script invokes (thru [`Makefile`](../../../../../decker/r-images/Makefile)) 
 all [podman "build"](https://docs.podman.io/en/latest/markdown/podman-build.1.html) [podman build](https://docs.podman.io/en/latest/markdown/podman-build.1.html) image preparation actions for the project.
 
 For `build.sh` usage info:

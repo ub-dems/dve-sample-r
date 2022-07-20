@@ -17,7 +17,7 @@ The `./runtime.sh` script
 In `containerized` projects, the runtime script enter the execution context 
 enabling development activities on the project.
 
-The [`runtime.sh`](../../../../runtime.sh) script invokes (thru [`Makefile`](../../../../decker/r-images/Makefile)) 
+The [`runtime.sh`](../../../../../runtime.sh) script invokes (thru [`Makefile`](../../../../../decker/r-images/Makefile)) 
 all [podman "run"](https://docs.podman.io/en/latest/markdown/podman-run.1.html) runtime actions for the project.
 
 This execution environment, internal in running container, shares filesystemm 

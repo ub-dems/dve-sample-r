@@ -19,7 +19,7 @@ The `./worker.sh` script
 In `containerized` projects, the worker script embeds project contents in an executable image 
 that can be executed locally or _"pushed"_ to a image registry to enable remote execution.
 
-The [`worker.sh`](../../../../worker.sh) script invokes (thru [`Makefile`](../../../../decker/r-images/Makefile)) 
+The [`worker.sh`](../../../../../worker.sh) script invokes (thru [`Makefile`](../../../../../decker/r-images/Makefile)) 
 all: 
 
 * [podman "build"](https://docs.podman.io/en/latest/markdown/podman-build.1.html) 
