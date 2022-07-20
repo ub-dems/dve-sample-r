@@ -17,7 +17,7 @@ Before initial runtime image build, runtime inheritance must be checked.
 For "containerized" projects, tipically based on a ["rocker project" image](https://rocker-project.org/images/),
 inheritance is specified in "anchor" image:
 
-* [docker/r-images/dockerfiles/anchor.Dockerfile](../../../../../../docker/r-images/dockerfiles/anchor.Dockerfile)]
+* [docker/r-images/dockerfiles/anchor.Dockerfile](../../../../../../docker/r-images/dockerfiles/anchor.Dockerfile)
 
 Default configuration specifies `tidyverse` rolling release:
 
@@ -29,7 +29,7 @@ FROM rocker/tidyverse:latest
 Then check for additional installation steps, to be included in runtime image.
 Custom runtime installation is provided by the script:
 
-* [docker/r-images/scripts/runtime/install_ubs-runtime.sh](../../../../../../docker/r-images/scripts/runtime/install_ubs-runtime.sh)]
+* [docker/r-images/scripts/runtime/install_ubs-runtime.sh](../../../../../../docker/r-images/scripts/runtime/install_ubs-runtime.sh)
 
 
 ### Runtime Image Build
@@ -66,12 +66,12 @@ After successfud build, runtime image can be started, with one of "runtime.sh" c
 In order to declare package dependencies, it is required to list package dependencies, under "Imports" or "Suggest" section,
 in:
 
-* [DESCRIPTION](../../../../../../DESCRIPTION)]
+* [DESCRIPTION](../../../../../../DESCRIPTION)
 
 To avoid warning related to "unused imported package", the `@importFrom` 
 can be added to `package reference` R source in:
 
-* [R/"package-name".R](../../../../../../R)]
+* [R/"package-name".R](../../../../../../R)
 
 ```R
 
