@@ -1,12 +1,12 @@
 ---
-title: DEVELOPMENT Cheat Sheet
-subtitle: development environment actions
+title: Development introduction
+subtitle: project features and models
 author: --
 date: 2021-10-29
 ---
 |                                             |                                             |                            |                                |
 |---------------------------------------------|---------------------------------------------|----------------------------|--------------------------------|
-| [Next: Development Actions](../actions/README.md) | [Up: Development Environment](../README.md) | [[Contents]](../../README.md) | [[Index]](../../_index/README.md) |
+| [Next: Development Actions](../actions/README.md) | [Up: DEVELOPMENT Environment](../README.md) | [[Contents]](../../README.md) | [[Index]](../../_index/README.md) |
 
 Overview
 ========
