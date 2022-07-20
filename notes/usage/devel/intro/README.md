@@ -43,7 +43,3 @@ The `containerized` model more complex, but presents many advantages:
 - [Podman](https://podman.io/) containers enable remote execution and distribution, prerequisite for shared computaional resource access.
 
 
-Developers's Guides
--------------------
-
-
