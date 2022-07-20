@@ -1,19 +1,20 @@
 ---
 title: "legacy" development environmnt
-subtitle: development environment actions
+subtitle: system package manager (apt) based setup
 author: --
 date: 2021-10-29
 ---
 |                                                              |   |                                                |                                  |                                      |
 |--------------------------------------------------------------|---|------------------------------------------------|----------------------------------|--------------------------------------|
-| [Next: "containerized" environment](../containers/README.md) |   | [Up: Development Overview](../intro/README.md) | [[Contents]](../../../README.md) | [[Index]](../../../_index/README.md) |
-
+| [Next: "containerized" environment](../containers/README.md) |   | [Up: Development Overview](../README.md) | [[Contents]](../../../README.md) | [[Index]](../../../_index/README.md) |
 
 
 Legacy DIRECT Environment
 =========================
+
 Environment Setup
 -----------------
+
 ### Libraries
 
 To search available packages:
