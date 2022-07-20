@@ -12,7 +12,7 @@ _**WARNING:**_ *this module isn't released yet ...*
 
 
 
-`renv` Managed Depencency Management
+"renv" Managed Depencency Management
 ====================================
 
 Configuration

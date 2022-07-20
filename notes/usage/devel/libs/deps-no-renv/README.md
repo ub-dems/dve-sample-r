@@ -6,7 +6,7 @@ date: 2021-10-29
 ---
 |   |                                                                      |                                           |                                  |                                      |
 |---|----------------------------------------------------------------------|-------------------------------------------|----------------------------------|--------------------------------------|
-|   | [Next: "renv" managed dependency management](../deps-renv/README.md) | [Up: Dependency Management](../README.md) | [[Contents]](../../../README.md) | [[Index]](../../../_index/README.md) |
+|   | [Prev: "renv" managed dependency management](../deps-renv/README.md) | [Up: Dependency Management](../README.md) | [[Contents]](../../../README.md) | [[Index]](../../../_index/README.md) |
 
 _**WARNING:**_ *this mudule isn't released yet ...*
 
