@@ -16,6 +16,17 @@ Introduction
   - ["containerized" environment](devel/intro/containers/README.md)
 
 
+Library Dependency Management
+-----------------------------
+
+Extermal libraries (packages), related to environment "model" 
+and dependency resolution specification.
+
+- [Dependency Management](libs/README.md)
+  - ["renv" managed dependency management](deps-renv/README.md)
+  - [unmanaged dependency management](deps-no-renv/README.md)
+
+
 Development Commands (Actions)
 ------------------------------
 
