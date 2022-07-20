@@ -1,14 +1,14 @@
 ---
-title: "runner" actions
-subtitle: development environment actions
+title: "renv" managed dependency management
+subtitle: renv integration
 author: --
 date: 2021-10-29
 ---
-|   |   |                                       |                                  |                                      |
-|---|---|---------------------------------------|----------------------------------|--------------------------------------|
-|   |   | [Up: Dependency Management](../README.md) | [[Contents]](../../../README.md) | [[Index]](../../../_index/README.md) |
+|                                                                    |   |                                           |                                  |                                      |
+|--------------------------------------------------------------------|---|-------------------------------------------|----------------------------------|--------------------------------------|
+| [Next: unmanaged dependency management](../deps-no-renv/README.md) |   | [Up: Dependency Management](../README.md) | [[Contents]](../../../README.md) | [[Index]](../../../_index/README.md) |
 
-_**WARNING:**_ *this mudule isn't released yet ...*
+_**WARNING:**_ *this module isn't released yet ...*
 
 
 
@@ -18,8 +18,7 @@ _**WARNING:**_ *this mudule isn't released yet ...*
 Configuration
 -------------
 
-In [`runner.sh`](../../../../renv/settings.dcf), define some custom setting (see [settings.dcf](https://rstudio.github.io/renv/reference/settings.html) reference):
-
+In [`renv/settings.dcf`](../../../../renv/settings.dcf), define some custom setting (see [settings.dcf](https://rstudio.github.io/renv/reference/settings.html) reference):
 
 - **external.libraries**: 
 
