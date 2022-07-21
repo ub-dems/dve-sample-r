@@ -5,7 +5,7 @@ NCPUS=${NCPUS:--1}
 
 set -e
 apt-get update -qq && apt-get -y --no-install-recommends install \
-    libXt \
+    less \
     ssh \
     vim \
     zsh \
