@@ -1,7 +1,7 @@
 ---
 title: "legacy" development environmnt
 subtitle: system package manager (apt) based setup
-author: --
+caption: devel - legacy
 date: 2021-10-29
 ---
 |                                                              |   |                                          |                                  |                                      |

@@ -1,12 +1,13 @@
 ---
-title: "build" actions
+title: Project "build" Actions
 subtitle: development environment actions
+caption: build.sh
 author: --
 date: 2021-10-29
 ---
 |                                               |                                             |                            |                                |
 |-----------------------------------------------|---------------------------------------------|----------------------------|--------------------------------|
-| [Next: Runtime Actions](../runtime/README.md) | [Up: Development Environment](../README.md) | [[Contents]](../README.md) | [[Index]](../_index/README.md) |
+| [Next: Runtime Actions](../runtime/README.md) | [Up: Development Commands](../README.md) | [[Contents]](../README.md) | [[Index]](../_index/README.md) |
 
 Project "build" Actions
 =======================
@@ -14,13 +15,11 @@ Project "build" Actions
 The `./build.sh` script
 -----------------------
 
-The [`build.sh`](../../../../../build.sh) script invokes (thru [`Makefile`](../../../../../Makefile)) 
-all [devtools](https://devtools.r-lib.org/) actions for the project.
+For all project models, the [`build.sh`](../../../../../build.sh) script invokes (thru [`Makefile`](../../../../../Makefile)) all [devtools](https://devtools.r-lib.org/) actions for the project.
 
-For `containerized` actions,  [`build.sh`](../../../../../build.sh) script invokes (thru [`Makefile`](../../../../../decker/r-images/Makefile)) 
-all [podman "build"](https://docs.podman.io/en/latest/markdown/podman-build.1.html) [podman build](https://docs.podman.io/en/latest/markdown/podman-build.1.html) image preparation actions for the project.
+In addition, for `containerized` projects,  [`build.sh`](../../../../../build.sh) script invokes (thru [`Makefile`](../../../../../decker/r-images/Makefile)) all [Podman "build"](https://docs.podman.io/en/latest/markdown/podman-build.1.html) image preparation actions for the project.
 
-For `build.sh` usage info:
+For `build.sh`, usage info is shown by:
 
 ```bash
 
@@ -30,9 +29,9 @@ For `build.sh` usage info:
 
 ```
 
+
 Project "standard" (devtools) actions
 -------------------------------------
-
   
 ***help***
 : describe "targets" (actions)
@@ -97,7 +96,7 @@ Project "standard" (devtools) actions
 ```
 
 
-Project "(containerized) runtime" (podman) actions
+Project "(containerized) runtime" (Podman) actions
 --------------------------------------------------
 
 ***setup***

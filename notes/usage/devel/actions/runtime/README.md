@@ -1,30 +1,29 @@
 ---
-title: "runtime" actions
+title: Project "runtime" Actions
 subtitle: development environment actions
+caption: runtime.sh
 author: --
 date: 2021-10-29
 ---
 |                                             |                                            |                                             |                            |                                |
 |---------------------------------------------|--------------------------------------------|---------------------------------------------|----------------------------|--------------------------------|
-| [Next: Worker Actions](../worker/README.md) | [Prev:  Build Actions](../build/README.md) | [Up: Development Environment](../README.md) | [[Contents]](../README.md) | [[Index]](../_index/README.md) |
+| [Next: Worker Actions](../worker/README.md) | [Prev:  Build Actions](../build/README.md) | [Up: Development Commands](../README.md) | [[Contents]](../README.md) | [[Index]](../_index/README.md) |
 
 
 Project "runtime" Actions
 =======================
+
 The `./runtime.sh` script
 -----------------------
 
-In `containerized` projects, the runtime script enter the execution context 
-enabling development activities on the project.
+In `containerized` projects, the runtime script enter the execution context enabling development activities on the project.
 
-The [`runtime.sh`](../../../../../runtime.sh) script invokes (thru [`Makefile`](../../../../../decker/r-images/Makefile)) 
-all [podman "run"](https://docs.podman.io/en/latest/markdown/podman-run.1.html) runtime actions for the project.
+The [`runtime.sh`](../../../../../runtime.sh) script invokes (thru [`Makefile`](../../../../../decker/r-images/Makefile)) all [Podman "run"](https://docs.podman.io/en/latest/markdown/podman-run.1.html) runtime actions for the project.
 
-This execution environment, internal in running container, shares filesystemm 
-project folder with external (native) calling environment.
+This execution environment, internal in running container, shares file-system project folder with external (native) calling environment.
 
 
-For `runtime.sh` usage info:
+For `runtime.sh` usage info is shown by:
 
 ```bash
 
@@ -38,7 +37,7 @@ Runtime actions (containerized)
 -------------------------------
 
 ***rstudio*** (default), aliases: `ide`, `RStudio`
-: runs rstudio-server bound on port 28787
+: runs RStudio-server bound locally on port 28787
 
 ***repl***, aliases: `r`, `R`
 : runs interactive R console
@@ -107,29 +106,38 @@ Runtime [Volume mapping](https://docs.podman.io/en/latest/markdown/podman-run.1.
 ```
 then (depending on connection client),
 
-- if X2Go,
+- if `X2Go`,
 
 ```bash
    chromium-browser http://localhost:28787
 ```
 
-- if nomachine,
+- if `nomachine`,
 
 ```bash
 firefox http://localhost:28787
 ```
 
-- if remote (with ssh port forwarding) from remote PC
+- if remote (with [`ssh port forwarding`](https://linuxize.com/post/how-to-setup-ssh-tunneling/)) from remote PC
 
 ```bash
    ssh -L28787:localhost:28787 user@vm 
 
 ```
-then open in browser: http://localhost:28787
 
+running RStudio Server is available at:
 
-RStudio login with user `root`, and default user password as password 
-_(please contact support fot details)_
+- http://localhost:28787
+
+with credentials:
+
+|              |                                                 |
+| ------------ | ----------------------------------------------- |
+| **user**     | `root`                                          |
+| **password** | *default remote user password (generated)* [^1] |
+
+[^1]: please contact support for details
+
 
 #### R Console
 
@@ -150,7 +158,6 @@ R Script
 ---------
 
 ```bash
-
 ./runtime.sh cli     exec/dummy_runner.R
 
 # aliases
@@ -166,7 +173,6 @@ Shell Prompt
 ------------
 
 ```bash
-
  ./runtime.sh sh
  
 # aliases
@@ -183,7 +189,6 @@ Shell Command
 or with command args
 
 ```bash
-
  ./runtime.sh do bash -c 'echo "$$(date)" ; df -h ; ip a'
  ./runtime.sh do ( inxi -F | grep -i nvidia )
  ./runtime.sh do whoami

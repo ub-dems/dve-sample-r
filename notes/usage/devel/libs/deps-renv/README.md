@@ -1,19 +1,28 @@
 ---
-title: "renv" managed dependency management
-subtitle: renv integration
+title: Managed Dependency Management
+subtitle: dependency management with "renv"
+caption: deps - managed
 author: --
 date: 2021-10-29
 ---
 |                                                                    |   |                                           |                                  |                                      |
 |--------------------------------------------------------------------|---|-------------------------------------------|----------------------------------|--------------------------------------|
-| [Next: unmanaged dependency management](../deps-no-renv/README.md) |   | [Up: Dependency Management](../README.md) | [[Contents]](../../../README.md) | [[Index]](../../../_index/README.md) |
+| [Next: Unmanaged Dependency Management](../deps-no-renv/README.md) |   | [Up: Dependency Management](../README.md) | [[Contents]](../../../README.md) | [[Index]](../../../_index/README.md) |
 
 _**WARNING:**_ *this module isn't released yet ...*
 
 
+Managed Dependency Management
+=============================
 
-"renv" Managed Depencency Management
-====================================
+
+Overview
+--------
+
+Dependency resolution and versioning is managed by `renv`. See:
+
+* [Introduction to renv](https://rstudio.github.io/renv/articles/renv.html)
+
 
 Configuration
 -------------
@@ -40,7 +49,7 @@ package.dependency.fields: Imports, Depends, LinkingTo
 
 ```
 
-Disable implicit source scannin for depndency discovery, 
+Disable implicit source scanning for dependency discovery, 
 but limits dependency specification to [DESCRIPTION](../../../../../../../../DESCRIPTION) contents.
 
 ```

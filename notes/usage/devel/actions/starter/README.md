@@ -1,26 +1,30 @@
 ---
-title: "starter" actions
+title: Project "starter" Actions
 subtitle: development environment actions
+caption: starter.sh
 author: --
 date: 2021-10-29
 ---
-|                                             |                                             |                                             |                            |                                |
-|---------------------------------------------|---------------------------------------------|---------------------------------------------|----------------------------|--------------------------------|
-| [Next: Runner Actions](../runner/README.md) | [Prev: Worker Actions](../worker/README.md) | [Up: Development Environment](../README.md) | [[Contents]](../README.md) | [[Index]](../_index/README.md) |
+|     |                                             |                                             |                            |                                |     |     |
+| --- | ------------------------------------------- | ------------------------------------------- | -------------------------- | ------------------------------ | --- | --- |
+|     | [Prev: Worker Actions](../worker/README.md) | [Up: Development Commands](../README.md) | [[Contents]](../README.md) | [[Index]](../_index/README.md) |     |     |
 
 
 Project "starter" Actions
 =======================
+
 The `./starter.sh` script
--------------------------
+---------------------
 
 The [`starter.sh`](../../../../../starter.sh) script is the *"entry-point"* for 
 project script execution or service startup (shiny, plumber).
 
-Current behaviour in to execute n executable shell script name, 
-that defaults to:
+Current behavior in to execute an executable shell script name, that defaults to:
 
   `./exec/runner.sh` : runs default script [`runner.sh`](../../../../../exec/runner.sh) from project root
+
+See also:
+* ["runner" actions](../../exec/runner/README.md) 
 
 
 For `starter.sh` usage info:

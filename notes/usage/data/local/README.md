@@ -1,6 +1,7 @@
 ---
-title: DATA SOURCE Configuration Guide
+title: File-system DATA Sources Setup
 subtitle: filesystem data source setup
+caption: Local data
 author: --
 date: 2021-10-29
 ---
@@ -8,8 +9,8 @@ date: 2021-10-29
 |---|---|-----------------------------------------------|-------------------------------|-----------------------------------|
 |   |   | [Up: Data Source Configuration](../README.md) | [[Contents]](../../README.md) | [[Index]](../../_index/README.md) |
 
-Filesystem DATA Sources Setup
-==============================
+File-system DATA Sources Setup
+===========================
 
 ## Project Directory Mapping
 

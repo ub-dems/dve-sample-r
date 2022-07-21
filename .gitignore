@@ -21,6 +21,7 @@ vignettes/*.R
 /GTAGS
 /TAGS
 /.dir-locals.el
+.obsidian/
 /issues
 /home
 /logs

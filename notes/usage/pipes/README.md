@@ -1,6 +1,7 @@
 ---
 title: CI/CD Pipelines
 subtitle: Batch builds and deployments
+caption: CI/CD Pipelines
 author: --
 date: 2021-10-29
 ---

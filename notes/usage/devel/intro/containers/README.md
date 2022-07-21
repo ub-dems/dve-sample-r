@@ -1,6 +1,7 @@
 ---
 title: "containerized" development environmnt
 subtitle: podman based setup 
+caption: devel - podman
 author: --
 date: 2021-10-29
 ---
@@ -12,7 +13,7 @@ date: 2021-10-29
 Containerized Environment
 =========================
 
-This develoment model is now the "default" model for progect usage, described in:
+This development model is now the "default" model for project usage, described in:
 
 - [Library Dependencies](../../libs/README.md)
 - [Project Actions](../../actions/README.md) for "Containerized" commands

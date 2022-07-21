@@ -1,6 +1,7 @@
 ---
-title: GitLab Notes
+title: GitLab README.md
 subtitle: GitLab Quick Start Guide
+caption: gitlab-readme
 author: gitlab
 date: 2021-01-15
 ---

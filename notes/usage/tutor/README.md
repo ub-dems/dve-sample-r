@@ -1,6 +1,7 @@
 ---
 title: Git Tutorials
 subtitle: Git Quick Start Guide
+caption: Git Tutorials
 author: gitlab
 date: 2021-01-15
 ---

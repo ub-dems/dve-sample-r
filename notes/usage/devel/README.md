@@ -1,6 +1,7 @@
 ---
 title: DEVELOPMENT environment
 subtitle: project build/runtime/deploy operations
+caption: DEVEL env
 author: --
 date: 2021-10-29
 ---
@@ -11,7 +12,7 @@ date: 2021-10-29
 Introduction
 ------------
 
-- [Overview](intro/README.md): introduction to developmnt environment
+- [Overview](intro/README.md): introduction to development environment
   - ["legacy" environment](devel/intro/legacy/README.md)
   - ["containerized" environment](devel/intro/containers/README.md)
 
@@ -19,11 +20,10 @@ Introduction
 Library Dependency Management
 -----------------------------
 
-Extermal libraries (packages), related to environment "model" 
-and dependency resolution specification.
+External libraries (packages), related to environment "model" and dependency resolution specification.
 
 - [Dependency Management](libs/README.md)
-  - ["renv" managed dependency management](deps-renv/README.md)
+  - [managed dependency management ("renv")](deps-renv/README.md)
   - [unmanaged dependency management](deps-no-renv/README.md)
 
 
@@ -35,7 +35,7 @@ The development environment defines several actions for the projects, grouped in
 - [Project Actions](actions/README.md)
   - ["build" actions](actions/build/README.md): to initialize project runtime environment and to runs checks and tests
   - ["runtime" actions](actions/runtime/README.md): for "containerized" projects only, to control R/RStudio (customized) container execution
-  - ["worker" actions](actions/worker/README.md): for "containerized" projects only, to embend and run project code in a executable image 
+  - ["worker" actions](actions/worker/README.md): for "containerized" projects only, to embed and run project code in a executable image 
   - ["starter" actions](actions/starter/README.md): project execution "entry-point", to trigger scripts invocations or service startup (shiny, plumber)
 
 
