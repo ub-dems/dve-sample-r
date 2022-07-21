@@ -7,7 +7,7 @@ date: 2021-10-29
 ---
 |                                              |                                                  |                                                   |                               |                                   |
 |----------------------------------------------|--------------------------------------------------|---------------------------------------------------|-------------------------------|-----------------------------------|
-| [Next: Execution Context](../exec/README.md) | [Prev: Dependency Management](../libs/README.md) | [Up: Development Environment](../devel/README.md) | [[Contents]](../../README.md) | [[Index]](../../_index/README.md) |
+| [Next: Execution Context](../exec/README.md) | [Prev: Dependency Management](../libs/README.md) | [Up: Development Environment](../README.md) | [[Contents]](../../README.md) | [[Index]](../../_index/README.md) |
 
 Development Commands (Actions)
 ------------------------------

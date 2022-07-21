@@ -7,7 +7,7 @@ date: 2021-10-29
 ---
 |     |                                             |                                             |                            |                                |     |     |
 | --- | ------------------------------------------- | ------------------------------------------- | -------------------------- | ------------------------------ | --- | --- |
-|     | [Prev: Worker Actions](../worker/README.md) | [Up: Development Commands](../README.md) | [[Contents]](../README.md) | [[Index]](../_index/README.md) |     |     |
+|     | [Prev: Worker Actions](../worker/README.md) | [Up: Development Commands](../README.md) | [[Contents]](../../README.md) | [[Index]](../../_index/README.md) |
 
 
 Project "starter" Actions

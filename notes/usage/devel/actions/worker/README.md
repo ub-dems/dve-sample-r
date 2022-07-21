@@ -5,9 +5,9 @@ caption: worker.sh
 author: --
 date: 2021-10-29
 ---
-|                                               |                                               |                                             |                            |                                |
-|-----------------------------------------------|-----------------------------------------------|---------------------------------------------|----------------------------|--------------------------------|
-| [Next: Starter Actions](../starter/README.md) | [Prev: Runtime Actions](../runtime/README.md) | [Up: Development Commands](../README.md) | [[Contents]](../README.md) | [[Index]](../_index/README.md) |
+|                                               |                                               |                                          |                               |                                   |
+|-----------------------------------------------|-----------------------------------------------|------------------------------------------|-------------------------------|-----------------------------------|
+| [Next: Starter Actions](../starter/README.md) | [Prev: Runtime Actions](../runtime/README.md) | [Up: Development Commands](../README.md) | [[Contents]](../../README.md) | [[Index]](../../_index/README.md) |
 
 **WARNING:** _this script isn't released yet ..._
 
