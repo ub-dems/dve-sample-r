@@ -13,8 +13,8 @@ Introduction
 ------------
 
 - [Overview](intro/README.md): introduction to development environment
-  - ["legacy" environment](devel/intro/legacy/README.md)
-  - ["containerized" environment](devel/intro/containers/README.md)
+  - ["legacy" environment](intro/legacy/README.md)
+  - ["containerized" environment](intro/containers/README.md)
 
 
 Library Dependency Management
@@ -23,8 +23,8 @@ Library Dependency Management
 External libraries (packages), related to environment "model" and dependency resolution specification.
 
 - [Dependency Management](libs/README.md)
-  - [managed dependency management ("renv")](deps-renv/README.md)
-  - [unmanaged dependency management](deps-no-renv/README.md)
+  - [managed dependency management ("renv")](libs/deps-renv/README.md)
+  - [unmanaged dependency management](libs/deps-no-renv/README.md)
 
 
 Development Commands (Actions)

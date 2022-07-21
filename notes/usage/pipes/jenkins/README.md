@@ -1,18 +1,18 @@
 ---
-title: CI/CD Pipelines
+title: Jenkis Pipelines
 subtitle: Jenkis+Podman builds
 caption: jenkins pipes
 author: --
 date: 2022-05-17
 ---
-|   |   |                                     |                                  |                                   |
-|---|---|-------------------------------------|----------------------------------|-----------------------------------|
-|   |   | [Up: CI/CD Pipelines](../README.md) | [[Contents]](../../../README.md) | [[Index]](../../_index/README.md) |
+|   |   |                                     |                               |                                   |
+|---|---|-------------------------------------|-------------------------------|-----------------------------------|
+|   |   | [Up: CI/CD Pipelines](../README.md) | [[Contents]](../../README.md) | [[Index]](../../_index/README.md) |
 
 _**WARNING:**_ *this module isn't released yet ...*
 
-CI/CD PIPELINES
-===============
+JENKINS PIPELINES
+=================
 
 Status
 ------
