@@ -16,11 +16,11 @@ Project Usage Guides - Index
 |-------------------------------------------------|--------------------------------------------------|---------------------------------------------------------|
 | [/](../../../../notes/../)                      |                                                  |                                                         |
 |                                                 | [DESCRIPTION](../../../../DESCRIPTION)           | [R Packages/Metadata](https://r-pkgs.org/Metadata.html) |
-|                                                 | [README.Rmd](../../../../README.Rmd)             | [DEVELOPMENT environment](READMEtop.md)                 |
-|                                                 | [build.sh](../../../../build.sh)                 | [DEVELOPMENT environment](READMEtop.md)                 |
-|                                                 | [Makefile](../../../../Makefile)                 | [DEVELOPMENT environment](READMEtop.md)                 |
+|                                                 | [README.Rmd](../../../../README.Rmd)             | [DEVELOPMENT environment](README.md)                 |
+|                                                 | [build.sh](../../../../build.sh)                 | [DEVELOPMENT environment](README.md)                 |
+|                                                 | [Makefile](../../../../Makefile)                 | [DEVELOPMENT environment](README.md)                 |
 |                                                 |                                                  |                                                         |
 | [/docker/r-images](../../../../docker/r-images) |                                                  |                                                         |
-|                                                 | [Makefile](../../../../docker/r-images/Makefile) | [DEVELOPMENT environment](READMEtop.md)                 |
+|                                                 | [Makefile](../../../../docker/r-images/Makefile) | [DEVELOPMENT environment](README.md)                 |
 |                                                 |                                                  |                                                         |
 
