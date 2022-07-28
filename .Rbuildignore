@@ -15,6 +15,7 @@
 ^docker$
 ^.dockerignore.*$
 ^docs$
+^etc$
 ^\.github$
 ^\.github/workflows/pkgdown\.yaml$
 ^\.github/workflows/pr-commands\.yaml$

@@ -1,0 +1,87 @@
+# ---
+#+TITLE: notes/custom/README.org: template customization
+#+SUBTITLE:  project initializaion from template
+#+AUTHOR: --
+#+DATE: <2022-07-28>
+# ---
+#+OPTIONS: toc:nil h:4
+#+STARTUP: show2levels
+#+LINK: dve-sample-r https://gitlab.com/ub-dems-public/ds-labs/dve-sample-r
+
+#+PROPERTY: header-args:bash :dir /ssh:dsuser@pv2/home/dsuser/work/tm/us-proto-r
+:PROPERTIES:
+:header-args:R:          :session *R*
+:header-args:bash:       :session *ssh-1*
+:END:
+#+TOC: headlines 4
+
+* REFERENCE
+** Developer's Guides
+*** Internal Documentation
+   * [[https://gitlab.com/ub-dems-public/ds-labs/dve-sample-r/-/blob/main/notes/usage/README.md][Project Usage Guide]]
+*** Public Documentation
+   * [[https://r-pkgs.org/Metadata.html][R Packages: Package metadata]]
+   * [[https://rstudio.github.io/renv/articles/renv.html][Introduction to renv]]
+
+
+
+* CUSTOM
+
+** Status Check
+*** Info Session
+#+NAME: session-info
+#+BEGIN_SRC bash
+  whoami
+  hostnamectl
+#+END_SRC
+
+#+NAME: project-info
+#+BEGIN_SRC bash
+  pwd
+  git status
+#+END_SRC
+** Project Config
+*** Source Config
+
+#+NAME: conf-custom
+#+BEGIN_SRC bash
+  [ ./etc/custom/custom.conf ] || sed 's/^ *//' >> ./etc/custom/custom.conf <<-EOF
+  # project customization config
+  set -a
+  . ./etc/custom/custom-source.conf  
+  . ./etc/custom/custom-target.conf  
+  set -a
+  EOF
+#+END_SRC
+
+#+NAME: custom-source.conf
+#+BEGIN_SRC bash
+  [ ./etc/custom/custom-source.conf ] || sed 's/^ *//' >> ./etc/custom/custom-source.conf <<-EOF
+  # project source consts
+  CUST_S_PROJECT_NAME='dve-sample-r'
+  CUST_S_PACKAGE_NAME='dvesimpler'
+  CUST_S_REPO_PATH='ub-dems-public/ds-labs'
+  CUST_S_REPO_HOST='https://gitlab.com/'
+  EOF
+#+END_SRC
+
+*** Target Config
+
+#+NAME: custom-target.conf
+#+BEGIN_SRC bash
+  [ ./etc/custom/custom-target.conf ] || sed 's/^ *//' >> ./etc/custom/custom-target.conf <<-EOF
+  # project target consts
+  CUST_T_PROJECT_NAME='us-proto-r'
+  CUST_T_PACKAGE_NAME='USprotoR'
+  CUST_T_REPO_PATH='ub-dems/cs-labs/user-dsuser'
+  CUST_T_REPO_HOST='https://gitlab.com/'
+  EOF
+#+END_SRC
+
+#+NAME: conf-show
+#+BEGIN_SRC bash
+  [ ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+  env | grep ^ CUST_ | sort
+#+END_SRC
+
+
