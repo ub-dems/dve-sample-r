@@ -127,6 +127,8 @@
   EOF
 #+END_SRC
 
+#+RESULTS: conf-custom
+
 #+NAME: custom-source.conf
 #+BEGIN_SRC bash
   [ -f ./etc/custom/custom-source.conf ] || sed 's/^ *//' >> ./etc/custom/custom-source.conf <<-EOF
@@ -137,6 +139,8 @@
   CUST_S_REPO_HOST='https://gitlab.com/'
   EOF
 #+END_SRC
+
+#+RESULTS: custom-source.conf
 
 *** Target Config
 
@@ -151,11 +155,24 @@
   EOF
 #+END_SRC
 
+#+RESULTS: custom-target.conf
+
 #+NAME: conf-show
 #+BEGIN_SRC bash
   [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
   env | grep ^CUST_ | tr '=' '\t' | sort
 #+END_SRC
+
+#+RESULTS: conf-show
+| CUST_S_PACKAGE_NAME | dvesimpler                  |
+| CUST_S_PROJECT_NAME | dve-sample-r                |
+| CUST_S_REPO_HOST    | https://gitlab.com/         |
+| CUST_S_REPO_PATH    | ub-dems-public/ds-labs      |
+| CUST_T_PACKAGE_NAME | USprotoR                    |
+| CUST_T_PROJECT_NAME | us-proto-r                  |
+| CUST_T_REPO_HOST    | https://gitlab.com/         |
+| CUST_T_REPO_PATH    | ub-dems/cs-labs/user-dsuser |
+| CUST_X_CUSTOMIZED   | 0                           |
 
 
 ** Project Customization
