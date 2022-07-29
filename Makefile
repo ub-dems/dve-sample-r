@@ -101,6 +101,19 @@ init: # @HELP/base initialize local (temp,logs) directories
 
 #}}} \\\
 
+#{{{ [ CUSTOMIZATION.* ] /////////////////////////////////////////////////////////////////
+
+# ---(custom)------------------------------------------------
+
+.PHONY: custom custom-help
+
+custom: # @HELP/custom runs: ./etc/custom/custom.sh for initial project customization
+custom: init
+	bash ./etc/custom/custom.sh
+
+custom-help: help/custom
+
+#}}} \\\
 
 #{{{ [ CONTAINERS.* ] /////////////////////////////////////////////////////////////////
 
@@ -241,7 +254,7 @@ help/%:
 	    '
 
 help: # @HELP/base prints this message
-help:  help/base help/build
+help:  help/base help/build 
 
 
 #}}} \\\

@@ -9,10 +9,10 @@
 #+LINK: dve-sample-r https://gitlab.com/ub-dems-public/ds-labs/dve-sample-r
 
 #+PROPERTY: header-args:bash :dir /ssh:dsuser@pp2:/home/dsuser/work/tm/us-proto-r
+#+PROPERTY: header-args:bash+ :export code  :tangle  ../../etc/custom/custom.sh
 :PROPERTIES:
 :header-args:R:          :session *R*
 :header-args:bash:       :session *ssh-1* 
-:header-args:bash:       :tangle  ../../etc/custom/custom.sh
 :END:
 #+TOC: headlines 4
 
@@ -20,13 +20,55 @@
 ** Developer's Guides
 *** Internal Documentation
    * [[https://gitlab.com/ub-dems-public/ds-labs/dve-sample-r/-/blob/main/notes/usage/README.md][Project Usage Guide]]
+   * [[file:~/work/vs/dve-sample-r/notes/usage/README.md::1. \[Dependency Management\](devel/libs/README.md)][Project Usage Guide (local)]]
 *** Public Documentation
    * [[https://r-pkgs.org/Metadata.html][R Packages: Package metadata]]
    * [[https://rstudio.github.io/renv/articles/renv.html][Introduction to renv]]
 
-
-
 * CUSTOM
+
+** Export Heading
+*** Script Head
+#+NAME: script-heading
+#+BEGIN_SRC bash :eval no
+  #!/bin/bash
+  ##
+  # ./etc/custom/custom.sh: initial project template customization
+  # 
+  # @see: ./notes/custom/README.org
+
+  # run from project root:
+  #
+  if [ ! -d ./etc/custom ]; then
+    cat <<-EOF
+
+      custom.sh: initial project template customization
+
+
+      Usage:
+              ./build.sh custom
+
+      from project root
+
+      Config:
+
+       before customization, project informantion must be set in config:
+
+        nano ./etc/custom/custom-target.conf
+
+    EOF
+    exit 1
+  fi
+
+  mkdir -p ./logs/custom
+
+  exec 3>&1 4>&2
+  trap 'exec 2>&4 1>&3' 0 1 2 3
+  exec 1>>./logs/custom/custom-$(date -Isec).log 2>&1
+
+  echo ">>> project customization, ..."
+
+#+END_SRC
 
 ** Status Check
 *** Info Session
@@ -35,24 +77,17 @@
   whoami
 #+END_SRC
 
-#+RESULTS: user-info
-: dsuser
-
 #+NAME: host-info
 #+BEGIN_SRC bash
-  hostnamectl
+    hostnamectl | \
+        perl -pi -e 's/([^ :])\s+(\S)/\1_\2/g' | sed -e 's/:/\t/'
 #+END_SRC
 
-#+RESULTS: host-info
-| Static          | hostname: | pw-bs110-v02                     |         |     |
-| Icon            | name:     | computer-vm                      |         |     |
-| Chassis:        | vm        |                                  |         |     |
-| Machine         | ID:       | 89a7c64cb6674932b3d45f9c080e81b4 |         |     |
-| Boot            | ID:       | eed2720b473e4b57a34c2df5250a8cf6 |         |     |
-| Virtualization: | microsoft |                                  |         |     |
-| Operating       | System:   | Ubuntu                           | 18.04.6 | LTS |
-| Kernel:         | Linux     | 5.4.0-1086-azure                 |         |     |
-| Architecture:   | x86-64    |                                  |         |     |
+
+#+NAME: net-info
+#+BEGIN_SRC bash
+  ip -br -4 a | grep -v lo
+#+END_SRC
 
 
 #+NAME: project-info
@@ -60,28 +95,17 @@
   pwd
 #+END_SRC
 
-#+RESULTS: project-info
-: /home/dsuser/work/tm/us-proto-r
-
 #+NAME: repo-info
 #+BEGIN_SRC bash
   git remote -v
 #+END_SRC
 
-#+RESULTS: repo-info
-| origin | https://gitlab.com/ub-dems-public/ds-labs/dve-sample-r.git (fetch) |
-| origin | https://gitlab.com/ub-dems-public/ds-labs/dve-sample-r.git (push)  |
-
 #+NAME: repo-status
-#+BEGIN_SRC bash :results raw
-  git status
+#+BEGIN_SRC bash :results output drawer replace
+    git -c color.ui=false status | \
+        sed -e 's/^/> /'
 #+END_SRC
 
-#+RESULTS: repo-status
-On branch develop
-Your branch is up-to-date with 'origin/develop'.
-
-nothing to commit, working tree clean
 
 
 ** Project Config
@@ -92,13 +116,15 @@ nothing to commit, working tree clean
   [ -f ./etc/custom/custom.conf ] || sed 's/^ *//' >> ./etc/custom/custom.conf <<-EOF
   # project customization config
   set -a
+  #  
+  CUST_X_CUSTOMIZED=0
+  #  
   . ./etc/custom/custom-source.conf  
   . ./etc/custom/custom-target.conf  
+  #  
   set +a
   EOF
 #+END_SRC
-
-#+RESULTS: conf-custom
 
 #+NAME: custom-source.conf
 #+BEGIN_SRC bash
@@ -110,8 +136,6 @@ nothing to commit, working tree clean
   CUST_S_REPO_HOST='https://gitlab.com/'
   EOF
 #+END_SRC
-
-#+RESULTS: custom-source.conf
 
 *** Target Config
 
@@ -126,23 +150,12 @@ nothing to commit, working tree clean
   EOF
 #+END_SRC
 
-#+RESULTS: custom-target.conf
-
 #+NAME: conf-show
 #+BEGIN_SRC bash
   [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
   env | grep ^CUST_ | tr '=' '\t' | sort
 #+END_SRC
 
-#+RESULTS: conf-show
-| CUST_S_PACKAGE_NAME | dvesimpler                  |
-| CUST_S_PROJECT_NAME | dve-sample-r                |
-| CUST_S_REPO_HOST    | https://gitlab.com/         |
-| CUST_S_REPO_PATH    | ub-dems-public/ds-labs      |
-| CUST_T_PACKAGE_NAME | USprotoR                    |
-| CUST_T_PROJECT_NAME | us-proto-r                  |
-| CUST_T_REPO_HOST    | https://gitlab.com/         |
-| CUST_T_REPO_PATH    | ub-dems/cs-labs/user-dsuser |
 
 ** Project Customization
 *** File Rename
@@ -154,14 +167,10 @@ nothing to commit, working tree clean
 
 #+END_SRC
 
-#+RESULTS: cust-rename-pre
-| ./dvesimpler.Rproj          |
-| ./man/dvesimpler-package.Rd |
-| ./R/dvesimpler.r            |
-
 #+NAME: cust-rename
-#+BEGIN_SRC bash
+#+BEGIN_SRC bash :results output drawer replace
   [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+  [ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
 
   mv ./${CUST_S_PACKAGE_NAME}.Rproj ./${CUST_T_PACKAGE_NAME}.Rproj
   mv ./man/${CUST_S_PACKAGE_NAME}-package.Rd ./man/${CUST_T_PACKAGE_NAME}-package.Rd
@@ -169,18 +178,12 @@ nothing to commit, working tree clean
 
 #+END_SRC
 
-#+RESULTS: cust-rename
-
 #+NAME: cust-rename-post
 #+BEGIN_SRC bash
   [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
   find . -name "$CUST_T_PACKAGE_NAME*" -o -name "$CUST_T_PROJECT_NAME*"
 #+END_SRC
 
-#+RESULTS: cust-rename-post
-| ./USprotoR.Rproj          |
-| ./man/USprotoR-package.Rd |
-| ./R/USprotoR.r            |
 
 *** Package Name
 
@@ -191,37 +194,16 @@ nothing to commit, working tree clean
         tr -s ' ' '_' | sed -e 's/:/\t/'
 #+END_SRC
 
-#+RESULTS: cust-package-pre
-| notes/custom/README.org       | _CUST_S_PACKAGE_NAME='dvesimpler'                            |             |        |
-| README.Rmd                    | library(dvesimpler)                                          |             |        |
-| README.Rmd                    | The_`dvesimpler`_package_is_a_simple_R_project_template      |             |        |
-| DESCRIPTION                   | Package                                                      | _dvesimpler |        |
-| man/USprotoR-package.Rd       | %_Please_edit_documentation_in_R/dvesimpler.r                |             |        |
-| man/USprotoR-package.Rd       | \name{dvesimpler-package}                                    |             |        |
-| man/USprotoR-package.Rd       | \alias{dvesimpler}                                           |             |        |
-| man/USprotoR-package.Rd       | \alias{dvesimpler-package}                                   |             |        |
-| man/USprotoR-package.Rd       | \title{dvesimpler                                            | _TODO       | title} |
-| man/USprotoR-package.Rd       | dvesimpler                                                   |             |        |
-| etc/custom/custom-source.conf | CUST_S_PACKAGE_NAME='dvesimpler'                             |             |        |
-| R/USprotoR.r                  | dvesimpler                                                   |             |        |
-| exec/example_data_loader.R    | require(dvesimpler)                                          |             |        |
-| exec/dummy_runner.R           | require(dvesimpler)                                          |             |        |
-| README.md                     | The_`dvesimpler`_package_is_a_simple_R_project_template      |             |        |
-| README.md                     | #>_ℹ_Loading_dvesimpler                                      |             |        |
-| README.md                     | #>_[1]_logging_0.10-108_dvesimpler_1.0.0.9000_testthat_3.1.4 |             |        |
-| tests/testthat.R              | dvesimpler                                                   |             |        |
-
 #+NAME: cust-package
-#+BEGIN_SRC bash
+#+BEGIN_SRC bash :results output drawer replace
   [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+  [ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
 
   grep -l -r --exclude-dir=.git --exclude-dir=etc/custom --exclude-dir=notes -I -e "$CUST_S_PACKAGE_NAME" | \
     xargs -t -l1 perl -pi -e  "s{$CUST_S_PACKAGE_NAME}{$CUST_T_PACKAGE_NAME}g"
 
 
 #+END_SRC
-
-#+RESULTS: cust-package
 
 
 #+NAME: cust-package-post
@@ -230,28 +212,6 @@ nothing to commit, working tree clean
     grep -r --exclude-dir=.git --exclude-dir=etc/custom --exclude-dir=notes -I -e "$CUST_T_PACKAGE_NAME" | \
         tr -s ' ' '_' | sed -e 's/:/\t/'
 #+END_SRC
-
-#+RESULTS: cust-package-post
-| notes/custom/README.org       | _CUST_S_PACKAGE_NAME='USprotoR'                            |           |        |
-| notes/custom/README.org       | _CUST_T_PACKAGE_NAME='USprotoR'                            |           |        |
-| README.Rmd                    | library(USprotoR)                                          |           |        |
-| README.Rmd                    | The_`USprotoR`_package_is_a_simple_R_project_template      |           |        |
-| DESCRIPTION                   | Package                                                    | _USprotoR |        |
-| man/USprotoR-package.Rd       | %_Please_edit_documentation_in_R/USprotoR.r                |           |        |
-| man/USprotoR-package.Rd       | \name{USprotoR-package}                                    |           |        |
-| man/USprotoR-package.Rd       | \alias{USprotoR}                                           |           |        |
-| man/USprotoR-package.Rd       | \alias{USprotoR-package}                                   |           |        |
-| man/USprotoR-package.Rd       | \title{USprotoR                                            | _TODO     | title} |
-| man/USprotoR-package.Rd       | USprotoR                                                   |           |        |
-| etc/custom/custom-source.conf | CUST_S_PACKAGE_NAME='USprotoR'                             |           |        |
-| etc/custom/custom-target.conf | CUST_T_PACKAGE_NAME='USprotoR'                             |           |        |
-| R/USprotoR.r                  | USprotoR                                                   |           |        |
-| exec/example_data_loader.R    | require(USprotoR)                                          |           |        |
-| exec/dummy_runner.R           | require(USprotoR)                                          |           |        |
-| README.md                     | The_`USprotoR`_package_is_a_simple_R_project_template      |           |        |
-| README.md                     | #>_ℹ_Loading_USprotoR                                      |           |        |
-| README.md                     | #>_[1]_logging_0.10-108_USprotoR_1.0.0.9000_testthat_3.1.4 |           |        |
-| tests/testthat.R              | USprotoR                                                   |           |        |
 
 *** Repo Address
 
@@ -262,30 +222,10 @@ nothing to commit, working tree clean
         tr -s ' ' '_' | sed -e 's/:/\t/'
 #+END_SRC
 
-#+RESULTS: cust-repo-pre
-| README.Rmd                                     | ub-dems-public/ds-labs/dve-sample-r                                                       |
-| DESCRIPTION                                    | _https://gitlab.com/ub-dems-public/ds-labs/dve-sample-r                                   |
-| DESCRIPTION                                    | BugReports:_https://gitlab.com/ub-dems-public/ds-labs/dve-sample-r/-/issues               |
-| man/USprotoR-package.Rd                        | _\item_\url{https://gitlab.com/ub-dems-public/ds-labs/dve-sample-r}                         |
-| man/USprotoR-package.Rd                        | _\item_Report_bugs_at_\url{https://gitlab.com/ub-dems-public/ds-labs/dve-sample-r/-/issues} |
-| etc/custom/custom-source.conf                  | CUST_S_REPO_PATH='ub-dems-public/ds-labs'                                                 |
-| docker/r-images/dockerfiles/anchor.Dockerfile  | https://gitlab.com/ub-dems-public/ds-labs/dve-sample-r                                    |
-| docker/r-images/dockerfiles/anchor.Dockerfile  | ub-dems-public/ds-labs                                                                    |
-| docker/r-images/dockerfiles/anchor.Dockerfile  | ub-dems-public/ds-labs/dve-sample-r                                                       |
-| docker/r-images/dockerfiles/runtime.Dockerfile | https://gitlab.com/ub-dems-public/ds-labs/dve-sample-r                                    |
-| docker/r-images/dockerfiles/runtime.Dockerfile | ub-dems-public/ds-labs                                                                    |
-| docker/r-images/dockerfiles/runtime.Dockerfile | ub-dems-public/ds-labs/dve-sample-r                                                       |
-| docker/r-images/dockerfiles/base.Dockerfile    | https://gitlab.com/ub-dems-public/ds-labs/dve-sample-r                                    |
-| docker/r-images/dockerfiles/base.Dockerfile    | ub-dems-public/ds-labs                                                                    |
-| docker/r-images/dockerfiles/base.Dockerfile    | ub-dems-public/ds-labs/dve-sample-r                                                       |
-| docker/r-images/dockerfiles/worker.Dockerfile  | https://gitlab.com/ub-dems-public/ds-labs/dve-sample-r                                    |
-| docker/r-images/dockerfiles/worker.Dockerfile  | ub-dems-public/ds-labs                                                                    |
-| docker/r-images/dockerfiles/worker.Dockerfile  | ub-dems-public/ds-labs/dve-sample-r                                                       |
-| README.md                                      | ub-dems-public/ds-labs/dve-sample-r                                                       |
-
 #+NAME: cust-repo
-#+BEGIN_SRC bash
+#+BEGIN_SRC bash :results output drawer replace
   [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+  [ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
 
   grep -l -r --exclude-dir=.git --exclude-dir=etc/custom --exclude-dir=notes -I -e "CUST_S_REPO_HOST$CUST_S_REPO_PATH" | \
     xargs -t -l1 perl -pi -e  "s{$CUST_S_REPO_HOST$CUST_S_REPO_PATH}{CUST_T_REPO_HOST$CUST_T_REPO_PATH}g"
@@ -296,8 +236,6 @@ nothing to commit, working tree clean
 
 #+END_SRC
 
-#+RESULTS: cust-repo
-
 
 #+NAME: cust-repo-post
 #+BEGIN_SRC bash
@@ -305,28 +243,6 @@ nothing to commit, working tree clean
     grep -r --exclude-dir=.git --exclude-dir=etc/custom --exclude-dir=notes -I -e "$CUST_T_REPO_PATH" | \
         tr -s ' ' '_' | sed -e 's/:/\t/'
 #+END_SRC
-
-#+RESULTS: cust-repo-post
-| README.Rmd                                     | ub-dems/cs-labs/user-dsuser/dve-sample-r                                                       |
-| DESCRIPTION                                    | _https://gitlab.com/ub-dems/cs-labs/user-dsuser/dve-sample-r                                   |
-| DESCRIPTION                                    | BugReports:_https://gitlab.com/ub-dems/cs-labs/user-dsuser/dve-sample-r/-/issues               |
-| man/USprotoR-package.Rd                        | _\item_\url{https://gitlab.com/ub-dems/cs-labs/user-dsuser/dve-sample-r}                         |
-| man/USprotoR-package.Rd                        | _\item_Report_bugs_at_\url{https://gitlab.com/ub-dems/cs-labs/user-dsuser/dve-sample-r/-/issues} |
-| etc/custom/custom-source.conf                  | CUST_S_REPO_PATH='ub-dems/cs-labs/user-dsuser'                                                 |
-| etc/custom/custom-target.conf                  | CUST_T_REPO_PATH='ub-dems/cs-labs/user-dsuser'                                                 |
-| docker/r-images/dockerfiles/anchor.Dockerfile  | https://gitlab.com/ub-dems/cs-labs/user-dsuser/dve-sample-r                                    |
-| docker/r-images/dockerfiles/anchor.Dockerfile  | ub-dems/cs-labs/user-dsuser                                                                    |
-| docker/r-images/dockerfiles/anchor.Dockerfile  | ub-dems/cs-labs/user-dsuser/dve-sample-r                                                       |
-| docker/r-images/dockerfiles/runtime.Dockerfile | https://gitlab.com/ub-dems/cs-labs/user-dsuser/dve-sample-r                                    |
-| docker/r-images/dockerfiles/runtime.Dockerfile | ub-dems/cs-labs/user-dsuser                                                                    |
-| docker/r-images/dockerfiles/runtime.Dockerfile | ub-dems/cs-labs/user-dsuser/dve-sample-r                                                       |
-| docker/r-images/dockerfiles/base.Dockerfile    | https://gitlab.com/ub-dems/cs-labs/user-dsuser/dve-sample-r                                    |
-| docker/r-images/dockerfiles/base.Dockerfile    | ub-dems/cs-labs/user-dsuser                                                                    |
-| docker/r-images/dockerfiles/base.Dockerfile    | ub-dems/cs-labs/user-dsuser/dve-sample-r                                                       |
-| docker/r-images/dockerfiles/worker.Dockerfile  | https://gitlab.com/ub-dems/cs-labs/user-dsuser/dve-sample-r                                    |
-| docker/r-images/dockerfiles/worker.Dockerfile  | ub-dems/cs-labs/user-dsuser                                                                    |
-| docker/r-images/dockerfiles/worker.Dockerfile  | ub-dems/cs-labs/user-dsuser/dve-sample-r                                                       |
-| README.md                                      | ub-dems/cs-labs/user-dsuser/dve-sample-r                                                       |
 
 *** Project Name
 
@@ -337,48 +253,16 @@ nothing to commit, working tree clean
         tr -s ' ' '_' | sed -e 's/:/\t/'
 #+END_SRC
 
-#+RESULTS: cust-project-pre
-| README.Rmd                                     | ub-dems/cs-labs/user-dsuser/dve-sample-r                                                       |
-| DESCRIPTION                                    | _https://gitlab.com/ub-dems/cs-labs/user-dsuser/dve-sample-r                                   |
-| DESCRIPTION                                    | BugReports:_https://gitlab.com/ub-dems/cs-labs/user-dsuser/dve-sample-r/-/issues               |
-| man/USprotoR-package.Rd                        | _\item_\url{https://gitlab.com/ub-dems/cs-labs/user-dsuser/dve-sample-r}                         |
-| man/USprotoR-package.Rd                        | _\item_Report_bugs_at_\url{https://gitlab.com/ub-dems/cs-labs/user-dsuser/dve-sample-r/-/issues} |
-| etc/custom/custom-source.conf                  | CUST_S_PROJECT_NAME='dve-sample-r'                                                             |
-| docker/r-images/dockerfiles/anchor.Dockerfile  | ubdems/dve-sample-r.anchor                                                                     |
-| docker/r-images/dockerfiles/anchor.Dockerfile  | https://gitlab.com/ub-dems/cs-labs/user-dsuser/dve-sample-r                                    |
-| docker/r-images/dockerfiles/anchor.Dockerfile  | dve-sample-r                                                                                   |
-| docker/r-images/dockerfiles/anchor.Dockerfile  | ub-dems/cs-labs/user-dsuser/dve-sample-r                                                       |
-| docker/r-images/dockerfiles/runtime.Dockerfile | FROM_ubdems/dve-sample-r.base                                                                  |
-| docker/r-images/dockerfiles/runtime.Dockerfile | ubdems/dve-sample-r.base                                                                       |
-| docker/r-images/dockerfiles/runtime.Dockerfile | ubdems/dve-sample-r.runtime                                                                    |
-| docker/r-images/dockerfiles/runtime.Dockerfile | https://gitlab.com/ub-dems/cs-labs/user-dsuser/dve-sample-r                                    |
-| docker/r-images/dockerfiles/runtime.Dockerfile | dve-sample-r                                                                                   |
-| docker/r-images/dockerfiles/runtime.Dockerfile | ub-dems/cs-labs/user-dsuser/dve-sample-r                                                       |
-| docker/r-images/dockerfiles/base.Dockerfile    | FROM_ubdems/dve-sample-r.anchor                                                                |
-| docker/r-images/dockerfiles/base.Dockerfile    | ubdems/dve-sample-r.anchor                                                                     |
-| docker/r-images/dockerfiles/base.Dockerfile    | ubdems/dve-sample-r.base                                                                       |
-| docker/r-images/dockerfiles/base.Dockerfile    | https://gitlab.com/ub-dems/cs-labs/user-dsuser/dve-sample-r                                    |
-| docker/r-images/dockerfiles/base.Dockerfile    | dve-sample-r                                                                                   |
-| docker/r-images/dockerfiles/base.Dockerfile    | ub-dems/cs-labs/user-dsuser/dve-sample-r                                                       |
-| docker/r-images/dockerfiles/worker.Dockerfile  | FROM_ubdems/dve-sample-r.runtime                                                               |
-| docker/r-images/dockerfiles/worker.Dockerfile  | ubdems/dve-sample-r.runtime                                                                    |
-| docker/r-images/dockerfiles/worker.Dockerfile  | ubdems/dve-sample-r.worker                                                                     |
-| docker/r-images/dockerfiles/worker.Dockerfile  | https://gitlab.com/ub-dems/cs-labs/user-dsuser/dve-sample-r                                    |
-| docker/r-images/dockerfiles/worker.Dockerfile  | dve-sample-r                                                                                   |
-| docker/r-images/dockerfiles/worker.Dockerfile  | ub-dems/cs-labs/user-dsuser/dve-sample-r                                                       |
-| README.md                                      | ub-dems/cs-labs/user-dsuser/dve-sample-r                                                       |
-
 #+NAME: cust-project
-#+BEGIN_SRC bash
+#+BEGIN_SRC bash :results output drawer replace
   [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+  [ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
 
   grep -l -r --exclude-dir=.git --exclude-dir=etc/custom --exclude-dir=notes -I -e "$CUST_S_PROJECT_NAME" | \
     xargs -t -l1 perl -pi -e  "s{$CUST_S_PROJECT_NAME}{$CUST_T_PROJECT_NAME}g"
 
 
 #+END_SRC
-
-#+RESULTS: cust-project
 
 
 #+NAME: cust-project-post
@@ -388,35 +272,63 @@ nothing to commit, working tree clean
         tr -s ' ' '_' | sed -e 's/:/\t/'
 #+END_SRC
 
-#+RESULTS: cust-project-post
-| README.Rmd                                     | ub-dems/cs-labs/user-dsuser/us-proto-r                                                       |
-| DESCRIPTION                                    | _https://gitlab.com/ub-dems/cs-labs/user-dsuser/us-proto-r                                   |
-| DESCRIPTION                                    | BugReports:_https://gitlab.com/ub-dems/cs-labs/user-dsuser/us-proto-r/-/issues               |
-| man/USprotoR-package.Rd                        | _\item_\url{https://gitlab.com/ub-dems/cs-labs/user-dsuser/us-proto-r}                         |
-| man/USprotoR-package.Rd                        | _\item_Report_bugs_at_\url{https://gitlab.com/ub-dems/cs-labs/user-dsuser/us-proto-r/-/issues} |
-| etc/custom/custom-source.conf                  | CUST_S_PROJECT_NAME='us-proto-r'                                                             |
-| etc/custom/custom-target.conf                  | CUST_T_PROJECT_NAME='us-proto-r'                                                             |
-| docker/r-images/dockerfiles/anchor.Dockerfile  | ubdems/us-proto-r.anchor                                                                     |
-| docker/r-images/dockerfiles/anchor.Dockerfile  | https://gitlab.com/ub-dems/cs-labs/user-dsuser/us-proto-r                                    |
-| docker/r-images/dockerfiles/anchor.Dockerfile  | us-proto-r                                                                                   |
-| docker/r-images/dockerfiles/anchor.Dockerfile  | ub-dems/cs-labs/user-dsuser/us-proto-r                                                       |
-| docker/r-images/dockerfiles/runtime.Dockerfile | FROM_ubdems/us-proto-r.base                                                                  |
-| docker/r-images/dockerfiles/runtime.Dockerfile | ubdems/us-proto-r.base                                                                       |
-| docker/r-images/dockerfiles/runtime.Dockerfile | ubdems/us-proto-r.runtime                                                                    |
-| docker/r-images/dockerfiles/runtime.Dockerfile | https://gitlab.com/ub-dems/cs-labs/user-dsuser/us-proto-r                                    |
-| docker/r-images/dockerfiles/runtime.Dockerfile | us-proto-r                                                                                   |
-| docker/r-images/dockerfiles/runtime.Dockerfile | ub-dems/cs-labs/user-dsuser/us-proto-r                                                       |
-| docker/r-images/dockerfiles/base.Dockerfile    | FROM_ubdems/us-proto-r.anchor                                                                |
-| docker/r-images/dockerfiles/base.Dockerfile    | ubdems/us-proto-r.anchor                                                                     |
-| docker/r-images/dockerfiles/base.Dockerfile    | ubdems/us-proto-r.base                                                                       |
-| docker/r-images/dockerfiles/base.Dockerfile    | https://gitlab.com/ub-dems/cs-labs/user-dsuser/us-proto-r                                    |
-| docker/r-images/dockerfiles/base.Dockerfile    | us-proto-r                                                                                   |
-| docker/r-images/dockerfiles/base.Dockerfile    | ub-dems/cs-labs/user-dsuser/us-proto-r                                                       |
-| docker/r-images/dockerfiles/worker.Dockerfile  | FROM_ubdems/us-proto-r.runtime                                                               |
-| docker/r-images/dockerfiles/worker.Dockerfile  | ubdems/us-proto-r.runtime                                                                    |
-| docker/r-images/dockerfiles/worker.Dockerfile  | ubdems/us-proto-r.worker                                                                     |
-| docker/r-images/dockerfiles/worker.Dockerfile  | https://gitlab.com/ub-dems/cs-labs/user-dsuser/us-proto-r                                    |
-| docker/r-images/dockerfiles/worker.Dockerfile  | us-proto-r                                                                                   |
-| docker/r-images/dockerfiles/worker.Dockerfile  | ub-dems/cs-labs/user-dsuser/us-proto-r                                                       |
-| README.md                                      | ub-dems/cs-labs/user-dsuser/us-proto-r                                                       |
+*** Confirm Customization
+
+#+NAME: cust-confirm-pre
+#+BEGIN_SRC bash
+    [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+    env | grep ^CUST_ | tr '=' '\t' | sort
+#+END_SRC
+
+#+NAME: cust-confirm
+#+BEGIN_SRC bash  :results output drawer replace
+  [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+  [ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
+
+  ls -l ./etc/custom/*.conf
+
+  T="$(date -Isec)"
+  mkdir -p ./etc/custom/done/$T
+  cp -pv   ./etc/custom/*.conf ./etc/custom/done/$T
+
+  find ./etc/custom | sort
+
+  cp -pv   . ./etc/custom/custom-target.conf ./etc/custom/custom-source.conf
+
+  perl -pi -e  "s/CUST_X_CUSTOMIZED\s*=\s*0/CUST_X_CUSTOMIZED=1/" ./etc/custom/custom.conf
+
+  ls -l ./etc/custom/*.conf
+
+#+END_SRC
+
+
+#+NAME: cust-confirm-post
+#+BEGIN_SRC bash
+    [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+    env | grep ^CUST_ | tr '=' '\t' | sort
+#+END_SRC
+
+** Export Trailing
+*** Script Tail
+#+NAME: script-tail
+#+BEGIN_SRC bash :eval no
+
+  echo "<<< project customization, done."
+
+
+  cat <<-EOF
+
+   to check customized project, run:
+
+   ./build.sh setup
+
+   ./runtime.sh build all
+
+   project developer's guide is available at:
+
+      ,* https://gitlab.com/ub-dems-public/ds-labs/dve-sample-r/-/blob/main/notes/usage/README.md
+
+    EOF
+
+#+END_SRC
 
