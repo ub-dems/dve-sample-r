@@ -28,10 +28,11 @@ if [ ! -d ./etc/custom ]; then
 fi
 
 mkdir -p ./logs/custom
-
+LOGFILE=./logs/custom/custom-$(date -Isec).log
 exec 3>&1 4>&2
 trap 'exec 2>&4 1>&3' 0 1 2 3
-exec 1>>./logs/custom/custom-$(date -Isec).log 2>&1
+exec 1>$LOGFILE 2>&1
+
 
 echo ">>> project customization, ..."
 
@@ -176,3 +177,4 @@ echo '
     * https://gitlab.com/ub-dems-public/ds-labs/dve-sample-r/-/blob/main/notes/usage/README.md
 
  '
+ echo "see:  $LOGFILE "
