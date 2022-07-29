@@ -7,7 +7,7 @@
 # run from project root:
 #
 if [ ! -d ./etc/custom ]; then
-  cat <<-EOF
+  echo '
 
     custom.sh: initial project template customization
 
@@ -23,7 +23,7 @@ if [ ! -d ./etc/custom ]; then
 
       nano ./etc/custom/custom-target.conf
 
-  EOF
+  '
   exit 1
 fi
 
@@ -163,8 +163,7 @@ env | grep ^CUST_ | tr '=' '\t' | sort
 
 echo "<<< project customization, done."
 
-
-cat <<-EOF
+echo '
 
  to check customized project, run:
 
@@ -172,8 +171,8 @@ cat <<-EOF
 
  ./runtime.sh build all
 
- project developer's guide is available at:
+ project developer s guide is available at:
 
     * https://gitlab.com/ub-dems-public/ds-labs/dve-sample-r/-/blob/main/notes/usage/README.md
 
-  EOF
+ '
