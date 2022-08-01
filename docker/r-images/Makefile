@@ -363,6 +363,7 @@ run/r-repl:
 		-v /store/local:/store/local:Z  \
 		-v /store/share:/store/share  \
 		-v /user:/user  \
+		-v /vol:/vol  \
 		-w ${RUN_USER_HOME}/${WORK_DIR}  \
 		-e PASSWORD=$$_passw_ \
 		-e USER=${RUN_USER_NAME} \
@@ -385,6 +386,7 @@ run/rscript-cli:
 		-v /store/local:/store/local:Z  \
 		-v /store/share:/store/share  \
 		-v /user:/user  \
+		-v /vol:/vol  \
 		-w ${RUN_USER_HOME}/${WORK_DIR}  \
 		-e PASSWORD=$$_passw_ \
 		-e USER=${RUN_USER_NAME} \
@@ -405,6 +407,7 @@ run/shell:
 		-v /store/local:/store/local:Z  \
 		-v /store/share:/store/share  \
 		-v /user:/user  \
+		-v /vol:/vol  \
 		-w ${RUN_USER_HOME}/${WORK_DIR}  \
 		-e PASSWORD=$$_passw_ \
 		-e USER=${RUN_USER_NAME} \
@@ -426,6 +429,7 @@ run/build:
 		-v /store/local:/store/local:Z  \
 		-v /store/share:/store/share  \
 		-v /user:/user  \
+		-v /vol:/vol  \
 		-w ${RUN_USER_HOME}/${WORK_DIR}  \
 		-e PASSWORD=$$_passw_ \
 		-e USER=${RUN_USER_NAME} \
@@ -447,6 +451,7 @@ run/command:
 		-v /store/local:/store/local:Z  \
 		-v /store/share:/store/share  \
 		-v /user:/user  \
+		-v /vol:/vol  \
 		-w ${RUN_USER_HOME}/${WORK_DIR}  \
 		-e PASSWORD=$$_passw_ \
 		-e USER=${RUN_USER_NAME} \
@@ -488,6 +493,7 @@ run/rstudio-server:
 		-v /store/local:/store/local:Z  \
 		-v /store/share:/store/share  \
 		-v /user:/user  \
+		-v /vol:/vol  \
 		-e PASSWORD=$$_passw_ \
 		-e USER=${RUN_USER_NAME} \
 		-e USERID=${RUN_USER_UID} \
