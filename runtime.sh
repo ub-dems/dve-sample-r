@@ -21,8 +21,8 @@ E_MAKE_FILE="${E_ROOT_DIR}/Makefile"
 # ---(usage)------------------------------------------------
 
 exit_usage() {
-
-cat <<EOF | $PAGER   
+export LESS="-e -Ps'man runtime.sh  (press h for help or q to quit)'"
+cat <<EOF | $PAGER
 
 usage $0 [target] [args, ...]
 
