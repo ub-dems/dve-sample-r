@@ -105,6 +105,15 @@ if [ ! "${CUST_X_CUSTOMIZED}" = '0' ] ; then
   exit 1
 fi
 
+[ -z "$CUST_S_PACKAGE_NAME" ] && { echo "config error: CUST_S_PACKAGE_NAME"; exit 1 }
+[ -z "$CUST_S_PROJECT_NAME" ] && { echo "config error: CUST_S_PROJECT_NAME"; exit 1 }
+[ -z "$CUST_S_REPO_HOST" ]    && { echo "config error: CUST_S_REPO_HOST"; exit 1 }
+[ -z "$CUST_S_REPO_PATH" ]    && { echo "config error: CUST_S_REPO_PATH"; exit 1 }
+[ -z "$CUST_T_PACKAGE_NAME" ] && { echo "config error: CUST_T_PACKAGE_NAME"; exit 1 }
+[ -z "$CUST_T_PROJECT_NAME" ] && { echo "config error: CUST_T_PROJECT_NAME"; exit 1 }
+[ -z "$CUST_T_REPO_HOST" ]    && { echo "config error: CUST_T_REPO_HOST"; exit 1 }
+[ -z "$CUST_T_REPO_PATH" ]    && { echo "config error: CUST_T_REPO_PATH"; exit 1 }
+
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 find . -name "$CUST_S_PACKAGE_NAME*" -o -name "$CUST_S_PROJECT_NAME*"
 
