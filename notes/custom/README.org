@@ -17,7 +17,7 @@
 
 |   |          |   |   |
 |---+----------+---+---|
-|   | [[file:~/work/vs/dve-sample-r/notes/README.md][UP:(dir)]] |   |   |
+|   | [[../README.md][UP:(dir)]] |   |   |
 
 #+TOC: headlines 4
 
