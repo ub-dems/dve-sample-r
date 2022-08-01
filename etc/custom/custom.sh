@@ -197,7 +197,7 @@ cp -pv   ./etc/custom/*.conf ./etc/custom/done/$T
 
 find ./etc/custom | sort
 
-cp -pv   . ./etc/custom/custom-target.conf ./etc/custom/custom-source.conf
+cp -pv ./etc/custom/custom-target.conf ./etc/custom/custom-source.conf
 
 perl -pi -e  "s/CUST_X_CUSTOMIZED\s*=\s*0/CUST_X_CUSTOMIZED=1/" ./etc/custom/custom.conf
 
