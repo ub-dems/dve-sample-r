@@ -204,7 +204,7 @@
 #+NAME: cust-package-pre
 #+BEGIN_SRC bash
     [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
-    grep -r --exclude-dir=.git --exclude-dir=etc/custom --exclude-dir=notes -I -e "$CUST_S_PACKAGE_NAME" | \
+    grep -r --exclude-dir=.git --exclude-dir=etc/custom --exclude-dir=notes --exclude-dir=logs -I -e "$CUST_S_PACKAGE_NAME" | \
         tr -s ' ' '_' | sed -e 's/:/\t/'
 #+END_SRC
 
@@ -213,7 +213,7 @@
   [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
   [ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
 
-  grep -l -r --exclude-dir=.git --exclude-dir=etc/custom --exclude-dir=notes -I -e "$CUST_S_PACKAGE_NAME" | \
+  grep -l -r --exclude-dir=.git --exclude-dir=etc/custom --exclude-dir=notes --exclude-dir=logs -I -e "$CUST_S_PACKAGE_NAME" | \
     xargs -t -l1 perl -pi -e  "s{$CUST_S_PACKAGE_NAME}{$CUST_T_PACKAGE_NAME}g"
 
 
@@ -223,7 +223,7 @@
 #+NAME: cust-package-post
 #+BEGIN_SRC bash
     [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
-    grep -r --exclude-dir=.git --exclude-dir=etc/custom --exclude-dir=notes -I -e "$CUST_T_PACKAGE_NAME" | \
+    grep -r --exclude-dir=.git --exclude-dir=etc/custom --exclude-dir=notes --exclude-dir=logs -I -e "$CUST_T_PACKAGE_NAME" | \
         tr -s ' ' '_' | sed -e 's/:/\t/'
 #+END_SRC
 
@@ -232,7 +232,7 @@
 #+NAME: cust-repo-pre
 #+BEGIN_SRC bash
     [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
-    grep -r --exclude-dir=.git --exclude-dir=etc/custom --exclude-dir=notes -I -e "$CUST_S_REPO_PATH" | \
+    grep -r --exclude-dir=.git --exclude-dir=etc/custom --exclude-dir=notes --exclude-dir=logs -I -e "$CUST_S_REPO_PATH" | \
         tr -s ' ' '_' | sed -e 's/:/\t/'
 #+END_SRC
 
@@ -241,10 +241,10 @@
   [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
   [ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
 
-  grep -l -r --exclude-dir=.git --exclude-dir=etc/custom --exclude-dir=notes -I -e "CUST_S_REPO_HOST$CUST_S_REPO_PATH" | \
+  grep -l -r --exclude-dir=.git --exclude-dir=etc/custom --exclude-dir=notes --exclude-dir=logs -I -e "CUST_S_REPO_HOST$CUST_S_REPO_PATH" | \
     xargs -t -l1 perl -pi -e  "s{$CUST_S_REPO_HOST$CUST_S_REPO_PATH}{CUST_T_REPO_HOST$CUST_T_REPO_PATH}g"
 
-  grep -l -r --exclude-dir=.git --exclude-dir=etc/custom --exclude-dir=notes -I -e "$CUST_S_REPO_PATH" | \
+  grep -l -r --exclude-dir=.git --exclude-dir=etc/custom --exclude-dir=notes --exclude-dir=logs -I -e "$CUST_S_REPO_PATH" | \
     xargs -t -l1 perl -pi -e  "s{$CUST_S_REPO_PATH}{$CUST_T_REPO_PATH}g"
 
 
@@ -254,7 +254,7 @@
 #+NAME: cust-repo-post
 #+BEGIN_SRC bash
     [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
-    grep -r --exclude-dir=.git --exclude-dir=etc/custom --exclude-dir=notes -I -e "$CUST_T_REPO_PATH" | \
+    grep -r --exclude-dir=.git --exclude-dir=etc/custom --exclude-dir=notes --exclude-dir=logs -I -e "$CUST_T_REPO_PATH" | \
         tr -s ' ' '_' | sed -e 's/:/\t/'
 #+END_SRC
 
@@ -263,7 +263,7 @@
 #+NAME: cust-project-pre
 #+BEGIN_SRC bash
     [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
-    grep -r --exclude-dir=.git --exclude-dir=etc/custom --exclude-dir=notes -I -e "$CUST_S_PROJECT_NAME" | \
+    grep -r --exclude-dir=.git --exclude-dir=etc/custom --exclude-dir=notes --exclude-dir=logs -I -e "$CUST_S_PROJECT_NAME" | \
         tr -s ' ' '_' | sed -e 's/:/\t/'
 #+END_SRC
 
@@ -272,7 +272,7 @@
   [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
   [ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
 
-  grep -l -r --exclude-dir=.git --exclude-dir=etc/custom --exclude-dir=notes -I -e "$CUST_S_PROJECT_NAME" | \
+  grep -l -r --exclude-dir=.git --exclude-dir=etc/custom --exclude-dir=notes --exclude-dir=logs -I -e "$CUST_S_PROJECT_NAME" | \
     xargs -t -l1 perl -pi -e  "s{$CUST_S_PROJECT_NAME}{$CUST_T_PROJECT_NAME}g"
 
 
@@ -282,7 +282,7 @@
 #+NAME: cust-project-post
 #+BEGIN_SRC bash
     [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
-    grep -r --exclude-dir=.git --exclude-dir=etc/custom --exclude-dir=notes -I -e "$CUST_T_PROJECT_NAME" | \
+    grep -r --exclude-dir=.git --exclude-dir=etc/custom --exclude-dir=notes --exclude-dir=logs -I -e "$CUST_T_PROJECT_NAME" | \
         tr -s ' ' '_' | sed -e 's/:/\t/'
 #+END_SRC
 
