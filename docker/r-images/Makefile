@@ -360,6 +360,8 @@ run/r-repl:
 		-v ~/work:${RUN_USER_HOME}/work:Z  \
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
 		-v ~/data:${HOME}/data:Z  \
+		-v /store:/store:Z  \
+		-v /user:/user:Z  \
 		-w ${RUN_USER_HOME}/${WORK_DIR}  \
 		-e PASSWORD=$$_passw_ \
 		-e USER=${RUN_USER_NAME} \
@@ -379,6 +381,8 @@ run/rscript-cli:
 		-v ~/work:${RUN_USER_HOME}/work:Z  \
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
 		-v ~/data:${HOME}/data:Z  \
+		-v /store:/store:Z  \
+		-v /user:/user:Z  \
 		-w ${RUN_USER_HOME}/${WORK_DIR}  \
 		-e PASSWORD=$$_passw_ \
 		-e USER=${RUN_USER_NAME} \
@@ -396,6 +400,8 @@ run/shell:
 		-v ~/work:${RUN_USER_HOME}/work:Z  \
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
 		-v ~/data:${HOME}/data:Z  \
+		-v /store:/store:Z  \
+		-v /user:/user:Z  \
 		-w ${RUN_USER_HOME}/${WORK_DIR}  \
 		-e PASSWORD=$$_passw_ \
 		-e USER=${RUN_USER_NAME} \
@@ -414,6 +420,8 @@ run/build:
 		-v ~/work:${RUN_USER_HOME}/work:Z  \
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
 		-v ~/data:${HOME}/data:Z  \
+		-v /store:/store:Z  \
+		-v /user:/user:Z  \
 		-w ${RUN_USER_HOME}/${WORK_DIR}  \
 		-e PASSWORD=$$_passw_ \
 		-e USER=${RUN_USER_NAME} \
@@ -432,6 +440,8 @@ run/command:
 		-v ~/work:${RUN_USER_HOME}/work:Z  \
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
 		-v ~/data:${HOME}/data:Z  \
+		-v /store:/store:Z  \
+		-v /user:/user:Z  \
 		-w ${RUN_USER_HOME}/${WORK_DIR}  \
 		-e PASSWORD=$$_passw_ \
 		-e USER=${RUN_USER_NAME} \
@@ -470,6 +480,8 @@ run/rstudio-server:
 		-v ~/work:${RUN_USER_HOME}/work:Z  \
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
 		-v ~/data:${HOME}/data:Z  \
+		-v /store:/store:Z  \
+		-v /user:/user:Z  \
 		-e PASSWORD=$$_passw_ \
 		-e USER=${RUN_USER_NAME} \
 		-e USERID=${RUN_USER_UID} \
