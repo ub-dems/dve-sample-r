@@ -21,7 +21,7 @@ E_MAKE_FILE="${E_ROOT_DIR}/Makefile"
 # ---(usage)------------------------------------------------
 
 exit_usage() {
-export LESS="-e -Psman runtime.sh  (press h for help or q to quit)"
+export LESS="-Psman runtime.sh  (press h for help or q to quit)"
 cat <<EOF | $PAGER
 
 usage $0 [target] [args, ...]
