@@ -14,8 +14,64 @@
 :header-args:R:          :session *R*
 :header-args:bash:       :session *ssh-1* 
 :END:
+
+|   |          |   |   |
+|---+----------+---+---|
+|   | [[file:~/work/vs/dve-sample-r/notes/README.md][UP:(dir)]] |   |   |
+
 #+TOC: headlines 4
 
+
+
+* CUSTOMIZATION QUICK START
+** PROJECT CUSTOMIZATION
+*** First Time Customization
+
+   1. update project names in: [[file:~/work/vs/dve-sample-r/etc/custom/custom-target.conf::project target consts][etc/custom/custom-target.conf]]
+     
+#+NAME: sample-custom-target.conf
+#+BEGIN_EXAMPLE
+  # project source consts
+  CUST_S_PROJECT_NAME='dve-sample-r'
+  CUST_S_PACKAGE_NAME='dvesimpler'
+  CUST_S_REPO_PATH='ub-dems-public/ds-labs'
+  CUST_S_REPO_HOST='https://gitlab.com/'
+#+END_EXAMPLE
+
+  2. run customization script:
+  
+#+NAME: sample-custom-exec
+#+BEGIN_EXAMPLE
+  ./build.sh custom
+#+END_EXAMPLE
+     
+*** Updated Customization
+
+   1. update project names in: [[file:~/work/vs/dve-sample-r/etc/custom/custom-target.conf::project target consts][etc/custom/custom-target.conf]]
+     
+#+NAME: sample-2-custom-target.conf
+#+BEGIN_EXAMPLE
+  # project source consts
+  CUST_S_PROJECT_NAME='dve-sample-r'
+  CUST_S_PACKAGE_NAME='dvesimpler'
+  CUST_S_REPO_PATH='ub-dems-public/ds-labs'
+  CUST_S_REPO_HOST='https://gitlab.com/'
+#+END_EXAMPLE
+
+   2. re-emable custoization in: [[file:~/work/vs/dve-sample-r/etc/custom/custom.conf::project customization config][etc/custom/cunstom.conf]]
+     
+#+NAME: sample-2-custom.conf
+#+BEGIN_EXAMPLE
+  CUST_X_CUSTOMIZED=0
+#+END_EXAMPLE
+
+  3. run customization script:
+  
+#+NAME: sample-2-custom-exec
+#+BEGIN_EXAMPLE
+  ./build.sh custom
+#+END_EXAMPLE
+     
 * REFERENCE
 ** Developer's Guides
 *** Internal Documentation
