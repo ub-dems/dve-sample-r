@@ -172,6 +172,36 @@
 | CUST_T_REPO_PATH    | ub-dems/cs-labs/user-dsuser |
 | CUST_X_CUSTOMIZED   | 0                           |
 
+#+NAME: conf-check
+#+BEGIN_SRC bash
+  [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+  if [ ! "${CUST_X_CUSTOMIZED}" = '0' ] ; then
+    echo '
+
+      WARNING: project already customized, exiting ...
+
+      To re-enable customization, set
+
+      CUST_X_CUSTOMIZED=0
+
+      in ./etc/custom/custom.conf,
+
+      update new target customization
+
+      in ./etc/custom/custom-target.conf,
+
+      and re-execute customization with:
+
+      ./build.sh custom
+
+    '
+    exit 1
+  fi  
+
+#+END_SRC
+
+
+
 ** Project Customization
 *** File Rename
 

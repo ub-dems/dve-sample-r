@@ -82,6 +82,30 @@ EOF
 env | grep ^CUST_ | tr '=' '\t' | sort
 
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+if [ ! "${CUST_X_CUSTOMIZED}" = '0' ] ; then
+  echo '
+
+    WARNING: project already customized, exiting ...
+
+    To re-enable customization, set
+
+    CUST_X_CUSTOMIZED=0
+
+    in ./etc/custom/custom.conf,
+
+    update new target customization
+
+    in ./etc/custom/custom-target.conf,
+
+    and re-execute customization with:
+
+    ./build.sh custom
+
+  '
+  exit 1
+fi
+
+[ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 find . -name "$CUST_S_PACKAGE_NAME*" -o -name "$CUST_S_PROJECT_NAME*"
 
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
