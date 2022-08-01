@@ -39,7 +39,7 @@ echo ">>> project customization, ..."
 whoami
 
 hostnamectl | \
-    perl -pi -e 's/([^ :])\s+(\S)/\1_\2/g' | sed -e 's/:/\t/'
+    perl -p -e 's/([^ :])\s+(\S)/\1_\2/g' | sed -e 's/:/\t/'
 
 ip -br -4 a | grep -v lo
 
@@ -87,9 +87,9 @@ find . -name "$CUST_S_PACKAGE_NAME*" -o -name "$CUST_S_PROJECT_NAME*"
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 [ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
 
-mv ./${CUST_S_PACKAGE_NAME}.Rproj ./${CUST_T_PACKAGE_NAME}.Rproj
-mv ./man/${CUST_S_PACKAGE_NAME}-package.Rd ./man/${CUST_T_PACKAGE_NAME}-package.Rd
-mv ./R/${CUST_S_PACKAGE_NAME}.r ./R/${CUST_T_PACKAGE_NAME}.r
+mv -v ./${CUST_S_PACKAGE_NAME}.Rproj ./${CUST_T_PACKAGE_NAME}.Rproj
+mv -v ./man/${CUST_S_PACKAGE_NAME}-package.Rd ./man/${CUST_T_PACKAGE_NAME}-package.Rd
+mv -v ./R/${CUST_S_PACKAGE_NAME}.r ./R/${CUST_T_PACKAGE_NAME}.r
 
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 find . -name "$CUST_T_PACKAGE_NAME*" -o -name "$CUST_T_PROJECT_NAME*"
