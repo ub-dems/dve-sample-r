@@ -29,10 +29,10 @@ fi
 
 mkdir -p ./logs/custom
 LOGFILE=./logs/custom/custom-$(date -Isec).log
-exec 3>&1 4>&2
-trap 'exec 2>&4 1>&3' 0 1 2 3
-exec 1>$LOGFILE 2>&1
-
+exec &> >(tee $LOGFILE)
+#exec 3>&1 4>&2
+#trap 'exec 2>&4 1>&3' 0 1 2 3
+#exec 1>$LOGFILE 2>&1
 
 echo ">>> project customization, ..."
 
