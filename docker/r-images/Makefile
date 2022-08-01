@@ -219,6 +219,9 @@ runtime-cli: init run/rscript-cli
 runtime-shell: # @HELP ...
 runtime-shell: init run/shell
 
+runtime-build: # @HELP ...
+runtime-build: init run/build
+
 runtime-command: # @HELP ...
 runtime-command: init run/command
 
@@ -398,6 +401,23 @@ run/shell:
 		-e ROOT=true  \
 		-ti  \
 		${IMG_RUNTIME} '/bin/bash' ${RUNTIME_RSCRIPT_OPTS} ${RUNTIME_ARGS}
+
+run/build:
+	@echo "CLI: build ${RUNTIME_ARGS}"
+	$(DOCKER)  run \
+		--rm \
+		${DOCKER_RUNTIME_OPTIONS} \
+		-v ${HOME_DIR}:${RUN_USER_HOME}:Z  \
+		-v ~/work:${RUN_USER_HOME}/work:Z  \
+		-v ~/data:${RUN_USER_HOME}/data:Z  \
+		-w ${RUN_USER_HOME}/${WORK_DIR}  \
+		-e PASSWORD=$$_passw_ \
+		-e USER=${RUN_USER_NAME} \
+		-e USERID=${RUN_USER_UID} \
+		-e GROUPID=${RUN_USER_GID} \
+		-e ROOT=true  \
+		-ti  \
+		${IMG_RUNTIME} './build.sh' ${RUNTIME_RSCRIPT_OPTS} ${RUNTIME_ARGS}
 
 run/command:
         #@echo "CLI: command ${RUNTIME_ARGS}"

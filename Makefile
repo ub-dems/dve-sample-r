@@ -137,7 +137,7 @@ build-help: help/build
 
 # ---(run)------------------------------------------------
 
-.PHONY: runtime-repl runtime-cli runtime-rstudio runtime-help
+.PHONY: runtime-repl runtime-cli runtime-shell runtime-build runtime-command runtime-term runtime-rstudio runtime-help
 
 runtime-repl: # @HELP/runtime ...
 runtime-repl:
@@ -149,6 +149,10 @@ runtime-cli:
 
 runtime-shell: # @HELP/runtime ...
 runtime-shell:
+	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+
+runtime-build: # @HELP/runtime ...
+runtime-build:
 	cd ${IMG_MAKE_DIR} && $(MAKE) $@
 
 runtime-command: # @HELP/runtime ...
