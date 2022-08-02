@@ -142,10 +142,12 @@ CUST_S_RENV_OPTS='enable,auto'
 # ---(project description)---
 CUST_S_INFO_AUTH_NAME='datalab'
 CUST_S_INFO_AUTH_SURNAME='DEMS'
-CUST_S_INFO_MAIL='dsuser.dems@gmail.com'
-CUST_S_INFO_AUTHORS="${CUST_S_INFO_AUTH_SURNAME}/${CUST_S_INFO_AUTH_NAME} <${CUST_S_INFO_MAIL}>"
+CUST_S_INFO_AUTH_EMAIL='datalab@unimib.it'
 CUST_S_INFO_DESC='TODO:description'
 CUST_S_INFO_TITLE='TODO:title'
+# ---(image labels)---
+CUST_S_INFO_USER_EMAIL='dsuser.dems@gmail.com'
+CUST_S_INFO_AUTHORS="${CUST_S_INFO_AUTH_SURNAME}/${CUST_S_INFO_AUTH_NAME} <${CUST_S_INFO_USER_EMAIL}>"
 CUST_S_INFO_FROM='2022-08-02'
 CUST_S_INFO_OWNER='ab21010'
 CUST_S_INFO_CDC='ds-101'
@@ -181,16 +183,18 @@ CUST_T_DATA_LINK='dve-ds'
 # ---(renv support options)---
 CUST_T_RENV_OPTS='enable,auto'
 # ---(project description)---
-CUST_T_INFO_AUTH_NAME='datalab'
-CUST_T_INFO_AUTH_SURNAME='DEMS'
-CUST_T_INFO_MAIL='dsuser.dems@gmail.com'
-CUST_T_INFO_AUTHORS="${CUST_T_INFO_AUTH_SURNAME}/${CUST_T_INFO_AUTH_NAME} <${CUST_T_INFO_MAIL}>"
-CUST_T_INFO_DESC='TODO:description'
-CUST_T_INFO_TITLE='TODO:title'
-CUST_T_INFO_FROM='2022-08-02'
-CUST_T_INFO_OWNER='ab21010'
-CUST_T_INFO_CDC='es-101'
-CUST_T_INFO_TAGS='none'
+CUST_T_INFO_AUTH_NAME='_datalab_'
+CUST_T_INFO_AUTH_SURNAME='_DEMS_'
+CUST_T_INFO_AUTH_EMAIL='_datalab@unimib.it_'
+CUST_T_INFO_DESC='_TODO:description_'
+CUST_T_INFO_TITLE='_TODO:title_'
+# ---(image labels)---
+CUST_T_INFO_USER_EMAIL='_dsuser.dems@gmail.com'
+CUST_T_INFO_AUTHORS="${CUST_T_INFO_AUTH_SURNAME}/${CUST_T_INFO_AUTH_NAME} <${CUST_T_INFO_USER_EMAIL}>"
+CUST_T_INFO_FROM='_2022-08-02_'
+CUST_T_INFO_OWNER='_ab21010_'
+CUST_T_INFO_CDC='_ds-101_'
+CUST_T_INFO_TAGS='_none_'
 EOF
 # custom-target.conf ends here
 
@@ -382,7 +386,7 @@ grep -r \
 grep -l -r \
      --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
      -I -e "CUST_S_REPO_HOST$CUST_S_REPO_PATH" | \
-  xargs -t -l1 perl -pi -e  "s{$CUST_S_REPO_HOST$CUST_S_REPO_PATH}{CUST_T_REPO_HOST$CUST_T_REPO_PATH}g"
+  xargs -t -l1 perl -pi -e  "s{$CUST_S_REPO_HOST$CUST_S_REPO_PATH}{$CUST_T_REPO_HOST$CUST_T_REPO_PATH}g"
 
 grep -l -r \
      --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
@@ -531,7 +535,10 @@ grep -r \
 
 # [[file:../../notes/custom/README.org::cust-pinfo-vers-pre][cust-pinfo-vers-pre]]
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+echo "--- DESCRIPTION ----------------"
 cat ./DESCRIPTION
+echo "--------------------------------"
+echo ""
 # cust-pinfo-vers-pre ends here
 
 
@@ -544,7 +551,7 @@ cat ./DESCRIPTION
 
 perl -pi -e  "s/(given\s*=\\s*)\"\Q$CUST_S_INFO_AUTH_NAME\E\"/\1\"\Q$CUST_T_INFO_AUTH_NAME\E\"/" ./DESCRIPTION
 perl -pi -e  "s/(family\s*=\\s*)\"\Q$CUST_S_INFO_AUTH_SURNAME\E\"/\1\"\Q$CUST_T_INFO_AUTH_SURNAME\E\"/" ./DESCRIPTION
-perl -pi -e  "s/(email\s*+=\\s*)\"\Q$CUST_S_INFO_MAIL\E\"/\1\"\Q$CUST_T_INFO_MAIL\E\"/" ./DESCRIPTION
+perl -pi -e  "s/(email\s*+=\\s*)\"\Q$CUST_S_INFO_AUTH_EMAIL\E\"/\1\"\Q$CUST_T_INFO_AUTH_EMAIL\E\"/" ./DESCRIPTION
 perl -pi -e  "s/(Title\s*:\\s*)\Q$CUST_S_INFO_TITLE\E/\1\Q$CUST_T_TITLE\E/" ./DESCRIPTION
 perl -pi -e  "s/(Description\s*:\\s*)\Q$CUST_S_INFO_DESC\E/\1\Q$CUST_T_DESC\E/" ./DESCRIPTION
 # cust-pinfo ends here
@@ -555,7 +562,10 @@ perl -pi -e  "s/(Description\s*:\\s*)\Q$CUST_S_INFO_DESC\E/\1\Q$CUST_T_DESC\E/" 
 
 # [[file:../../notes/custom/README.org::cust-pinfo-post][cust-pinfo-post]]
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+echo "--- DESCRIPTION ----------------"
 cat ./DESCRIPTION
+echo "--------------------------------"
+echo ""
 # cust-pinfo-post ends here
 
 # Image Description
