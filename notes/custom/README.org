@@ -579,7 +579,7 @@
 
   perl -pi -e  "s{(given\s*=\s*)\"\Q$CUST_S_INFO_AUTH_NAME\E\"}{\1\"$CUST_T_INFO_AUTH_NAME\"}" ./DESCRIPTION
   perl -pi -e  "s{(family\s*=\s*)\"\Q$CUST_S_INFO_AUTH_SURNAME\E\"}{\1\"$CUST_T_INFO_AUTH_SURNAME\"}" ./DESCRIPTION
-  perl -pi -e  "s{(email\s*=\s*)\"$CUST_S_INFO_AUTH_EMAIL\"}{\1\"$CUST_T_INFO_AUTH_EMAIL\"}" ./DESCRIPTION
+  perl -pi -e  's{(email\s*=\s*)\"\Q$ENV{CUST_S_INFO_AUTH_EMAIL}\E\"}{\1\"$ENV{CUST_T_INFO_AUTH_EMAIL}\"}' ./DESCRIPTION
   perl -pi -e  "s{(Title\s*:\s*)\Q$CUST_S_INFO_TITLE\E}{\1$CUST_T_INFO_TITLE}" ./DESCRIPTION
   perl -pi -e  "s{(Description\s*:\s*)\Q$CUST_S_INFO_DESC\E}{\1$CUST_T_INFO_DESC}" ./DESCRIPTION
 
