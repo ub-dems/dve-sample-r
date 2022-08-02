@@ -304,10 +304,10 @@ grep -F -e "$CUST_S_IMAGE_ANCHOR" ./docker/r-images/dockerfiles/anchor.Dockerfil
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 [ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
 
-perl -pi -e  "s/(\s+R\s+)\Q$CUST_S_VERS_BASE\E/\1\Q$CUST_T_VERS_BASE\E/" ./DESCRIPTION
-perl -pi -e  "s/(RoxygenNote: )\Q$CUST_S_VERS_ROXY\E/\1\Q$CUST_T_VERS_ROXY\E/" ./DESCRIPTION
+perl -pi -e  "s{(\s+R\s+)\Q$CUST_S_VERS_BASE\E}{\1$CUST_T_VERS_BASE}" ./DESCRIPTION
+perl -pi -e  "s{(RoxygenNote: )\Q$CUST_S_VERS_ROXY\E}{\1$CUST_T_VERS_ROXY}" ./DESCRIPTION
 
-perl -pi -e  "s/\Q$CUST_S_IMAGE_ANCHOR\E/\Q$CUST_T_IMAGE_ANCHOR\E/" ./docker/r-images/dockerfiles/anchor.Dockerfile
+perl -pi -e  "s{\Q$CUST_S_IMAGE_ANCHOR\E}{$CUST_T_IMAGE_ANCHOR}" ./docker/r-images/dockerfiles/anchor.Dockerfile
 # cust-vers ends here
 
 
@@ -425,8 +425,8 @@ grep -r \
 
 grep -l -r \
      --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
-     -I -e "CUST_S_REGS_HOST$CUST_S_REGS_PATH}" | \
-  xargs -t -l1 perl -pi -e  "s{$CUST_S_REGS_HOST$CUST_S_REGS_PATH}{CUST_T_REGS_HOST$CUST_T_REGS_PATH}g"
+     -I -e "CUST_S_REGS_HOST/$CUST_S_REGS_PATH}" | \
+  xargs -t -l1 perl -pi -e  "s{$CUST_S_REGS_HOST/$CUST_S_REGS_PATH}{CUST_T_REGS_HOST/$CUST_T_REGS_PATH}g"
 
 grep -l -r \
      --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
@@ -565,7 +565,7 @@ cat ./DESCRIPTION
 # [[file:../../notes/custom/README.org::cust-binfo-pre][cust-binfo-pre]]
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 find ./docker/r-images/dockerfiles -name '*.Dockerfile' -exec \
-     grep -I -e 'org.opencontainers.image' -e 'it.unimib.datalab' {} \; | sort | \
+     grep -I -e 'org.opencontainers.image' -e 'it.unimib.datalab' {} \; | sort -k2 | \
     tr -s ' ' '_' | sed -e 's/:/\t/'
 # cust-binfo-pre ends here
 
@@ -604,7 +604,7 @@ find ./docker/r-images/dockerfiles -name '*.Dockerfile' -exec \
 # [[file:../../notes/custom/README.org::cust-binfo-post][cust-binfo-post]]
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 find ./docker/r-images/dockerfiles -name '*.Dockerfile' -exec \
-     grep -I -e 'org.opencontainers.image' -e 'it.unimib.datalab' {} \; | sort | \
+     grep -I -e 'org.opencontainers.image' -e 'it.unimib.datalab' {} \; | sort -k2 | \
     tr -s ' ' '_' | sed -e 's/:/\t/'
 # cust-binfo-post ends here
 
