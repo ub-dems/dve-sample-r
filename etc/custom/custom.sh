@@ -290,40 +290,6 @@ mv -v ./R/${CUST_S_PACKAGE_NAME}.r ./R/${CUST_T_PACKAGE_NAME}.r
 find . -name "$CUST_T_PACKAGE_NAME*" -o -name "$CUST_T_PROJECT_NAME*"
 # cust-rename-post ends here
 
-# Environment Versions
-
-# #+NAME: cust-vers-pre
-
-# [[file:../../notes/custom/README.org::cust-vers-pre][cust-vers-pre]]
-[ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
-grep -F -e "$CUST_S_VERS_BASE" -e "$CUST_S_VERS_ROXY" ./DESCRIPTION
-grep -F -e "$CUST_S_IMAGE_ANCHOR" ./docker/r-images/dockerfiles/anchor.Dockerfile
-# cust-vers-pre ends here
-
-
-
-# #+NAME: cust-vers
-
-# [[file:../../notes/custom/README.org::cust-vers][cust-vers]]
-[ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
-[ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
-
-perl -pi -e  "s{(\s+R\s+)\Q$CUST_S_VERS_BASE\E}{\1$CUST_T_VERS_BASE}" ./DESCRIPTION
-perl -pi -e  "s{(RoxygenNote: )\Q$CUST_S_VERS_ROXY\E}{\1$CUST_T_VERS_ROXY}" ./DESCRIPTION
-
-perl -pi -e  "s{\Q$CUST_S_IMAGE_ANCHOR\E}{$CUST_T_IMAGE_ANCHOR}" ./docker/r-images/dockerfiles/anchor.Dockerfile
-# cust-vers ends here
-
-
-
-# #+NAME: cust-vers-post
-
-# [[file:../../notes/custom/README.org::cust-vers-post][cust-vers-post]]
-[ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
-grep -F -e "$CUST_T_VERS_BASE" -e "$CUST_T_VERS_ROXY" ./DESCRIPTION
-grep -F -e "$CUST_T_IMAGE_ANCHOR" ./docker/r-images/dockerfiles/anchor.Dockerfile
-# cust-vers-post ends here
-
 # Package Name
 
 # #+NAME: cust-package-pre
@@ -529,6 +495,40 @@ grep -r \
     tr -s ' ' '^' | sed -e 's/:/\t/'
 # cust-data-post ends here
 
+# Environment Versions
+
+# #+NAME: cust-vers-pre
+
+# [[file:../../notes/custom/README.org::cust-vers-pre][cust-vers-pre]]
+[ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+grep -F -e "$CUST_S_VERS_BASE" -e "$CUST_S_VERS_ROXY" ./DESCRIPTION
+grep -F -e "$CUST_S_IMAGE_ANCHOR" ./docker/r-images/dockerfiles/anchor.Dockerfile
+# cust-vers-pre ends here
+
+
+
+# #+NAME: cust-vers
+
+# [[file:../../notes/custom/README.org::cust-vers][cust-vers]]
+[ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+[ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
+
+perl -pi -e  "s{(\s+R\s+)\Q$CUST_S_VERS_BASE\E}{\1$CUST_T_VERS_BASE}" ./DESCRIPTION
+perl -pi -e  "s{(RoxygenNote: )\Q$CUST_S_VERS_ROXY\E}{\1$CUST_T_VERS_ROXY}" ./DESCRIPTION
+
+perl -pi -e  "s{\Q$CUST_S_IMAGE_ANCHOR\E}{$CUST_T_IMAGE_ANCHOR}" ./docker/r-images/dockerfiles/anchor.Dockerfile
+# cust-vers ends here
+
+
+
+# #+NAME: cust-vers-post
+
+# [[file:../../notes/custom/README.org::cust-vers-post][cust-vers-post]]
+[ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+grep -F -e "$CUST_T_VERS_BASE" -e "$CUST_T_VERS_ROXY" ./DESCRIPTION
+grep -F -e "$CUST_T_IMAGE_ANCHOR" ./docker/r-images/dockerfiles/anchor.Dockerfile
+# cust-vers-post ends here
+
 # Project Description
 
 # #+NAME: cust-pinfo-vers-pre
@@ -549,11 +549,11 @@ echo ""
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 [ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
 
-perl -pi -e  "s/(given\s*=\\s*)\"\Q$CUST_S_INFO_AUTH_NAME\E\"/\1\"\Q$CUST_T_INFO_AUTH_NAME\E\"/" ./DESCRIPTION
-perl -pi -e  "s/(family\s*=\\s*)\"\Q$CUST_S_INFO_AUTH_SURNAME\E\"/\1\"\Q$CUST_T_INFO_AUTH_SURNAME\E\"/" ./DESCRIPTION
-perl -pi -e  "s/(email\s*=\\s*)\"\Q$CUST_S_INFO_AUTH_EMAIL\E\"/\1\"\Q$CUST_T_INFO_AUTH_EMAIL\E\"/" ./DESCRIPTION
-perl -pi -e  "s/(Title\s*:\\s*)\Q$CUST_S_INFO_TITLE\E/\1\Q$CUST_T_TITLE\E/" ./DESCRIPTION
-perl -pi -e  "s/(Description\s*:\\s*)\Q$CUST_S_INFO_DESC\E/\1\Q$CUST_T_DESC\E/" ./DESCRIPTION
+perl -pi -e  "s{(given\s*=\s*)\"\Q$CUST_S_INFO_AUTH_NAME\E\"}{\1\"$CUST_T_INFO_AUTH_NAME\"}" ./DESCRIPTION
+perl -pi -e  "s{(family\s*=\s*)\"\Q$CUST_S_INFO_AUTH_SURNAME\E\"}{\1\"$CUST_T_INFO_AUTH_SURNAME\"}" ./DESCRIPTION
+perl -pi -e  "s{(email\s*=\s*)\"\Q$CUST_S_INFO_AUTH_EMAIL\E\"}{\1\"$CUST_T_INFO_AUTH_EMAIL\"}" ./DESCRIPTION
+perl -pi -e  "s{(Title\s*:\s*)\Q$CUST_S_INFO_TITLE\E}{\1$CUST_T_TITLE}" ./DESCRIPTION
+perl -pi -e  "s{(Description\s*:\s*)\Q$CUST_S_INFO_DESC\E}{\1$CUST_T_DESC}" ./DESCRIPTION
 # cust-pinfo ends here
 
 
