@@ -1,4 +1,8 @@
 #!/bin/bash
+# Script Head
+# #+NAME: script-heading
+
+# [[file:../../notes/custom/README.org::script-heading][script-heading]]
 ##
 # ./etc/custom/custom.sh: initial project template customization
 # 
@@ -35,21 +39,64 @@ exec &> >(tee $LOGFILE)
 #exec 1>$LOGFILE 2>&1
 
 echo ">>> project customization, ..."
+# script-heading ends here
 
+# Info Session
+# #+NAME: user-info
+
+# [[file:../../notes/custom/README.org::user-info][user-info]]
 whoami
+# user-info ends here
 
+
+
+# #+NAME: host-info
+
+# [[file:../../notes/custom/README.org::host-info][host-info]]
 hostnamectl | \
     perl -p -e 's/([^ :])\s+(\S)/\1_\2/g' | sed -e 's/:/\t/'
+# host-info ends here
 
+
+
+
+# #+NAME: net-info
+
+# [[file:../../notes/custom/README.org::net-info][net-info]]
 ip -br -4 a | grep -v lo
+# net-info ends here
 
+
+
+
+# #+NAME: project-info
+
+# [[file:../../notes/custom/README.org::project-info][project-info]]
 pwd
+# project-info ends here
 
+
+
+# #+NAME: repo-info
+
+# [[file:../../notes/custom/README.org::repo-info][repo-info]]
 git remote -v
+# repo-info ends here
 
+
+
+# #+NAME: repo-status
+
+# [[file:../../notes/custom/README.org::repo-status][repo-status]]
 git -c color.ui=false status | \
     sed -e 's/^/> /'
+# repo-status ends here
 
+# Source Config
+
+# #+NAME: conf-custom
+
+# [[file:../../notes/custom/README.org::conf-custom][conf-custom]]
 [ -f ./etc/custom/custom.conf ] || sed 's/^ *//' >> ./etc/custom/custom.conf <<-EOF
 # project customization config
 set -a
@@ -61,7 +108,15 @@ CUST_X_CUSTOMIZED=0
 #  
 set +a
 EOF
+# conf-custom ends here
 
+
+
+# #+RESULTS: conf-custom
+
+# #+NAME: custom-source.conf
+
+# [[file:../../notes/custom/README.org::custom-source.conf][custom-source.conf]]
 [ -f ./etc/custom/custom-source.conf ] || sed 's/^ *//' >> ./etc/custom/custom-source.conf <<-EOF
 # project source consts
 CUST_S_PROJECT_NAME='dve-sample-r'
@@ -69,7 +124,13 @@ CUST_S_PACKAGE_NAME='dvesimpler'
 CUST_S_REPO_PATH='ub-dems-public/ds-labs'
 CUST_S_REPO_HOST='https://gitlab.com/'
 EOF
+# custom-source.conf ends here
 
+# Target Config
+
+# #+NAME: custom-target.conf
+
+# [[file:../../notes/custom/README.org::custom-target.conf][custom-target.conf]]
 [ -f ./etc/custom/custom-target.conf ] || sed 's/^ *//' >> ./etc/custom/custom-target.conf <<-EOF
 # project target consts
 CUST_T_PROJECT_NAME='us-proto-r'
@@ -77,10 +138,35 @@ CUST_T_PACKAGE_NAME='USprotoR'
 CUST_T_REPO_PATH='ub-dems/cs-labs/user-dsuser'
 CUST_T_REPO_HOST='https://gitlab.com/'
 EOF
+# custom-target.conf ends here
 
+
+
+# #+RESULTS: custom-target.conf
+
+# #+NAME: conf-show
+
+# [[file:../../notes/custom/README.org::conf-show][conf-show]]
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 env | grep ^CUST_ | tr '=' '\t' | sort
+# conf-show ends here
 
+
+
+# #+RESULTS: conf-show
+# | CUST_S_PACKAGE_NAME | dvesimpler                  |
+# | CUST_S_PROJECT_NAME | dve-sample-r                |
+# | CUST_S_REPO_HOST    | https://gitlab.com/         |
+# | CUST_S_REPO_PATH    | ub-dems-public/ds-labs      |
+# | CUST_T_PACKAGE_NAME | USprotoR                    |
+# | CUST_T_PROJECT_NAME | us-proto-r                  |
+# | CUST_T_REPO_HOST    | https://gitlab.com/         |
+# | CUST_T_REPO_PATH    | ub-dems/cs-labs/user-dsuser |
+# | CUST_X_CUSTOMIZED   | 0                           |
+
+# #+NAME: conf-check
+
+# [[file:../../notes/custom/README.org::conf-check][conf-check]]
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 if [ ! "${CUST_X_CUSTOMIZED}" = '0' ] ; then
   echo '
@@ -113,26 +199,56 @@ fi
 [ -z "$CUST_T_PROJECT_NAME" ] && { echo "config error: CUST_T_PROJECT_NAME"; exit 1; }
 [ -z "$CUST_T_REPO_HOST" ]    && { echo "config error: CUST_T_REPO_HOST"; exit 1; }
 [ -z "$CUST_T_REPO_PATH" ]    && { echo "config error: CUST_T_REPO_PATH"; exit 1; }
+# conf-check ends here
 
+# File Rename
+
+# #+NAME: cust-rename-pre
+
+# [[file:../../notes/custom/README.org::cust-rename-pre][cust-rename-pre]]
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 find . -name "$CUST_S_PACKAGE_NAME*" -o -name "$CUST_S_PROJECT_NAME*"
+# cust-rename-pre ends here
 
+
+
+# #+NAME: cust-rename
+
+# [[file:../../notes/custom/README.org::cust-rename][cust-rename]]
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 [ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
 
 mv -v ./${CUST_S_PACKAGE_NAME}.Rproj ./${CUST_T_PACKAGE_NAME}.Rproj
 mv -v ./man/${CUST_S_PACKAGE_NAME}-package.Rd ./man/${CUST_T_PACKAGE_NAME}-package.Rd
 mv -v ./R/${CUST_S_PACKAGE_NAME}.r ./R/${CUST_T_PACKAGE_NAME}.r
+# cust-rename ends here
 
+
+
+# #+NAME: cust-rename-post
+
+# [[file:../../notes/custom/README.org::cust-rename-post][cust-rename-post]]
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 find . -name "$CUST_T_PACKAGE_NAME*" -o -name "$CUST_T_PROJECT_NAME*"
+# cust-rename-post ends here
 
+# Package Name
+
+# #+NAME: cust-package-pre
+
+# [[file:../../notes/custom/README.org::cust-package-pre][cust-package-pre]]
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 grep -r \
      --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
      -I -e "$CUST_S_PACKAGE_NAME" | \
     tr -s ' ' '_' | sed -e 's/:/\t/'
+# cust-package-pre ends here
 
+
+
+# #+NAME: cust-package
+
+# [[file:../../notes/custom/README.org::cust-package][cust-package]]
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 [ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
 
@@ -140,19 +256,38 @@ grep -l -r \
      --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
      -I -e "$CUST_S_PACKAGE_NAME" | \
   xargs -t -l1 perl -pi -e  "s{$CUST_S_PACKAGE_NAME}{$CUST_T_PACKAGE_NAME}g"
+# cust-package ends here
 
+
+
+
+# #+NAME: cust-package-post
+
+# [[file:../../notes/custom/README.org::cust-package-post][cust-package-post]]
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 grep -r \
      --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
      -I -e "$CUST_T_PACKAGE_NAME" | \
     tr -s ' ' '_' | sed -e 's/:/\t/'
+# cust-package-post ends here
 
+# Repo Address
+
+# #+NAME: cust-repo-pre
+
+# [[file:../../notes/custom/README.org::cust-repo-pre][cust-repo-pre]]
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 grep -r \
      --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
      -I -e "$CUST_S_REPO_PATH" | \
     tr -s ' ' '_' | sed -e 's/:/\t/'
+# cust-repo-pre ends here
 
+
+
+# #+NAME: cust-repo
+
+# [[file:../../notes/custom/README.org::cust-repo][cust-repo]]
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 [ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
 
@@ -165,19 +300,38 @@ grep -l -r \
      --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
      -I -e "$CUST_S_REPO_PATH" | \
   xargs -t -l1 perl -pi -e  "s{$CUST_S_REPO_PATH}{$CUST_T_REPO_PATH}g"
+# cust-repo ends here
 
+
+
+
+# #+NAME: cust-repo-post
+
+# [[file:../../notes/custom/README.org::cust-repo-post][cust-repo-post]]
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 grep -r \
      --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
      -I -e "$CUST_T_REPO_PATH" | \
     tr -s ' ' '_' | sed -e 's/:/\t/'
+# cust-repo-post ends here
 
+# Project Name
+
+# #+NAME: cust-project-pre
+
+# [[file:../../notes/custom/README.org::cust-project-pre][cust-project-pre]]
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 grep -r \
      --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
      -I -e "$CUST_S_PROJECT_NAME" | \
     tr -s ' ' '_' | sed -e 's/:/\t/'
+# cust-project-pre ends here
 
+
+
+# #+NAME: cust-project
+
+# [[file:../../notes/custom/README.org::cust-project][cust-project]]
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 [ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
 
@@ -185,16 +339,35 @@ grep -l -r \
      --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
      -I -e "$CUST_S_PROJECT_NAME" | \
   xargs -t -l1 perl -pi -e  "s{$CUST_S_PROJECT_NAME}{$CUST_T_PROJECT_NAME}g"
+# cust-project ends here
 
+
+
+
+# #+NAME: cust-project-post
+
+# [[file:../../notes/custom/README.org::cust-project-post][cust-project-post]]
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 grep -r \
      --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
      -I -e "$CUST_T_PROJECT_NAME" | \
     tr -s ' ' '_' | sed -e 's/:/\t/'
+# cust-project-post ends here
 
+# Confirm Customization
+
+# #+NAME: cust-confirm-pre
+
+# [[file:../../notes/custom/README.org::cust-confirm-pre][cust-confirm-pre]]
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 env | grep ^CUST_ | tr '=' '\t' | sort
+# cust-confirm-pre ends here
 
+
+
+# #+NAME: cust-confirm
+
+# [[file:../../notes/custom/README.org::cust-confirm][cust-confirm]]
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 [ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
 
@@ -202,6 +375,11 @@ ls -l ./etc/custom/*.conf
 
 T="$(date -Isec)"
 mkdir -p ./etc/custom/done/$T
+
+echo "=== reset renv dependecies, ..."
+[ -f ./renv.lock ] && mv -v  ./renv.lock ./etc/custom/done/$T
+echo "=== run renv::init() to re-initialize."
+
 cp -pv   ./etc/custom/*.conf ./etc/custom/done/$T
 
 find ./etc/custom | sort
@@ -212,10 +390,22 @@ perl -pi -e  "s/CUST_T_/CUST_S_/"      ./etc/custom/custom-source.conf
 perl -pi -e  "s/CUST_X_CUSTOMIZED\s*=\s*0/CUST_X_CUSTOMIZED=1/" ./etc/custom/custom.conf
 
 ls -l ./etc/custom/*.conf
+# cust-confirm ends here
 
+
+
+
+# #+NAME: cust-confirm-post
+
+# [[file:../../notes/custom/README.org::cust-confirm-post][cust-confirm-post]]
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 env | grep ^CUST_ | tr '=' '\t' | sort
+# cust-confirm-post ends here
 
+# Script Tail
+# #+NAME: script-tail
+
+# [[file:../../notes/custom/README.org::script-tail][script-tail]]
 echo "<<< project customization, done."
 
 echo '
@@ -233,3 +423,4 @@ echo '
  '
  echo "see:  $LOGFILE "
  echo " "
+# script-tail ends here

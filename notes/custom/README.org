@@ -9,7 +9,7 @@
 #+LINK: dve-sample-r https://gitlab.com/ub-dems-public/ds-labs/dve-sample-r
 
 #+PROPERTY: header-args:bash :dir /ssh:dsuser@pp2:/home/dsuser/work/tm/us-proto-r
-#+PROPERTY: header-args:bash+ :export code  :tangle  ../../etc/custom/custom.sh
+#+PROPERTY: header-args:bash+ :export code  :tangle  ../../etc/custom/custom.sh :shebang "#!/bin/bash" :comments both
 :PROPERTIES:
 :header-args:R:          :session *R*
 :header-args:bash:       :session *ssh-1* 
@@ -20,7 +20,6 @@
 |   | [[../README.md][UP:(dir)]] |   |   |
 
 #+TOC: headlines 4
-
 
 
 * CUSTOMIZATION QUICK START
@@ -87,7 +86,6 @@
 *** Script Head
 #+NAME: script-heading
 #+BEGIN_SRC bash :eval no
-  #!/bin/bash
   ##
   # ./etc/custom/custom.sh: initial project template customization
   # 
@@ -163,7 +161,7 @@
         sed -e 's/^/> /'
 #+END_SRC
 
-** Project Config
+** Naming Config
 *** Source Config
 
 #+NAME: conf-custom
@@ -265,7 +263,6 @@
 
 
 #+END_SRC
-
 
 
 ** Project Customization
@@ -419,6 +416,11 @@
 
   T="$(date -Isec)"
   mkdir -p ./etc/custom/done/$T
+
+  echo "=== reset renv dependecies, ..."
+  [ -f ./renv.lock ] && mv -v  ./renv.lock ./etc/custom/done/$T
+  echo "=== run renv::init() to re-initialize."
+
   cp -pv   ./etc/custom/*.conf ./etc/custom/done/$T
 
   find ./etc/custom | sort
