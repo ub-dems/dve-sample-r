@@ -386,7 +386,7 @@
         grep -r \
              --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
              -I -e "$CUST_S_PACKAGE_NAME" | \
-            tr -s ' ' '_' | sed -e 's/:/\t/'
+            tr -s ' ' '^' | sed -e 's/:/\t/'
 #+END_SRC
 
 #+NAME: cust-package
@@ -409,7 +409,7 @@
         grep -r \
              --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
              -I -e "$CUST_T_PACKAGE_NAME" | \
-            tr -s ' ' '_' | sed -e 's/:/\t/'
+            tr -s ' ' '^' | sed -e 's/:/\t/'
 #+END_SRC
 
 *** Repo Address
@@ -420,7 +420,7 @@
         grep -r \
              --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
              -I -e "$CUST_S_REPO_PATH" | \
-            tr -s ' ' '_' | sed -e 's/:/\t/'
+            tr -s ' ' '^' | sed -e 's/:/\t/'
 #+END_SRC
 
 #+NAME: cust-repo
@@ -448,7 +448,7 @@
         grep -r \
              --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
              -I -e "$CUST_T_REPO_PATH" | \
-            tr -s ' ' '_' | sed -e 's/:/\t/'
+            tr -s ' ' '^' | sed -e 's/:/\t/'
 #+END_SRC
 
 *** Registry Address
@@ -459,7 +459,7 @@
         grep -r \
              --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
              -I -e "$CUST_S_REGS_PATH" | \
-            tr -s ' ' '_' | sed -e 's/:/\t/'
+            tr -s ' ' '^' | sed -e 's/:/\t/'
 #+END_SRC
 
 #+NAME: cust-regs
@@ -487,7 +487,7 @@
         grep -r \
              --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
              -I -e "$CUST_T_REGS_PATH" | \
-            tr -s ' ' '_' | sed -e 's/:/\t/'
+            tr -s ' ' '^' | sed -e 's/:/\t/'
 #+END_SRC
 
 *** Project Name
@@ -498,7 +498,7 @@
         grep -r \
              --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
              -I -e "$CUST_S_PROJECT_NAME" | \
-            tr -s ' ' '_' | sed -e 's/:/\t/'
+            tr -s ' ' '^' | sed -e 's/:/\t/'
 #+END_SRC
 
 #+NAME: cust-project
@@ -521,7 +521,7 @@
         grep -r \
              --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
              -I -e "$CUST_T_PROJECT_NAME" | \
-            tr -s ' ' '_' | sed -e 's/:/\t/'
+            tr -s ' ' '^' | sed -e 's/:/\t/'
 #+END_SRC
 
 *** Data Link
@@ -532,7 +532,7 @@
         grep -r \
              --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
              -I -e "$CUST_S_DATA_LINK" | \
-            tr -s ' ' '_' | sed -e 's/:/\t/'
+            tr -s ' ' '^' | sed -e 's/:/\t/'
 #+END_SRC
 
 #+NAME: cust-data
@@ -555,7 +555,7 @@
         grep -r \
              --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
              -I -e "$CUST_T_PACKAGE_NAME" | \
-            tr -s ' ' '_' | sed -e 's/:/\t/'
+            tr -s ' ' '^' | sed -e 's/:/\t/'
 #+END_SRC
 
 *** Project Description

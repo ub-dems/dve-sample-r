@@ -333,7 +333,7 @@ grep -F -e "$CUST_T_IMAGE_ANCHOR" ./docker/r-images/dockerfiles/anchor.Dockerfil
 grep -r \
      --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
      -I -e "$CUST_S_PACKAGE_NAME" | \
-    tr -s ' ' '_' | sed -e 's/:/\t/'
+    tr -s ' ' '^' | sed -e 's/:/\t/'
 # cust-package-pre ends here
 
 
@@ -360,7 +360,7 @@ grep -l -r \
 grep -r \
      --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
      -I -e "$CUST_T_PACKAGE_NAME" | \
-    tr -s ' ' '_' | sed -e 's/:/\t/'
+    tr -s ' ' '^' | sed -e 's/:/\t/'
 # cust-package-post ends here
 
 # Repo Address
@@ -372,7 +372,7 @@ grep -r \
 grep -r \
      --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
      -I -e "$CUST_S_REPO_PATH" | \
-    tr -s ' ' '_' | sed -e 's/:/\t/'
+    tr -s ' ' '^' | sed -e 's/:/\t/'
 # cust-repo-pre ends here
 
 
@@ -404,7 +404,7 @@ grep -l -r \
 grep -r \
      --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
      -I -e "$CUST_T_REPO_PATH" | \
-    tr -s ' ' '_' | sed -e 's/:/\t/'
+    tr -s ' ' '^' | sed -e 's/:/\t/'
 # cust-repo-post ends here
 
 # Registry Address
@@ -416,7 +416,7 @@ grep -r \
 grep -r \
      --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
      -I -e "$CUST_S_REGS_PATH" | \
-    tr -s ' ' '_' | sed -e 's/:/\t/'
+    tr -s ' ' '^' | sed -e 's/:/\t/'
 # cust-regs-pre ends here
 
 
@@ -448,7 +448,7 @@ grep -l -r \
 grep -r \
      --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
      -I -e "$CUST_T_REGS_PATH" | \
-    tr -s ' ' '_' | sed -e 's/:/\t/'
+    tr -s ' ' '^' | sed -e 's/:/\t/'
 # cust-regs-post ends here
 
 # Project Name
@@ -460,7 +460,7 @@ grep -r \
 grep -r \
      --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
      -I -e "$CUST_S_PROJECT_NAME" | \
-    tr -s ' ' '_' | sed -e 's/:/\t/'
+    tr -s ' ' '^' | sed -e 's/:/\t/'
 # cust-project-pre ends here
 
 
@@ -487,7 +487,7 @@ grep -l -r \
 grep -r \
      --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
      -I -e "$CUST_T_PROJECT_NAME" | \
-    tr -s ' ' '_' | sed -e 's/:/\t/'
+    tr -s ' ' '^' | sed -e 's/:/\t/'
 # cust-project-post ends here
 
 # Data Link
@@ -499,7 +499,7 @@ grep -r \
 grep -r \
      --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
      -I -e "$CUST_S_DATA_LINK" | \
-    tr -s ' ' '_' | sed -e 's/:/\t/'
+    tr -s ' ' '^' | sed -e 's/:/\t/'
 # cust-data-pre ends here
 
 
@@ -526,7 +526,7 @@ grep -l -r \
 grep -r \
      --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
      -I -e "$CUST_T_PACKAGE_NAME" | \
-    tr -s ' ' '_' | sed -e 's/:/\t/'
+    tr -s ' ' '^' | sed -e 's/:/\t/'
 # cust-data-post ends here
 
 # Project Description
