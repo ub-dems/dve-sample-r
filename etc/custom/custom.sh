@@ -118,11 +118,38 @@ EOF
 
 # [[file:../../notes/custom/README.org::custom-source.conf][custom-source.conf]]
 [ -f ./etc/custom/custom-source.conf ] || sed 's/^ *//' >> ./etc/custom/custom-source.conf <<-EOF
-# project source consts
+##
+# customization: project source consts
+#
+# ---(project)---
 CUST_S_PROJECT_NAME='dve-sample-r'
+# ---(package)---
 CUST_S_PACKAGE_NAME='dvesimpler'
+# ---(source repository)---
 CUST_S_REPO_PATH='ub-dems-public/ds-labs'
 CUST_S_REPO_HOST='https://gitlab.com/'
+# ---(image registry)---
+CUST_S_REGS_PATH='ubdems'
+CUST_S_REGS_HOST='docker.io'
+# ---(environment versions)---
+CUST_S_IMAGE_ANCHOR='rocker/tidyverse:latest'
+CUST_S_VERS_BASE='(>= 3.6.0)'
+CUST_S_VERS_ROXY='7.2.0'
+# ---(data import links)---
+CUST_S_DATA_LINK='dve-ds'
+# ---(renv support options)---
+CUST_S_RENV_OPTS='enable,auto'
+# ---(project description)---
+CUST_S_INFO_AUTH_NAME='datalab'
+CUST_S_INFO_AUTH_SURNAME='DEMS'
+CUST_S_INFO_MAIL='dsuser.dems@gmail.com'
+CUST_S_INFO_AUTHORS="${CUST_S_INFO_AUTH_SURNAME}/${CUST_S_INFO_AUTH_NAME} <${CUST_S_INFO_MAIL}>"
+CUST_S_INFO_DESC='TODO:description'
+CUST_S_INFO_TITLE='TODO:title'
+CUST_S_INFO_FROM='2022-08-02'
+CUST_S_INFO_OWNER='ab21010'
+CUST_S_INFO_CDC='ds-101'
+CUST_S_INFO_TAGS='none'
 EOF
 # custom-source.conf ends here
 
@@ -132,11 +159,38 @@ EOF
 
 # [[file:../../notes/custom/README.org::custom-target.conf][custom-target.conf]]
 [ -f ./etc/custom/custom-target.conf ] || sed 's/^ *//' >> ./etc/custom/custom-target.conf <<-EOF
-# project target consts
+##
+# customization: project target consts
+#
+# ---(project)---
 CUST_T_PROJECT_NAME='us-proto-r'
+# ---(package)---
 CUST_T_PACKAGE_NAME='USprotoR'
+# ---(source repository)---
 CUST_T_REPO_PATH='ub-dems/cs-labs/user-dsuser'
 CUST_T_REPO_HOST='https://gitlab.com/'
+# ---(image registry)---
+CUST_T_REGS_PATH='ubdems'
+CUST_T_REGS_HOST='docker.io'
+# ---(environment versions)---
+CUST_T_IMAGE_ANCHOR='rocker/tidyverse:latest'
+CUST_T_VERS_BASE='(>= 3.6.0)'
+CUST_T_VERS_ROXY='7.2.0'
+# ---(data import links)---
+CUST_T_DATA_LINK='dve-ds'
+# ---(renv support options)---
+CUST_T_RENV_OPTS='enable,auto'
+# ---(project description)---
+CUST_T_INFO_AUTH_NAME='datalab'
+CUST_T_INFO_AUTH_SURNAME='DEMS'
+CUST_T_INFO_MAIL='dsuser.dems@gmail.com'
+CUST_T_INFO_AUTHORS="${CUST_T_INFO_AUTH_SURNAME}/${CUST_T_INFO_AUTH_NAME} <${CUST_T_INFO_MAIL}>"
+CUST_T_INFO_DESC='TODO:description'
+CUST_T_INFO_TITLE='TODO:title'
+CUST_T_INFO_FROM='2022-08-02'
+CUST_T_INFO_OWNER='ab21010'
+CUST_T_INFO_CDC='es-101'
+CUST_T_INFO_TAGS='none'
 EOF
 # custom-target.conf ends here
 
@@ -232,6 +286,40 @@ mv -v ./R/${CUST_S_PACKAGE_NAME}.r ./R/${CUST_T_PACKAGE_NAME}.r
 find . -name "$CUST_T_PACKAGE_NAME*" -o -name "$CUST_T_PROJECT_NAME*"
 # cust-rename-post ends here
 
+# Environment Versions
+
+# #+NAME: cust-vers-pre
+
+# [[file:../../notes/custom/README.org::cust-vers-pre][cust-vers-pre]]
+[ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+grep -F -e "$CUST_S_VERS_BASE" -e "$CUST_S_VERS_ROXY" ./DESCRIPTION
+grep -F -e "$CUST_S_IMAGE_ANCHOR" ./docker/r-images/dockerfiles/anchor.Dockerfile
+# cust-vers-pre ends here
+
+
+
+# #+NAME: cust-vers
+
+# [[file:../../notes/custom/README.org::cust-vers][cust-vers]]
+[ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+[ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
+
+perl -pi -e  "s/(\s+R\s+)\Q$CUST_S_VERS_BASE\E/\1\Q$CUST_T_VERS_BASE\E/" ./DESCRIPTION
+perl -pi -e  "s/(RoxygenNote: )\Q$CUST_S_VERS_ROXY\E/\1\Q$CUST_T_VERS_ROXY\E/" ./DESCRIPTION
+
+perl -pi -e  "s/\Q$CUST_S_IMAGE_ANCHOR\E/\Q$CUST_T_IMAGE_ANCHOR\E/" ./docker/r-images/dockerfiles/anchor.Dockerfile
+# cust-vers ends here
+
+
+
+# #+NAME: cust-vers-post
+
+# [[file:../../notes/custom/README.org::cust-vers-post][cust-vers-post]]
+[ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+grep -F -e "$CUST_T_VERS_BASE" -e "$CUST_T_VERS_ROXY" ./DESCRIPTION
+grep -F -e "$CUST_T_IMAGE_ANCHOR" ./docker/r-images/dockerfiles/anchor.Dockerfile
+# cust-vers-post ends here
+
 # Package Name
 
 # #+NAME: cust-package-pre
@@ -315,6 +403,50 @@ grep -r \
     tr -s ' ' '_' | sed -e 's/:/\t/'
 # cust-repo-post ends here
 
+# Registry Address
+
+# #+NAME: cust-regs-pre
+
+# [[file:../../notes/custom/README.org::cust-regs-pre][cust-regs-pre]]
+[ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+grep -r \
+     --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+     -I -e "$CUST_S_REGS_PATH" | \
+    tr -s ' ' '_' | sed -e 's/:/\t/'
+# cust-regs-pre ends here
+
+
+
+# #+NAME: cust-regs
+
+# [[file:../../notes/custom/README.org::cust-regs][cust-regs]]
+[ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+[ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
+
+grep -l -r \
+     --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+     -I -e "CUST_S_REGS_HOST$CUST_S_REGS_PATH}" | \
+  xargs -t -l1 perl -pi -e  "s{$CUST_S_REGS_HOST$CUST_S_REGS_PATH}{CUST_T_REGS_HOST$CUST_T_REGS_PATH}g"
+
+grep -l -r \
+     --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+     -I -e "$CUST_S_REGS_PATH" | \
+  xargs -t -l1 perl -pi -e  "s{$CUST_S_REGS_PATH}{$CUST_T_REGS_PATH}g"
+# cust-regs ends here
+
+
+
+
+# #+NAME: cust-regs-post
+
+# [[file:../../notes/custom/README.org::cust-regs-post][cust-regs-post]]
+[ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+grep -r \
+     --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+     -I -e "$CUST_T_REGS_PATH" | \
+    tr -s ' ' '_' | sed -e 's/:/\t/'
+# cust-regs-post ends here
+
 # Project Name
 
 # #+NAME: cust-project-pre
@@ -353,6 +485,128 @@ grep -r \
      -I -e "$CUST_T_PROJECT_NAME" | \
     tr -s ' ' '_' | sed -e 's/:/\t/'
 # cust-project-post ends here
+
+# Data Link
+
+# #+NAME: cust-data-pre
+
+# [[file:../../notes/custom/README.org::cust-data-pre][cust-data-pre]]
+[ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+grep -r \
+     --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+     -I -e "$CUST_S_DATA_LINK" | \
+    tr -s ' ' '_' | sed -e 's/:/\t/'
+# cust-data-pre ends here
+
+
+
+# #+NAME: cust-data
+
+# [[file:../../notes/custom/README.org::cust-data][cust-data]]
+[ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+[ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
+
+grep -l -r \
+     --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+     -I -e "$CUST_S_DATA_LINK" | \
+  xargs -t -l1 perl -pi -e  "s{$CUST_S_DATA_LINK}{$CUST_T_DATA_LINK}g"
+# cust-data ends here
+
+
+
+
+# #+NAME: cust-data-post
+
+# [[file:../../notes/custom/README.org::cust-data-post][cust-data-post]]
+[ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+grep -r \
+     --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+     -I -e "$CUST_T_PACKAGE_NAME" | \
+    tr -s ' ' '_' | sed -e 's/:/\t/'
+# cust-data-post ends here
+
+# Project Description
+
+# #+NAME: cust-pinfo-vers-pre
+
+# [[file:../../notes/custom/README.org::cust-pinfo-vers-pre][cust-pinfo-vers-pre]]
+[ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+cat ./DESCRIPTION
+# cust-pinfo-vers-pre ends here
+
+
+
+# #+NAME: cust-pinfo
+
+# [[file:../../notes/custom/README.org::cust-pinfo][cust-pinfo]]
+[ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+[ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
+
+perl -pi -e  "s/(given\s*=\\s*)\"\Q$CUST_S_INFO_AUTH_NAME\E\"/\1\"\Q$CUST_T_INFO_AUTH_NAME\E\"/" ./DESCRIPTION
+perl -pi -e  "s/(family\s*=\\s*)\"\Q$CUST_S_INFO_AUTH_SURNAME\E\"/\1\"\Q$CUST_T_INFO_AUTH_SURNAME\E\"/" ./DESCRIPTION
+perl -pi -e  "s/(email\s*+=\\s*)\"\Q$CUST_S_INFO_MAIL\E\"/\1\"\Q$CUST_T_INFO_MAIL\E\"/" ./DESCRIPTION
+perl -pi -e  "s/(Title\s*:\\s*)\Q$CUST_S_INFO_TITLE\E/\1\Q$CUST_T_TITLE\E/" ./DESCRIPTION
+perl -pi -e  "s/(Description\s*:\\s*)\Q$CUST_S_INFO_DESC\E/\1\Q$CUST_T_DESC\E/" ./DESCRIPTION
+# cust-pinfo ends here
+
+
+
+# #+NAME: cust-pinfo-post
+
+# [[file:../../notes/custom/README.org::cust-pinfo-post][cust-pinfo-post]]
+[ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+cat ./DESCRIPTION
+# cust-pinfo-post ends here
+
+# Image Description
+
+# #+NAME: cust-binfo-pre
+
+# [[file:../../notes/custom/README.org::cust-binfo-pre][cust-binfo-pre]]
+[ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+find ./docker/r-images/dockerfiles -name '*.Dockerfile' -exec \
+     grep -I -e 'org.opencontainers.image' -e 'it.unimib.datalab' {} \; | sort | \
+    tr -s ' ' '_' | sed -e 's/:/\t/'
+# cust-binfo-pre ends here
+
+
+
+# #+NAME: cust-binfo
+
+# [[file:../../notes/custom/README.org::cust-binfo][cust-binfo]]
+[ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+[ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
+
+find ./docker/r-images/dockerfiles -name '*.Dockerfile' -exec \
+  perl -pi -e  "s{(org.opencontainers.image.authors=\").*\"}{\1\Q${CUST_T_INFO_AUTHORS}\E\"}g" {} \;
+
+find ./docker/r-images/dockerfiles -name '*.Dockerfile' -exec \
+  perl -pi -e  "s{(org.opencontainers.image.description=\").*\"}{\1\Q${CUST_T_INFO_DESC}\E\"}g" {} \;
+
+find ./docker/r-images/dockerfiles -name '*.Dockerfile' -exec \
+  perl -pi -e  "s{(it.unimib.datalab.from=\").*\"}{\1\Q${CUST_T_INFO_FROM}\E\"}g" {} \;
+
+find ./docker/r-images/dockerfiles -name '*.Dockerfile' -exec \
+  perl -pi -e  "s{(it.unimib.datalab.owner=\").*\"}{\1\Q${CUST_T_INFO_OWNER}\E\"}g" {} \;
+
+find ./docker/r-images/dockerfiles -name '*.Dockerfile' -exec \
+  perl -pi -e  "s{(it.unimib.datalab.cdc=\").*\"}{\1\Q${CUST_T_INFO_CDC}\E\"}g" {} \;
+
+find ./docker/r-images/dockerfiles -name '*.Dockerfile' -exec \
+  perl -pi -e  "s{(it.unimib.datalab.tags=\").*\"}{\1\Q${CUST_T_INFO_TAGS}\E\"}g" {} \;
+# cust-binfo ends here
+
+
+
+
+# #+NAME: cust-binfo-post
+
+# [[file:../../notes/custom/README.org::cust-binfo-post][cust-binfo-post]]
+[ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+find ./docker/r-images/dockerfiles -name '*.Dockerfile' -exec \
+     grep -I -e 'org.opencontainers.image' -e 'it.unimib.datalab' {} \; | sort | \
+    tr -s ' ' '_' | sed -e 's/:/\t/'
+# cust-binfo-post ends here
 
 # Confirm Customization
 
