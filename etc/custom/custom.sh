@@ -551,7 +551,7 @@ echo ""
 
 perl -pi -e  "s/(given\s*=\\s*)\"\Q$CUST_S_INFO_AUTH_NAME\E\"/\1\"\Q$CUST_T_INFO_AUTH_NAME\E\"/" ./DESCRIPTION
 perl -pi -e  "s/(family\s*=\\s*)\"\Q$CUST_S_INFO_AUTH_SURNAME\E\"/\1\"\Q$CUST_T_INFO_AUTH_SURNAME\E\"/" ./DESCRIPTION
-perl -pi -e  "s/(email\s*+=\\s*)\"\Q$CUST_S_INFO_AUTH_EMAIL\E\"/\1\"\Q$CUST_T_INFO_AUTH_EMAIL\E\"/" ./DESCRIPTION
+perl -pi -e  "s/(email\s*=\\s*)\"\Q$CUST_S_INFO_AUTH_EMAIL\E\"/\1\"\Q$CUST_T_INFO_AUTH_EMAIL\E\"/" ./DESCRIPTION
 perl -pi -e  "s/(Title\s*:\\s*)\Q$CUST_S_INFO_TITLE\E/\1\Q$CUST_T_TITLE\E/" ./DESCRIPTION
 perl -pi -e  "s/(Description\s*:\\s*)\Q$CUST_S_INFO_DESC\E/\1\Q$CUST_T_DESC\E/" ./DESCRIPTION
 # cust-pinfo ends here
@@ -574,9 +574,12 @@ echo ""
 
 # [[file:../../notes/custom/README.org::cust-binfo-pre][cust-binfo-pre]]
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+echo "--- *.Dockerfiles ----------------"
 find ./docker/r-images/dockerfiles -name '*.Dockerfile' -exec \
-     grep -I -e 'org.opencontainers.image' -e 'it.unimib.datalab' {} \; | sort -k2 | \
-    tr -s ' ' '_' | sed -e 's/:/\t/'
+     grep -I -e 'org.opencontainers.image' -e 'it.unimib.datalab' {} \; | sort -k2 | uniq | \
+    tr -s ' ' ' ' | sed -e 's/:/:/'
+echo "--------------------------------"
+echo ""
 # cust-binfo-pre ends here
 
 
@@ -613,9 +616,12 @@ find ./docker/r-images/dockerfiles -name '*.Dockerfile' -exec \
 
 # [[file:../../notes/custom/README.org::cust-binfo-post][cust-binfo-post]]
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+echo "--- *.Dockerfiles ----------------"
 find ./docker/r-images/dockerfiles -name '*.Dockerfile' -exec \
-     grep -I -e 'org.opencontainers.image' -e 'it.unimib.datalab' {} \; | sort -k2 | \
-    tr -s ' ' '_' | sed -e 's/:/\t/'
+     grep -I -e 'org.opencontainers.image' -e 'it.unimib.datalab' {} \; | sort -k2 | uniq | \
+    tr -s ' ' ' ' | sed -e 's/:/:/'
+echo "--------------------------------"
+echo ""
 # cust-binfo-post ends here
 
 # Confirm Customization
