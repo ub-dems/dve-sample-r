@@ -491,7 +491,7 @@ grep -l -r \
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 grep -r \
      --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
-     -I -e "$CUST_T_PACKAGE_NAME" | \
+     -I -e "$CUST_T_DATA_LINK" | \
     tr -s ' ' '^' | sed -e 's/:/\t/'
 # cust-data-post ends here
 
@@ -551,9 +551,9 @@ echo ""
 
 perl -pi -e  "s{(given\s*=\s*)\"\Q$CUST_S_INFO_AUTH_NAME\E\"}{\1\"$CUST_T_INFO_AUTH_NAME\"}" ./DESCRIPTION
 perl -pi -e  "s{(family\s*=\s*)\"\Q$CUST_S_INFO_AUTH_SURNAME\E\"}{\1\"$CUST_T_INFO_AUTH_SURNAME\"}" ./DESCRIPTION
-perl -pi -e  "s{(email\s*=\s*)\"\Q$CUST_S_INFO_AUTH_EMAIL\E\"}{\1\"$CUST_T_INFO_AUTH_EMAIL\"}" ./DESCRIPTION
-perl -pi -e  "s{(Title\s*:\s*)\Q$CUST_S_INFO_TITLE\E}{\1$CUST_T_TITLE}" ./DESCRIPTION
-perl -pi -e  "s{(Description\s*:\s*)\Q$CUST_S_INFO_DESC\E}{\1$CUST_T_DESC}" ./DESCRIPTION
+perl -pi -e  "s{(email\s*=\s*)\"$CUST_S_INFO_AUTH_EMAIL\"}{\1\"$CUST_T_INFO_AUTH_EMAIL\"}" ./DESCRIPTION
+perl -pi -e  "s{(Title\s*:\s*)\Q$CUST_S_INFO_TITLE\E}{\1$CUST_T_INFO_TITLE}" ./DESCRIPTION
+perl -pi -e  "s{(Description\s*:\s*)\Q$CUST_S_INFO_DESC\E}{\1$CUST_T_INFO_DESC}" ./DESCRIPTION
 # cust-pinfo ends here
 
 
@@ -591,22 +591,22 @@ echo ""
 [ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
 
 find ./docker/r-images/dockerfiles -name '*.Dockerfile' -exec \
-  perl -pi -e  "s{(org.opencontainers.image.authors=\").*\"}{\1\Q${CUST_T_INFO_AUTHORS}\E\"}g" {} \;
+  perl -pi -e  "s{(org.opencontainers.image.authors=\").*\"}{\1${CUST_T_INFO_AUTHORS}\"}" {} \;
 
 find ./docker/r-images/dockerfiles -name '*.Dockerfile' -exec \
-  perl -pi -e  "s{(org.opencontainers.image.description=\").*\"}{\1\Q${CUST_T_INFO_DESC}\E\"}g" {} \;
+  perl -pi -e  "s{(org.opencontainers.image.description=\").*\"}{\1${CUST_T_INFO_DESC}\"}" {} \;
 
 find ./docker/r-images/dockerfiles -name '*.Dockerfile' -exec \
-  perl -pi -e  "s{(it.unimib.datalab.from=\").*\"}{\1\Q${CUST_T_INFO_FROM}\E\"}g" {} \;
+  perl -pi -e  "s{(it.unimib.datalab.from=\").*\"}{\1${CUST_T_INFO_FROM}\"}" {} \;
 
 find ./docker/r-images/dockerfiles -name '*.Dockerfile' -exec \
-  perl -pi -e  "s{(it.unimib.datalab.owner=\").*\"}{\1\Q${CUST_T_INFO_OWNER}\E\"}g" {} \;
+  perl -pi -e  "s{(it.unimib.datalab.owner=\").*\"}{\1${CUST_T_INFO_OWNER}\"}" {} \;
 
 find ./docker/r-images/dockerfiles -name '*.Dockerfile' -exec \
-  perl -pi -e  "s{(it.unimib.datalab.cdc=\").*\"}{\1\Q${CUST_T_INFO_CDC}\E\"}g" {} \;
+  perl -pi -e  "s{(it.unimib.datalab.cdc=\").*\"}{\1${CUST_T_INFO_CDC}\"}" {} \;
 
 find ./docker/r-images/dockerfiles -name '*.Dockerfile' -exec \
-  perl -pi -e  "s{(it.unimib.datalab.tags=\").*\"}{\1\Q${CUST_T_INFO_TAGS}\E\"}g" {} \;
+  perl -pi -e  "s{(it.unimib.datalab.tags=\").*\"}{\1${CUST_T_INFO_TAGS}\"}" {} \;
 # cust-binfo ends here
 
 
