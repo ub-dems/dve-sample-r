@@ -249,14 +249,51 @@ if [ ! "${CUST_X_CUSTOMIZED}" = '0' ] ; then
   exit 1
 fi
 
-[ -z "$CUST_S_PACKAGE_NAME" ] && { echo "config error: CUST_S_PACKAGE_NAME"; exit 1; }
 [ -z "$CUST_S_PROJECT_NAME" ] && { echo "config error: CUST_S_PROJECT_NAME"; exit 1; }
-[ -z "$CUST_S_REPO_HOST" ]    && { echo "config error: CUST_S_REPO_HOST"; exit 1; }
-[ -z "$CUST_S_REPO_PATH" ]    && { echo "config error: CUST_S_REPO_PATH"; exit 1; }
-[ -z "$CUST_T_PACKAGE_NAME" ] && { echo "config error: CUST_T_PACKAGE_NAME"; exit 1; }
+[ -z "$CUST_S_PACKAGE_NAME" ] && { echo "config error: CUST_S_PACKAGE_NAME"; exit 1; }
+[ -z "$CUST_S_REPO_PATH" ] && { echo "config error: CUST_S_REPO_PATH"; exit 1; }
+[ -z "$CUST_S_REPO_HOST" ] && { echo "config error: CUST_S_REPO_HOST"; exit 1; }
+[ -z "$CUST_S_REGS_PATH" ] && { echo "config error: CUST_S_REGS_PATH"; exit 1; }
+[ -z "$CUST_S_REGS_HOST" ] && { echo "config error: CUST_S_REGS_HOST"; exit 1; }
+[ -z "$CUST_S_IMAGE_ANCHOR" ] && { echo "config error: CUST_S_IMAGE_ANCHOR"; exit 1; }
+[ -z "$CUST_S_VERS_BASE" ] && { echo "config error: CUST_S_VERS_BASE"; exit 1; }
+[ -z "$CUST_S_VERS_ROXY" ] && { echo "config error: CUST_S_VERS_ROXY"; exit 1; }
+[ -z "$CUST_S_DATA_LINK" ] && { echo "config error: CUST_S_DATA_LINK"; exit 1; }
+[ -z "$CUST_S_RENV_OPTS" ] && { echo "config error: CUST_S_RENV_OPTS"; exit 1; }
+[ -z "$CUST_S_INFO_AUTH_NAME" ] && { echo "config error: CUST_S_INFO_AUTH_NAME"; exit 1; }
+[ -z "$CUST_S_INFO_AUTH_SURNAME" ] && { echo "config error: CUST_S_INFO_AUTH_SURNAME"; exit 1; }
+[ -z "$CUST_S_INFO_AUTH_EMAIL" ] && { echo "config error: CUST_S_INFO_AUTH_EMAIL"; exit 1; }
+[ -z "$CUST_S_INFO_DESC" ] && { echo "config error: CUST_S_INFO_DESC"; exit 1; }
+[ -z "$CUST_S_INFO_TITLE" ] && { echo "config error: CUST_S_INFO_TITLE"; exit 1; }
+[ -z "$CUST_S_INFO_USER_EMAIL" ] && { echo "config error: CUST_S_INFO_USER_EMAIL"; exit 1; }
+[ -z "$CUST_S_INFO_AUTHORS" ] && { echo "config error: CUST_S_INFO_AUTHORS"; exit 1; }
+[ -z "$CUST_S_INFO_FROM" ] && { echo "config error: CUST_S_INFO_FROM"; exit 1; }
+[ -z "$CUST_S_INFO_OWNER" ] && { echo "config error: CUST_S_INFO_OWNER"; exit 1; }
+[ -z "$CUST_S_INFO_CDC" ] && { echo "config error: CUST_S_INFO_CDC"; exit 1; }
+[ -z "$CUST_S_INFO_TAGS" ] && { echo "config error: CUST_S_INFO_TAGS"; exit 1; }
+
 [ -z "$CUST_T_PROJECT_NAME" ] && { echo "config error: CUST_T_PROJECT_NAME"; exit 1; }
-[ -z "$CUST_T_REPO_HOST" ]    && { echo "config error: CUST_T_REPO_HOST"; exit 1; }
-[ -z "$CUST_T_REPO_PATH" ]    && { echo "config error: CUST_T_REPO_PATH"; exit 1; }
+[ -z "$CUST_T_PACKAGE_NAME" ] && { echo "config error: CUST_T_PACKAGE_NAME"; exit 1; }
+[ -z "$CUST_T_REPO_PATH" ] && { echo "config error: CUST_T_REPO_PATH"; exit 1; }
+[ -z "$CUST_T_REPO_HOST" ] && { echo "config error: CUST_T_REPO_HOST"; exit 1; }
+[ -z "$CUST_T_REGS_PATH" ] && { echo "config error: CUST_T_REGS_PATH"; exit 1; }
+[ -z "$CUST_T_REGS_HOST" ] && { echo "config error: CUST_T_REGS_HOST"; exit 1; }
+[ -z "$CUST_T_IMAGE_ANCHOR" ] && { echo "config error: CUST_T_IMAGE_ANCHOR"; exit 1; }
+[ -z "$CUST_T_VERS_BASE" ] && { echo "config error: CUST_T_VERS_BASE"; exit 1; }
+[ -z "$CUST_T_VERS_ROXY" ] && { echo "config error: CUST_T_VERS_ROXY"; exit 1; }
+[ -z "$CUST_T_DATA_LINK" ] && { echo "config error: CUST_T_DATA_LINK"; exit 1; }
+[ -z "$CUST_T_RENV_OPTS" ] && { echo "config error: CUST_T_RENV_OPTS"; exit 1; }
+[ -z "$CUST_T_INFO_AUTH_NAME" ] && { echo "config error: CUST_T_INFO_AUTH_NAME"; exit 1; }
+[ -z "$CUST_T_INFO_AUTH_SURNAME" ] && { echo "config error: CUST_T_INFO_AUTH_SURNAME"; exit 1; }
+[ -z "$CUST_T_INFO_AUTH_EMAIL" ] && { echo "config error: CUST_T_INFO_AUTH_EMAIL"; exit 1; }
+[ -z "$CUST_T_INFO_DESC" ] && { echo "config error: CUST_T_INFO_DESC"; exit 1; }
+[ -z "$CUST_T_INFO_TITLE" ] && { echo "config error: CUST_T_INFO_TITLE"; exit 1; }
+[ -z "$CUST_T_INFO_USER_EMAIL" ] && { echo "config error: CUST_T_INFO_USER_EMAIL"; exit 1; }
+[ -z "$CUST_T_INFO_AUTHORS" ] && { echo "config error: CUST_T_INFO_AUTHORS"; exit 1; }
+[ -z "$CUST_T_INFO_FROM" ] && { echo "config error: CUST_T_INFO_FROM"; exit 1; }
+[ -z "$CUST_T_INFO_OWNER" ] && { echo "config error: CUST_T_INFO_OWNER"; exit 1; }
+[ -z "$CUST_T_INFO_CDC" ] && { echo "config error: CUST_T_INFO_CDC"; exit 1; }
+[ -z "$CUST_T_INFO_TAGS" ] && { echo "config error: CUST_T_INFO_TAGS"; exit 1; }
 # conf-check ends here
 
 # File Rename
