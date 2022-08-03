@@ -551,7 +551,7 @@ grep -F -e "$CUST_S_IMAGE_ANCHOR" ./docker/r-images/dockerfiles/anchor.Dockerfil
 [ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
 
 perl -pi -e  "s{(\s+R\s+)\Q$CUST_S_VERS_BASE\E}{\1$CUST_T_VERS_BASE}" ./DESCRIPTION
-perl -pi -e  "s{(RoxygenNote: )\Q$CUST_S_VERS_ROXY\E}{\1$CUST_T_VERS_ROXY}" ./DESCRIPTION
+perl -pi -e  "s{(RoxygenNote:)\s*\Q$CUST_S_VERS_ROXY\E}{\1 $CUST_T_VERS_ROXY}" ./DESCRIPTION
 
 perl -pi -e  "s{\Q$CUST_S_IMAGE_ANCHOR\E}{$CUST_T_IMAGE_ANCHOR}" ./docker/r-images/dockerfiles/anchor.Dockerfile
 # cust-vers ends here
