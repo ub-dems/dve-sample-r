@@ -68,6 +68,12 @@ CONTAINERS (podman)
 
 $(run_make help/build | perl -ne 'print if /^TARGETS:/../EOF/' | sed '1d')
 
+
+CUSTOMIZATION (once)
+--------------------
+
+$(run_make help/custom | perl -ne 'print if /^TARGETS:/../EOF/' | sed '1d')
+
 EOF
 
 

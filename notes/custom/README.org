@@ -1,0 +1,750 @@
+# ---
+#+TITLE: notes/custom/README.org: template customization
+#+SUBTITLE:  project initializaion from template
+#+AUTHOR: --
+#+DATE: <2022-07-28>
+# ---
+#+OPTIONS: toc:nil h:4
+#+STARTUP: show2levels
+#+LINK: dve-sample-r https://gitlab.com/ub-dems-public/ds-labs/dve-sample-r
+
+#+PROPERTY: header-args:bash :dir /ssh:dsuser@pp2:/home/dsuser/work/tm/us-proto-r
+#+PROPERTY: header-args:bash+ :export code  :tangle  ../../etc/custom/custom.sh :shebang "#!/bin/bash" :comments both
+:PROPERTIES:
+:header-args:R:          :session *R*
+:header-args:bash:       :session *ssh-1* 
+:END:
+
+|   |          |   |   |
+|---+----------+---+---|
+|   | [[../README.md][UP:(dir)]] |   |   |
+
+#+TOC: headlines 4
+
+
+* CUSTOMIZATION QUICK START
+** PROJECT CUSTOMIZATION
+*** First Time Customization
+
+   1. update project names in: [[file:~/work/vs/dve-sample-r/etc/custom/custom-target.conf::project target consts][etc/custom/custom-target.conf]]
+     
+#+NAME: sample-custom-target.conf
+#+BEGIN_EXAMPLE
+  # project source consts
+  CUST_S_PROJECT_NAME='dve-sample-r'
+  CUST_S_PACKAGE_NAME='dvesimpler'
+  CUST_S_REPO_PATH='ub-dems-public/ds-labs'
+  CUST_S_REPO_HOST='https://gitlab.com/'
+#+END_EXAMPLE
+
+  2. run customization script:
+  
+#+NAME: sample-custom-exec
+#+BEGIN_EXAMPLE
+  ./build.sh custom
+#+END_EXAMPLE
+     
+*** Updated Customization
+
+   1. update project names in: [[file:~/work/vs/dve-sample-r/etc/custom/custom-target.conf::project target consts][etc/custom/custom-target.conf]]
+     
+#+NAME: sample-2-custom-target.conf
+#+BEGIN_EXAMPLE
+  # project source consts
+  CUST_S_PROJECT_NAME='dve-sample-r'
+  CUST_S_PACKAGE_NAME='dvesimpler'
+  CUST_S_REPO_PATH='ub-dems-public/ds-labs'
+  CUST_S_REPO_HOST='https://gitlab.com/'
+#+END_EXAMPLE
+
+   2. re-emable custoization in: [[file:~/work/vs/dve-sample-r/etc/custom/custom.conf::project customization config][etc/custom/cunstom.conf]]
+     
+#+NAME: sample-2-custom.conf
+#+BEGIN_EXAMPLE
+  CUST_X_CUSTOMIZED=0
+#+END_EXAMPLE
+
+  3. run customization script:
+  
+#+NAME: sample-2-custom-exec
+#+BEGIN_EXAMPLE
+  ./build.sh custom
+#+END_EXAMPLE
+     
+* REFERENCE
+** Developer's Guides
+*** Internal Documentation
+   * [[https://gitlab.com/ub-dems-public/ds-labs/dve-sample-r/-/blob/main/notes/usage/README.md][Project Usage Guide]]
+   * [[file:~/work/vs/dve-sample-r/notes/usage/README.md::1. \[Dependency Management\](devel/libs/README.md)][Project Usage Guide (local)]]
+*** Public Documentation
+   * [[https://r-pkgs.org/Metadata.html][R Packages: Package metadata]]
+   * [[https://rstudio.github.io/renv/articles/renv.html][Introduction to renv]]
+
+* CUSTOM
+
+** Export Heading
+*** Script Head
+#+NAME: script-heading
+#+BEGIN_SRC bash :eval no
+  ##
+  # ./etc/custom/custom.sh: initial project template customization
+  # 
+  # @see: ./notes/custom/README.org
+
+  # run from project root:
+  #
+  if [ ! -d ./etc/custom ]; then
+    echo '
+
+      custom.sh: initial project template customization
+
+
+      Usage:
+              ./build.sh custom
+
+      from project root
+
+      Config:
+
+       before customization, project informantion must be set in config:
+
+        nano ./etc/custom/custom-target.conf
+
+    '
+    exit 1
+  fi
+
+  mkdir -p ./logs/custom
+  LOGFILE=./logs/custom/custom-$(date -Isec).log
+  exec &> >(tee $LOGFILE)
+  #exec 3>&1 4>&2
+  #trap 'exec 2>&4 1>&3' 0 1 2 3
+  #exec 1>$LOGFILE 2>&1
+
+  echo ">>> project customization, ..."
+
+#+END_SRC
+
+** Status Check
+*** Info Session
+#+NAME: user-info
+#+BEGIN_SRC bash
+  whoami
+#+END_SRC
+
+#+NAME: host-info
+#+BEGIN_SRC bash
+    hostnamectl | \
+        perl -p -e 's/([^ :])\s+(\S)/\1_\2/g' | sed -e 's/:/\t/'
+#+END_SRC
+
+
+#+NAME: net-info
+#+BEGIN_SRC bash
+  ip -br -4 a | grep -v lo
+#+END_SRC
+
+
+#+NAME: project-info
+#+BEGIN_SRC bash
+  pwd
+#+END_SRC
+
+#+NAME: repo-info
+#+BEGIN_SRC bash
+  git remote -v
+#+END_SRC
+
+#+NAME: repo-status
+#+BEGIN_SRC bash :results output drawer replace
+    git -c color.ui=false status | \
+        sed -e 's/^/> /'
+#+END_SRC
+
+** Naming Config
+*** Source Config
+
+#+NAME: conf-custom
+#+BEGIN_SRC bash
+  [ -f ./etc/custom/custom.conf ] || sed 's/^ *//' >> ./etc/custom/custom.conf <<-EOF
+  # project customization config
+  set -a
+  #  
+  CUST_X_CUSTOMIZED=0
+  #  
+  . ./etc/custom/custom-source.conf  
+  . ./etc/custom/custom-target.conf  
+  #  
+  set +a
+  EOF
+#+END_SRC
+
+#+RESULTS: conf-custom
+
+#+NAME: custom-source.conf
+#+BEGIN_SRC bash
+  [ -f ./etc/custom/custom-source.conf ] || sed 's/^ *//' >> ./etc/custom/custom-source.conf <<-EOF
+  ##
+  # customization: project source consts
+  #
+  # ---(project)---
+  CUST_S_PROJECT_NAME='dve-sample-r'
+  # ---(package)---
+  CUST_S_PACKAGE_NAME='dvesimpler'
+  # ---(source repository)---
+  CUST_S_REPO_PATH='ub-dems-public/ds-labs'
+  CUST_S_REPO_HOST='https://gitlab.com/'
+  # ---(image registry)---
+  CUST_S_REGS_PATH='ubdems'
+  CUST_S_REGS_HOST='docker.io'
+  # ---(environment versions)---
+  CUST_S_IMAGE_ANCHOR='rocker/tidyverse:latest'
+  CUST_S_VERS_BASE='(>= 3.6.0)'
+  CUST_S_VERS_ROXY='7.2.0'
+  # ---(data import links)---
+  CUST_S_DATA_LINK='dve-ds'
+  # ---(renv support options)---
+  CUST_S_RENV_OPTS='enable,auto'
+  # ---(project description)---
+  CUST_S_INFO_AUTH_NAME='datalab'
+  CUST_S_INFO_AUTH_SURNAME='DEMS'
+  CUST_S_INFO_AUTH_EMAIL='datalab@unimib.it'
+  CUST_S_INFO_DESC='TODO:description'
+  CUST_S_INFO_TITLE='TODO:title'
+  # ---(image labels)---
+  CUST_S_INFO_USER_EMAIL='dsuser.dems@gmail.com'
+  CUST_S_INFO_AUTHORS="${CUST_S_INFO_AUTH_SURNAME}/${CUST_S_INFO_AUTH_NAME} <${CUST_S_INFO_USER_EMAIL}>"
+  CUST_S_INFO_FROM='2022-08-02'
+  CUST_S_INFO_OWNER='ab21010'
+  CUST_S_INFO_CDC='ds-101'
+  CUST_S_INFO_TAGS='none'
+  EOF
+#+END_SRC
+
+#+RESULTS: custom-source.conf
+
+*** Target Config
+
+#+NAME: custom-target.conf
+#+BEGIN_SRC bash
+  [ -f ./etc/custom/custom-target.conf ] || sed 's/^ *//' >> ./etc/custom/custom-target.conf <<-EOF
+  ##
+  # customization: project target consts
+  #
+  # ---(project)---
+  CUST_T_PROJECT_NAME='us-proto-r'
+  # ---(package)---
+  CUST_T_PACKAGE_NAME='USprotoR'
+  # ---(source repository)---
+  CUST_T_REPO_PATH='ub-dems/cs-labs/user-dsuser'
+  CUST_T_REPO_HOST='https://gitlab.com/'
+  # ---(image registry)---
+  CUST_T_REGS_PATH='ubdems'
+  CUST_T_REGS_HOST='docker.io'
+  # ---(environment versions)---
+  CUST_T_IMAGE_ANCHOR='rocker/tidyverse:latest'
+  CUST_T_VERS_BASE='(>= 3.6.0)'
+  CUST_T_VERS_ROXY='7.2.0'
+  # ---(data import links)---
+  CUST_T_DATA_LINK='dve-ds'
+  # ---(renv support options)---
+  CUST_T_RENV_OPTS='enable,auto'
+  # ---(project description)---
+  CUST_T_INFO_AUTH_NAME='_datalab_'
+  CUST_T_INFO_AUTH_SURNAME='_DEMS_'
+  CUST_T_INFO_AUTH_EMAIL='_datalab@unimib.it_'
+  CUST_T_INFO_DESC='_TODO:description_'
+  CUST_T_INFO_TITLE='_TODO:title_'
+  # ---(image labels)---
+  CUST_T_INFO_USER_EMAIL='_dsuser.dems@gmail.com'
+  CUST_T_INFO_AUTHORS="${CUST_T_INFO_AUTH_SURNAME}/${CUST_T_INFO_AUTH_NAME} <${CUST_T_INFO_USER_EMAIL}>"
+  CUST_T_INFO_FROM='_2022-08-02_'
+  CUST_T_INFO_OWNER='_ab21010_'
+  CUST_T_INFO_CDC='_ds-101_'
+  CUST_T_INFO_TAGS='_none_'
+  EOF
+#+END_SRC
+
+#+RESULTS: custom-target.conf
+
+#+NAME: conf-show
+#+BEGIN_SRC bash
+  [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+  env | grep ^CUST_ | tr '=' '\t' | sort
+#+END_SRC
+
+#+RESULTS: conf-show
+| CUST_S_PACKAGE_NAME | dvesimpler                  |
+| CUST_S_PROJECT_NAME | dve-sample-r                |
+| CUST_S_REPO_HOST    | https://gitlab.com/         |
+| CUST_S_REPO_PATH    | ub-dems-public/ds-labs      |
+| CUST_T_PACKAGE_NAME | USprotoR                    |
+| CUST_T_PROJECT_NAME | us-proto-r                  |
+| CUST_T_REPO_HOST    | https://gitlab.com/         |
+| CUST_T_REPO_PATH    | ub-dems/cs-labs/user-dsuser |
+| CUST_X_CUSTOMIZED   | 0                           |
+
+#+NAME: conf-check
+#+BEGIN_SRC bash
+  [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+  if [ ! "${CUST_X_CUSTOMIZED}" = '0' ] ; then
+    echo '
+
+      WARNING: project already customized, exiting ...
+
+      To re-enable customization, set
+
+      CUST_X_CUSTOMIZED=0
+
+      in ./etc/custom/custom.conf,
+
+      update new target customization
+
+      in ./etc/custom/custom-target.conf,
+
+      and re-execute customization with:
+
+      ./build.sh custom
+
+    '
+    exit 1
+  fi
+
+  [ -z "$CUST_S_PROJECT_NAME" ] && { echo "config error: CUST_S_PROJECT_NAME"; exit 1; }
+  [ -z "$CUST_S_PACKAGE_NAME" ] && { echo "config error: CUST_S_PACKAGE_NAME"; exit 1; }
+  [ -z "$CUST_S_REPO_PATH" ] && { echo "config error: CUST_S_REPO_PATH"; exit 1; }
+  [ -z "$CUST_S_REPO_HOST" ] && { echo "config error: CUST_S_REPO_HOST"; exit 1; }
+  [ -z "$CUST_S_REGS_PATH" ] && { echo "config error: CUST_S_REGS_PATH"; exit 1; }
+  [ -z "$CUST_S_REGS_HOST" ] && { echo "config error: CUST_S_REGS_HOST"; exit 1; }
+  [ -z "$CUST_S_IMAGE_ANCHOR" ] && { echo "config error: CUST_S_IMAGE_ANCHOR"; exit 1; }
+  [ -z "$CUST_S_VERS_BASE" ] && { echo "config error: CUST_S_VERS_BASE"; exit 1; }
+  [ -z "$CUST_S_VERS_ROXY" ] && { echo "config error: CUST_S_VERS_ROXY"; exit 1; }
+  [ -z "$CUST_S_DATA_LINK" ] && { echo "config error: CUST_S_DATA_LINK"; exit 1; }
+  [ -z "$CUST_S_RENV_OPTS" ] && { echo "config error: CUST_S_RENV_OPTS"; exit 1; }
+  [ -z "$CUST_S_INFO_AUTH_NAME" ] && { echo "config error: CUST_S_INFO_AUTH_NAME"; exit 1; }
+  [ -z "$CUST_S_INFO_AUTH_SURNAME" ] && { echo "config error: CUST_S_INFO_AUTH_SURNAME"; exit 1; }
+  [ -z "$CUST_S_INFO_AUTH_EMAIL" ] && { echo "config error: CUST_S_INFO_AUTH_EMAIL"; exit 1; }
+  [ -z "$CUST_S_INFO_DESC" ] && { echo "config error: CUST_S_INFO_DESC"; exit 1; }
+  [ -z "$CUST_S_INFO_TITLE" ] && { echo "config error: CUST_S_INFO_TITLE"; exit 1; }
+  [ -z "$CUST_S_INFO_USER_EMAIL" ] && { echo "config error: CUST_S_INFO_USER_EMAIL"; exit 1; }
+  [ -z "$CUST_S_INFO_AUTHORS" ] && { echo "config error: CUST_S_INFO_AUTHORS"; exit 1; }
+  [ -z "$CUST_S_INFO_FROM" ] && { echo "config error: CUST_S_INFO_FROM"; exit 1; }
+  [ -z "$CUST_S_INFO_OWNER" ] && { echo "config error: CUST_S_INFO_OWNER"; exit 1; }
+  [ -z "$CUST_S_INFO_CDC" ] && { echo "config error: CUST_S_INFO_CDC"; exit 1; }
+  [ -z "$CUST_S_INFO_TAGS" ] && { echo "config error: CUST_S_INFO_TAGS"; exit 1; }
+
+  [ -z "$CUST_T_PROJECT_NAME" ] && { echo "config error: CUST_T_PROJECT_NAME"; exit 1; }
+  [ -z "$CUST_T_PACKAGE_NAME" ] && { echo "config error: CUST_T_PACKAGE_NAME"; exit 1; }
+  [ -z "$CUST_T_REPO_PATH" ] && { echo "config error: CUST_T_REPO_PATH"; exit 1; }
+  [ -z "$CUST_T_REPO_HOST" ] && { echo "config error: CUST_T_REPO_HOST"; exit 1; }
+  [ -z "$CUST_T_REGS_PATH" ] && { echo "config error: CUST_T_REGS_PATH"; exit 1; }
+  [ -z "$CUST_T_REGS_HOST" ] && { echo "config error: CUST_T_REGS_HOST"; exit 1; }
+  [ -z "$CUST_T_IMAGE_ANCHOR" ] && { echo "config error: CUST_T_IMAGE_ANCHOR"; exit 1; }
+  [ -z "$CUST_T_VERS_BASE" ] && { echo "config error: CUST_T_VERS_BASE"; exit 1; }
+  [ -z "$CUST_T_VERS_ROXY" ] && { echo "config error: CUST_T_VERS_ROXY"; exit 1; }
+  [ -z "$CUST_T_DATA_LINK" ] && { echo "config error: CUST_T_DATA_LINK"; exit 1; }
+  [ -z "$CUST_T_RENV_OPTS" ] && { echo "config error: CUST_T_RENV_OPTS"; exit 1; }
+  [ -z "$CUST_T_INFO_AUTH_NAME" ] && { echo "config error: CUST_T_INFO_AUTH_NAME"; exit 1; }
+  [ -z "$CUST_T_INFO_AUTH_SURNAME" ] && { echo "config error: CUST_T_INFO_AUTH_SURNAME"; exit 1; }
+  [ -z "$CUST_T_INFO_AUTH_EMAIL" ] && { echo "config error: CUST_T_INFO_AUTH_EMAIL"; exit 1; }
+  [ -z "$CUST_T_INFO_DESC" ] && { echo "config error: CUST_T_INFO_DESC"; exit 1; }
+  [ -z "$CUST_T_INFO_TITLE" ] && { echo "config error: CUST_T_INFO_TITLE"; exit 1; }
+  [ -z "$CUST_T_INFO_USER_EMAIL" ] && { echo "config error: CUST_T_INFO_USER_EMAIL"; exit 1; }
+  [ -z "$CUST_T_INFO_AUTHORS" ] && { echo "config error: CUST_T_INFO_AUTHORS"; exit 1; }
+  [ -z "$CUST_T_INFO_FROM" ] && { echo "config error: CUST_T_INFO_FROM"; exit 1; }
+  [ -z "$CUST_T_INFO_OWNER" ] && { echo "config error: CUST_T_INFO_OWNER"; exit 1; }
+  [ -z "$CUST_T_INFO_CDC" ] && { echo "config error: CUST_T_INFO_CDC"; exit 1; }
+  [ -z "$CUST_T_INFO_TAGS" ] && { echo "config error: CUST_T_INFO_TAGS"; exit 1; }
+
+#+END_SRC
+
+** Project Customization
+*** File Rename
+
+#+NAME: cust-rename-pre
+#+BEGIN_SRC bash
+  [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+  find . -name "$CUST_S_PACKAGE_NAME*" -o -name "$CUST_S_PROJECT_NAME*"
+
+#+END_SRC
+
+#+NAME: cust-rename
+#+BEGIN_SRC bash :results output drawer replace
+  [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+  [ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
+
+  mv -v ./${CUST_S_PACKAGE_NAME}.Rproj ./${CUST_T_PACKAGE_NAME}.Rproj
+  mv -v ./man/${CUST_S_PACKAGE_NAME}-package.Rd ./man/${CUST_T_PACKAGE_NAME}-package.Rd
+  mv -v ./R/${CUST_S_PACKAGE_NAME}.r ./R/${CUST_T_PACKAGE_NAME}.r
+
+#+END_SRC
+
+#+NAME: cust-rename-post
+#+BEGIN_SRC bash
+  [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+  find . -name "$CUST_T_PACKAGE_NAME*" -o -name "$CUST_T_PROJECT_NAME*"
+#+END_SRC
+
+*** Package Name
+
+#+NAME: cust-package-pre
+#+BEGIN_SRC bash
+        [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+        grep -r \
+             --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+             -I -e "$CUST_S_PACKAGE_NAME" | \
+            tr -s ' ' '^' | sed -e 's/:/\t/'
+#+END_SRC
+
+#+NAME: cust-package
+#+BEGIN_SRC bash :results output drawer replace
+      [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+      [ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
+
+      grep -l -r \
+           --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+           -I -e "$CUST_S_PACKAGE_NAME" | \
+        xargs -t -l1 perl -pi -e  "s{$CUST_S_PACKAGE_NAME}{$CUST_T_PACKAGE_NAME}g"
+
+
+#+END_SRC
+
+
+#+NAME: cust-package-post
+#+BEGIN_SRC bash
+        [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+        grep -r \
+             --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+             -I -e "$CUST_T_PACKAGE_NAME" | \
+            tr -s ' ' '^' | sed -e 's/:/\t/'
+#+END_SRC
+
+*** Repo Address
+
+#+NAME: cust-repo-pre
+#+BEGIN_SRC bash
+        [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+        grep -r \
+             --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+             -I -e "$CUST_S_REPO_PATH" | \
+            tr -s ' ' '^' | sed -e 's/:/\t/'
+#+END_SRC
+
+#+NAME: cust-repo
+#+BEGIN_SRC bash :results output drawer replace
+          [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+          [ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
+
+          grep -l -r \
+               --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+               -I -e "CUST_S_REPO_HOST$CUST_S_REPO_PATH" | \
+            xargs -t -l1 perl -pi -e  "s{$CUST_S_REPO_HOST$CUST_S_REPO_PATH}{$CUST_T_REPO_HOST$CUST_T_REPO_PATH}g"
+
+          grep -l -r \
+               --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+               -I -e "$CUST_S_REPO_PATH" | \
+            xargs -t -l1 perl -pi -e  "s{$CUST_S_REPO_PATH}{$CUST_T_REPO_PATH}g"
+
+
+#+END_SRC
+
+
+#+NAME: cust-repo-post
+#+BEGIN_SRC bash
+        [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+        grep -r \
+             --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+             -I -e "$CUST_T_REPO_PATH" | \
+            tr -s ' ' '^' | sed -e 's/:/\t/'
+#+END_SRC
+
+*** Registry Address
+
+#+NAME: cust-regs-pre
+#+BEGIN_SRC bash
+        [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+        grep -r \
+             --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+             -I -e "$CUST_S_REGS_PATH" | \
+            tr -s ' ' '^' | sed -e 's/:/\t/'
+#+END_SRC
+
+#+NAME: cust-regs
+#+BEGIN_SRC bash :results output drawer replace
+          [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+          [ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
+
+          grep -l -r \
+               --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+               -I -e "CUST_S_REGS_HOST/$CUST_S_REGS_PATH}" | \
+            xargs -t -l1 perl -pi -e  "s{$CUST_S_REGS_HOST/$CUST_S_REGS_PATH}{CUST_T_REGS_HOST/$CUST_T_REGS_PATH}g"
+
+          grep -l -r \
+               --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+               -I -e "$CUST_S_REGS_PATH" | \
+            xargs -t -l1 perl -pi -e  "s{$CUST_S_REGS_PATH}{$CUST_T_REGS_PATH}g"
+
+
+#+END_SRC
+
+
+#+NAME: cust-regs-post
+#+BEGIN_SRC bash
+        [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+        grep -r \
+             --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+             -I -e "$CUST_T_REGS_PATH" | \
+            tr -s ' ' '^' | sed -e 's/:/\t/'
+#+END_SRC
+
+*** Project Name
+
+#+NAME: cust-project-pre
+#+BEGIN_SRC bash
+        [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+        grep -r \
+             --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+             -I -e "$CUST_S_PROJECT_NAME" | \
+            tr -s ' ' '^' | sed -e 's/:/\t/'
+#+END_SRC
+
+#+NAME: cust-project
+#+BEGIN_SRC bash :results output drawer replace
+      [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+      [ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
+
+      grep -l -r \
+           --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+           -I -e "$CUST_S_PROJECT_NAME" | \
+        xargs -t -l1 perl -pi -e  "s{$CUST_S_PROJECT_NAME}{$CUST_T_PROJECT_NAME}g"
+
+
+#+END_SRC
+
+
+#+NAME: cust-project-post
+#+BEGIN_SRC bash
+        [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+        grep -r \
+             --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+             -I -e "$CUST_T_PROJECT_NAME" | \
+            tr -s ' ' '^' | sed -e 's/:/\t/'
+#+END_SRC
+
+*** Data Link
+
+#+NAME: cust-data-pre
+#+BEGIN_SRC bash
+        [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+        grep -r \
+             --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+             -I -e "$CUST_S_DATA_LINK" | \
+            tr -s ' ' '^' | sed -e 's/:/\t/'
+#+END_SRC
+
+#+NAME: cust-data
+#+BEGIN_SRC bash :results output drawer replace
+      [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+      [ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
+
+      grep -l -r \
+           --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+           -I -e "$CUST_S_DATA_LINK" | \
+        xargs -t -l1 perl -pi -e  "s{$CUST_S_DATA_LINK}{$CUST_T_DATA_LINK}g"
+
+
+#+END_SRC
+
+
+#+NAME: cust-data-post
+#+BEGIN_SRC bash
+        [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+        grep -r \
+             --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+             -I -e "$CUST_T_DATA_LINK" | \
+            tr -s ' ' '^' | sed -e 's/:/\t/'
+#+END_SRC
+
+
+*** Environment Versions
+
+#+NAME: cust-vers-pre
+#+BEGIN_SRC bash
+  [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+  grep -F -e "$CUST_S_VERS_BASE" -e "$CUST_S_VERS_ROXY" ./DESCRIPTION
+  grep -F -e "$CUST_S_IMAGE_ANCHOR" ./docker/r-images/dockerfiles/anchor.Dockerfile
+
+#+END_SRC
+
+#+NAME: cust-vers
+#+BEGIN_SRC bash :results output drawer replace
+  [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+  [ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
+
+  perl -pi -e  "s{(\s+R\s+)\Q$CUST_S_VERS_BASE\E}{\1$CUST_T_VERS_BASE}" ./DESCRIPTION
+  perl -pi -e  "s{(RoxygenNote:)\s*\Q$CUST_S_VERS_ROXY\E}{\1 $CUST_T_VERS_ROXY}" ./DESCRIPTION
+
+  perl -pi -e  "s{\Q$CUST_S_IMAGE_ANCHOR\E}{$CUST_T_IMAGE_ANCHOR}" ./docker/r-images/dockerfiles/anchor.Dockerfile
+
+#+END_SRC
+
+#+NAME: cust-vers-post
+#+BEGIN_SRC bash
+  [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+  grep -F -e "$CUST_T_VERS_BASE" -e "$CUST_T_VERS_ROXY" ./DESCRIPTION
+  grep -F -e "$CUST_T_IMAGE_ANCHOR" ./docker/r-images/dockerfiles/anchor.Dockerfile
+#+END_SRC
+
+
+*** Project Description
+
+#+NAME: cust-pinfo-vers-pre
+#+BEGIN_SRC bash
+  [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+  echo "--- DESCRIPTION ----------------"
+  cat ./DESCRIPTION
+  echo "--------------------------------"
+  echo ""
+
+#+END_SRC
+
+#+NAME: cust-pinfo
+#+BEGIN_SRC bash :results output drawer replace
+  [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+  [ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
+
+  perl -pi -e  "s{(given\s*=\s*)\"\Q$CUST_S_INFO_AUTH_NAME\E\"}{\1\"$CUST_T_INFO_AUTH_NAME\"}" ./DESCRIPTION
+  perl -pi -e  "s{(family\s*=\s*)\"\Q$CUST_S_INFO_AUTH_SURNAME\E\"}{\1\"$CUST_T_INFO_AUTH_SURNAME\"}" ./DESCRIPTION
+  perl -pi -e  's{(email\s*=\s*)\"\Q$ENV{CUST_S_INFO_AUTH_EMAIL}\E\"}{\1\"$ENV{CUST_T_INFO_AUTH_EMAIL}\"}' ./DESCRIPTION
+  perl -pi -e  "s{(Title\s*:\s*)\Q$CUST_S_INFO_TITLE\E}{\1$CUST_T_INFO_TITLE}" ./DESCRIPTION
+  perl -pi -e  "s{(Description\s*:\s*)\Q$CUST_S_INFO_DESC\E}{\1$CUST_T_INFO_DESC}" ./DESCRIPTION
+
+#+END_SRC
+
+#+NAME: cust-pinfo-post
+#+BEGIN_SRC bash
+  [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+  echo "--- DESCRIPTION ----------------"
+  cat ./DESCRIPTION
+  echo "--------------------------------"
+  echo ""
+#+END_SRC
+
+*** Image Description
+
+#+NAME: cust-binfo-pre
+#+BEGIN_SRC bash
+  [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+  echo "--- *.Dockerfiles ----------------"
+  find ./docker/r-images/dockerfiles -name '*.Dockerfile' -exec \
+       grep -I -e 'org.opencontainers.image' -e 'it.unimib.datalab' {} \; | sort -k2 | uniq | \
+      tr -s ' ' ' ' | sed -e 's/:/:/'
+  echo "--------------------------------"
+  echo ""
+#+END_SRC
+
+#+NAME: cust-binfo
+#+BEGIN_SRC bash :results output drawer replace
+  [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+  [ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
+
+  find ./docker/r-images/dockerfiles -name '*.Dockerfile' -exec \
+    perl -pi -e  "s{(org.opencontainers.image.authors=\").*\"}{\{1}${CUST_T_INFO_AUTHORS}\"}" {} \;
+
+  find ./docker/r-images/dockerfiles -name '*.Dockerfile' -exec \
+    perl -pi -e  "s{(org.opencontainers.image.description=\").*\"}{\{1}${CUST_T_INFO_DESC}\"}" {} \;
+
+  find ./docker/r-images/dockerfiles -name '*.Dockerfile' -exec \
+    perl -pi -e  "s{(it.unimib.datalab.from=\").*\"}{\{1}{CUST_T_INFO_FROM}\"}" {} \;
+
+  find ./docker/r-images/dockerfiles -name '*.Dockerfile' -exec \
+    perl -pi -e  "s{(it.unimib.datalab.owner=\").*\"}{\{1}${CUST_T_INFO_OWNER}\"}" {} \;
+
+  find ./docker/r-images/dockerfiles -name '*.Dockerfile' -exec \
+    perl -pi -e  "s{(it.unimib.datalab.cdc=\").*\"}{\{1}${CUST_T_INFO_CDC}\"}" {} \;
+
+  find ./docker/r-images/dockerfiles -name '*.Dockerfile' -exec \
+    perl -pi -e  "s{(it.unimib.datalab.tags=\").*\"}{\{1}${CUST_T_INFO_TAGS}\"}" {} \;
+
+
+#+END_SRC
+
+
+#+NAME: cust-binfo-post
+#+BEGIN_SRC bash
+  [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+  echo "--- *.Dockerfiles ----------------"
+  find ./docker/r-images/dockerfiles -name '*.Dockerfile' -exec \
+       grep -I -e 'org.opencontainers.image' -e 'it.unimib.datalab' {} \; | sort -k2 | uniq | \
+      tr -s ' ' ' ' | sed -e 's/:/:/'
+  echo "--------------------------------"
+  echo ""
+#+END_SRC
+
+*** Confirm Customization
+
+#+NAME: cust-confirm-pre
+#+BEGIN_SRC bash
+    [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+    env | grep ^CUST_ | tr '=' '\t' | sort
+#+END_SRC
+
+#+NAME: cust-confirm
+#+BEGIN_SRC bash  :results output drawer replace
+  [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+  [ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
+
+  ls -l ./etc/custom/*.conf
+
+  T="$(date -Isec)"
+  mkdir -p ./etc/custom/done/$T
+
+  echo "=== reset renv dependecies, ..."
+  [ -f ./renv.lock ] && mv -v  ./renv.lock ./etc/custom/done/$T
+  echo "=== run renv::init() to re-initialize."
+
+  cp -pv   ./etc/custom/*.conf ./etc/custom/done/$T
+
+  find ./etc/custom | sort
+
+  cp -pv ./etc/custom/custom-target.conf ./etc/custom/custom-source.conf
+  perl -pi -e  "s/CUST_T_/CUST_S_/"      ./etc/custom/custom-source.conf
+
+  perl -pi -e  "s/CUST_X_CUSTOMIZED\s*=\s*0/CUST_X_CUSTOMIZED=1/" ./etc/custom/custom.conf
+
+  ls -l ./etc/custom/*.conf
+
+#+END_SRC
+
+
+#+NAME: cust-confirm-post
+#+BEGIN_SRC bash
+    [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+    env | grep ^CUST_ | tr '=' '\t' | sort
+#+END_SRC
+
+** Export Trailing
+*** Script Tail
+#+NAME: script-tail
+#+BEGIN_SRC bash :eval no
+
+  echo "<<< project customization, done."
+
+  echo '
+
+   to check customized project, run:
+
+   ./build.sh setup
+
+   ./runtime.sh build all
+
+   project developer s guide is available at:
+
+      ,* https://gitlab.com/ub-dems-public/ds-labs/dve-sample-r/-/blob/main/notes/usage/README.md
+
+   '
+   echo "see:  $LOGFILE "
+   echo " "
+
+#+END_SRC
+

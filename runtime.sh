@@ -21,8 +21,8 @@ E_MAKE_FILE="${E_ROOT_DIR}/Makefile"
 # ---(usage)------------------------------------------------
 
 exit_usage() {
-
-cat <<EOF | $PAGER   
+export LESS="-Psman runtime.sh  (press h for help or q to quit)"
+cat <<EOF | $PAGER
 
 usage $0 [target] [args, ...]
 
@@ -33,6 +33,7 @@ where "target" is
   rstudio (default): runs rstudio-server bound on port 28787
   repl             : runs interactive R console
   cli ...          : runs Rscript with arguments
+  build ...        : runs ./build.sh with arguments inside runtime
   shell            : runs interactive shell prompt
   bash args,...    : runs shell with args,...
   term             : attach interactive shell to running runtime
@@ -43,6 +44,7 @@ Target aliases:
    rstudio => ide, RStudio
    repl    => r, R
    cli     => rscript, Rscript
+   build   => bld, build.sh
    shell   => sh, prompt
    bash    => do, command
    term    => in, attach
@@ -90,6 +92,16 @@ R Script
  ./runtime.sh Rscript exec/dummy_runner.R  
 
 to run scripts from ./exec directory 
+
+
+Shell Prompt
+------------
+
+ ./runtime.sh build all
+ ./runtime.sh build test
+ ./runtime.sh build docs
+
+for ./build.sh execution inside runtime container
 
 
 Shell Prompt
@@ -175,6 +187,10 @@ case "${command}" in
     sh|shell|prompt)
         shift
         target=runtime-shell
+        ;;
+    bld|build|build.sh)
+        shift
+        target=runtime-build
         ;;
     do|command)
         shift

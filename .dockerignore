@@ -1,5 +1,6 @@
 docker/
 .dockerignore
+etc/custom/
 inst/extdata/ext/
 .git/
 .github/

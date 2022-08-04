@@ -101,30 +101,68 @@ init: # @HELP/base initialize local (temp,logs) directories
 
 #}}} \\\
 
+#{{{ [ CUSTOMIZATION.* ] /////////////////////////////////////////////////////////////////
 
-#{{{ [ CONTAINERS.* ] /////////////////////////////////////////////////////////////////
+# ---(custom)------------------------------------------------
+
+.PHONY: custom custom-help
+
+custom: # @HELP/custom runs: ./etc/custom/custom.sh for initial project customization
+custom: init
+	bash ./etc/custom/custom.sh
+
+custom-help: help/custom
+
+#}}} \\\
+
+#{{{ [ ENVIRONMENT.* ] /////////////////////////////////////////////////////////////////
 
 # ---(build)------------------------------------------------
 
-.PHONY: setup update upgrade build-help
+.PHONY: setup prepare update upgrade build-help
+
+prepare: init
 
 setup: # @HELP/build initial build of all podman images
-setup:
-	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+setup:  init prepare build-setup build-validate
 
 update: # @HELP/build rebuild of modified podman images
-update:
-	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+update: init prepare build-update
 
 upgrade: # @HELP/build fresh rebuild of all podman images (pull)
-upgrade:
-	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+update: init prepare build-upgrade
 
 build-help: help/build
 
+#}}} \\\
+
+#{{{ [ CONTAINERS.* ] /////////////////////////////////////////////////////////////////
+
+# ---(images)------------------------------------------------
+
+.PHONY: build-setup build-update build-upgrade
+
+build-setup:
+	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+
+build-update:
+	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+
+build-upgrade:
+	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+
+
+# ---(inner check)------------------------------------------------
+
+.PHONY: build-validate
+
+build-validate:
+	./runtime.sh build all
+
+
 # ---(run)------------------------------------------------
 
-.PHONY: runtime-repl runtime-cli runtime-rstudio runtime-help
+.PHONY: runtime-repl runtime-cli runtime-shell runtime-build runtime-command runtime-term runtime-rstudio runtime-help
 
 runtime-repl: # @HELP/runtime ...
 runtime-repl:
@@ -136,6 +174,10 @@ runtime-cli:
 
 runtime-shell: # @HELP/runtime ...
 runtime-shell:
+	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+
+runtime-build: # @HELP/runtime ...
+runtime-build:
 	cd ${IMG_MAKE_DIR} && $(MAKE) $@
 
 runtime-command: # @HELP/runtime ...
@@ -241,7 +283,7 @@ help/%:
 	    '
 
 help: # @HELP/base prints this message
-help:  help/base help/build
+help:  help/base help/build 
 
 
 #}}} \\\
