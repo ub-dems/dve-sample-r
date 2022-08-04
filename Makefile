@@ -119,7 +119,9 @@ custom-help: help/custom
 
 # ---(build)------------------------------------------------
 
-.PHONY: setup update upgrade build-help
+.PHONY: setup prepare update upgrade build-help
+
+prepare: init
 
 setup: # @HELP/build initial build of all podman images
 setup:  init prepare build-setup
