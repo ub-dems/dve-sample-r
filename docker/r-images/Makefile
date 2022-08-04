@@ -174,7 +174,7 @@ build_image = {\
 
 # ---(commands)------------------------------------------------
 
-.PHONY: all clean setup test pack build shell server push pull update 
+.PHONY: all init clean
 
 # ---(generic)-------------------------------------------
 
@@ -188,90 +188,67 @@ clean: clean-all
 
 # ---(run)------------------------------------------------
 
-.PHONY: prepare setup update upgrade
+.PHONY: build-prepare build-setup build-update build-upgrade
 
-prepare: # @HELP ...
-prepare: init
+build-prepare: init
 
-setup: # @HELP ...
-setup:  init prepare build-image-runtime
+build-setup:  init build-prepare build-image-runtime
 
-update: # @HELP ...
-update: init build-image-runtime
+build-update: init build-image-runtime
 
-upgrade: # @HELP ...
-upgrade: COND_FORCE_PULL := 1
-upgrade: update
+build-upgrade: COND_FORCE_PULL := 1
+build-upgrade: update
 
 # ---(run)------------------------------------------------
 
 .PHONY: runtime runtime-repl runtime-cli runtime-rstudio
 
-runtime: # @HELP ...
 runtime: init run/runtime
 
-runtime-repl: # @HELP ...
 runtime-repl: init run/r-repl
 
-runtime-cli: # @HELP ...
 runtime-cli: init run/rscript-cli
 
-runtime-shell: # @HELP ...
 runtime-shell: init run/shell
 
-runtime-build: # @HELP ...
 runtime-build: init run/build
 
-runtime-command: # @HELP ...
 runtime-command: init run/command
 
-runtime-term: # @HELP ...
 runtime-term: init run/term
 
-runtime-rstudio: # @HELP ...
 runtime-rstudio: init run/rstudio-server
 
 
 # ---(worker)------------------------------------------------
 
-worker-pack: # @HELP/worker ...
 worker-pack: init build-image-worker
 
-worker-push: # @HELP/worker ...
 worker-push: init wrk/push
 
-worker-pull: # @HELP/worker ...
 worker-pull: init wrk/pull
 
-worker-make: # @HELP/worker ...
 worker-make: init wrk/make
 
-worker-test: # @HELP/worker ...
 worker-test: MAKE_ARGS := 'test'
 worker-test: worker-make
 
-worker-check: # @HELP/worker ...
 worker-check: MAKE_ARGS := 'check'
 worker-check: worker-make
 
-worker-docs: # @HELP/worker ...
 worker-docs: MAKE_ARGS := 'docs'
 worker-docs: worker-make
 
-worker-build: # @HELP/worker ...
 worker-build: MAKE_ARGS := 'build'
 worker-build: worker-make
 
-worker-install: # @HELP/worker ...
 worker-install: MAKE_ARGS := 'install'
 worker-install: worker-make
 
-worker-exec: # @HELP/worker ...
 worker-exec: WORKER_SCRIPT_FILE := "./starter.sh"
 worker-exec: WORKER_SCRIPT_ARGS := ${MAKE_REST}
 worker-exec: init wrk/runner
 
-worker-shell: # @HELP/worker ...
 worker-shell: init wrk/shell
 
 worker-help:  help/worker

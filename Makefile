@@ -101,6 +101,21 @@ init: # @HELP/base initialize local (temp,logs) directories
 
 #}}} \\\
 
+#{{{ [ SETUP.* ] /////////////////////////////////////////////////////////////////
+
+# ---(setup)------------------------------------------------
+
+.PHONY: prepare setup update upgrade
+
+prepare: # @HELP ...
+prepare: init
+
+setup: # @HELP ...
+setup:  init prepare img/setup
+
+
+#}}} \\\
+
 #{{{ [ CUSTOMIZATION.* ] /////////////////////////////////////////////////////////////////
 
 # ---(custom)------------------------------------------------
@@ -115,25 +130,40 @@ custom-help: help/custom
 
 #}}} \\\
 
-#{{{ [ CONTAINERS.* ] /////////////////////////////////////////////////////////////////
+#{{{ [ ENVIRONMENT.* ] /////////////////////////////////////////////////////////////////
 
 # ---(build)------------------------------------------------
 
 .PHONY: setup update upgrade build-help
 
 setup: # @HELP/build initial build of all podman images
-setup:
-	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+setup:  init prepare build-setup
 
 update: # @HELP/build rebuild of modified podman images
-update:
-	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+update: init prepare build-update
 
 upgrade: # @HELP/build fresh rebuild of all podman images (pull)
-upgrade:
-	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+update: init prepare build-upgrade
 
 build-help: help/build
+
+#}}} \\\
+
+#{{{ [ CONTAINERS.* ] /////////////////////////////////////////////////////////////////
+
+# ---(images)------------------------------------------------
+
+.PHONY: build-setup build-update build-upgrade
+
+build-setup:
+	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+
+build-update:
+	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+
+build-upgrade:
+	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+
 
 # ---(run)------------------------------------------------
 
