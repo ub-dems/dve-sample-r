@@ -124,7 +124,7 @@ custom-help: help/custom
 prepare: init
 
 setup: # @HELP/build initial build of all podman images
-setup:  init prepare build-setup
+setup:  init prepare build-setup build-validate
 
 update: # @HELP/build rebuild of modified podman images
 update: init prepare build-update
