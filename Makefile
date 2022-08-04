@@ -101,21 +101,6 @@ init: # @HELP/base initialize local (temp,logs) directories
 
 #}}} \\\
 
-#{{{ [ SETUP.* ] /////////////////////////////////////////////////////////////////
-
-# ---(setup)------------------------------------------------
-
-.PHONY: prepare setup update upgrade
-
-prepare: # @HELP ...
-prepare: init
-
-setup: # @HELP ...
-setup:  init prepare img/setup
-
-
-#}}} \\\
-
 #{{{ [ CUSTOMIZATION.* ] /////////////////////////////////////////////////////////////////
 
 # ---(custom)------------------------------------------------
@@ -163,6 +148,14 @@ build-update:
 
 build-upgrade:
 	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+
+
+# ---(inner check)------------------------------------------------
+
+.PHONY: build-validate
+
+build-validate:
+	./runtime.sh build all
 
 
 # ---(run)------------------------------------------------
