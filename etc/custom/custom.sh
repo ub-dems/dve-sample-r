@@ -137,6 +137,7 @@ CUST_S_VERS_BASE='(>= 3.6.0)'
 CUST_S_VERS_ROXY='7.2.0'
 # ---(data import links)---
 CUST_S_DATA_LINK='dve-ds'
+CUST_S_DATA_DEMO='1'
 # ---(renv support options)---
 CUST_S_RENV_OPTS='enable,auto'
 # ---(project description)---
@@ -180,6 +181,7 @@ CUST_T_VERS_BASE='(>= 3.6.0)'
 CUST_T_VERS_ROXY='7.2.0'
 # ---(data import links)---
 CUST_T_DATA_LINK='dve-ds'
+CUST_T_DATA_DEMO='1'
 # ---(renv support options)---
 CUST_T_RENV_OPTS='enable,auto'
 # ---(project description)---
@@ -492,6 +494,161 @@ grep -r \
      -I -e "$CUST_T_PROJECT_NAME" | \
     tr -s ' ' '^' | sed -e 's/:/\t/'
 # cust-project-post ends here
+
+# Data Store
+
+# #+NAME: cust-data-store-pre
+
+# [[file:../../notes/custom/README.org::cust-data-store-pre][cust-data-store-pre]]
+[ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+
+echo "#store - CUST_T_DATA_LINK=$CUST_T_DATA_LINK"
+
+ls -lda ~/data
+find -L ~/data
+find -L ~/data -type f -exec ls -lh {} \;
+# cust-data-store-pre ends here
+
+
+
+# #+NAME: cust-data-store
+
+# [[file:../../notes/custom/README.org::cust-data-store][cust-data-store]]
+[ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+[ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
+
+DD="$CUST_T_DATA_LINK"
+
+[ -n "${DD}" ] || { echo "#UNDEF: CUST_T_DATA_LINK"; exit 1; } 
+
+WD=$(pwd)
+
+# dd base
+
+mkdir -p ~/data
+
+mkdir -p        ~/data/def/dd
+chgrp -R dsdata ~/data/def/dd 
+chmod -R g+rws  ~/data/def/dd 
+ls -l           ~/data/def
+
+mkdir -p /user/$USER
+
+
+cd ~/data
+[ -f /store/local ] && ln -s     /store/local 
+[ -f /store/local ] || mkdir -p  ~/data/local
+[ -f /store/share ] && ln -s     /store/share
+[ -f /store/share ] || mkdir -p  ~/data/share
+
+[ -f /user/$USER ] && ln -s     /user/$USER user
+[ -f /user/$USER ] || mkdir -p  ~/data/user
+
+cd -
+
+# dd path
+
+mkdir -p ~/data/def/dd/$DD.def
+mkdir -p ~/data/local/dd/$DD.loc
+mkdir -p ~/data/user/dd/$DD.vol
+mkdir -p ~/data/share/lib/dd/$DD.net
+
+
+# sample data
+
+if [ "${CUST_T_DATA_DEMO}" = '1' ]; then
+
+    [ -d /vol/glob/dvd/data/vs ] || sudo mount /vol/glob/dvd
+
+    if [ ! -d ~/data/share/lib/dd/$DD.net/examples ]; then
+
+        cp -rv /vol/glob/dvd/data/vs/dve-ds.net/. ~/data/share/lib/dd/$DD.net
+        chown -R $USER:dsdata ~/data/share/lib/dd/$DD.net
+        chmod -R u+w,g+w ~/data/share/lib/dd/$DD.net
+        cp -rv /vol/glob/dvd/data/vs/dve-ds.loc/. ~/data/local/dd/$DD.loc
+        chown -R $USER:dsdata ~/data/local/dd/$DD.loc
+        chmod -R u+w,g+w ~/data/local/dd/$DD.loc
+
+    fi
+
+    cp -rv /vol/glob/dvd/data/vs/dve-ds.def/. ~/data/def/dd/$DD.def
+    chown -R $USER:dsdata ~/data/def/dd/$DD.def
+    chmod -R u+w,g+w ~/data/def/dd/$DD.def
+
+fi
+
+# ---
+
+cd $WD
+# cust-data-store ends here
+
+
+
+
+# #+NAME: cust-data-store-post
+
+# [[file:../../notes/custom/README.org::cust-data-store-post][cust-data-store-post]]
+[ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+
+echo "#store - CUST_T_DATA_LINK=$CUST_T_DATA_LINK"
+
+ls -lda ~/data
+find -L ~/data
+find -L ~/data -type f -exec ls -lh {} \;
+# cust-data-store-post ends here
+
+# Data Import
+
+# #+NAME: cust-data-import-pre
+
+# [[file:../../notes/custom/README.org::cust-data-import-pre][cust-data-import-pre]]
+[ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+
+echo "#import - CUST_T_DATA_LINK=$CUST_T_DATA_LINK"
+
+find -L inst/extdata
+find -L inst/extdata -type f -exec ls -lh {} \;
+# cust-data-import-pre ends here
+
+
+
+# #+NAME: cust-data-import
+
+# [[file:../../notes/custom/README.org::cust-data-import][cust-data-import]]
+[ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+[ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
+
+mkdir -p ./inst/extdata/ext
+
+ls -la ./inst/extdata/ext
+cd     ./inst/extdata/ext
+cat .gitignore
+
+DD="$CUST_T_DATA_LINK"
+
+ln -s ~/data/def/dd/$DD.def         $DD.def
+ln -s ~/data/local/dd/$DD.loc       $DD.loc
+ln -s ~/data/share/lib/dd/$DD.net   $DD.net
+
+ls -l
+ls -l */.
+
+cd ../../..
+# cust-data-import ends here
+
+
+
+
+# #+NAME: cust-data-import-post
+
+# [[file:../../notes/custom/README.org::cust-data-import-post][cust-data-import-post]]
+[ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+
+echo "#import - CUST_T_DATA_LINK=$CUST_T_DATA_LINK"
+
+find -L inst/extdata
+find -L inst/extdata -type f -exec ls -lh {} \;
+# cust-data-import-post ends here
 
 # Data Link
 
