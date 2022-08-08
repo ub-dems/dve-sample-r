@@ -618,6 +618,8 @@ find -L inst/extdata -type f -exec ls -lh {} \;
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 [ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
 
+WD=$(pwd)
+
 mkdir -p ./inst/extdata/ext
 
 ls -la ./inst/extdata/ext
@@ -633,7 +635,9 @@ ln -s ~/data/share/lib/dd/$DD.net   $DD.net
 ls -l
 ls -l */.
 
-cd ../../..
+# ---
+
+cd $WD
 # cust-data-import ends here
 
 
@@ -785,22 +789,22 @@ echo ""
 [ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
 
 find ./docker/r-images/dockerfiles -name '*.Dockerfile' -exec \
-  perl -pi -e  "s{(org.opencontainers.image.authors=\").*\"}{\{1}${CUST_T_INFO_AUTHORS}\"}" {} \;
+  perl -pi -e  's{(org.opencontainers.image.authors=").*"}{\{1}$ENV{CUST_T_INFO_AUTHORS}"}' {} \;
 
 find ./docker/r-images/dockerfiles -name '*.Dockerfile' -exec \
-  perl -pi -e  "s{(org.opencontainers.image.description=\").*\"}{\{1}${CUST_T_INFO_DESC}\"}" {} \;
+  perl -pi -e  's{(org.opencontainers.image.description=").*"}{\{1}$ENV{CUST_T_INFO_DESC}"}' {} \;
 
 find ./docker/r-images/dockerfiles -name '*.Dockerfile' -exec \
-  perl -pi -e  "s{(it.unimib.datalab.from=\").*\"}{\{1}{CUST_T_INFO_FROM}\"}" {} \;
+  perl -pi -e  's{(it.unimib.datalab.from=").*"}{\{1}$ENV{CUST_T_INFO_FROM}"}' {} \;
 
 find ./docker/r-images/dockerfiles -name '*.Dockerfile' -exec \
-  perl -pi -e  "s{(it.unimib.datalab.owner=\").*\"}{\{1}${CUST_T_INFO_OWNER}\"}" {} \;
+  perl -pi -e  's{(it.unimib.datalab.owner=").*"}{\{1}$ENV{CUST_T_INFO_OWNER}"}' {} \;
 
 find ./docker/r-images/dockerfiles -name '*.Dockerfile' -exec \
-  perl -pi -e  "s{(it.unimib.datalab.cdc=\").*\"}{\{1}${CUST_T_INFO_CDC}\"}" {} \;
+  perl -pi -e  's{(it.unimib.datalab.cdc=").*"}{\{1}$ENV{CUST_T_INFO_CDC}"}' {} \;
 
 find ./docker/r-images/dockerfiles -name '*.Dockerfile' -exec \
-  perl -pi -e  "s{(it.unimib.datalab.tags=\").*\"}{\{1}${CUST_T_INFO_TAGS}\"}" {} \;
+  perl -pi -e  's{(it.unimib.datalab.tags=").*"}{\{1}$ENV{CUST_T_INFO_TAGS}"}' {} \;
 # cust-binfo ends here
 
 
