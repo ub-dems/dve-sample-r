@@ -388,7 +388,10 @@
   echo "#:> (cust-rename)"
 
   [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+  echo "--------------------------------"
   find . -name "$CUST_S_PACKAGE_NAME*" -o -name "$CUST_S_PROJECT_NAME*"
+  echo "--------------------------------"
+  echo ""
 #+END_SRC
 
 #+NAME: cust-rename
@@ -405,8 +408,10 @@
 #+NAME: cust-rename-post
 #+BEGIN_SRC bash
   [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+  echo "--------------------------------"
   find . -name "$CUST_T_PACKAGE_NAME*" -o -name "$CUST_T_PROJECT_NAME*"
-
+  echo "--------------------------------"
+  echo ""
   echo "#:< (cust-rename)"
 #+END_SRC
 
@@ -419,7 +424,7 @@
   [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
   echo "--------------------------------"
   grep -r \
-       --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+       --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=home --exclude-dir=logs \
        -I -e "$CUST_S_PACKAGE_NAME" | \
       tr -s ' ' '^' | sed -e 's/:/\t/'
   echo "--------------------------------"
@@ -432,7 +437,7 @@
   [ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
 
   grep -l -r \
-       --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+       --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=home --exclude-dir=logs \
        -I -e "$CUST_S_PACKAGE_NAME" | \
     xargs -t -l1 perl -pi -e  "s{$CUST_S_PACKAGE_NAME}{$CUST_T_PACKAGE_NAME}g"
 
@@ -444,7 +449,7 @@
   [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
   echo "--------------------------------"
   grep -r \
-       --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+       --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=home --exclude-dir=logs \
        -I -e "$CUST_T_PACKAGE_NAME" | \
       tr -s ' ' '^' | sed -e 's/:/\t/'
   echo "--------------------------------"
@@ -461,7 +466,7 @@
   [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
   echo "--------------------------------"
   grep -r \
-       --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+       --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=home --exclude-dir=logs \
        -I -e "$CUST_S_REPO_PATH" | \
       tr -s ' ' '^' | sed -e 's/:/\t/'
   echo "--------------------------------"
@@ -474,12 +479,12 @@
   [ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
 
   grep -l -r \
-       --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+       --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=home --exclude-dir=logs \
        -I -e "CUST_S_REPO_HOST$CUST_S_REPO_PATH" | \
     xargs -t -l1 perl -pi -e  "s{$CUST_S_REPO_HOST$CUST_S_REPO_PATH}{$CUST_T_REPO_HOST$CUST_T_REPO_PATH}g"
 
   grep -l -r \
-       --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+       --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=home --exclude-dir=logs \
        -I -e "$CUST_S_REPO_PATH" | \
     xargs -t -l1 perl -pi -e  "s{$CUST_S_REPO_PATH}{$CUST_T_REPO_PATH}g"
 
@@ -491,7 +496,7 @@
   [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
   echo "--------------------------------"
   grep -r \
-       --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+       --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=home --exclude-dir=logs \
        -I -e "$CUST_T_REPO_PATH" | \
       tr -s ' ' '^' | sed -e 's/:/\t/'
   echo "--------------------------------"
@@ -508,7 +513,7 @@
   [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
   echo "--------------------------------"
   grep -r \
-       --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+       --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=home --exclude-dir=logs \
        -I -e "$CUST_S_REGS_PATH" | \
       tr -s ' ' '^' | sed -e 's/:/\t/'
   echo "--------------------------------"
@@ -521,12 +526,12 @@
   [ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
 
   grep -l -r \
-       --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+       --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=home --exclude-dir=logs \
        -I -e "CUST_S_REGS_HOST/$CUST_S_REGS_PATH}" | \
     xargs -t -l1 perl -pi -e  "s{$CUST_S_REGS_HOST/$CUST_S_REGS_PATH}{CUST_T_REGS_HOST/$CUST_T_REGS_PATH}g"
 
   grep -l -r \
-       --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+       --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=home --exclude-dir=logs \
        -I -e "$CUST_S_REGS_PATH" | \
     xargs -t -l1 perl -pi -e  "s{$CUST_S_REGS_PATH}{$CUST_T_REGS_PATH}g"
 
@@ -539,7 +544,7 @@
   [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
   echo "--------------------------------"
   grep -r \
-       --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+       --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=home --exclude-dir=logs \
        -I -e "$CUST_T_REGS_PATH" | \
       tr -s ' ' '^' | sed -e 's/:/\t/'
 
@@ -557,7 +562,7 @@
   [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
   echo "--------------------------------"
   grep -r \
-       --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+       --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=home --exclude-dir=logs \
        -I -e "$CUST_S_PROJECT_NAME" | \
       tr -s ' ' '^' | sed -e 's/:/\t/'
   echo "--------------------------------"
@@ -570,7 +575,7 @@
   [ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
 
   grep -l -r \
-       --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+       --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=home --exclude-dir=logs \
        -I -e "$CUST_S_PROJECT_NAME" | \
     xargs -t -l1 perl -pi -e  "s{$CUST_S_PROJECT_NAME}{$CUST_T_PROJECT_NAME}g"
 
@@ -583,7 +588,7 @@
   [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
   echo "--------------------------------"
   grep -r \
-       --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+       --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=home --exclude-dir=logs \
        -I -e "$CUST_T_PROJECT_NAME" | \
       tr -s ' ' '^' | sed -e 's/:/\t/'
   echo "--------------------------------"
@@ -762,7 +767,7 @@
 
   [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
   grep -r \
-       --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+       --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=home --exclude-dir=logs \
        -I -e "$CUST_S_DATA_LINK" | \
       tr -s ' ' '^' | sed -e 's/:/\t/'
 #+END_SRC
@@ -773,7 +778,7 @@
   [ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
 
   grep -l -r \
-       --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+       --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=home --exclude-dir=logs \
        -I -e "$CUST_S_DATA_LINK" | \
     xargs -t -l1 perl -pi -e  "s{$CUST_S_DATA_LINK}{$CUST_T_DATA_LINK}g"
 
@@ -785,7 +790,7 @@
 #+BEGIN_SRC bash
   [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
   grep -r \
-       --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+       --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=home --exclude-dir=logs \
        -I -e "$CUST_T_DATA_LINK" | \
       tr -s ' ' '^' | sed -e 's/:/\t/'
 
