@@ -26,12 +26,20 @@ log_info <- function(...) {
   message(text)
 }
 
+mkdirs <- function(fp) {
+  if (!file.exists(fp)) {
+    mkdirs(dirname(fp))
+    dir.create(fp)
+  }
+}
+
 load_user_private_data <- function (){
   e$PJME_hourly_3y <- read_csv(paste(dd_user, "PJME_hourly-3y.csv", sep = "/"));
 }
 
 save_user_private_data <- function (){
   PJME_hourly_3y_tmp <- PJME_hourly %>% filter(Datetime >= as.Date("2016-01-01"),Datetime < as.Date("2019-01-01"))
+  mkdirs(dd_user)
   write_csv(PJME_hourly_3y_tmp, paste(dd_user, "PJME_hourly-3y.csv", sep = "/"));
 }
 

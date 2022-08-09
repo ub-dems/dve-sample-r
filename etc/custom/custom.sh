@@ -42,6 +42,15 @@ echo ">>> project customization, ..."
 # script-heading ends here
 
 # Info Session
+# #+NAME: session-info-haed
+
+# [[file:../../notes/custom/README.org::session-info-haed][session-info-haed]]
+echo "#:> (session-info)"
+echo "--------------------------------"
+# session-info-haed ends here
+
+
+
 # #+NAME: user-info
 
 # [[file:../../notes/custom/README.org::user-info][user-info]]
@@ -92,7 +101,26 @@ git -c color.ui=false status | \
     sed -e 's/^/> /'
 # repo-status ends here
 
+
+
+# #+NAME: session-info-tail
+
+# [[file:../../notes/custom/README.org::session-info-tail][session-info-tail]]
+echo "--------------------------------"
+echo ""
+echo "#:< (session-info)"
+# session-info-tail ends here
+
 # Source Config
+
+# #+NAME: naming-config-head
+
+# [[file:../../notes/custom/README.org::naming-config-head][naming-config-head]]
+echo "#:> (naming-config)"
+echo "--------------------------------"
+# naming-config-head ends here
+
+
 
 # #+NAME: conf-custom
 
@@ -137,6 +165,7 @@ CUST_S_VERS_BASE='(>= 3.6.0)'
 CUST_S_VERS_ROXY='7.2.0'
 # ---(data import links)---
 CUST_S_DATA_LINK='dve-ds'
+CUST_S_DATA_DEMO='1'
 # ---(renv support options)---
 CUST_S_RENV_OPTS='enable,auto'
 # ---(project description)---
@@ -180,6 +209,7 @@ CUST_T_VERS_BASE='(>= 3.6.0)'
 CUST_T_VERS_ROXY='7.2.0'
 # ---(data import links)---
 CUST_T_DATA_LINK='dve-ds'
+CUST_T_DATA_DEMO='1'
 # ---(renv support options)---
 CUST_T_RENV_OPTS='enable,auto'
 # ---(project description)---
@@ -296,13 +326,30 @@ fi
 [ -z "$CUST_T_INFO_TAGS" ] && { echo "config error: CUST_T_INFO_TAGS"; exit 1; }
 # conf-check ends here
 
+
+
+# #+NAME: naming-config-tail
+
+# [[file:../../notes/custom/README.org::naming-config-tail][naming-config-tail]]
+echo "--------------------------------"
+echo ""
+echo "#:< (naming-config)"
+# naming-config-tail ends here
+
 # File Rename
 
 # #+NAME: cust-rename-pre
 
 # [[file:../../notes/custom/README.org::cust-rename-pre][cust-rename-pre]]
+echo "#:> (cust-rename)"
+
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
-find . -name "$CUST_S_PACKAGE_NAME*" -o -name "$CUST_S_PROJECT_NAME*"
+echo "--------------------------------"
+find . \
+   \( -path ./home -o -path ./notes \) -prune -o \
+     -name "$CUST_S_PACKAGE_NAME*" -o -name "$CUST_S_PROJECT_NAME*"
+echo "--------------------------------"
+echo ""
 # cust-rename-pre ends here
 
 
@@ -324,7 +371,13 @@ mv -v ./R/${CUST_S_PACKAGE_NAME}.r ./R/${CUST_T_PACKAGE_NAME}.r
 
 # [[file:../../notes/custom/README.org::cust-rename-post][cust-rename-post]]
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
-find . -name "$CUST_T_PACKAGE_NAME*" -o -name "$CUST_T_PROJECT_NAME*"
+echo "--------------------------------"
+find . \
+   \( -path ./home -o -path ./notes \) -prune -o \
+   -name "$CUST_T_PACKAGE_NAME*" -o -name "$CUST_T_PROJECT_NAME*"
+echo "--------------------------------"
+echo ""
+echo "#:< (cust-rename)"
 # cust-rename-post ends here
 
 # Package Name
@@ -332,11 +385,16 @@ find . -name "$CUST_T_PACKAGE_NAME*" -o -name "$CUST_T_PROJECT_NAME*"
 # #+NAME: cust-package-pre
 
 # [[file:../../notes/custom/README.org::cust-package-pre][cust-package-pre]]
+echo "#:> (cust-packge)"
+
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+echo "--------------------------------"
 grep -r \
-     --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+     --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=home --exclude-dir=logs \
      -I -e "$CUST_S_PACKAGE_NAME" | \
     tr -s ' ' '^' | sed -e 's/:/\t/'
+echo "--------------------------------"
+echo ""
 # cust-package-pre ends here
 
 
@@ -348,7 +406,7 @@ grep -r \
 [ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
 
 grep -l -r \
-     --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+     --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=home --exclude-dir=logs \
      -I -e "$CUST_S_PACKAGE_NAME" | \
   xargs -t -l1 perl -pi -e  "s{$CUST_S_PACKAGE_NAME}{$CUST_T_PACKAGE_NAME}g"
 # cust-package ends here
@@ -360,10 +418,14 @@ grep -l -r \
 
 # [[file:../../notes/custom/README.org::cust-package-post][cust-package-post]]
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+echo "--------------------------------"
 grep -r \
-     --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+     --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=home --exclude-dir=logs \
      -I -e "$CUST_T_PACKAGE_NAME" | \
     tr -s ' ' '^' | sed -e 's/:/\t/'
+echo "--------------------------------"
+echo ""
+echo "#:< (cust-packge)"
 # cust-package-post ends here
 
 # Repo Address
@@ -371,11 +433,16 @@ grep -r \
 # #+NAME: cust-repo-pre
 
 # [[file:../../notes/custom/README.org::cust-repo-pre][cust-repo-pre]]
+echo "#:> (cust-repo)"
+
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+echo "--------------------------------"
 grep -r \
-     --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+     --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=home --exclude-dir=logs \
      -I -e "$CUST_S_REPO_PATH" | \
     tr -s ' ' '^' | sed -e 's/:/\t/'
+echo "--------------------------------"
+echo ""
 # cust-repo-pre ends here
 
 
@@ -387,12 +454,12 @@ grep -r \
 [ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
 
 grep -l -r \
-     --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+     --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=home --exclude-dir=logs \
      -I -e "CUST_S_REPO_HOST$CUST_S_REPO_PATH" | \
   xargs -t -l1 perl -pi -e  "s{$CUST_S_REPO_HOST$CUST_S_REPO_PATH}{$CUST_T_REPO_HOST$CUST_T_REPO_PATH}g"
 
 grep -l -r \
-     --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+     --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=home --exclude-dir=logs \
      -I -e "$CUST_S_REPO_PATH" | \
   xargs -t -l1 perl -pi -e  "s{$CUST_S_REPO_PATH}{$CUST_T_REPO_PATH}g"
 # cust-repo ends here
@@ -404,10 +471,14 @@ grep -l -r \
 
 # [[file:../../notes/custom/README.org::cust-repo-post][cust-repo-post]]
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+echo "--------------------------------"
 grep -r \
-     --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+     --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=home --exclude-dir=logs \
      -I -e "$CUST_T_REPO_PATH" | \
     tr -s ' ' '^' | sed -e 's/:/\t/'
+echo "--------------------------------"
+echo ""
+echo "#:< (cust-repo)"
 # cust-repo-post ends here
 
 # Registry Address
@@ -415,11 +486,16 @@ grep -r \
 # #+NAME: cust-regs-pre
 
 # [[file:../../notes/custom/README.org::cust-regs-pre][cust-regs-pre]]
+echo "#:> (cust-regs)"
+
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+echo "--------------------------------"
 grep -r \
-     --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+     --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=home --exclude-dir=logs \
      -I -e "$CUST_S_REGS_PATH" | \
     tr -s ' ' '^' | sed -e 's/:/\t/'
+echo "--------------------------------"
+echo ""
 # cust-regs-pre ends here
 
 
@@ -431,12 +507,12 @@ grep -r \
 [ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
 
 grep -l -r \
-     --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+     --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=home --exclude-dir=logs \
      -I -e "CUST_S_REGS_HOST/$CUST_S_REGS_PATH}" | \
   xargs -t -l1 perl -pi -e  "s{$CUST_S_REGS_HOST/$CUST_S_REGS_PATH}{CUST_T_REGS_HOST/$CUST_T_REGS_PATH}g"
 
 grep -l -r \
-     --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+     --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=home --exclude-dir=logs \
      -I -e "$CUST_S_REGS_PATH" | \
   xargs -t -l1 perl -pi -e  "s{$CUST_S_REGS_PATH}{$CUST_T_REGS_PATH}g"
 # cust-regs ends here
@@ -448,10 +524,15 @@ grep -l -r \
 
 # [[file:../../notes/custom/README.org::cust-regs-post][cust-regs-post]]
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+echo "--------------------------------"
 grep -r \
-     --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+     --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=home --exclude-dir=logs \
      -I -e "$CUST_T_REGS_PATH" | \
     tr -s ' ' '^' | sed -e 's/:/\t/'
+
+echo "--------------------------------"
+echo ""
+echo "#:< (cust-regs)"
 # cust-regs-post ends here
 
 # Project Name
@@ -459,11 +540,16 @@ grep -r \
 # #+NAME: cust-project-pre
 
 # [[file:../../notes/custom/README.org::cust-project-pre][cust-project-pre]]
+echo "#:> (cust-project)"
+
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+echo "--------------------------------"
 grep -r \
-     --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+     --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=home --exclude-dir=logs \
      -I -e "$CUST_S_PROJECT_NAME" | \
     tr -s ' ' '^' | sed -e 's/:/\t/'
+echo "--------------------------------"
+echo ""
 # cust-project-pre ends here
 
 
@@ -475,7 +561,7 @@ grep -r \
 [ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
 
 grep -l -r \
-     --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+     --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=home --exclude-dir=logs \
      -I -e "$CUST_S_PROJECT_NAME" | \
   xargs -t -l1 perl -pi -e  "s{$CUST_S_PROJECT_NAME}{$CUST_T_PROJECT_NAME}g"
 # cust-project ends here
@@ -487,56 +573,242 @@ grep -l -r \
 
 # [[file:../../notes/custom/README.org::cust-project-post][cust-project-post]]
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+echo "--------------------------------"
 grep -r \
-     --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+     --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=home --exclude-dir=logs \
      -I -e "$CUST_T_PROJECT_NAME" | \
     tr -s ' ' '^' | sed -e 's/:/\t/'
+echo "--------------------------------"
+echo ""
+echo "#:< (cust-project)"
 # cust-project-post ends here
+
+# Data Store
+
+# #+NAME: cust-data-store-pre
+
+# [[file:../../notes/custom/README.org::cust-data-store-pre][cust-data-store-pre]]
+echo "#:> (data-store)"
+
+[ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+
+echo "--------------------------------"
+echo "#store - CUST_T_DATA_LINK=$CUST_T_DATA_LINK"
+ls -lda ~/data
+find  -L ~/data -maxdepth 5 -type d
+#find -L ~/data -type f -exec ls -lh {} \;
+echo "--------------------------------"
+echo ""
+# cust-data-store-pre ends here
+
+
+
+# #+NAME: cust-data-store
+
+# [[file:../../notes/custom/README.org::cust-data-store][cust-data-store]]
+[ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+[ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
+
+DD="$CUST_T_DATA_LINK"
+
+[ -n "${DD}" ] || { echo "#UNDEF: CUST_T_DATA_LINK"; exit 1; } 
+
+WD=$(pwd)
+
+# dd base
+
+mkdir -p ~/data
+
+if [ ! -d ~/data/def/dd ]; then
+    mkdir -p        ~/data/def/dd
+    chgrp -R dsdata ~/data/def/dd 2> /dev/null
+    chmod -R g+rws  ~/data/def/dd 2> /dev/null
+fi
+
+ls -l           ~/data/def
+
+mkdir -p /user/$USER
+
+
+cd ~/data
+[ ! -e ~/data/local ] && [ -e /store/local ] && ln -s -Tv /store/local  ~/data/local
+[ ! -e ~/data/local ] && [ -e /store/local ] || mkdir -p                ~/data/local
+[ ! -e ~/data/share ] && [ -e /store/share ] && ln -s -Tv /store/share  ~/data/share
+[ ! -e ~/data/share ] && [ -e /store/share ] || mkdir -p                ~/data/share
+
+[ ! -e ~/data/user ] && [ -e /user/$USER ] && ln -s  -Tv /user/$USER    ~/data/user
+[ ! -e ~/data/user ] && [ -e /user/$USER ] || mkdir -p                  ~/data/user
+
+cd -
+
+ls -l  ~/data
+
+# dd path
+
+mkdir -p ~/data/def/dd/$DD.def
+mkdir -p ~/data/local/dd/$DD.loc
+mkdir -p ~/data/user/dd/$DD.vol
+mkdir -p ~/data/share/lib/dd/$DD.net
+
+
+# sample data
+
+if [ "${CUST_T_DATA_DEMO}" = '1' ]; then
+
+    [ -d /vol/glob/dvd/data/vs ] || sudo mount /vol/glob/dvd
+
+    if [ ! -d ~/data/share/lib/dd/$DD.net/examples ]; then
+
+        cp -rv /vol/glob/dvd/data/vs/dve-ds.net/. ~/data/share/lib/dd/$DD.net
+        chown -R $USER:dsdata ~/data/share/lib/dd/$DD.net 2> /dev/null
+        chmod -R u+w,g+w ~/data/share/lib/dd/$DD.net 2> /dev/null
+        cp -rv /vol/glob/dvd/data/vs/dve-ds.loc/. ~/data/local/dd/$DD.loc
+        chown -R $USER:dsdata ~/data/local/dd/$DD.loc 2> /dev/null
+        chmod -R u+w,g+w ~/data/local/dd/$DD.loc  2> /dev/null
+
+    fi
+
+    #cp -rv /vol/glob/dvd/data/vs/dve-ds.def/. ~/data/def/dd/$DD.def
+    #chown -R $USER:dsdata ~/data/def/dd/$DD.def
+    #chmod -R u+w,g+w ~/data/def/dd/$DD.def
+
+fi
+
+# ---
+
+cd $WD
+# cust-data-store ends here
+
+
+
+
+# #+NAME: cust-data-store-post
+
+# [[file:../../notes/custom/README.org::cust-data-store-post][cust-data-store-post]]
+[ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+
+echo "--------------------------------"
+echo "#store - CUST_T_DATA_LINK=$CUST_T_DATA_LINK"
+
+ls -lda ~/data
+find  -L ~/data -maxdepth 5 -type d
+#find -L ~/data -type f -exec ls -lh {} \;
+echo "--------------------------------"
+echo ""
+echo "#:< (data-store)"
+# cust-data-store-post ends here
+
+# Data Import
+
+# #+NAME: cust-data-import-pre
+
+# [[file:../../notes/custom/README.org::cust-data-import-pre][cust-data-import-pre]]
+echo "#:> (data-import)"
+
+[ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+
+echo "#import - CUST_T_DATA_LINK=$CUST_T_DATA_LINK"
+
+find -L inst/extdata
+find -L inst/extdata -type f -exec ls -lh {} \;
+# cust-data-import-pre ends here
+
+
+
+# #+NAME: cust-data-import
+
+# [[file:../../notes/custom/README.org::cust-data-import][cust-data-import]]
+[ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+[ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
+
+WD=$(pwd)
+
+mkdir -p ./inst/extdata/ext
+
+ls -la ./inst/extdata/ext
+cd     ./inst/extdata/ext
+cat .gitignore
+
+DD="$CUST_T_DATA_LINK"
+
+[ -e $DD.def ] || ln -s -Tv ~/data/def/dd/$DD.def         $DD.def
+[ -e $DD.loc ] || ln -s -Tv ~/data/local/dd/$DD.loc       $DD.loc
+[ -e $DD.net ] || ln -s -Tv ~/data/share/lib/dd/$DD.net   $DD.net
+
+ls -l
+ls -l */.
+
+# ---
+
+cd $WD
+# cust-data-import ends here
+
+
+
+
+# #+NAME: cust-data-import-post
+
+# [[file:../../notes/custom/README.org::cust-data-import-post][cust-data-import-post]]
+[ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+
+echo "#import - CUST_T_DATA_LINK=$CUST_T_DATA_LINK"
+
+find -L inst/extdata
+find -L inst/extdata -type f -exec ls -lh {} \;
+
+echo "#:< (data-import)"
+# cust-data-import-post ends here
 
 # Data Link
 
-# #+NAME: cust-data-pre
+# #+NAME: cust-data-link-pre
 
-# [[file:../../notes/custom/README.org::cust-data-pre][cust-data-pre]]
+# [[file:../../notes/custom/README.org::cust-data-link-pre][cust-data-link-pre]]
+echo "#:> (data-link)"
+
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 grep -r \
-     --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+     --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=home --exclude-dir=logs \
      -I -e "$CUST_S_DATA_LINK" | \
     tr -s ' ' '^' | sed -e 's/:/\t/'
-# cust-data-pre ends here
+# cust-data-link-pre ends here
 
 
 
-# #+NAME: cust-data
+# #+NAME: cust-data-link
 
-# [[file:../../notes/custom/README.org::cust-data][cust-data]]
+# [[file:../../notes/custom/README.org::cust-data-link][cust-data-link]]
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 [ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
 
 grep -l -r \
-     --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+     --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=home --exclude-dir=logs \
      -I -e "$CUST_S_DATA_LINK" | \
   xargs -t -l1 perl -pi -e  "s{$CUST_S_DATA_LINK}{$CUST_T_DATA_LINK}g"
-# cust-data ends here
+# cust-data-link ends here
 
 
 
 
-# #+NAME: cust-data-post
+# #+NAME: cust-data-link-post
 
-# [[file:../../notes/custom/README.org::cust-data-post][cust-data-post]]
+# [[file:../../notes/custom/README.org::cust-data-link-post][cust-data-link-post]]
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 grep -r \
-     --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+     --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=home --exclude-dir=logs \
      -I -e "$CUST_T_DATA_LINK" | \
     tr -s ' ' '^' | sed -e 's/:/\t/'
-# cust-data-post ends here
+
+echo "#:< (data-link)"
+# cust-data-link-post ends here
 
 # Environment Versions
 
 # #+NAME: cust-vers-pre
 
 # [[file:../../notes/custom/README.org::cust-vers-pre][cust-vers-pre]]
+echo "#:> (env-versions)"
+
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 grep -F -e "$CUST_S_VERS_BASE" -e "$CUST_S_VERS_ROXY" ./DESCRIPTION
 grep -F -e "$CUST_S_IMAGE_ANCHOR" ./docker/r-images/dockerfiles/anchor.Dockerfile
@@ -564,6 +836,8 @@ perl -pi -e  "s{\Q$CUST_S_IMAGE_ANCHOR\E}{$CUST_T_IMAGE_ANCHOR}" ./docker/r-imag
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 grep -F -e "$CUST_T_VERS_BASE" -e "$CUST_T_VERS_ROXY" ./DESCRIPTION
 grep -F -e "$CUST_T_IMAGE_ANCHOR" ./docker/r-images/dockerfiles/anchor.Dockerfile
+
+echo "#:< (env-versions)"
 # cust-vers-post ends here
 
 # Project Description
@@ -571,6 +845,8 @@ grep -F -e "$CUST_T_IMAGE_ANCHOR" ./docker/r-images/dockerfiles/anchor.Dockerfil
 # #+NAME: cust-pinfo-vers-pre
 
 # [[file:../../notes/custom/README.org::cust-pinfo-vers-pre][cust-pinfo-vers-pre]]
+echo "#:> (project-desc)"
+
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 echo "--- DESCRIPTION ----------------"
 cat ./DESCRIPTION
@@ -603,6 +879,8 @@ echo "--- DESCRIPTION ----------------"
 cat ./DESCRIPTION
 echo "--------------------------------"
 echo ""
+
+echo "#:< (project-desc)"
 # cust-pinfo-post ends here
 
 # Image Description
@@ -610,6 +888,8 @@ echo ""
 # #+NAME: cust-binfo-pre
 
 # [[file:../../notes/custom/README.org::cust-binfo-pre][cust-binfo-pre]]
+echo "#:> (image-desc)"
+
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 echo "--- *.Dockerfiles ----------------"
 find ./docker/r-images/dockerfiles -name '*.Dockerfile' -exec \
@@ -628,22 +908,22 @@ echo ""
 [ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
 
 find ./docker/r-images/dockerfiles -name '*.Dockerfile' -exec \
-  perl -pi -e  "s{(org.opencontainers.image.authors=\").*\"}{\{1}${CUST_T_INFO_AUTHORS}\"}" {} \;
+  perl -pi -e  's!(org.opencontainers.image.authors=").*"!\1$ENV{CUST_T_INFO_AUTHORS}"!' {} \;
 
 find ./docker/r-images/dockerfiles -name '*.Dockerfile' -exec \
-  perl -pi -e  "s{(org.opencontainers.image.description=\").*\"}{\{1}${CUST_T_INFO_DESC}\"}" {} \;
+  perl -pi -e  's!(org.opencontainers.image.description=").*"!\1$ENV{CUST_T_INFO_DESC}"!' {} \;
 
 find ./docker/r-images/dockerfiles -name '*.Dockerfile' -exec \
-  perl -pi -e  "s{(it.unimib.datalab.from=\").*\"}{\{1}{CUST_T_INFO_FROM}\"}" {} \;
+  perl -pi -e  's!(it.unimib.datalab.from=").*"!\1$ENV{CUST_T_INFO_FROM}"!' {} \;
 
 find ./docker/r-images/dockerfiles -name '*.Dockerfile' -exec \
-  perl -pi -e  "s{(it.unimib.datalab.owner=\").*\"}{\{1}${CUST_T_INFO_OWNER}\"}" {} \;
+  perl -pi -e  's!(it.unimib.datalab.owner=").*"!\1$ENV{CUST_T_INFO_OWNER}"!' {} \;
 
 find ./docker/r-images/dockerfiles -name '*.Dockerfile' -exec \
-  perl -pi -e  "s{(it.unimib.datalab.cdc=\").*\"}{\{1}${CUST_T_INFO_CDC}\"}" {} \;
+  perl -pi -e  's!(it.unimib.datalab.cdc=").*"!\1$ENV{CUST_T_INFO_CDC}"!' {} \;
 
 find ./docker/r-images/dockerfiles -name '*.Dockerfile' -exec \
-  perl -pi -e  "s{(it.unimib.datalab.tags=\").*\"}{\{1}${CUST_T_INFO_TAGS}\"}" {} \;
+  perl -pi -e  's!(it.unimib.datalab.tags=").*"!\1$ENV{CUST_T_INFO_TAGS}"!' {} \;
 # cust-binfo ends here
 
 
@@ -659,6 +939,7 @@ find ./docker/r-images/dockerfiles -name '*.Dockerfile' -exec \
     tr -s ' ' ' ' | sed -e 's/:/:/'
 echo "--------------------------------"
 echo ""
+echo "#:< (image-desc)"
 # cust-binfo-post ends here
 
 # Confirm Customization
@@ -666,8 +947,13 @@ echo ""
 # #+NAME: cust-confirm-pre
 
 # [[file:../../notes/custom/README.org::cust-confirm-pre][cust-confirm-pre]]
+echo "#:> (cust-confirm)"
+
+echo "--------------------------------"
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 env | grep ^CUST_ | tr '=' '\t' | sort
+echo "--------------------------------"
+echo ""
 # cust-confirm-pre ends here
 
 
@@ -706,7 +992,11 @@ ls -l ./etc/custom/*.conf
 
 # [[file:../../notes/custom/README.org::cust-confirm-post][cust-confirm-post]]
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+echo "--------------------------------"
 env | grep ^CUST_ | tr '=' '\t' | sort
+echo "--------------------------------"
+echo ""
+echo "#:< (cust-confirm)"
 # cust-confirm-post ends here
 
 # Script Tail
