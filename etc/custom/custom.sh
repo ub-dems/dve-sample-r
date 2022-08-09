@@ -42,6 +42,14 @@ echo ">>> project customization, ..."
 # script-heading ends here
 
 # Info Session
+# #+NAME: session-info-haed
+
+# [[file:../../notes/custom/README.org::session-info-haed][session-info-haed]]
+echo "#:> (sssion-info)"
+# session-info-haed ends here
+
+
+
 # #+NAME: user-info
 
 # [[file:../../notes/custom/README.org::user-info][user-info]]
@@ -92,7 +100,23 @@ git -c color.ui=false status | \
     sed -e 's/^/> /'
 # repo-status ends here
 
+
+
+# #+NAME: session-info-tail
+
+# [[file:../../notes/custom/README.org::session-info-tail][session-info-tail]]
+echo "#:< (sssion-info)"
+# session-info-tail ends here
+
 # Source Config
+
+# #+NAME: naming-config-head
+
+# [[file:../../notes/custom/README.org::naming-config-head][naming-config-head]]
+echo "#:> (naming-config)"
+# naming-config-head ends here
+
+
 
 # #+NAME: conf-custom
 
@@ -298,11 +322,21 @@ fi
 [ -z "$CUST_T_INFO_TAGS" ] && { echo "config error: CUST_T_INFO_TAGS"; exit 1; }
 # conf-check ends here
 
+
+
+# #+NAME: naming-config-tail
+
+# [[file:../../notes/custom/README.org::naming-config-tail][naming-config-tail]]
+echo "#:< (naming-config)"
+# naming-config-tail ends here
+
 # File Rename
 
 # #+NAME: cust-rename-pre
 
 # [[file:../../notes/custom/README.org::cust-rename-pre][cust-rename-pre]]
+echo "#:> (cust-rename)"
+
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 find . -name "$CUST_S_PACKAGE_NAME*" -o -name "$CUST_S_PROJECT_NAME*"
 # cust-rename-pre ends here
@@ -327,6 +361,8 @@ mv -v ./R/${CUST_S_PACKAGE_NAME}.r ./R/${CUST_T_PACKAGE_NAME}.r
 # [[file:../../notes/custom/README.org::cust-rename-post][cust-rename-post]]
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 find . -name "$CUST_T_PACKAGE_NAME*" -o -name "$CUST_T_PROJECT_NAME*"
+
+echo "#:< (cust-rename)"
 # cust-rename-post ends here
 
 # Package Name
@@ -334,6 +370,8 @@ find . -name "$CUST_T_PACKAGE_NAME*" -o -name "$CUST_T_PROJECT_NAME*"
 # #+NAME: cust-package-pre
 
 # [[file:../../notes/custom/README.org::cust-package-pre][cust-package-pre]]
+echo "#:> (cust-packge)"
+
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 grep -r \
      --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
@@ -366,6 +404,8 @@ grep -r \
      --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
      -I -e "$CUST_T_PACKAGE_NAME" | \
     tr -s ' ' '^' | sed -e 's/:/\t/'
+
+echo "#:< (cust-packge)"
 # cust-package-post ends here
 
 # Repo Address
@@ -373,6 +413,8 @@ grep -r \
 # #+NAME: cust-repo-pre
 
 # [[file:../../notes/custom/README.org::cust-repo-pre][cust-repo-pre]]
+echo "#:> (cust-repo)"
+
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 grep -r \
      --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
@@ -410,6 +452,8 @@ grep -r \
      --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
      -I -e "$CUST_T_REPO_PATH" | \
     tr -s ' ' '^' | sed -e 's/:/\t/'
+
+echo "#:< (cust-repo)"
 # cust-repo-post ends here
 
 # Registry Address
@@ -417,6 +461,8 @@ grep -r \
 # #+NAME: cust-regs-pre
 
 # [[file:../../notes/custom/README.org::cust-regs-pre][cust-regs-pre]]
+echo "#:> (cust-regs)"
+
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 grep -r \
      --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
@@ -454,6 +500,8 @@ grep -r \
      --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
      -I -e "$CUST_T_REGS_PATH" | \
     tr -s ' ' '^' | sed -e 's/:/\t/'
+
+echo "#:< (cust-regs)"
 # cust-regs-post ends here
 
 # Project Name
@@ -461,6 +509,8 @@ grep -r \
 # #+NAME: cust-project-pre
 
 # [[file:../../notes/custom/README.org::cust-project-pre][cust-project-pre]]
+echo "#:> (cust-project)"
+
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 grep -r \
      --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
@@ -493,6 +543,8 @@ grep -r \
      --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
      -I -e "$CUST_T_PROJECT_NAME" | \
     tr -s ' ' '^' | sed -e 's/:/\t/'
+
+echo "#:< (cust-project)"
 # cust-project-post ends here
 
 # Data Store
@@ -500,10 +552,11 @@ grep -r \
 # #+NAME: cust-data-store-pre
 
 # [[file:../../notes/custom/README.org::cust-data-store-pre][cust-data-store-pre]]
+echo "#:> (data-store)"
+
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 
 echo "#store - CUST_T_DATA_LINK=$CUST_T_DATA_LINK"
-
 ls -lda ~/data
 find -L ~/data
 find -L ~/data -type f -exec ls -lh {} \;
@@ -595,6 +648,8 @@ echo "#store - CUST_T_DATA_LINK=$CUST_T_DATA_LINK"
 ls -lda ~/data
 find -L ~/data
 find -L ~/data -type f -exec ls -lh {} \;
+
+echo "#:< (data-store)"
 # cust-data-store-post ends here
 
 # Data Import
@@ -602,6 +657,8 @@ find -L ~/data -type f -exec ls -lh {} \;
 # #+NAME: cust-data-import-pre
 
 # [[file:../../notes/custom/README.org::cust-data-import-pre][cust-data-import-pre]]
+echo "#:> (data-import)"
+
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 
 echo "#import - CUST_T_DATA_LINK=$CUST_T_DATA_LINK"
@@ -652,25 +709,29 @@ echo "#import - CUST_T_DATA_LINK=$CUST_T_DATA_LINK"
 
 find -L inst/extdata
 find -L inst/extdata -type f -exec ls -lh {} \;
+
+echo "#:< (data-import)"
 # cust-data-import-post ends here
 
 # Data Link
 
-# #+NAME: cust-data-pre
+# #+NAME: cust-data-link-pre
 
-# [[file:../../notes/custom/README.org::cust-data-pre][cust-data-pre]]
+# [[file:../../notes/custom/README.org::cust-data-link-pre][cust-data-link-pre]]
+echo "#:> (data-link)"
+
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 grep -r \
      --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
      -I -e "$CUST_S_DATA_LINK" | \
     tr -s ' ' '^' | sed -e 's/:/\t/'
-# cust-data-pre ends here
+# cust-data-link-pre ends here
 
 
 
-# #+NAME: cust-data
+# #+NAME: cust-data-link
 
-# [[file:../../notes/custom/README.org::cust-data][cust-data]]
+# [[file:../../notes/custom/README.org::cust-data-link][cust-data-link]]
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 [ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
 
@@ -678,26 +739,30 @@ grep -l -r \
      --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
      -I -e "$CUST_S_DATA_LINK" | \
   xargs -t -l1 perl -pi -e  "s{$CUST_S_DATA_LINK}{$CUST_T_DATA_LINK}g"
-# cust-data ends here
+# cust-data-link ends here
 
 
 
 
-# #+NAME: cust-data-post
+# #+NAME: cust-data-link-post
 
-# [[file:../../notes/custom/README.org::cust-data-post][cust-data-post]]
+# [[file:../../notes/custom/README.org::cust-data-link-post][cust-data-link-post]]
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 grep -r \
      --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
      -I -e "$CUST_T_DATA_LINK" | \
     tr -s ' ' '^' | sed -e 's/:/\t/'
-# cust-data-post ends here
+
+echo "#:< (data-link)"
+# cust-data-link-post ends here
 
 # Environment Versions
 
 # #+NAME: cust-vers-pre
 
 # [[file:../../notes/custom/README.org::cust-vers-pre][cust-vers-pre]]
+echo "#:> (env-versions)"
+
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 grep -F -e "$CUST_S_VERS_BASE" -e "$CUST_S_VERS_ROXY" ./DESCRIPTION
 grep -F -e "$CUST_S_IMAGE_ANCHOR" ./docker/r-images/dockerfiles/anchor.Dockerfile
@@ -725,6 +790,8 @@ perl -pi -e  "s{\Q$CUST_S_IMAGE_ANCHOR\E}{$CUST_T_IMAGE_ANCHOR}" ./docker/r-imag
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 grep -F -e "$CUST_T_VERS_BASE" -e "$CUST_T_VERS_ROXY" ./DESCRIPTION
 grep -F -e "$CUST_T_IMAGE_ANCHOR" ./docker/r-images/dockerfiles/anchor.Dockerfile
+
+echo "#:< (env-versions)"
 # cust-vers-post ends here
 
 # Project Description
@@ -732,6 +799,8 @@ grep -F -e "$CUST_T_IMAGE_ANCHOR" ./docker/r-images/dockerfiles/anchor.Dockerfil
 # #+NAME: cust-pinfo-vers-pre
 
 # [[file:../../notes/custom/README.org::cust-pinfo-vers-pre][cust-pinfo-vers-pre]]
+echo "#:> (project-desc)"
+
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 echo "--- DESCRIPTION ----------------"
 cat ./DESCRIPTION
@@ -764,6 +833,8 @@ echo "--- DESCRIPTION ----------------"
 cat ./DESCRIPTION
 echo "--------------------------------"
 echo ""
+
+echo "#:< (project-desc)"
 # cust-pinfo-post ends here
 
 # Image Description
@@ -771,6 +842,8 @@ echo ""
 # #+NAME: cust-binfo-pre
 
 # [[file:../../notes/custom/README.org::cust-binfo-pre][cust-binfo-pre]]
+echo "#:> (image-desc)"
+
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 echo "--- *.Dockerfiles ----------------"
 find ./docker/r-images/dockerfiles -name '*.Dockerfile' -exec \
@@ -789,22 +862,22 @@ echo ""
 [ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
 
 find ./docker/r-images/dockerfiles -name '*.Dockerfile' -exec \
-  perl -pi -e  's!(org.opencontainers.image.authors=").*"!\{1}$ENV{CUST_T_INFO_AUTHORS}"!' {} \;
+  perl -pi -e  's!(org.opencontainers.image.authors=").*"!\1$ENV{CUST_T_INFO_AUTHORS}"!' {} \;
 
 find ./docker/r-images/dockerfiles -name '*.Dockerfile' -exec \
-  perl -pi -e  's!(org.opencontainers.image.description=").*"!\{1}$ENV{CUST_T_INFO_DESC}"!' {} \;
+  perl -pi -e  's!(org.opencontainers.image.description=").*"!\1$ENV{CUST_T_INFO_DESC}"!' {} \;
 
 find ./docker/r-images/dockerfiles -name '*.Dockerfile' -exec \
-  perl -pi -e  's!(it.unimib.datalab.from=").*"!\{1}$ENV{CUST_T_INFO_FROM}"!' {} \;
+  perl -pi -e  's!(it.unimib.datalab.from=").*"!\1$ENV{CUST_T_INFO_FROM}"!' {} \;
 
 find ./docker/r-images/dockerfiles -name '*.Dockerfile' -exec \
-  perl -pi -e  's!(it.unimib.datalab.owner=").*"!\{1}$ENV{CUST_T_INFO_OWNER}"!' {} \;
+  perl -pi -e  's!(it.unimib.datalab.owner=").*"!\1$ENV{CUST_T_INFO_OWNER}"!' {} \;
 
 find ./docker/r-images/dockerfiles -name '*.Dockerfile' -exec \
-  perl -pi -e  's!(it.unimib.datalab.cdc=").*"!\{1}$ENV{CUST_T_INFO_CDC}"!' {} \;
+  perl -pi -e  's!(it.unimib.datalab.cdc=").*"!\1$ENV{CUST_T_INFO_CDC}"!' {} \;
 
 find ./docker/r-images/dockerfiles -name '*.Dockerfile' -exec \
-  perl -pi -e  's!(it.unimib.datalab.tags=").*"!\{1}$ENV{CUST_T_INFO_TAGS}"!' {} \;
+  perl -pi -e  's!(it.unimib.datalab.tags=").*"!\1$ENV{CUST_T_INFO_TAGS}"!' {} \;
 # cust-binfo ends here
 
 
@@ -820,6 +893,7 @@ find ./docker/r-images/dockerfiles -name '*.Dockerfile' -exec \
     tr -s ' ' ' ' | sed -e 's/:/:/'
 echo "--------------------------------"
 echo ""
+echo "#:< (image-desc)"
 # cust-binfo-post ends here
 
 # Confirm Customization
@@ -827,6 +901,8 @@ echo ""
 # #+NAME: cust-confirm-pre
 
 # [[file:../../notes/custom/README.org::cust-confirm-pre][cust-confirm-pre]]
+echo "#:> (cust-confirm)"
+
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 env | grep ^CUST_ | tr '=' '\t' | sort
 # cust-confirm-pre ends here
@@ -868,6 +944,8 @@ ls -l ./etc/custom/*.conf
 # [[file:../../notes/custom/README.org::cust-confirm-post][cust-confirm-post]]
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 env | grep ^CUST_ | tr '=' '\t' | sort
+
+echo "#:< (cust-confirm)"
 # cust-confirm-post ends here
 
 # Script Tail

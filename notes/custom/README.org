@@ -127,6 +127,11 @@
 
 ** Status Check
 *** Info Session
+#+NAME: session-info-haed
+#+BEGIN_SRC bash
+  echo "#:> (sssion-info)"
+#+END_SRC
+
 #+NAME: user-info
 #+BEGIN_SRC bash
   whoami
@@ -161,8 +166,18 @@
         sed -e 's/^/> /'
 #+END_SRC
 
+#+NAME: session-info-tail
+#+BEGIN_SRC bash
+  echo "#:< (sssion-info)"
+#+END_SRC
+
 ** Naming Config
 *** Source Config
+
+#+NAME: naming-config-head
+#+BEGIN_SRC bash
+  echo "#:> (naming-config)"
+#+END_SRC
 
 #+NAME: conf-custom
 #+BEGIN_SRC bash
@@ -360,14 +375,20 @@
 
 #+END_SRC
 
+#+NAME: naming-config-tail
+#+BEGIN_SRC bash
+  echo "#:< (naming-config)"
+#+END_SRC
+
 ** Project Customization
 *** File Rename
 
 #+NAME: cust-rename-pre
 #+BEGIN_SRC bash
+  echo "#:> (cust-rename)"
+
   [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
   find . -name "$CUST_S_PACKAGE_NAME*" -o -name "$CUST_S_PROJECT_NAME*"
-
 #+END_SRC
 
 #+NAME: cust-rename
@@ -385,106 +406,116 @@
 #+BEGIN_SRC bash
   [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
   find . -name "$CUST_T_PACKAGE_NAME*" -o -name "$CUST_T_PROJECT_NAME*"
+
+  echo "#:< (cust-rename)"
 #+END_SRC
 
 *** Package Name
 
 #+NAME: cust-package-pre
 #+BEGIN_SRC bash
-        [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
-        grep -r \
-             --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
-             -I -e "$CUST_S_PACKAGE_NAME" | \
-            tr -s ' ' '^' | sed -e 's/:/\t/'
+  echo "#:> (cust-packge)"
+
+  [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+  grep -r \
+       --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+       -I -e "$CUST_S_PACKAGE_NAME" | \
+      tr -s ' ' '^' | sed -e 's/:/\t/'
 #+END_SRC
 
 #+NAME: cust-package
 #+BEGIN_SRC bash :results output drawer replace
-      [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
-      [ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
+  [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+  [ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
 
-      grep -l -r \
-           --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
-           -I -e "$CUST_S_PACKAGE_NAME" | \
-        xargs -t -l1 perl -pi -e  "s{$CUST_S_PACKAGE_NAME}{$CUST_T_PACKAGE_NAME}g"
-
+  grep -l -r \
+       --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+       -I -e "$CUST_S_PACKAGE_NAME" | \
+    xargs -t -l1 perl -pi -e  "s{$CUST_S_PACKAGE_NAME}{$CUST_T_PACKAGE_NAME}g"
 
 #+END_SRC
 
 
 #+NAME: cust-package-post
 #+BEGIN_SRC bash
-        [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
-        grep -r \
-             --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
-             -I -e "$CUST_T_PACKAGE_NAME" | \
-            tr -s ' ' '^' | sed -e 's/:/\t/'
+  [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+  grep -r \
+       --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+       -I -e "$CUST_T_PACKAGE_NAME" | \
+      tr -s ' ' '^' | sed -e 's/:/\t/'
+
+  echo "#:< (cust-packge)"
 #+END_SRC
 
 *** Repo Address
 
 #+NAME: cust-repo-pre
 #+BEGIN_SRC bash
-        [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
-        grep -r \
-             --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
-             -I -e "$CUST_S_REPO_PATH" | \
-            tr -s ' ' '^' | sed -e 's/:/\t/'
+  echo "#:> (cust-repo)"
+
+  [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+  grep -r \
+       --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+       -I -e "$CUST_S_REPO_PATH" | \
+      tr -s ' ' '^' | sed -e 's/:/\t/'
 #+END_SRC
 
 #+NAME: cust-repo
 #+BEGIN_SRC bash :results output drawer replace
-          [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
-          [ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
+  [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+  [ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
 
-          grep -l -r \
-               --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
-               -I -e "CUST_S_REPO_HOST$CUST_S_REPO_PATH" | \
-            xargs -t -l1 perl -pi -e  "s{$CUST_S_REPO_HOST$CUST_S_REPO_PATH}{$CUST_T_REPO_HOST$CUST_T_REPO_PATH}g"
+  grep -l -r \
+       --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+       -I -e "CUST_S_REPO_HOST$CUST_S_REPO_PATH" | \
+    xargs -t -l1 perl -pi -e  "s{$CUST_S_REPO_HOST$CUST_S_REPO_PATH}{$CUST_T_REPO_HOST$CUST_T_REPO_PATH}g"
 
-          grep -l -r \
-               --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
-               -I -e "$CUST_S_REPO_PATH" | \
-            xargs -t -l1 perl -pi -e  "s{$CUST_S_REPO_PATH}{$CUST_T_REPO_PATH}g"
-
+  grep -l -r \
+       --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+       -I -e "$CUST_S_REPO_PATH" | \
+    xargs -t -l1 perl -pi -e  "s{$CUST_S_REPO_PATH}{$CUST_T_REPO_PATH}g"
 
 #+END_SRC
 
 
 #+NAME: cust-repo-post
 #+BEGIN_SRC bash
-        [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
-        grep -r \
-             --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
-             -I -e "$CUST_T_REPO_PATH" | \
-            tr -s ' ' '^' | sed -e 's/:/\t/'
+  [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+  grep -r \
+       --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+       -I -e "$CUST_T_REPO_PATH" | \
+      tr -s ' ' '^' | sed -e 's/:/\t/'
+
+  echo "#:< (cust-repo)"
 #+END_SRC
 
 *** Registry Address
 
 #+NAME: cust-regs-pre
 #+BEGIN_SRC bash
-        [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
-        grep -r \
-             --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
-             -I -e "$CUST_S_REGS_PATH" | \
-            tr -s ' ' '^' | sed -e 's/:/\t/'
+  echo "#:> (cust-regs)"
+
+  [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+  grep -r \
+       --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+       -I -e "$CUST_S_REGS_PATH" | \
+      tr -s ' ' '^' | sed -e 's/:/\t/'
 #+END_SRC
 
 #+NAME: cust-regs
 #+BEGIN_SRC bash :results output drawer replace
-          [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
-          [ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
+  [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+  [ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
 
-          grep -l -r \
-               --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
-               -I -e "CUST_S_REGS_HOST/$CUST_S_REGS_PATH}" | \
-            xargs -t -l1 perl -pi -e  "s{$CUST_S_REGS_HOST/$CUST_S_REGS_PATH}{CUST_T_REGS_HOST/$CUST_T_REGS_PATH}g"
+  grep -l -r \
+       --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+       -I -e "CUST_S_REGS_HOST/$CUST_S_REGS_PATH}" | \
+    xargs -t -l1 perl -pi -e  "s{$CUST_S_REGS_HOST/$CUST_S_REGS_PATH}{CUST_T_REGS_HOST/$CUST_T_REGS_PATH}g"
 
-          grep -l -r \
-               --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
-               -I -e "$CUST_S_REGS_PATH" | \
-            xargs -t -l1 perl -pi -e  "s{$CUST_S_REGS_PATH}{$CUST_T_REGS_PATH}g"
+  grep -l -r \
+       --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+       -I -e "$CUST_S_REGS_PATH" | \
+    xargs -t -l1 perl -pi -e  "s{$CUST_S_REGS_PATH}{$CUST_T_REGS_PATH}g"
 
 
 #+END_SRC
@@ -492,33 +523,37 @@
 
 #+NAME: cust-regs-post
 #+BEGIN_SRC bash
-        [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
-        grep -r \
-             --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
-             -I -e "$CUST_T_REGS_PATH" | \
-            tr -s ' ' '^' | sed -e 's/:/\t/'
+  [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+  grep -r \
+       --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+       -I -e "$CUST_T_REGS_PATH" | \
+      tr -s ' ' '^' | sed -e 's/:/\t/'
+
+  echo "#:< (cust-regs)"
 #+END_SRC
 
 *** Project Name
 
 #+NAME: cust-project-pre
 #+BEGIN_SRC bash
-        [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
-        grep -r \
-             --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
-             -I -e "$CUST_S_PROJECT_NAME" | \
-            tr -s ' ' '^' | sed -e 's/:/\t/'
+  echo "#:> (cust-project)"
+
+  [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+  grep -r \
+       --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+       -I -e "$CUST_S_PROJECT_NAME" | \
+      tr -s ' ' '^' | sed -e 's/:/\t/'
 #+END_SRC
 
 #+NAME: cust-project
 #+BEGIN_SRC bash :results output drawer replace
-      [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
-      [ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
+  [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+  [ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
 
-      grep -l -r \
-           --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
-           -I -e "$CUST_S_PROJECT_NAME" | \
-        xargs -t -l1 perl -pi -e  "s{$CUST_S_PROJECT_NAME}{$CUST_T_PROJECT_NAME}g"
+  grep -l -r \
+       --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+       -I -e "$CUST_S_PROJECT_NAME" | \
+    xargs -t -l1 perl -pi -e  "s{$CUST_S_PROJECT_NAME}{$CUST_T_PROJECT_NAME}g"
 
 
 #+END_SRC
@@ -526,25 +561,27 @@
 
 #+NAME: cust-project-post
 #+BEGIN_SRC bash
-        [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
-        grep -r \
-             --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
-             -I -e "$CUST_T_PROJECT_NAME" | \
-            tr -s ' ' '^' | sed -e 's/:/\t/'
+  [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+  grep -r \
+       --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+       -I -e "$CUST_T_PROJECT_NAME" | \
+      tr -s ' ' '^' | sed -e 's/:/\t/'
+
+  echo "#:< (cust-project)"
 #+END_SRC
 
 *** Data Store
 
 #+NAME: cust-data-store-pre
 #+BEGIN_SRC bash
+  echo "#:> (data-store)"
+
   [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 
   echo "#store - CUST_T_DATA_LINK=$CUST_T_DATA_LINK"
-
   ls -lda ~/data
   find -L ~/data
   find -L ~/data -type f -exec ls -lh {} \;
-
 #+END_SRC
 
 #+NAME: cust-data-store
@@ -630,12 +667,15 @@
   find -L ~/data
   find -L ~/data -type f -exec ls -lh {} \;
 
+  echo "#:< (data-store)"
 #+END_SRC
 
 *** Data Import
 
 #+NAME: cust-data-import-pre
 #+BEGIN_SRC bash
+  echo "#:> (data-import)"
+
   [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 
   echo "#import - CUST_T_DATA_LINK=$CUST_T_DATA_LINK"
@@ -684,46 +724,54 @@
   find -L inst/extdata
   find -L inst/extdata -type f -exec ls -lh {} \;
 
+  echo "#:< (data-import)"
+
 #+END_SRC
 
 *** Data Link
 
-#+NAME: cust-data-pre
+#+NAME: cust-data-link-pre
 #+BEGIN_SRC bash
-        [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
-        grep -r \
-             --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
-             -I -e "$CUST_S_DATA_LINK" | \
-            tr -s ' ' '^' | sed -e 's/:/\t/'
+  echo "#:> (data-link)"
+
+  [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+  grep -r \
+       --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+       -I -e "$CUST_S_DATA_LINK" | \
+      tr -s ' ' '^' | sed -e 's/:/\t/'
 #+END_SRC
 
-#+NAME: cust-data
+#+NAME: cust-data-link
 #+BEGIN_SRC bash :results output drawer replace
-      [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
-      [ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
+  [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+  [ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
 
-      grep -l -r \
-           --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
-           -I -e "$CUST_S_DATA_LINK" | \
-        xargs -t -l1 perl -pi -e  "s{$CUST_S_DATA_LINK}{$CUST_T_DATA_LINK}g"
+  grep -l -r \
+       --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+       -I -e "$CUST_S_DATA_LINK" | \
+    xargs -t -l1 perl -pi -e  "s{$CUST_S_DATA_LINK}{$CUST_T_DATA_LINK}g"
 
 
 #+END_SRC
 
 
-#+NAME: cust-data-post
+#+NAME: cust-data-link-post
 #+BEGIN_SRC bash
-        [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
-        grep -r \
-             --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
-             -I -e "$CUST_T_DATA_LINK" | \
-            tr -s ' ' '^' | sed -e 's/:/\t/'
+  [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+  grep -r \
+       --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=logs \
+       -I -e "$CUST_T_DATA_LINK" | \
+      tr -s ' ' '^' | sed -e 's/:/\t/'
+
+  echo "#:< (data-link)"
 #+END_SRC
 
 *** Environment Versions
 
 #+NAME: cust-vers-pre
 #+BEGIN_SRC bash
+  echo "#:> (env-versions)"
+
   [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
   grep -F -e "$CUST_S_VERS_BASE" -e "$CUST_S_VERS_ROXY" ./DESCRIPTION
   grep -F -e "$CUST_S_IMAGE_ANCHOR" ./docker/r-images/dockerfiles/anchor.Dockerfile
@@ -747,12 +795,16 @@
   [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
   grep -F -e "$CUST_T_VERS_BASE" -e "$CUST_T_VERS_ROXY" ./DESCRIPTION
   grep -F -e "$CUST_T_IMAGE_ANCHOR" ./docker/r-images/dockerfiles/anchor.Dockerfile
+
+  echo "#:< (env-versions)"
 #+END_SRC
 
 *** Project Description
 
 #+NAME: cust-pinfo-vers-pre
 #+BEGIN_SRC bash
+  echo "#:> (project-desc)"
+
   [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
   echo "--- DESCRIPTION ----------------"
   cat ./DESCRIPTION
@@ -781,12 +833,16 @@
   cat ./DESCRIPTION
   echo "--------------------------------"
   echo ""
+
+  echo "#:< (project-desc)"
 #+END_SRC
 
 *** Image Description
 
 #+NAME: cust-binfo-pre
 #+BEGIN_SRC bash
+  echo "#:> (image-desc)"
+
   [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
   echo "--- *.Dockerfiles ----------------"
   find ./docker/r-images/dockerfiles -name '*.Dockerfile' -exec \
@@ -802,22 +858,22 @@
   [ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
 
   find ./docker/r-images/dockerfiles -name '*.Dockerfile' -exec \
-    perl -pi -e  's!(org.opencontainers.image.authors=").*"!\{1}$ENV{CUST_T_INFO_AUTHORS}"!' {} \;
+    perl -pi -e  's!(org.opencontainers.image.authors=").*"!\1$ENV{CUST_T_INFO_AUTHORS}"!' {} \;
 
   find ./docker/r-images/dockerfiles -name '*.Dockerfile' -exec \
-    perl -pi -e  's!(org.opencontainers.image.description=").*"!\{1}$ENV{CUST_T_INFO_DESC}"!' {} \;
+    perl -pi -e  's!(org.opencontainers.image.description=").*"!\1$ENV{CUST_T_INFO_DESC}"!' {} \;
 
   find ./docker/r-images/dockerfiles -name '*.Dockerfile' -exec \
-    perl -pi -e  's!(it.unimib.datalab.from=").*"!\{1}$ENV{CUST_T_INFO_FROM}"!' {} \;
+    perl -pi -e  's!(it.unimib.datalab.from=").*"!\1$ENV{CUST_T_INFO_FROM}"!' {} \;
 
   find ./docker/r-images/dockerfiles -name '*.Dockerfile' -exec \
-    perl -pi -e  's!(it.unimib.datalab.owner=").*"!\{1}$ENV{CUST_T_INFO_OWNER}"!' {} \;
+    perl -pi -e  's!(it.unimib.datalab.owner=").*"!\1$ENV{CUST_T_INFO_OWNER}"!' {} \;
 
   find ./docker/r-images/dockerfiles -name '*.Dockerfile' -exec \
-    perl -pi -e  's!(it.unimib.datalab.cdc=").*"!\{1}$ENV{CUST_T_INFO_CDC}"!' {} \;
+    perl -pi -e  's!(it.unimib.datalab.cdc=").*"!\1$ENV{CUST_T_INFO_CDC}"!' {} \;
 
   find ./docker/r-images/dockerfiles -name '*.Dockerfile' -exec \
-    perl -pi -e  's!(it.unimib.datalab.tags=").*"!\{1}$ENV{CUST_T_INFO_TAGS}"!' {} \;
+    perl -pi -e  's!(it.unimib.datalab.tags=").*"!\1$ENV{CUST_T_INFO_TAGS}"!' {} \;
 
 
 #+END_SRC
@@ -832,14 +888,17 @@
       tr -s ' ' ' ' | sed -e 's/:/:/'
   echo "--------------------------------"
   echo ""
+  echo "#:< (image-desc)"
 #+END_SRC
 
 *** Confirm Customization
 
 #+NAME: cust-confirm-pre
 #+BEGIN_SRC bash
-    [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
-    env | grep ^CUST_ | tr '=' '\t' | sort
+  echo "#:> (cust-confirm)"
+
+  [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+  env | grep ^CUST_ | tr '=' '\t' | sort
 #+END_SRC
 
 #+NAME: cust-confirm
@@ -872,8 +931,10 @@
 
 #+NAME: cust-confirm-post
 #+BEGIN_SRC bash
-    [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
-    env | grep ^CUST_ | tr '=' '\t' | sort
+  [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+  env | grep ^CUST_ | tr '=' '\t' | sort
+
+  echo "#:< (cust-confirm)"
 #+END_SRC
 
 ** Export Trailing
