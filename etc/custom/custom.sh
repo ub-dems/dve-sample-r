@@ -621,8 +621,8 @@ mkdir -p ~/data
 
 if [ ! -d ~/data/def/dd ]; then
     mkdir -p        ~/data/def/dd
-    chgrp -R dsdata ~/data/def/dd 
-    chmod -R g+rws  ~/data/def/dd 
+    chgrp -R dsdata ~/data/def/dd 2> /dev/null
+    chmod -R g+rws  ~/data/def/dd 2> /dev/null
 fi
 
 ls -l           ~/data/def
@@ -660,17 +660,17 @@ if [ "${CUST_T_DATA_DEMO}" = '1' ]; then
     if [ ! -d ~/data/share/lib/dd/$DD.net/examples ]; then
 
         cp -rv /vol/glob/dvd/data/vs/dve-ds.net/. ~/data/share/lib/dd/$DD.net
-        chown -R $USER:dsdata ~/data/share/lib/dd/$DD.net
-        chmod -R u+w,g+w ~/data/share/lib/dd/$DD.net
+        chown -R $USER:dsdata ~/data/share/lib/dd/$DD.net 2> /dev/null
+        chmod -R u+w,g+w ~/data/share/lib/dd/$DD.net 2> /dev/null
         cp -rv /vol/glob/dvd/data/vs/dve-ds.loc/. ~/data/local/dd/$DD.loc
-        chown -R $USER:dsdata ~/data/local/dd/$DD.loc
-        chmod -R u+w,g+w ~/data/local/dd/$DD.loc
+        chown -R $USER:dsdata ~/data/local/dd/$DD.loc 2> /dev/null
+        chmod -R u+w,g+w ~/data/local/dd/$DD.loc  2> /dev/null
 
     fi
 
-    cp -rv /vol/glob/dvd/data/vs/dve-ds.def/. ~/data/def/dd/$DD.def
-    chown -R $USER:dsdata ~/data/def/dd/$DD.def
-    chmod -R u+w,g+w ~/data/def/dd/$DD.def
+    #cp -rv /vol/glob/dvd/data/vs/dve-ds.def/. ~/data/def/dd/$DD.def
+    #chown -R $USER:dsdata ~/data/def/dd/$DD.def
+    #chmod -R u+w,g+w ~/data/def/dd/$DD.def
 
 fi
 
