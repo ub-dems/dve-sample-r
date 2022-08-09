@@ -346,7 +346,7 @@ echo "#:> (cust-rename)"
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 echo "--------------------------------"
 find . \
-   \( -path home -o -path notes \) -prune -o \
+   \( -path ./home -o -path ./notes \) -prune -o \
      -name "$CUST_S_PACKAGE_NAME*" -o -name "$CUST_S_PROJECT_NAME*"
 echo "--------------------------------"
 echo ""
@@ -373,7 +373,7 @@ mv -v ./R/${CUST_S_PACKAGE_NAME}.r ./R/${CUST_T_PACKAGE_NAME}.r
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 echo "--------------------------------"
 find . \
-   \( -path home -o -path notes \) -prune -o \
+   \( -path ./home -o -path ./notes \) -prune -o \
    -name "$CUST_T_PACKAGE_NAME*" -o -name "$CUST_T_PROJECT_NAME*"
 echo "--------------------------------"
 echo ""
