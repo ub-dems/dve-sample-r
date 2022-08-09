@@ -631,13 +631,13 @@ mkdir -p /user/$USER
 
 
 cd ~/data
-[ -e /store/local ] && ln -s -Tv /store/local  ~/data/local
-[ -e /store/local ] || mkdir -p                ~/data/local
-[ -e /store/share ] && ln -s -Tv /store/share  ~/data/share
-[ -e /store/share ] || mkdir -p                ~/data/share
+[ ! -e ~/data/local ] && [ -e /store/local ] && ln -s -Tv /store/local  ~/data/local
+[ ! -e ~/data/local ] && [ -e /store/local ] || mkdir -p                ~/data/local
+[ ! -e ~/data/share ] && [ -e /store/share ] && ln -s -Tv /store/share  ~/data/share
+[ ! -e ~/data/share ] && [ -e /store/share ] || mkdir -p                ~/data/share
 
-[ -e /user/$USER ] && ln -s  -Tv /user/$USER    ~/data/user
-[ -e /user/$USER ] || mkdir -p                 ~/data/user
+[ ! -e ~/data/user ] && [ -e /user/$USER ] && ln -s  -Tv /user/$USER    ~/data/user
+[ ! -e ~/data/user ] && [ -e /user/$USER ] || mkdir -p                  ~/data/user
 
 cd -
 
