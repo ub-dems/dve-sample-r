@@ -130,6 +130,7 @@
 #+NAME: session-info-haed
 #+BEGIN_SRC bash
   echo "#:> (session-info)"
+  echo "--------------------------------"
 #+END_SRC
 
 #+NAME: user-info
@@ -168,6 +169,8 @@
 
 #+NAME: session-info-tail
 #+BEGIN_SRC bash
+  echo "--------------------------------"
+  echo ""
   echo "#:< (session-info)"
 #+END_SRC
 
@@ -177,6 +180,7 @@
 #+NAME: naming-config-head
 #+BEGIN_SRC bash
   echo "#:> (naming-config)"
+  echo "--------------------------------"
 #+END_SRC
 
 #+NAME: conf-custom
@@ -377,6 +381,8 @@
 
 #+NAME: naming-config-tail
 #+BEGIN_SRC bash
+  echo "--------------------------------"
+  echo ""
   echo "#:< (naming-config)"
 #+END_SRC
 
@@ -389,7 +395,9 @@
 
   [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
   echo "--------------------------------"
-  find . -name "$CUST_S_PACKAGE_NAME*" -o -name "$CUST_S_PROJECT_NAME*"
+  find . \
+     \( -name home -o -name notes \) -prune -o \
+       -name "$CUST_S_PACKAGE_NAME*" -o -name "$CUST_S_PROJECT_NAME*"
   echo "--------------------------------"
   echo ""
 #+END_SRC
@@ -409,7 +417,9 @@
 #+BEGIN_SRC bash
   [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
   echo "--------------------------------"
-  find . -name "$CUST_T_PACKAGE_NAME*" -o -name "$CUST_T_PROJECT_NAME*"
+  find . \
+     \( -name home -o -name notes \) -prune -o \
+     -name "$CUST_T_PACKAGE_NAME*" -o -name "$CUST_T_PROJECT_NAME*"
   echo "--------------------------------"
   echo ""
   echo "#:< (cust-rename)"

@@ -46,6 +46,7 @@ echo ">>> project customization, ..."
 
 # [[file:../../notes/custom/README.org::session-info-haed][session-info-haed]]
 echo "#:> (session-info)"
+echo "--------------------------------"
 # session-info-haed ends here
 
 
@@ -105,6 +106,8 @@ git -c color.ui=false status | \
 # #+NAME: session-info-tail
 
 # [[file:../../notes/custom/README.org::session-info-tail][session-info-tail]]
+echo "--------------------------------"
+echo ""
 echo "#:< (session-info)"
 # session-info-tail ends here
 
@@ -114,6 +117,7 @@ echo "#:< (session-info)"
 
 # [[file:../../notes/custom/README.org::naming-config-head][naming-config-head]]
 echo "#:> (naming-config)"
+echo "--------------------------------"
 # naming-config-head ends here
 
 
@@ -327,6 +331,8 @@ fi
 # #+NAME: naming-config-tail
 
 # [[file:../../notes/custom/README.org::naming-config-tail][naming-config-tail]]
+echo "--------------------------------"
+echo ""
 echo "#:< (naming-config)"
 # naming-config-tail ends here
 
@@ -339,7 +345,9 @@ echo "#:> (cust-rename)"
 
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 echo "--------------------------------"
-find . -name "$CUST_S_PACKAGE_NAME*" -o -name "$CUST_S_PROJECT_NAME*"
+find . \
+   \( -name home -o -name notes \) -prune -o \
+     -name "$CUST_S_PACKAGE_NAME*" -o -name "$CUST_S_PROJECT_NAME*"
 echo "--------------------------------"
 echo ""
 # cust-rename-pre ends here
@@ -364,7 +372,9 @@ mv -v ./R/${CUST_S_PACKAGE_NAME}.r ./R/${CUST_T_PACKAGE_NAME}.r
 # [[file:../../notes/custom/README.org::cust-rename-post][cust-rename-post]]
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 echo "--------------------------------"
-find . -name "$CUST_T_PACKAGE_NAME*" -o -name "$CUST_T_PROJECT_NAME*"
+find . \
+   \( -name home -o -name notes \) -prune -o \
+   -name "$CUST_T_PACKAGE_NAME*" -o -name "$CUST_T_PROJECT_NAME*"
 echo "--------------------------------"
 echo ""
 echo "#:< (cust-rename)"
