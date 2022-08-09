@@ -595,7 +595,7 @@ echo "#:> (data-store)"
 echo "--------------------------------"
 echo "#store - CUST_T_DATA_LINK=$CUST_T_DATA_LINK"
 ls -lda ~/data
-find  -maxdepth 5 -L ~/data -type d
+find  -L ~/data -maxdepth 5 -type d
 #find -L ~/data -type f -exec ls -lh {} \;
 echo "--------------------------------"
 echo ""
@@ -691,7 +691,7 @@ echo "--------------------------------"
 echo "#store - CUST_T_DATA_LINK=$CUST_T_DATA_LINK"
 
 ls -lda ~/data
-find  -maxdepth 5 -L ~/data -type d
+find  -L ~/data -maxdepth 5 -type d
 #find -L ~/data -type f -exec ls -lh {} \;
 echo "--------------------------------"
 echo ""
