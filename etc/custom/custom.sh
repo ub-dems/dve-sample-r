@@ -631,13 +631,13 @@ mkdir -p /user/$USER
 
 
 cd ~/data
-[ -f /store/local ] && ln -s     /store/local  ~/data/local
-[ -f /store/local ] || mkdir -p                ~/data/local
-[ -f /store/share ] && ln -s     /store/share  ~/data/share
-[ -f /store/share ] || mkdir -p                ~/data/share
+[ -e /store/local ] && ln -s     /store/local  ~/data/local
+[ -e /store/local ] || mkdir -p                ~/data/local
+[ -e /store/share ] && ln -s     /store/share  ~/data/share
+[ -e /store/share ] || mkdir -p                ~/data/share
 
-[ -f /user/$USER ] && ln -s     /user/$USER    ~/data/user
-[ -f /user/$USER ] || mkdir -p                 ~/data/user
+[ -e /user/$USER ] && ln -s     /user/$USER    ~/data/user
+[ -e /user/$USER ] || mkdir -p                 ~/data/user
 
 cd -
 
@@ -731,9 +731,9 @@ cat .gitignore
 
 DD="$CUST_T_DATA_LINK"
 
-[ -f $DD.def ] || ln -s ~/data/def/dd/$DD.def         $DD.def
-[ -f $DD.loc ] || ln -s ~/data/local/dd/$DD.loc       $DD.loc
-[ -f $DD.net ] || ln -s ~/data/share/lib/dd/$DD.net   $DD.net
+[ -e $DD.def ] || ln -s ~/data/def/dd/$DD.def         $DD.def
+[ -e $DD.loc ] || ln -s ~/data/local/dd/$DD.loc       $DD.loc
+[ -e $DD.net ] || ln -s ~/data/share/lib/dd/$DD.net   $DD.net
 
 ls -l
 ls -l */.
