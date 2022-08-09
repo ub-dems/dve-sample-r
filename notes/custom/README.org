@@ -81,7 +81,6 @@
    * [[https://rstudio.github.io/renv/articles/renv.html][Introduction to renv]]
 
 * CUSTOM
-
 ** Export Heading
 *** Script Head
 #+NAME: script-heading
@@ -386,7 +385,7 @@
   echo "#:< (naming-config)"
 #+END_SRC
 
-** Project Customization
+** Customization
 *** File Rename
 
 #+NAME: cust-rename-pre
@@ -638,24 +637,29 @@
 
   mkdir -p ~/data
 
-  mkdir -p        ~/data/def/dd
-  chgrp -R dsdata ~/data/def/dd 
-  chmod -R g+rws  ~/data/def/dd 
+  if [ ! -d ~/data/def/dd ]; then
+      mkdir -p        ~/data/def/dd
+      chgrp -R dsdata ~/data/def/dd 
+      chmod -R g+rws  ~/data/def/dd 
+  fi
+
   ls -l           ~/data/def
 
   mkdir -p /user/$USER
 
 
   cd ~/data
-  [ -f /store/local ] && ln -s     /store/local 
-  [ -f /store/local ] || mkdir -p  ~/data/local
-  [ -f /store/share ] && ln -s     /store/share
-  [ -f /store/share ] || mkdir -p  ~/data/share
+  [ -f /store/local ] && ln -s     /store/local  ~/data/local
+  [ -f /store/local ] || mkdir -p                ~/data/local
+  [ -f /store/share ] && ln -s     /store/share  ~/data/share
+  [ -f /store/share ] || mkdir -p                ~/data/share
 
-  [ -f /user/$USER ] && ln -s     /user/$USER user
-  [ -f /user/$USER ] || mkdir -p  ~/data/user
+  [ -f /user/$USER ] && ln -s     /user/$USER    ~/data/user
+  [ -f /user/$USER ] || mkdir -p                 ~/data/user
 
   cd -
+
+  ls -l  ~/data
 
   # dd path
 
@@ -670,7 +674,7 @@
   if [ "${CUST_T_DATA_DEMO}" = '1' ]; then
 
       [ -d /vol/glob/dvd/data/vs ] || sudo mount /vol/glob/dvd
-    
+
       if [ ! -d ~/data/share/lib/dd/$DD.net/examples ]; then
 
           cp -rv /vol/glob/dvd/data/vs/dve-ds.net/. ~/data/share/lib/dd/$DD.net
@@ -679,13 +683,13 @@
           cp -rv /vol/glob/dvd/data/vs/dve-ds.loc/. ~/data/local/dd/$DD.loc
           chown -R $USER:dsdata ~/data/local/dd/$DD.loc
           chmod -R u+w,g+w ~/data/local/dd/$DD.loc
-        
+
       fi
 
       cp -rv /vol/glob/dvd/data/vs/dve-ds.def/. ~/data/def/dd/$DD.def
       chown -R $USER:dsdata ~/data/def/dd/$DD.def
       chmod -R u+w,g+w ~/data/def/dd/$DD.def
-    
+
   fi
 
   # ---
@@ -741,9 +745,9 @@
 
   DD="$CUST_T_DATA_LINK"
 
-  ln -s ~/data/def/dd/$DD.def         $DD.def
-  ln -s ~/data/local/dd/$DD.loc       $DD.loc
-  ln -s ~/data/share/lib/dd/$DD.net   $DD.net
+  [ -f $DD.def ] || ln -s ~/data/def/dd/$DD.def         $DD.def
+  [ -f $DD.loc ] || ln -s ~/data/local/dd/$DD.loc       $DD.loc
+  [ -f $DD.net ] || ln -s ~/data/share/lib/dd/$DD.net   $DD.net
 
   ls -l
   ls -l */.

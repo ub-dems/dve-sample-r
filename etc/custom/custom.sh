@@ -619,24 +619,29 @@ WD=$(pwd)
 
 mkdir -p ~/data
 
-mkdir -p        ~/data/def/dd
-chgrp -R dsdata ~/data/def/dd 
-chmod -R g+rws  ~/data/def/dd 
+if [ ! -d ~/data/def/dd ]; then
+    mkdir -p        ~/data/def/dd
+    chgrp -R dsdata ~/data/def/dd 
+    chmod -R g+rws  ~/data/def/dd 
+fi
+
 ls -l           ~/data/def
 
 mkdir -p /user/$USER
 
 
 cd ~/data
-[ -f /store/local ] && ln -s     /store/local 
-[ -f /store/local ] || mkdir -p  ~/data/local
-[ -f /store/share ] && ln -s     /store/share
-[ -f /store/share ] || mkdir -p  ~/data/share
+[ -f /store/local ] && ln -s     /store/local  ~/data/local
+[ -f /store/local ] || mkdir -p                ~/data/local
+[ -f /store/share ] && ln -s     /store/share  ~/data/share
+[ -f /store/share ] || mkdir -p                ~/data/share
 
-[ -f /user/$USER ] && ln -s     /user/$USER user
-[ -f /user/$USER ] || mkdir -p  ~/data/user
+[ -f /user/$USER ] && ln -s     /user/$USER    ~/data/user
+[ -f /user/$USER ] || mkdir -p                 ~/data/user
 
 cd -
+
+ls -l  ~/data
 
 # dd path
 
@@ -726,9 +731,9 @@ cat .gitignore
 
 DD="$CUST_T_DATA_LINK"
 
-ln -s ~/data/def/dd/$DD.def         $DD.def
-ln -s ~/data/local/dd/$DD.loc       $DD.loc
-ln -s ~/data/share/lib/dd/$DD.net   $DD.net
+[ -f $DD.def ] || ln -s ~/data/def/dd/$DD.def         $DD.def
+[ -f $DD.loc ] || ln -s ~/data/local/dd/$DD.loc       $DD.loc
+[ -f $DD.net ] || ln -s ~/data/share/lib/dd/$DD.net   $DD.net
 
 ls -l
 ls -l */.
