@@ -1,0 +1,47 @@
+meta:
+  project: dve-sample-py
+  package: dve
+
+data:
+
+  db:
+
+    demo:
+      alias: demo_my
+
+    demo_my:
+
+      type: mysql
+      driver: mysqlconnector
+      # driver: mysqldb
+      
+      pool:
+        name: "demo_my"
+        size: 3
+        
+      host: ${X_DB_DEMO_HOST:-localhost}
+      port: ${X_DB_DEMO_PORT:-3306}
+      user: ${X_DB_DEMO_USER:-demo}
+      password: ${X_DB_DEMO_PASSWORD:-<Sec3et!>}
+      database: ${X_DB_DEMO_DATABASE:-demo}
+      
+      uri: "{type}+{driver}://{user}:{password}@{host}:{port}/{database}"
+
+      
+    demo_pg:
+
+      type: postgresql
+      driver: psycopg2
+      
+      pool:
+        name: "demo_my"
+        size: 3
+        
+      host: ${X_DB_DEMO_HOST:-localhost}
+      port: ${X_DB_DEMO_PORT:-5432}
+      user: ${X_DB_DEMO_USER:-demo}
+      password: ${X_DB_DEMO_PASSWORD:-<Sec3et!>}
+      database: ${X_DB_DEMO_DATABASE:-demo}
+      
+      uri: "{type}://{user}:{password}@{host}:{port}/{database}"
+
