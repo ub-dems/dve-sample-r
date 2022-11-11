@@ -122,7 +122,10 @@ ifdef PODMAN_MODE
 DOCKER := podman
 DOCKER_BUILD_OPTIONS := 
 DOCKER_BUILD_PULL := --pull
-DOCKER_RUNTIME_OPTIONS := --ulimit=host
+#DOCKER_RUNTIME_OPTIONS := --ulimit=host --group-add dsdata
+#DOCKER_RUNTIME_OPTIONS := --ulimit=host --group-add keep-groups --subgidname=dsuser
+DOCKER_RUNTIME_OPTIONS := --ulimit=host --group-add keep-groups
+#DOCKER_RUNTIME_OPTIONS := --ulimit=host --annotation run.oci.keep_original_groups=1 
 endif
 
 # ---(colors)------------------------------------------------
@@ -197,7 +200,7 @@ build-setup:  init build-prepare build-image-runtime
 build-update: init build-image-runtime
 
 build-upgrade: COND_FORCE_PULL := 1
-build-upgrade: update
+build-upgrade: build-update
 
 # ---(run)------------------------------------------------
 
