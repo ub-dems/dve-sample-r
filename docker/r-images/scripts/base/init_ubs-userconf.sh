@@ -45,6 +45,15 @@ echo    'auth-minimum-user-id = 0' >> /etc/rstudio/disable_auth_rserver.conf
 sed -i 's/"$USER" != "$DEFAULT_USER"/ "$USER" != "$DEFAULT_USER" -a "$USER" != "root"/g'      \
                                       /etc/cont-init.d/02_userconf
 
+##
+# add 'dsdata' access group
+#
+groupadd --gid 840 dsdata
+useradd -r -m -d /var/lib/dsdata -u 840 -g dsdata -s/bin/bash dsdata
+passwd -l dsdata
+chmod 750 /var/lib/dsdata
+
+usermod  -a -G dsdata root
 
 ##
 # enable 'info' logging
