@@ -130,7 +130,7 @@ update: # @HELP/build rebuild of modified podman images
 update: init prepare build-update
 
 upgrade: # @HELP/build fresh rebuild of all podman images (pull)
-update: init prepare build-upgrade
+upgrade: init prepare build-upgrade
 
 build-help: help/build
 

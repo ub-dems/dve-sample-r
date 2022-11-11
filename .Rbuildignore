@@ -5,6 +5,7 @@
 ^codecov\.yml$
 ^compile_commands.json$
 ^CONDUCT\.md$
+^config\.yaml$
 ^cran-comments\.md$
 ^CRAN-RELEASE$
 ^[^/]+.csv
