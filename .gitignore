@@ -13,7 +13,13 @@
 
 
 # Ignore all dotfiles...
-.*
+#.*
+
+.#*
+
+
+
+
 # except for .gitignore
 !.gitignore
 !.gitattributes

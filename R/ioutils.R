@@ -1,3 +1,16 @@
+# ////////////////////////////////////////////////////////////////////////////
+
+fn_base <- function() { return("dve-ds") }
+
+fn_temp <- function() { return("temp") }
+fn_logs <- function() { return("logs") }
+fn_exec <- function() { return("exec") }
+
+fn_exdata <- function() { return("inst/extdata") }
+
+
+# ////////////////////////////////////////////////////////////////////////////
+
 mkdirs <- function(fp) {
   if (!file.exists(fp)) {
     mkdirs(dirname(fp))
@@ -10,20 +23,148 @@ ensure_path <- function(fp) {
   return (fp)
 }
 
-find_path <- function(fp) {
-  result <- rprojroot::find_root_file(fp, criterion = 
-                                        rprojroot::is_r_package | 
-                                        rprojroot::is_rstudio_project | 
-                                        rprojroot::is_testthat)
+find_test_path <- function(fp) {
+  parent_path <- rprojroot::find_root_file(".", criterion = 
+        rprojroot::root_criterion(function(path) dir.exists(file.path(path, "tests")), "has tests subdir"))
+  sib_dirs <- list.dirs(path = parent_path, full.names = TRUE, recursive = FALSE)
+  desc_path <- reader::find.file("DESCRIPTION", dir = "", dirs = sib_dirs)
+  root_path <- dirname(desc_path)
+  result <- paste(root_path, fp, sep='/')
   return (result)
 }
 
 
-io_path <- function(pathname, filename, create_path=TRUE) {
-  basename <- find_path(pathname)
-  result <- paste(basename, filename, sep='/')
+
+find_path <- function(fp) {
+  result <- tryCatch(rprojroot::find_root_file(fp, criterion = 
+                                        rprojroot::is_r_package | 
+                                        rprojroot::is_rstudio_project ),
+                     error=function(cond) {
+                       testpath <- find_test_path(fp)
+                       return(testpath)
+                     })
+  return (result)
+}
+
+
+is_check_mode <- function() {
+  result <- tryCatch({rprojroot::find_root_file('.', criterion = 
+                                                 rprojroot::is_r_package | 
+                                                 rprojroot::is_rstudio_project )
+                       return(FALSE)},
+                     error=function(cond) {
+                       return(TRUE)
+                     })
+  return (result)
+}
+
+is_skip_mode <- function() {
+  return (is_check_mode())
+}
+
+
+# ////////////////////////////////////////////////////////////////////////////
+
+io_path <- function(path, name="", create_path=TRUE) {
+  basename <- find_path(path)
+  if (nchar(name) > 0) {
+    result <- paste(basename, name, sep='/')
+  } else {
+    result <- basename
+  }
   if (create_path) {
     ensure_path(result)
   }
   return (result)
 }
+
+
+
+io_data <- function(path="", name="", base=fn_base(), kind='def', mode='ext', create_path=TRUE) {
+  full <- paste(fn_exdata(), mode, paste(base, kind, sep='.'), sep='/' )
+  if (nchar(path) > 0) {
+    full <- paste(full, path, sep='/')
+  }
+  if (nchar(name) > 0) {
+    full <- paste(full, name, sep='/')
+  }
+  result <- io_path(full, create_path=create_path)
+  return(result)
+}
+
+io_temp <- function(path="", name="", create_path=TRUE) {
+  full <- paste(fn_temp(), sep='/' )
+  if (nchar(path) > 0) {
+    full <- paste(full,path, sep='/')
+  }
+  if (nchar(name) > 0) {
+    full <- paste(full,name, sep='/')
+  }
+  result <- io_path(full, create_path=create_path)
+  return(result)
+}
+
+io_logs <- function(path="", name="", create_path=TRUE) {
+  full <- paste(fn_logs(), sep='/' )
+  if (nchar(path) > 0) {
+    full <- paste(full,path, sep='/')
+  }
+  if (nchar(name) > 0) {
+    full <- paste(full,name, sep='/')
+  }
+  result <- io_path(full, create_path=create_path)
+  return(result)
+}
+
+io_exec <- function(path="", name="", create_path=FALSE) {
+  result <- NULL
+  if (file.exists(name)) {
+    result <- name
+  } else {
+    full <- paste(fn_exec(), sep='/' )
+    if (nchar(path) > 0) {
+      full <- paste(full,path, sep='/')
+    }
+    if (nchar(name) > 0) {
+      full <- paste(full,name, sep='/')
+    }
+    result <- io_path(full, create_path=create_path)
+  }
+  return(result)
+}
+
+# ////////////////////////////////////////////////////////////////////////////
+
+def_path <- function(name, path, base=fn_base()) { io_data(base=base, kind="def", path=path, name=name) }
+loc_path <- function(name, path, base=fn_base()) { io_data(base=base, kind="loc", path=path, name=name) }
+net_path <- function(name, path, base=fn_base()) { io_data(base=base, kind="net", path=path, name=name) }
+
+tmp_path <- function(name, path="") { io_temp(path=path, name=name) }
+log_path <- function(name, path="") { io_logs(path=path, name=name) }
+
+exe_path <- function(name, path="") { io_exec(path=path, name=name) }
+
+# ////////////////////////////////////////////////////////////////////////////
+
+log_file <- function(fn) {
+  result <- io_logs(name=fn)
+  return(result)
+}
+
+log_dir <- function() {
+  logfile <- log_file("logfile.log")
+  result <- dirname(logfile)
+  return(result)
+}
+
+
+log_init <- function(logfile = "logfile.log", args = c(), log_level='DEBUG', file_level='DEBUG', out_level='INFO'){
+  logging::basicConfig()
+  logging::setLevel(log_level)
+  dir.create(log_dir(), showWarnings = FALSE, recursive = TRUE)  
+  logging::addHandler(logging::writeToFile, file=log_file(logfile), level=file_level)
+  logging::setLevel(Sys.getenv("R_LOGGING_LEVEL", out_level), getHandler("basic.stdout"))
+}
+
+# ////////////////////////////////////////////////////////////////////////////
+
