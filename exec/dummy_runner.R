@@ -1,5 +1,9 @@
 #!/usr/bin/env Rscript
 
+##
+# runner script example
+#
+
 rm(list=ls())
 devtools::load_all(".") 
 
@@ -8,11 +12,7 @@ require(dvesimpler)
 library(logging)
 
 init_logging <- function(args = c()){
-  logging::basicConfig()
-  logging::setLevel("DEBUG")
-  dir.create("./logs", showWarnings = FALSE, recursive = TRUE)  
-  logging::addHandler(logging::writeToFile, file="./logs/dummy_runner.log", level='DEBUG')
-  logging::setLevel(Sys.getenv("R_LOGGING_LEVEL", "INFO"), getHandler("basic.stdout"))
+  log_init("dummy_runner.log", args=args)
 }
 
 

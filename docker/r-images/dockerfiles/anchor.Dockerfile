@@ -1,4 +1,8 @@
-FROM rocker/tidyverse:latest
+FROM rocker/verse:4.2.2
+
+# @see: https://github.com/rocker-org/rocker-versioned2/pkgs/container/tidyverse/versions
+# FROM rocker/tidyverse:latest
+# FROM rocker/verse:latest
 
 LABEL org.opencontainers.image.vendor="ubdems" \
       org.opencontainers.image.base.name="rocker/tidyverse:latest" \

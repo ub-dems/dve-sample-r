@@ -9,28 +9,33 @@
 #
 #}}} \\\    
 
-library("logger")
-library("yaml")
-library("magrittr")
+rm(list=ls())
+devtools::load_all(".") 
 
-#{{{ [ MAIN ] /////////////////////////////////////////////////////////////////
+require(dvesimpler)
 
-# ---(scripts)------------------------------------------------
 
-log_layout(layout_glue_colors)
+library(yaml)
+library(magrittr, warn.conflicts = FALSE)
 
-#log_threshold(INFO)
-#log_threshold(DEBUG)
-#log_threshold(TRACE)
+#{{{ [ LOGS ] /////////////////////////////////////////////////////////////////
+
+library(logging)
+
+runner_logs <- function(job_desc){ log_init("runner.log", args=job_desc$job_conf$args) }
+
+
+
+#{{{ [ CONF ] /////////////////////////////////////////////////////////////////
 
 # ---(scripts)------------------------------------------------
 
 E_PROJECT_SCRIPTS <- c(
   "dummy_runner.R",
-  "example_data_loader.R"
+  "dummy_reader.R"
 )
 
-E_DEFAULT_SCRIPT <- paste0("./exec/", E_PROJECT_SCRIPTS[1])
+E_DEFAULT_SCRIPT <- E_PROJECT_SCRIPTS[1]
 
 #{{{ [ JOB ] /////////////////////////////////////////////////////////////////
 
@@ -45,7 +50,8 @@ E_RUNNER_JOB <- NULL
 runner_conf <- function(script = E_DEFAULT_SCRIPT,args = commandArgs(trailingOnly=TRUE)) {
   result <- list(
     script = script,
-    args = args
+    args = args,
+    source = exe_path(script)
   )
   class(result) <- "runner_conf"
   return (result)
@@ -101,6 +107,11 @@ runner_job <- function(job_conf, store_fun = function(x) { E_RUNNER_JOB <<- x; r
         )))
       },
       
+      restore_logs = function(.self) {
+        log_init("runner.log", args=job_desc$job_conf$args)
+        return (.self)
+      },
+      
       set = function(.self, val) {
         return (store_fun(modifyList(.self, val)))
       },
@@ -140,31 +151,33 @@ runner_call <- function(job_desc) {
   result = tryCatch({
     
     job_conf <- job_desc$job_conf
-
+    
     job_desc %<>% job_desc$start(job_conf)
     
     #job_desc <- job_desc$start(job_desc, job_conf)
     
     script <- job_conf$script
     args <- job_conf$args
+    source <- job_conf$source
     
 #   job_time <<- time(system("date"))
-    job_time <<- time(source(script))
+    job_time <<- time(source(source))
     
     job_desc %<>% job_desc$complete(job_time)
     
     (job_desc)
 
   }, warning = function(we) {
-    log_warning("#? RUN: ({we}) -- {job_desc$info}")
+    logwarn("#? RUN: ({we}) -- %s", job_desc$info)
   }, error = function(ex) {
     print(ex)
-    log_error("#! RUN: ({ex}) -- {job_desc$info}")
+    logerror("#! RUN: ({ex}) -- %s", job_desc$info)
     job_desc %<>% job_desc$fail(ex)
     return (job_desc)
   }, finally = {
     # job_desc %<>% job_desc$complete(job_time)
-    log_debug("#. RUN: (ended) -- {job_desc$info}")
+    job_desc %<>% job_desc$restore_logs()
+    logdebug("#. RUN: (ended) -- %s", job_desc$info)
   })
   
 }
@@ -175,13 +188,17 @@ runner_main <- function() {
 
   job_desc <- init_job()
   
-  log_info("#> RUN: enter -- {job_desc$info}")
+  runner_logs(job_desc)
+  
+  loginfo("#> RUN: enter -- %s", job_desc$info)
   
   job_desc <- runner_call(job_desc)
 
-  log_info("#< RUN: exit (rc:{job_desc$rc}, time:{job_desc$elapsed}) -- {job_desc$info}")
+  loginfo("#< RUN: exit (rc:%d, time:%f) -- %s", job_desc$rc, job_desc$elapsed, job_desc$info)
   
   if (!interactive()) {
+    print(sprintf("### RC=%d",job_desc$rc))
+    
     quit(status=job_desc$rc)
   }
 

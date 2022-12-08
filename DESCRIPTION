@@ -18,11 +18,13 @@ Depends:
 Imports:
     logging,
     magrittr,
+    reader,
     rprojroot,
     yaml
 Suggests: 
     assertthat,
     cli (>= 3.3.0),
+    devtools,
     dplyr,
     ggplot2,
     knitr,
@@ -39,4 +41,4 @@ VignetteBuilder:
 Encoding: UTF-8
 LazyData: yes
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.1
+RoxygenNote: 7.2.2
