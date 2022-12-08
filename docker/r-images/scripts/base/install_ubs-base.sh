@@ -30,7 +30,6 @@ install2.r --error --skipmissing --skipinstalled -n $NCPUS \
     logger \
     pak \
     ps \
-    sysreqs \
     benchmarkme \
     benchmarkmeData \
     rbenchmark \
