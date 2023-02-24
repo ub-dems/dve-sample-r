@@ -122,6 +122,7 @@ metastore_db/
 *.~undo-tree~
 .RData
 .Rproj.user
+..Rcheck
 .Rhistory
 Rplots.*
 inst/doc

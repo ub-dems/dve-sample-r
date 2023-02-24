@@ -26,7 +26,9 @@
 ^\.httr-oauth$
 ^inst/bench$
 ^inst/db$
-^inst/extdata$
+^inst/extdata/ext$
+^inst/extdata/int$
+^inst/extdata/tmp$
 ^inst/rcon$
 ^Jenkinsfile.*$
 ^LICENSE\.md$
@@ -50,6 +52,7 @@
 ^revdep$
 ^Rplots.*
 ^.Rprofile$
+^\.\.Rcheck$
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^sanitize\.sh$

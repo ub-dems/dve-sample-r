@@ -1,1 +1,3 @@
-^inst/extdata/ext$
+^extdata/ext$
+^extdata/int$
+^extdata/tmp$
