@@ -22,9 +22,16 @@ LABEL org.opencontainers.image.vendor="ubdems" \
 ENV TERM=xterm
 
 COPY scripts/base /rocker_scripts
+COPY build.conf   /etc/build.conf
 
 RUN /rocker_scripts/init_ubs-userconf.sh
-RUN /rocker_scripts/install_ubs-base.sh
+#RUN /rocker_scripts/install_ubs-base.sh
+
+# python support
+RUN /rocker_scripts/install_ubs-py_pyenv.sh
+RUN /rocker_scripts/install_ubs-py_poetry.sh
+RUN /rocker_scripts/install_ubs-py_lang.sh
+RUN /rocker_scripts/install_ubs-py_jupyter.sh
 
 EXPOSE 8787
 

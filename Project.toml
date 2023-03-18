@@ -1,0 +1,37 @@
+name = "DveR"
+uuid = "a5304171-f38c-4a73-b010-430f65f2b9ed"
+authors = ["DEMS/datalab <dsuser.dems@gmail.com>"]
+version = "0.1.0+dev"
+
+[deps]
+PyCall = "438e738f-606a-5dbb-bf0a-cddfbfd45ab0"
+PyPlot = "d330b81b-6aea-500a-939a-2ce795aea3ee"
+Pandas = "eadc2687-ae89-51f9-a5d9-86b5a6373a9c"
+Seaborn = "d2ef9438-c967-53ab-8060-373fdd9e13eb"
+SymPy = "24249f21-da20-56a4-8eb1-6a02cf4ae2e6"
+IJulia = "7073ff75-c697-5162-941a-fcdaad2a7d2a"
+Pluto = "c3e4b0f8-55cb-11ea-2926-15256bba5781"
+Plotly = "58dd65bb-95f3-509e-9936-c39a10fdeae7"
+PlutoPlotly = "8e989ff0-3d88-8e9f-f020-2b208a939ff0"
+# Dynare = "5203de40-99df-439e-afbc-014de65cb9ef"
+
+[compat]
+# PyCall = ">=1.94.1"
+# PyPlot = ">=2.11.0"
+# Pandas = ">=1.6.1"
+# Seaborn = ">=1.1.1"
+# SymPy = ">=1.1.7"
+# IJulia = ">=1.24.0"
+# Pluto = ">=0.19.18"
+# Plotly = ">=0.4.1"
+# PlutoPlotly = ">=0.3.6"
+# Dynare = ">=0.6.0"
+julia = ">=1.8"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
+
+

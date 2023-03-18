@@ -1,0 +1,257 @@
+[tool.poetry]
+name = "dve_sample_r"
+version = "2.0.0a1"
+description = "R Template Project with Podman and Jypyter Support"
+authors = ["Datalab DEMS <datalab@unimib.it>"]
+license = "GNU General Public License v3.0"
+readme = "README.md"
+documentation = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-r/-/wikis/home"
+homepage = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-r"
+repository = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-r.git"
+packages = [{ include = "*", from = "src" }]
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.package-data]
+res = [ "resources/*", "resources/*/*" ]
+
+[tool.poetry.scripts]
+main = "dve.cli:main"
+demo = "vce.cli:main"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+
+# Keras = "*"
+# Keras-applications = "*"
+# Keras-preprocessing = "*"
+# Markdown = "*"
+# Pillow = "*"
+# PyWavelets = "*"
+# PyYaml = "*"
+# absl-py = "*"
+# airsim = "^1.5.0"
+# astor = "*"
+# atari-py = "^0.3.0"
+# cachetools = "*"
+# certifi = "*"
+# chardet  = "*"
+click = '*'
+# cycler = "*"
+# decorator = "*"
+# flask = '*'
+# flask-assets = '*'
+# flask-restful = '*'
+# dependency-injector = '>=4'
+# bootstrap-flask = '*'
+# pygithub = '*'
+# pyyaml = '*'
+
+# gast = "*"
+# gpyopt = "*"
+# google-auth = "*"
+# google-auth-oauthlib = "*"
+# google-pasta = "*"
+
+# graphframes = '*'
+# graphviz = '*'
+
+# grpcio = "*"
+# gym = "^0.18.3"
+# h5py = "*"
+# idna = "*"
+
+# igraph = '*'
+
+# imageio = "*"
+# joblib = "*"
+# kiwisolver = "*"
+matplotlib = "*"
+
+mysql-connector-python = "*"
+# requires: sudo apt install default-libmysqlclient-dev
+mysqlclient = "*"
+
+# neo4j = "*"
+# networkx = "*"
+
+numpy = "*"
+oauthlib = "*"
+# opencv-python = "^4.5.2.54"
+# opt-einsum = "*"
+pandas = "*"
+pandas-datareader = '*'
+piny = "*"
+pip = "*"
+# protobuf = "*"
+
+#   pyarrow = "7.0.0"
+#   pyspark = "3.3.0"
+
+
+# requires: sudo apt install libpq-dev
+#psycopg2 = "*"
+psycopg2-binary = "*"
+
+# pyasn1 = "*"
+# pyasn1-modules = "*"
+# pyparsing = "*"
+# python-dateutil = "*"
+# pytz = "*"
+pyyaml = "*"
+requests = "*"
+requests-oauthlib = "*"
+# rootpath = "*"
+# rsa = "*"
+seaborn = "*"
+# scikit-learn = "*"
+# scikit-image = "*"
+scipy = "*"
+# six = ">=1.7.0,<=1.15.0"
+# sklearn = "*"
+SQLAlchemy = "*"
+sympy = "*"
+# tensorflow = "^2.11"
+# tensorflow-estimator = "^2.11"
+# tensorboard = "^2.11"
+# termcolor = "*"
+
+# time ="*"
+
+toml = "*"
+
+# torch = "*"
+# torchvision = "*"
+# torchaudio ="*"
+
+# transformers ="*"
+
+urllib3 = "*"
+# wrapt = "*"
+
+
+
+
+[tool.poetry.dev-dependencies]
+
+
+pytest = { version = "*" }
+pytest-flask = "*"
+pytest-cov = "*"
+unittest2 = { version = "*" }
+#   pytest-spark = "*"
+#   pyspark-test = "*"
+#   chispa = "*"
+coverage= "*"
+bumpversion = "*"
+colorama = "*"
+mock = "*"
+more-itertools = "*"
+nose = "*"
+py = "*"
+pylint = "*"
+flake8 = "*"
+pyproject-flake8 = "*"
+jedi = "*"
+autopep8 = "*"
+yapf = '*'
+pyright = '*'
+#codecov = "*"
+black = { extras = ["jupyter"], version = "*" }
+isort = "*"
+mypy = "*"
+tornado = "*"
+jupyter-core = "*"
+notebook = "*"
+ipykernel = "*"
+jupyter = "*"
+jupyter-rsession-proxy = "*"
+jupyterlab = "*"
+lux-api = "*"
+sphinx = "*"
+nbsphinx = "*"
+sphinx-autoapi = "*"
+sphinx-rtd-theme = "*"
+twine = '*'
+setuptools = "*"
+wheel = "*"
+
+[tool.poetry.dependencies.rootpath]
+git = "https://github.com/hute37/python-rootpath"
+branch = "stable"
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q"
+testpaths = [
+    "tests",
+]
+
+# @see: https://github.com/microsoft/pyright/blob/main/docs/configuration.md
+[tool.pyright]
+include = ["src", "tests", "notebooks"]
+exclude = ["**/node_modules",
+    "**/__pycache__",
+    "docker",
+    "notes",
+    "data",
+    "logs",
+    "temp"
+]
+ignore = ["build"]
+defineConstant = { DEBUG = true }
+#stubPath = "src/stubs"
+#venv = "env367"
+
+typeCheckingMode = "basic"
+reportMissingImports = true
+
+
+
+# flake8 config unused, @see setup.cfg
+# [tool.flake8]
+# max-line-length = 88
+# extend-ignore = "E203,"
+# max-complexity = 10
+
+[tool.isort]
+profile = "black"
+
+[tool.black]
+line-length = 88
+target-version = ['py310']
+include = '\.pyi?$'
+exclude = '''
+
+(
+  /(
+      \.eggs         # exclude a few common directories in the
+    | \.git          # root of the project
+    | \.hg
+    | \.mypy_cache
+    | \.tox
+    | \.venv
+    | _build
+    | buck-out
+    | build
+    | dist
+  )/
+  | foo.py           # also separately exclude a file named foo.py in
+                     # the root of the project
+)
+'''
+
+
+
+[build-system]
+requires = [
+    "poetry-core>=1.0.0",
+    "setuptools",
+    "wheel",
+    "incremental",
+]
+build-backend = "poetry.core.masonry.api"
+#build-backend = "setuptools.build_meta"
+
+
