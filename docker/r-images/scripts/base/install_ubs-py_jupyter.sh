@@ -2,6 +2,10 @@
 
 source /etc/build.conf
 
+## build ARGs
+NCPUS=${NCPUS:--1}
+
+
 function env_dump() {
     
     [ "$Y_DEBUG" = 1 ] || return 0
@@ -19,28 +23,157 @@ function env_dump() {
     
 }
 
+function setenv_reload() {
+    env_dump "setenv_reload::pre"
+    export PS1='# '; source /etc/bash.bashrc
+    env_dump "setenv_reload::post"
+}
 
 
-## build ARGs
-NCPUS=${NCPUS:--1}
+function install_jupyter_system() {
 
-# python3 -m pip install --no-cache-dir jupyter-rsession-proxy notebook jupyterlab
+    [ "$Y_PY_JUPYTER_SYSTEM" = 1 ] || return 0
+    
+    python3 -m pip install --no-cache-dir \
+            jupyter-rsession-proxy \
+            notebook \
+            jupyterlab
 
-## R benchmarks
-install2.r --error --skipmissing --skipinstalled -n $NCPUS \
-    IRkernel
+    [ "$Y_PY_JUPYTER_HUB" = 1 ] || return 0
+
+    python3 -m pip install --no-cache-dir \
+            jupyterhub
+    
+}
+
+function install_jupyter_venv() {
+
+    echo "to install jupyter, in container shell run 'poetry install'"
+
+    
+}
+
+function install_jupyter() {
+
+    [ "$Y_PY_JUPYTER_INSTALL" = 1 ] || return 0
+    
+    if [ "$Y_PY_JUPYTER_SYSTEM" = 1 ]; then
+        install_jupyter_system
+    else    
+        install_jupyter_venv
+    fi    
+       
+    
+}
+
+function install_irkernel() {
+
+    [ "$Y_PY_JUPYTER_IRKERNEL" = 1 ] || return 0
+    
+    R --quiet -e 'remotes::install_github("IRkernel/IRkernel@*release")'
+    
+    #install2.r --error --skipmissing --skipinstalled -n $NCPUS \
+    #          IRkernel
+
+    
+}
+
+function config_jupyter_system() {
+    
+    R --quiet -e 'IRkernel::installspec(user = FALSE)'
+    
+}
+
+function config_jupyter_venv() {
+    
+    R --quiet -e 'IRkernel::installspec(user = TRUE)'
+    
+}
 
 
-# R --quiet -e 'remotes::install_github("IRkernel/IRkernel@*release")'
-# R --quiet -e 'IRkernel::installspec(user = FALSE)'
+
+function config_jupyter() {
+
+    [ "$Y_PY_JUPYTER_CONFIG" = 1 ] || return 0
+
+    echo -e "Check jupyter availability...\n"
+
+    which jupyter || true
+    which jupyter || true
+    
+    python --version  || true
+    jupyter --version || true
+
+    
+    if [ "$Y_PY_JUPYTER_SYSTEM" = 1 ]; then
+        config_jupyter_system
+    else    
+        config_jupyter_venv
+    fi    
+    
+}
+
+function config_jupyter() {
+
+    [ "$Y_PY_JUPYTER_CONFIG" = 1 ] || return 0
+    
+    if [ "$Y_PY_JUPYTER_SYSTEM" = 1 ]; then
+        config_jupyter_system
+    else    
+        config_jupyter_venv
+    fi    
+    
+}
 
 
- rm -rf /tmp/downloaded_packages
+function check_jupyter() {
+
+    [ "$Y_PY_JUPYTER_CHECK" = 1 ] || return 0
+    
+    # Check jupyter
+    echo -e "Check jupyter version...\n"
+
+    jupyter --version
+
+    echo -e "Check the avalable jupyter kernels...\n"
+
+    jupyter kernelspec list
+
+    echo -e "\nInstall jupyter, done!"
+    
+}
 
 
-# Check jupyter
-# echo -e "Check the avalable jupyter kernels...\n"
+function clean_up() {
 
-# jupyter kernelspec list
+    rm -rf /tmp/downloaded_packages
+    
+}
 
-# echo -e "\nInstall jupyter, done!"
+
+
+
+function main() {
+
+    [ "$Y_PY_ANY_SUPPORT" = 1 ] || return 0
+
+    env_dump $@
+    
+    [ "$Y_PY_JUPYTER_SUPPORT" = 1 ] || return 0
+
+    setenv_reload    
+
+    install_jupyter
+    install_irkernel
+    config_jupyter
+    
+    setenv_reload    
+
+    check_jupyter
+
+    clean_up
+
+
+}
+
+main $@

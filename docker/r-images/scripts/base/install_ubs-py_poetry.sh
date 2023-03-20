@@ -42,6 +42,8 @@ function install_poetry() {
 
 function config_poetry() {
 
+    [ "$Y_PY_POETRY_CONFIG" = 1 ] || return 0
+    
 ### PYTHON_CONFIGURE_OPTS=${PYTHON_CONFIGURE_OPTS:-"--enable-shared"}
     
 # poetry requires $POETRY_HOME/bin to be on the path...
@@ -72,6 +74,8 @@ function setenv_reload() {
 
 function check_poetry() {
     
+    [ "$Y_PY_POETRY_CHECK" = 1 ] || return 0
+    
     which python || true
     which pyenv  || true
     which poetry || true
@@ -79,6 +83,10 @@ function check_poetry() {
     python --version  || true
     pyenv  --version  || true
     poetry --version  || true
+
+#    poetry env list || true
+#    poetry env info || true
+    
     
 }
 
@@ -90,6 +98,8 @@ function clean_up() {
 
 
 function main() {
+
+    [ "$Y_PY_ANY_SUPPORT" = 1 ] || return 0
 
     env_dump $@
     

@@ -24,14 +24,22 @@ ENV TERM=xterm
 COPY scripts/base /rocker_scripts
 COPY build.conf   /etc/build.conf
 
+# init user configuration 
 RUN /rocker_scripts/init_ubs-userconf.sh
-#RUN /rocker_scripts/install_ubs-base.sh
+
+# commons
+RUN /rocker_scripts/install_ubs-commons.sh
+RUN /rocker_scripts/install_ubs-utils.sh
 
 # python support
 RUN /rocker_scripts/install_ubs-py_pyenv.sh
 RUN /rocker_scripts/install_ubs-py_poetry.sh
 RUN /rocker_scripts/install_ubs-py_lang.sh
 RUN /rocker_scripts/install_ubs-py_jupyter.sh
+
+# clean up
+RUN /rocker_scripts/install_ubs-clean.sh
+
 
 EXPOSE 8787
 

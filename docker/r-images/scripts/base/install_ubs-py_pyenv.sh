@@ -27,6 +27,12 @@ function env_dump() {
     
 }
 
+function setenv_reload() {
+    env_dump "setenv_reload::pre"
+    export PS1='# '; source /etc/bash.bashrc
+    env_dump "setenv_reload::post"
+}
+
 PYTHON_CONFIGURE_OPTS=${PYTHON_CONFIGURE_OPTS:-"--enable-shared"}
 
 # a function to install apt packages only if they are not installed
@@ -41,6 +47,8 @@ function apt_install() {
 
 function install_build_deps() {
 
+    [ "$Y_PY_PYENV_INSTALL" = 1 ] || return 0
+    
 #echo "PYTHON_CONFIGURE_OPTS=${PYTHON_CONFIGURE_OPTS}" >>"${R_HOME}/etc/R_environ"
 
 apt_install \
@@ -65,13 +73,16 @@ apt_install \
     zlib1g-dev \
     python3-pip
 
-python3 -m pip --no-cache-dir install --upgrade --ignore-installed pipenv
+python3 -m pip --no-cache-dir install --upgrade --ignore-installed \
+        pipenv
 
     
 }
 
 function install_pyenv() {
 
+    [ "$Y_PY_PYENV_INSTALL" = 1 ] || return 0
+    
 # consider a version-stable alternative for the installer?
     curl https://pyenv.run | \
         env PYENV_ROOT=/opt/pyenv bash
@@ -81,35 +92,25 @@ function install_pyenv() {
 
 function config_pyenv() {
 
+    [ "$Y_PY_PYENV_CONFIG" = 1 ] || return 0
+    
 # pipenv requires ~/.local/bin to be on the path...
-cat <<"EOR" >>"${R_HOME}/etc/Renviron.site"
-PYENV_ROOT=/opt/pyenv
-PATH=$PYENV_ROOT/bin:~/.local/bin:$PATH
-EOR
+#cat <<"EOR" >>"${R_HOME}/etc/Renviron.site"
+#PYENV_ROOT=/opt/pyenv
+#PATH=$PYENV_ROOT/bin:~/.local/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$PATH
+#EOR
 
 cat <<"EOF" >>/etc/bash.bashrc
 PYENV_ROOT=/opt/pyenv
 PATH=$PYENV_ROOT/bin:~/.local/bin:$PATH
-export PYENV_ROOT
-export PATH
+
 eval "$(pyenv init --path)"
 eval "$(pyenv virtualenv-init -)"
+
+export PYENV_ROOT
+export PATH
+
 EOF
-    
-}
-
-function setenv_reload() {
-
-    env_dump "setenv_reload::pre"
-    export PS1='# '; source /etc/bash.bashrc
-    # env_dump "setenv_pyenv::src"
-    
-    # export PYENV_ROOT=/opt/pyenv
-    # export PATH=$PYENV_ROOT/bin:~/.local/bin:$PATH
-    # eval "$(pyenv init --path)"
-    # eval "$(pyenv virtualenv-init -)"
-
-    env_dump "setenv_reload::post"
     
 }
 
@@ -150,6 +151,22 @@ function config_pyenv_python() {
 
 }
 
+function check_pyenv() {
+    
+    [ "$Y_PY_PYENV_CHECK" = 1 ] || return 0
+    
+    which python || true
+    which pyenv  || true
+
+    python --version  || true
+    pyenv  --version  || true
+
+    pyenv  versions  || true
+    which -a python3 || true
+    
+}
+
+
 function clean_up() {
     rm -rf /var/lib/apt/lists/*
 }
@@ -157,12 +174,14 @@ function clean_up() {
 
 
 function main() {
+    
+    [ "$Y_PY_ANY_SUPPORT" = 1 ] || return 0
 
     env_dump $@
 
     update_system_python
     
-    [ "$Y_PY_PYENV_INSTALL" = 1 ] || return 0
+    [ "$Y_PY_PYENV_SUPPORT" = 1 ] || return 0
 
     install_build_deps
 
@@ -172,6 +191,8 @@ function main() {
 
     install_pyenv_python
     config_pyenv_python
+
+    check_pyenv    
 
     clean_up
 

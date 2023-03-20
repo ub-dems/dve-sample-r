@@ -1,5 +1,14 @@
 #!/bin/bash
 
+##
+# init_ubs-userconf.sh: modify rstudio config for podman compatibility
+#
+
+set -e
+
+## build ARGs
+source /etc/build.conf
+
 ## Set defaults for environmental variables in case they are undefined
 DEFAULT_USER=${DEFAULT_USER:-rstudio}
 USER=${USER:=${DEFAULT_USER}}
@@ -13,6 +22,45 @@ TZ=${TZ:=Etc/UTC}
 bold=$(tput bold)
 normal=$(tput sgr0)
 
+
+function env_dump() {
+
+    [ "$Y_DEBUG" = 1 ] || return 0
+    
+    echo "+++> #ENV($0): $@"
+    echo "+++: #ENV($0): /etc/build.conf"
+    cat /etc/build.conf
+    echo "+++: #ENV($0): set"
+    set | grep '^Y_' | sort
+    echo "+++: #ENV($0): env"
+    env | sort
+    echo "+++: #ENV($0): path"
+    echo "PATH=$PATH"
+    echo "+++<  #ENV($0): $@"
+    
+}
+
+
+function init_userconf_data() {
+    
+    ##
+    # add 'dsdata' access group
+    #
+    groupadd --gid 840 dsdata
+    useradd -r -m -d /var/lib/dsdata -u 840 -g dsdata -s/bin/bash dsdata
+    passwd -l dsdata
+    chmod 750 /var/lib/dsdata
+
+    usermod  -a -G dsdata root
+
+}
+
+function init_userconf() {
+    
+    [ "$Y_BASE_INIT_USERCONF" = 1 ] || return 0
+    
+    init_userconf_data
+
 ##
 # set root equivalence
 #
@@ -22,39 +70,127 @@ normal=$(tput sgr0)
 
 #usermod  -o --uid 0 --gid 0  $USER
 #groupmod -o         --gid 0  $USER
-
-##
-# avoid /etc/bash.bashrc message
-
-touch /root/.sudo_as_admin_successful
-
-##
-# launch with: 
-# 
-# podman run --rm --ulimit=host -p 8787:8787 -e PASSWORD=Sec3et -v ~/work:/root/work:Z  -e USER=root -e USERID=0 -e GROUPID=0 -e ROOT=true  "image-name"
-#
-
-sed -i '/auth-minimum-user-id/d'      /etc/rstudio/rserver.conf
-echo    'auth-minimum-user-id = 0' >> /etc/rstudio/rserver.conf
+    
+    
+}
 
 
-sed -i '/auth-minimum-user-id/d'      /etc/rstudio/disable_auth_rserver.conf
-echo    'auth-minimum-user-id = 0' >> /etc/rstudio/disable_auth_rserver.conf
+function init_home_ssh() {
+    
+    [ "$Y_BASE_INIT_SSH" = 1 ] || return 0
+
+    ###   ssh-config
+
+    if [ -d ~/.ssh ]; then
+        mkdir -p   ~/.ssh.bk/$T
+        chmod 700  ~/.ssh.bk
+        chmod 700  ~/.ssh.bk/$T
+        cp -rpv    ~/.ssh ~/.ssh.bk/$T
+        warn "backup existing ~/.ssh ~/ssh.bk/$T"
+    fi
+
+    if [ -f ~/.ssh/id_rsa ]; then
+        warn "user:$USER, existing ssh key, skip"
+    else
+        echo 'y' | ssh-keygen -f ~/.ssh/id_rsa -P '' -t rsa -b 4096
+    fi
+
+    touch      ~/.ssh/config
+    chmod 600  ~/.ssh/config
+    echo "ServerAliveInterval = 10" >> ~/.ssh/config
+
+    touch      ~/.ssh/authorized_keys
+    chmod 600  ~/.ssh/authorized_keys
+    
+    cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
+    
+    ssh-keyscan -H localhost >> ~/.ssh/known_hosts
+    ssh localhost pwd
+    
+}
+
+function init_home_git() {
+    
+    [ "$Y_BASE_INIT_GIT" = 1 ] || return 0
+
+    git config --global
+
+    git config --global user.name $Y_BASE_META_USER
+    git config --global user.email $Y_BASE_META_MAIL
+    git config --global push.default simple
+    git config --global diff.ignoreSubmodules dirty
+    git config --global credential.helper store
+    git config --global alias.tree  "log --graph --decorate --pretty=oneline --abbrev-commit"
+    git config --global core.pager 'less'
+    git config --global core.eol lf
+    git config --global core.autocrlf input
+    #git config --global core.editor 'vim'
+    #git config --global core.editor 'nano'
+    git config -l
+    
+
+}
+
+function init_home_sudo() {
+    
+    ##
+    # avoid /etc/bash.bashrc message
+
+    touch /root/.sudo_as_admin_successful
+
+}
+
+function init_home_xauth() {
+    
+  touch     ~/.Xauthority
+  chmod 600 ~/.Xauthority
+
+  # touch      ~/.nofinger
+  # chmod 600  ~/.nofinger
+
+}
+
+function init_home() {
+    
+    [ "$Y_BASE_INIT_HOME" = 1 ] || return 0
+    
+    init_home_sudo
+    init_home_xauth
+
+    # mounted from ./home/user volume
+    
+    # init_home_ssh
+    # init_home_git
+    
+}
 
 
-sed -i 's/"$USER" != "$DEFAULT_USER"/ "$USER" != "$DEFAULT_USER" -a "$USER" != "root"/g'      \
+
+function init_rstudio_config() {
+    
+    ##
+    # launch with: 
+    # 
+    # podman run --rm --ulimit=host -p 8787:8787 -e PASSWORD=Sec3et -v ~/work:/root/work:Z  -e USER=root -e USERID=0 -e GROUPID=0 -e ROOT=true  "image-name"
+    #
+
+    sed -i '/auth-minimum-user-id/d'      /etc/rstudio/rserver.conf
+    echo    'auth-minimum-user-id = 0' >> /etc/rstudio/rserver.conf
+
+    sed -i '/auth-minimum-user-id/d'      /etc/rstudio/disable_auth_rserver.conf
+    echo    'auth-minimum-user-id = 0' >> /etc/rstudio/disable_auth_rserver.conf
+    
+}
+
+function init_rstudio_service() {
+    
+    sed -i 's/"$USER" != "$DEFAULT_USER"/ "$USER" != "$DEFAULT_USER" -a "$USER" != "root"/g'      \
                                       /etc/cont-init.d/02_userconf
+    
+}
 
-##
-# add 'dsdata' access group
-#
-groupadd --gid 840 dsdata
-useradd -r -m -d /var/lib/dsdata -u 840 -g dsdata -s/bin/bash dsdata
-passwd -l dsdata
-chmod 750 /var/lib/dsdata
-
-usermod  -a -G dsdata root
-
+function init_rstudio_logging() {
+    
 ##
 # enable 'info' logging
 #
@@ -74,3 +210,67 @@ log-dir=/var/log/file-locking
 log-file-mode=600
 
 EOF
+    
+}
+
+
+function init_rstudio() {
+    
+    [ "$Y_BASE_INIT_RSTUDIO" = 1 ] || return 0
+    
+    init_rstudio_config
+    init_rstudio_service
+    init_rstudio_logging
+    
+}
+
+
+
+function setenv_reload() {
+
+    env_dump "setenv_userconf::pre"
+    export PS1='# '; source /etc/bash.bashrc
+    env_dump "setenv_userconf::post"
+    
+}
+
+
+function check_userconf() {
+    
+    [ "$Y_BASE_INIT_CHECK" = 1 ] || return 0
+    
+    
+    
+}
+
+
+function clean_up() {
+    :
+}
+
+
+
+function main() {
+
+    env_dump $@
+    
+    [ "$Y_BASE_INIT_APPLY" = 1 ] || return 0
+
+    setenv_reload
+
+    init_userconf
+    init_rstudio
+    init_home
+    
+    setenv_reload
+
+    check_userconf
+
+    clean_up
+
+
+}
+    
+
+main $@
+ 
