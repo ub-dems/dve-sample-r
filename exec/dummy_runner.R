@@ -4,7 +4,7 @@
 # runner script example
 #
 
-rm(list=ls())
+#rm(list=ls())
 devtools::load_all(".") 
 
 require(dvesimpler)

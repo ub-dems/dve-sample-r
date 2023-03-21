@@ -67,6 +67,7 @@
 ^src/\.clang-format$
 ^src/\.ycm_extra_conf\.pyc?$
 ^TAGS$
+^_targets\.R$
 ^temp$
 ^travis$
 ^travis/check_format\.sh$

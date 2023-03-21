@@ -518,7 +518,7 @@ files = [
 name = "cffi"
 version = "1.15.1"
 description = "Foreign Function Interface for Python calling C code."
-category = "dev"
+category = "main"
 optional = false
 python-versions = "*"
 files = [
@@ -3435,7 +3435,7 @@ files = [
 name = "pycparser"
 version = "2.21"
 description = "C parser in Python"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 files = [
@@ -3794,7 +3794,7 @@ files = [
 name = "pyzmq"
 version = "25.0.2"
 description = "Python bindings for 0MQ"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.6"
 files = [
@@ -4065,7 +4065,7 @@ jupyter = ["ipywidgets (>=7.5.1,<9)"]
 [[package]]
 name = "rootpath"
 version = "0.2.1"
-description = ""
+description = "Python project/package root path detection."
 category = "main"
 optional = false
 python-versions = "*"
@@ -5170,4 +5170,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10"
-content-hash = "b569407558553279392c5549f817fb427ce1da8a4815a3803a5320c29d535f5b"
+content-hash = "e5daaa201f3de95cfc7d6d691d491083f755f3b42dcad42866dede9539782685"

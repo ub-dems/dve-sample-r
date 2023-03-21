@@ -62,6 +62,20 @@ is_skip_mode <- function() {
   return (is_check_mode())
 }
 
+# ////////////////////////////////////////////////////////////////////////////
+
+getwd_base <- function() {
+  result <- find_path("")
+  return (result)
+}
+
+
+setwd_base <- function() {
+  result <- getwd()
+  base_wd <- getwd_base()
+  setwd(base_wd)
+  return (result)
+} 
 
 # ////////////////////////////////////////////////////////////////////////////
 

@@ -16,11 +16,14 @@ BugReports: https://gitlab.com/ub-dems-public/ds-labs/dve-sample-r/-/issues
 Depends: 
     R (>= 3.6.0)
 Imports:
+    here,
     logging,
     magrittr,
     reader,
     reticulate,
     rprojroot,
+    rzmq,
+    targets,
     yaml
 Suggests: 
     assertthat,

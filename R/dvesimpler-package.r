@@ -10,6 +10,8 @@
 #' @importFrom magrittr %>%
 #' @importFrom reticulate py_discover_config
 #' @importFrom rprojroot is_r_package is_rstudio_project is_testthat find_root find_root_file
+#' @importFrom rzmq init_context
+#' @importFrom targets tar_make
 #' @importFrom yaml as.yaml
 NULL
 
