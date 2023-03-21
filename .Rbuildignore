@@ -39,6 +39,7 @@
 ^Makefile$
 ^man-roxygen$
 ^Meta$
+^\.mypy_cache$
 ^notes$
 ^pkgdown$
 ^_pkgdown\.yml$
