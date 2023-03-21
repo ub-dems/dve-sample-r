@@ -123,6 +123,8 @@ custom-help: help/custom
 
 prepare: init
 
+# @TODO: git/ssh initial sync
+
 setup: # @HELP/build initial build of all podman images
 setup:  init prepare build-setup build-validate
 

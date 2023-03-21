@@ -1,4 +1,4 @@
-FROM rocker/verse:4.2.2
+FROM rocker/verse:4.2.3
 
 # @see: https://github.com/rocker-org/rocker-versioned2/pkgs/container/tidyverse/versions
 # FROM rocker/tidyverse:latest
