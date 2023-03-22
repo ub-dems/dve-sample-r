@@ -1,7 +1,7 @@
 #!/usr/bin/env Rscript
 
 ##
-# targets pipeline runner
+# runner script example
 #
 
 #rm(list=ls())
@@ -10,24 +10,34 @@ devtools::load_all(".")
 require(dvesimpler)
 
 library(logging)
-library(targets)
 
 init_logging <- function(args = c()){
-  log_init("pipeline_runner.log", args=args)
+  log_init("dummy-runner.log", args=args)
 }
 
 
-setup <- function(){
-  prev_dir <- getwd()
-  setwd_base()
-  curr_dir <- getwd()
-  logdebug('#? wd: %s  (was: %s)', curr_dir, prev_dir)
-  0
+
+v <- function(...) cat(sprintf(...), "\n", sep=' ', file=stderr())
+s <- function(...) do.call(paste,as.list(c(..., sep=", ")))
+
+scall <- function (){
+  c(
+    dummy_hello(),
+    dummy_hello("Earth"),
+    dummy_hello("Moon", "'Night")
+  )
 }
 
+vcall <- function (){
+  dummy_hello(c(
+    "Mars",
+    "Venus"
+  ))
+}
 
 task <- function(){
-  targets::tar_make()
+  v("scall: %s", s(scall()))
+  v("vcall: %s", s(vcall()))
   0
 }
 
@@ -37,8 +47,9 @@ main <- function(){
   init_logging(args = args)
   loginfo('#> start: %s', paste(args,sep = " "))
   logdebug('#? args: %s', paste(commandArgs(),sep = ", "))
+  print(sx <- sessionInfo())
+  logfinest(sx)
   rc <- 0 
-  setup()
   print(elapsed <- system.time({ rc <- task()  }))
   loginfo('#< end(%d): %s', rc, summary(elapsed))
   rc
