@@ -23,6 +23,8 @@ ensure_path <- function(fp) {
   return (fp)
 }
 
+
+
 find_test_path <- function(fp) {
   parent_path <- rprojroot::find_root_file(".", criterion = 
         rprojroot::root_criterion(function(path) dir.exists(file.path(path, "tests")), "has tests subdir"))
@@ -62,7 +64,16 @@ is_skip_mode <- function() {
   return (is_check_mode())
 }
 
+
 # ////////////////////////////////////////////////////////////////////////////
+
+touch_path <- function(fp) {
+  fn <- find_path(fp)
+  system2("touch",args=c(fn))
+  return (fn)
+}
+
+
 
 getwd_base <- function() {
   result <- find_path("")
@@ -150,6 +161,7 @@ io_exec <- function(path="", name="", create_path=FALSE) {
 # ////////////////////////////////////////////////////////////////////////////
 
 def_path <- function(name, path, base=fn_base()) { io_data(base=base, kind="def", path=path, name=name) }
+
 loc_path <- function(name, path, base=fn_base()) { io_data(base=base, kind="loc", path=path, name=name) }
 net_path <- function(name, path, base=fn_base()) { io_data(base=base, kind="net", path=path, name=name) }
 
@@ -165,13 +177,22 @@ log_file <- function(fn) {
   return(result)
 }
 
+#' @keywords internal
+#' @noRd
 log_dir <- function() {
   logfile <- log_file("logfile.log")
   result <- dirname(logfile)
   return(result)
 }
 
-
+#' init logging
+#'
+#' @param logfile String logfile under logs/ (.gitignored) dir
+#' @param args list args, defaults to command-line arg
+#' @param log_level String appender logging level
+#' @param file_level String logfile logging level
+#' @param out_level String console logging level
+#' @export
 log_init <- function(logfile = "logfile.log", args = c(), log_level='DEBUG', file_level='DEBUG', out_level='INFO'){
   logging::basicConfig()
   logging::setLevel(log_level)

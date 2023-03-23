@@ -16,9 +16,13 @@ BugReports: https://gitlab.com/ub-dems-public/ds-labs/dve-sample-r/-/issues
 Depends: 
     R (>= 3.6.0)
 Imports:
+    dplyr,
+    ggplot2,
+    readr,
     here,
     logging,
     magrittr,
+    modules,
     reader,
     reticulate,
     rprojroot,
@@ -29,14 +33,12 @@ Suggests:
     assertthat,
     cli (>= 3.3.0),
     devtools,
-    dplyr,
-    ggplot2,
     knitr,
+    lintr,
     lubridate,
     microbenchmark,
     pacs,
     purrr,
-    readr,
     rmarkdown,
     stringr,
     testthat (>= 2.1.0)

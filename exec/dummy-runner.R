@@ -22,14 +22,14 @@ s <- function(...) do.call(paste,as.list(c(..., sep=", ")))
 
 scall <- function (){
   c(
-    dummy_hello(),
-    dummy_hello("Earth"),
-    dummy_hello("Moon", "'Night")
+    dmy_hello(),
+    dmy_hello("Earth"),
+    dmy_hello("Moon", "'Night")
   )
 }
 
 vcall <- function (){
-  dummy_hello(c(
+  dmy_hello(c(
     "Mars",
     "Venus"
   ))

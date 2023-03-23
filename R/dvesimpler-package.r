@@ -7,12 +7,21 @@
 # Suppress R CMD check note
 # 
 #' @importFrom here here
-#' @importFrom logging loginfo getHandler
+#' @importFrom logging loginfo logdebug logerror getHandler
 #' @importFrom magrittr %>%
+#' @importFrom modules module export import
 #' @importFrom reticulate py_discover_config
 #' @importFrom rprojroot is_r_package is_rstudio_project is_testthat find_root find_root_file
 #' @importFrom rzmq subscribe
 #' @importFrom targets tar_make
 #' @importFrom yaml as.yaml
+#' 
+#' @importFrom grDevices pdf
+#' @importFrom ggplot2 ggplot aes geom_line xlab
+#' @importFrom readr read_csv write_csv cols col_datetime
+#' @importFrom dplyr filter
+#' @importFrom utils str capture.output View 
+#' 
 NULL
+
 
