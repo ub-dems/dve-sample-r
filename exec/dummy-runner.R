@@ -4,7 +4,7 @@
 # runner script example
 #
 
-rm(list=ls())
+#rm(list=ls())
 devtools::load_all(".") 
 
 require(dvesimpler)
@@ -12,7 +12,7 @@ require(dvesimpler)
 library(logging)
 
 init_logging <- function(args = c()){
-  log_init("dummy_runner.log", args=args)
+  log_init("dummy-runner.log", args=args)
 }
 
 
@@ -22,14 +22,14 @@ s <- function(...) do.call(paste,as.list(c(..., sep=", ")))
 
 scall <- function (){
   c(
-    dummy_hello(),
-    dummy_hello("Earth"),
-    dummy_hello("Moon", "'Night")
+    dmy_hello(),
+    dmy_hello("Earth"),
+    dmy_hello("Moon", "'Night")
   )
 }
 
 vcall <- function (){
-  dummy_hello(c(
+  dmy_hello(c(
     "Mars",
     "Venus"
   ))
