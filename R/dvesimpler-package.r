@@ -22,6 +22,11 @@
 #' @importFrom dplyr filter
 #' @importFrom utils str capture.output View 
 #' 
+#' 
+
+utils::globalVariables(c("Datetime","PJME_MW"))
+
+
 NULL
 
 

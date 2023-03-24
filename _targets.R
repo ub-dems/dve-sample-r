@@ -9,8 +9,16 @@ library(targets)
 
 # Set target options:
 tar_option_set(
-  packages = c("tibble"), # packages that your targets need to run
+  packages = c(
+    "readr",
+    "ggplot2",
+    "dplyr",
+    "lubridate",
+    "yaml",
+    "logging",
+    "modules"), # packages that your targets need to run
   format = "rds" # default storage format
+  # format = "feather" # efficient storage of large data frames # nolint
   # Set other options as needed.
 )
 
@@ -27,12 +35,41 @@ tar_source()
 # Replace the target list below with your own:
 list(
   tar_target(
-    name = data,
-    command = tibble(x = rnorm(100), y = rnorm(100))
-#   format = "feather" # efficient storage of large data frames # nolint
+    name = dmy_fd_net_PJME_hourly_z,
+    command = dmy_p01_list_zip_share_data()
   ),
   tar_target(
-    name = model,
-    command = coefficients(lm(y ~ x, data = data))
+    name = dmy_fd_net_PJME_hourly,
+    command = dmy_p01_copy_zip_share_data(dmy_fd_net_PJME_hourly_z$fn)
+  ),
+  tar_target(
+    name = dmy_df_PJME_hourly,
+    command = dmy_p01_load_host_local_data(dmy_fd_net_PJME_hourly$fn),
+    format = "feather"
+  ),
+  tar_target(
+    name = dmy_fd_def_PJME_hourly_3y,
+    command = dmy_p01_save_user_private_data(dmy_df_PJME_hourly, from_date = "2016-01-01", to_date = "2019-01-01")
+  ),
+  tar_target(
+    name = dmy_df_PJME_hourly_3y,
+    command = dmy_p01_load_user_private_data(dmy_fd_def_PJME_hourly_3y$fn),
+    format = "feather"
+  ),
+  tar_target(
+    name = dmy_fd_txt_PJME_hourly,
+    command = dmy_p01_show_host_local_data(dmy_df_PJME_hourly)
+  ),
+  tar_target(
+    name = dmy_fd_tmp_PJME_hourly,
+    command = dmy_p01_plot_host_local_data(dmy_df_PJME_hourly)
+  ),
+  tar_target(
+    name = dmy_fd_txt_PJME_hourly_3y,
+    command = dmy_p01_show_user_private_data(dmy_df_PJME_hourly_3y)
+  ),
+  tar_target(
+    name = dmy_fd_tmp_PJME_hourly_3y,
+    command = dmy_p01_plot_user_private_data(dmy_df_PJME_hourly_3y)
   )
 )

@@ -22,8 +22,8 @@ log_info <- function(...) {
 
 
 task <- function(args = commandArgs(trailingOnly=TRUE)){
-  fn <- dmy_p01_main(args)
-  loginfo('#+ states: %s', paste(fn,sep = " "))
+  fd <- dmy_p01_main(args)
+  loginfo('#+ states: %s', paste(str(fd),sep = " "))
   0
 }
 

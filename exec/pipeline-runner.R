@@ -40,7 +40,7 @@ main <- function(){
   rc <- 0 
   setup()
   print(elapsed <- system.time({ rc <- task()  }))
-  loginfo('#< end(%d): %s', rc, summary(elapsed))
+  loginfo('#< end(%d): %s', rc, with_digits(summary(elapsed)))
   rc
 }
 

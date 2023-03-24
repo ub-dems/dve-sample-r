@@ -67,6 +67,15 @@ is_skip_mode <- function() {
 
 # ////////////////////////////////////////////////////////////////////////////
 
+with_digits <- function(f, digits = 3) {
+  oo <- options(digits = digits)
+  result <- f()
+  on.exit(options(oo))
+  return (result)
+}
+
+# ////////////////////////////////////////////////////////////////////////////
+
 touch_path <- function(fp) {
   fn <- find_path(fp)
   system2("touch",args=c(fn))
@@ -157,6 +166,36 @@ io_exec <- function(path="", name="", create_path=FALSE) {
   }
   return(result)
 }
+
+# ////////////////////////////////////////////////////////////////////////////
+
+#' convert filename to filedesciptor with access timestamp
+#'
+#' @param fn String filename
+#' @return fd
+#' @export
+as.IOfd <- function (fn){
+  tm <- Sys.time()
+  ts <- strftime(tm , "%Y-%m-%dT%H:%M:%S%z", usetz=TRUE)
+  fd <- structure(list( 
+   fn = fn
+  ,tm = tm
+  ,ts = ts
+  ,class = "IOfd"))
+  return(fd)
+}
+
+#' extract filename from filedesciptor
+#'
+#' @param fd IOfd descriptor
+#' @return fn
+#' @export
+as.IOfn <- function (fd){
+  fn <- fd$fn
+  return(fn)
+}
+
+
 
 # ////////////////////////////////////////////////////////////////////////////
 

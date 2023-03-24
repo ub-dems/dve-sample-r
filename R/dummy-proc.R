@@ -10,7 +10,6 @@
 ## library(logging)
 ## library("modules")
 
-#init_logging <- function(args = c()){ log_init("dummy-p01-proc.log", args=args) }
 
 
 # m <- modules::module({
@@ -22,7 +21,7 @@
 #   message(text)
 # }
 # 
-# #init_logging <- function(args = c()){ log_init("dummy-p01-proc.log", args=args) }
+#init_logging <- function(args = c()){ log_init("dummy-p01-proc.log", args=args) }
 # 
 # auto_load <- function() { init_logging() }
 # 
@@ -39,7 +38,7 @@ log_info <- function(...) {
   message(text)
 }
 
-init_logging <- function(args = c()){ log_init("dummy-p01-proc.log", args=args) }
+#init_logging <- function(args = c()){ log_init("dummy-p01-proc.log", args=args) }
 
 #auto_load <- function() { init_logging() }
 auto_load <- function() { print("Hi") }
@@ -48,14 +47,26 @@ auto_load <- function() { print("Hi") }
 m$auto_load()
 
 
-utils::suppressForeignCheck(c("Datetime","PJME_MW"))
-utils::globalVariables(c("Datetime","PJME_MW"))
+dmy_p01_init_logging <- function(args = c()){ log_init("dummy-p01-proc.log", args=args) }
+
 
 dmy_p01_env_dump <- function (){
   s <- modules::getSearchPathContent(m)
   cat(str(s))
   print(m)
   return(0)
+}
+
+#' chck compressed input file
+#'
+#' @return fd
+#' @export
+dmy_p01_list_zip_share_data <- function (){
+  fn = dmy_fn_def_PJME_hourly_3y()
+  loginfo('# list_zip: %s', fn)
+  fs <- file.info(fn)
+  head(fs)
+  return (as.IOfd(fn))
 }
 
 
@@ -65,36 +76,40 @@ dmy_p01_env_dump <- function (){
 #' @return PJME_hourly_3y
 #' @export
 dmy_p01_load_user_private_data <- function (fn = dmy_fn_def_PJME_hourly_3y()){
-  logdebug('# read_csv: %s', fn)
-  PJME_hourly_3y <- read_csv(fn);
+  loginfo('# read_csv: %s', fn)
+  PJME_hourly_3y <- read_csv(fn, show_col_types = FALSE);
   return (PJME_hourly_3y)
 }
 
 #' filter and save 3y PJME hourly data (def)
 #'
 #' @param PJME_hourly dataframe unfiltered PJME hourly data
+#' @param from_date String starting date in "yyyy-mm-dd" string format
+#' @param to_date String ending date in "yyyy-mm-dd" string format
 #' @return PJME_hourly_3y
 #' @export
-dmy_p01_save_user_private_data <- function (PJME_hourly){
+dmy_p01_save_user_private_data <- function (PJME_hourly, from_date, to_date){
   PJME_hourly_3y_tmp <- PJME_hourly %>%
-    filter(Datetime >= as.Date("2016-01-01"),Datetime < as.Date("2019-01-01"))
+    filter(as.Date(Datetime) >= as.Date(from_date),
+           as.Date(Datetime) < as.Date(to_date))
   fn <- dmy_fn_def_PJME_hourly_3y()
-  logdebug('# write_csv: %s', fn)
+  loginfo('# write_csv: %s', fn)
   write_csv(PJME_hourly_3y_tmp, fn);
-  return (fn)
+  return (as.IOfd(fn))
 }
 
 #' test compressed unfiltered PJME hourly data (net)
 #' 
-#' @return fn_net_PJME_hourly_z
+#' @return fd_net_PJME_hourly_z
 #' @export
 dmy_p01_test_zip_share_data <- function (){
   fz <- dmy_fn_net_PJME_hourly_z()
+  loginfo('# check: %s', fz)
   if (!file.exists(fz)) {
     logerror('# missing: %s', fz)
-    return(fz)
+    return (as.IOfd(fz))
   }
-  return (fz)
+  return (as.IOfd(fz))
 }
 
 #' copy compressed unfiltered PJME hourly data (net)
@@ -107,15 +122,16 @@ dmy_p01_copy_zip_share_data <- function (fz = dmy_fn_net_PJME_hourly_z()){
   fn <- dmy_fn_loc_PJME_hourly()
   if (!file.exists(fn)) {
     loginfo('# existing: %s', fn)
-    return(fn)
+    return (as.IOfd(fn))
   }
   loginfo('# read_csv: %s', fz)
   PJME_hourly_z <- read_csv(fz, 
-                            col_types = cols(Datetime = col_datetime(format = "%Y-%m-%d %H:%M:%S")));
+                            col_types = cols(Datetime = col_datetime(format = "%Y-%m-%d %H:%M:%S")),
+                            show_col_types = FALSE);
   PJME_hourly_z$Datetime = format(PJME_hourly_z$Datetime,format="%Y-%m-%d %H:%M:%S")
   loginfo('# write_csv: %s', fn)
   write_csv(PJME_hourly_z, fn);
-  return (fn)
+  return (as.IOfd(fn))
 }
 
 #' copy compressed unfiltered PJME hourly data (net)
@@ -125,9 +141,10 @@ dmy_p01_copy_zip_share_data <- function (fz = dmy_fn_net_PJME_hourly_z()){
 #' @return PJME_hourly dataframe
 #' @export
 dmy_p01_load_host_local_data <- function(fn = dmy_fn_loc_PJME_hourly()){
-  logdebug('# read_csv: %s', fn)
+  loginfo('# read_csv: %s', fn)
   PJME_hourly <- read_csv(fn, 
-                     col_types = cols(Datetime = col_datetime(format = "%Y-%m-%d %H:%M:%S")));
+                     col_types = cols(Datetime = col_datetime(format = "%Y-%m-%d %H:%M:%S")),
+                     show_col_types = FALSE);
   return (PJME_hourly)
 }
 
@@ -154,9 +171,10 @@ dmy_p01_view_host_local_data <- function (PJME_hourly){
 dmy_p01_show_user_private_data <- function (PJME_hourly_3y){
   fn <- dmy_fn_txt_PJME_hourly_3y()
   df <- PJME_hourly_3y
+  loginfo('# report: %s', fn)
   out<-capture.output(summary(df))
   cat(out,file=fn,sep="\n",append=TRUE)
-  return (fn)
+  return (as.IOfd(fn))
 }
 
 #' show PJME hourly data
@@ -167,9 +185,10 @@ dmy_p01_show_user_private_data <- function (PJME_hourly_3y){
 dmy_p01_show_host_local_data <- function (PJME_hourly){
   fn <- dmy_fn_txt_PJME_hourly()
   df <- PJME_hourly
+  loginfo('# report: %s', fn)
   out<-capture.output(summary(df))
   cat(out,file=fn,sep="\n",append=TRUE)
-  return (fn)
+  return (as.IOfd(fn))
 }
 
 #' plot 3y PJME hourly data
@@ -182,6 +201,7 @@ dmy_p01_plot_user_private_data <- function (PJME_hourly_3y){
   fn <- dmy_fn_tmp_PJME_hourly_3y()
   df <- PJME_hourly_3y
   #nm <- names(PJME_hourly_3y)
+  loginfo('# plot: %s', fn)
   
   # Most basic bubble plot
   p <- ggplot(df, aes(x=Datetime, y=PJME_MW)) +
@@ -189,7 +209,7 @@ dmy_p01_plot_user_private_data <- function (PJME_hourly_3y){
     xlab("")
   pdf(fn)
   print(p)
-  return (fn) 
+  return (as.IOfd(fn))
 }
 
 #' plot unfiltered PJME hourly data
@@ -198,11 +218,11 @@ dmy_p01_plot_user_private_data <- function (PJME_hourly_3y){
 #' @return void
 #' @export
 dmy_p01_plot_host_local_data <- function (PJME_hourly){
-  utils::suppressForeignCheck(c("Datetime","PJME_MW"))
 
   fn <- dmy_fn_tmp_PJME_hourly()
   df <- PJME_hourly
   # nm <- names(PJME_hourly)
+  loginfo('# plot: %s', fn)
   
   # Most basic bubble plot
   p <- ggplot(df, aes(x=Datetime, y=PJME_MW)) +
@@ -210,7 +230,7 @@ dmy_p01_plot_host_local_data <- function (PJME_hourly){
     xlab("")
   pdf(fn)
   print(p)  
-  return (fn) 
+  return (as.IOfd(fn))
 }
 
 
@@ -223,22 +243,24 @@ dmy_p01_plot_host_local_data <- function (PJME_hourly){
 #' @export
 dmy_p01_task <- function(args = commandArgs(trailingOnly=TRUE)){
   loginfo('#> extract, ...')
-  fn_net_PJME_hourly_z <- dmy_p01_copy_zip_share_data()
-  fn_net_PJME_hourly <- dmy_p01_copy_zip_share_data(fn_net_PJME_hourly_z)
-  PJME_hourly <- dmy_p01_load_host_local_data(fn_net_PJME_hourly)
-  fn_def_PJME_hourly_3y <- dmy_p01_save_user_private_data(PJME_hourly)
+  fd_net_PJME_hourly_z <- dmy_p01_list_zip_share_data()
+  fd_net_PJME_hourly <- dmy_p01_copy_zip_share_data(fd_net_PJME_hourly_z$fn)
+  PJME_hourly <- dmy_p01_load_host_local_data(fd_net_PJME_hourly$fn)
+  fd_def_PJME_hourly_3y <- dmy_p01_save_user_private_data(PJME_hourly,
+                               from_date = "2016-01-01", to_date = "2019-01-01")
   loginfo('#< extract, done')
   loginfo('#> load, ...')
-  PJME_hourly_3y <- dmy_p01_load_user_private_data(fn_def_PJME_hourly_3y)
+  PJME_hourly_3y <- dmy_p01_load_user_private_data(fd_def_PJME_hourly_3y$fn)
   loginfo('#> load, done.')
   loginfo('#> transform, ...')
-  fn_txt_PJME_hourly <- dmy_p01_show_host_local_data(PJME_hourly)
-  fn_tmp_PJME_hourly <- dmy_p01_plot_host_local_data(PJME_hourly)
-  fn_txt_PJME_hourly_3y <- dmy_p01_show_user_private_data(PJME_hourly_3y)
-  fn_tmp_PJME_hourly_3y <- dmy_p01_plot_user_private_data(PJME_hourly_3y)
+  fd_txt_PJME_hourly <- dmy_p01_show_host_local_data(PJME_hourly)
+  fd_tmp_PJME_hourly <- dmy_p01_plot_host_local_data(PJME_hourly)
+  fd_txt_PJME_hourly_3y <- dmy_p01_show_user_private_data(PJME_hourly_3y)
+  fd_tmp_PJME_hourly_3y <- dmy_p01_plot_user_private_data(PJME_hourly_3y)
   loginfo('#< transform,done.')
   fn <- touch_path(dmy_fn_sts_p01_proc_main())
-  return(fn)
+  loginfo('# mark: %s', fn)
+  return (as.IOfd(fn))
 }
 
 #' PJME hourly data ELT process entry point
@@ -248,15 +270,17 @@ dmy_p01_task <- function(args = commandArgs(trailingOnly=TRUE)){
 #' @export
 dmy_p01_main <- function(args = commandArgs(trailingOnly=TRUE)){ 
   #args <- commandArgs(trailingOnly=TRUE)
-  m$init_logging(args = args)
+  # m$init_logging(args = args)
+  dmy_p01_init_logging(args = args)
   loginfo('#> start: %s', paste(args,sep = " "))
-  logdebug('#? args: %s', paste(commandArgs(),sep = ", "))
+  loginfo('#? args: %s', paste(commandArgs(),sep = ", "))
   m$log_info("#start")
   rc <- 0 
-  print(elapsed <- system.time({ rc <- dmy_p01_task()  }))
+  print(elapsed <- system.time({ fd <- dmy_p01_task()  }))
   loginfo('#< end(%d): %s', rc, summary(elapsed))
   fn <- touch_path(dmy_fn_sts_p01_proc_main())
-  return(fn)
+  loginfo('# mark: %s', fn)
+  return (as.IOfd(fn))
 }
 
 #dmy_p01_main()
