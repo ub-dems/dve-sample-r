@@ -31,8 +31,9 @@ runner_logs <- function(job_desc){ log_init("runner.log", args=job_desc$job_conf
 # ---(scripts)------------------------------------------------
 
 E_PROJECT_SCRIPTS <- c(
-  "dummy_runner.R",
-  "dummy_reader.R"
+  "pipeline-runner.R",
+  "dummy-runner.R",
+  "dummy-reader.R"
 )
 
 E_DEFAULT_SCRIPT <- E_PROJECT_SCRIPTS[1]
@@ -199,7 +200,7 @@ runner_main <- function() {
   if (!interactive()) {
     print(sprintf("### RC=%d",job_desc$rc))
     
-    quit(status=job_desc$rc)
+    #quit(status=job_desc$rc)
   }
 
   return (job_desc$rc)

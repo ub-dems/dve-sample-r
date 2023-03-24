@@ -44,6 +44,7 @@ function install_commons_sys() {
     [ "$Y_BASE_COMMONS_SYS" = 1 ] || return 0
     
     apt_install \
+        libzmq3-dev \
         parallel \
         hwloc \
         tasksel \
@@ -63,6 +64,7 @@ function install_commons_cran() {
                renv \
                devtools \
                cli \
+               here \
                logging \
                logger
     
