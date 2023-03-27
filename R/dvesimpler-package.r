@@ -20,7 +20,7 @@
 #' @importFrom ggplot2 ggplot aes geom_line xlab
 #' @importFrom readr read_csv write_csv cols col_datetime
 #' @importFrom dplyr filter
-#' @importFrom utils str capture.output View 
+#' @importFrom utils str capture.output head View 
 #' 
 #' 
 

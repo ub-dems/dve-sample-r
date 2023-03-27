@@ -95,14 +95,19 @@ runner_job <- function(job_conf, store_fun = function(x) { E_RUNNER_JOB <<- x; r
           job_time = job_time,
           end_time = end_time,
           elapsed = elapsed,
+          failed = FALSE,
           completed = TRUE,
           rc = 0
         )))
       },
       
       fail = function(.self, ex) {
+        end_time <- Sys.time()
+        elapsed <- end_time - .self$start_time
         return (.self$set(.self,list(
           ex = ex,
+          end_time = end_time,
+          elapsed = elapsed,
           failed = TRUE,
           rc = 0
         )))
@@ -180,7 +185,22 @@ runner_call <- function(job_desc) {
     job_desc %<>% job_desc$restore_logs()
     logdebug("#. RUN: (ended) -- %s", job_desc$info)
   })
+  return (result)
   
+}
+
+# ---(exit)------------------------------------------------
+
+runner_exit <- function(job_desc) {
+  
+  if (job_desc$failed) {
+    
+    logerror("#> RUN: FAIL -- %s", job_desc$ex)
+    
+    stop(job_desc$ex)
+  }
+  
+  return (job_desc$rc)
 }
 
 # ---(main)------------------------------------------------
@@ -195,7 +215,7 @@ runner_main <- function() {
   
   job_desc <- runner_call(job_desc)
 
-  loginfo("#< RUN: exit (rc:%d, time:%f) -- %s", job_desc$rc, job_desc$elapsed, job_desc$info)
+  loginfo("#< RUN: exit (rc:%d, time:%.3f sec.) -- %s", job_desc$rc, job_desc$elapsed, job_desc$info)
   
   if (!interactive()) {
     print(sprintf("### RC=%d",job_desc$rc))
@@ -203,7 +223,7 @@ runner_main <- function() {
     #quit(status=job_desc$rc)
   }
 
-  return (job_desc$rc)
+  return (runner_exit(job_desc))
 }
 
 runner_main()

@@ -45,6 +45,7 @@ function install_commons_sys() {
     
     apt_install \
         libzmq3-dev \
+        default-libmysqlclient-dev \
         parallel \
         hwloc \
         tasksel \

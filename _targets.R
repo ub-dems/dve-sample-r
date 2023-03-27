@@ -35,6 +35,10 @@ tar_source()
 # Replace the target list below with your own:
 list(
   tar_target(
+    name = dmy_hello_a,
+    command = dmy_hello()
+  ),
+  tar_target(
     name = dmy_fd_net_PJME_hourly_z,
     command = dmy_p01_list_zip_share_data()
   ),
@@ -71,5 +75,9 @@ list(
   tar_target(
     name = dmy_fd_tmp_PJME_hourly_3y,
     command = dmy_p01_plot_user_private_data(dmy_df_PJME_hourly_3y)
+  ),
+  tar_target(
+    name = dmy_hello_b,
+    command = dmy_hello("Moon", "'Night")
   )
 )
