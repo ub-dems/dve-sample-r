@@ -71,10 +71,14 @@ apt_install \
     tk-dev \
     uuid-dev \
     zlib1g-dev \
+    python3-dev \
     python3-pip
 
 python3 -m pip --no-cache-dir install --upgrade --ignore-installed \
-        pipenv
+        pip \
+        setuptools \
+        wheel \
+        pipenv 
 
     
 }
@@ -123,6 +127,28 @@ function update_system_python() {
     if [ -e /usr/bin/python3 ]; then
         ln -s /usr/bin/python3 /usr/bin/python
     fi
+
+apt_install \
+    curl \
+    build-essential \
+    gdb \
+    lcov \
+    pkg-config \
+    libbz2-dev \
+    libffi-dev \
+    libgdbm-dev \
+    libgdbm-compat-dev \
+    liblzma-dev \
+    libncurses5-dev \
+    libreadline6-dev \
+    libsqlite3-dev \
+    libssl-dev \
+    lzma \
+    lzma-dev \
+    tk-dev \
+    uuid-dev \
+    zlib1g-dev 
+
     
 }
 
@@ -150,6 +176,49 @@ function config_pyenv_python() {
     pyenv global $Y_PY_PYTHON_REVISION
 
 }
+
+function upgrade_active_python() {
+    
+    [ "$Y_PY_PYENV_UPGRADE" = 1 ] || return 0
+    
+    python3 -m pip --no-cache-dir install --upgrade --ignore-installed \
+            pip \
+            setuptools \
+            wheel \
+            pipenv 
+
+    which -a python3 || true
+    python --version  || true
+
+    python3 -m pip --version || true
+
+    
+}
+
+function upgrade_pyenv_python() {
+    
+    [ "$Y_PY_PYENV_PYTHON" = 1 ] || return 0
+
+    upgrade_active_python    
+    
+    
+}
+
+function upgrade_system_python() {
+    
+    #   [ "$Y_PY_PYENV_PYTHON" = 1 ] && return 0
+
+    apt_install \
+        python3-dev \
+        python3-numpy \
+        python3-pip
+
+    upgrade_active_python    
+    
+    
+}
+
+
 
 function check_pyenv() {
     
@@ -180,6 +249,7 @@ function main() {
     env_dump $@
 
     update_system_python
+    upgrade_system_python
     
     [ "$Y_PY_PYENV_SUPPORT" = 1 ] || return 0
 
@@ -192,6 +262,8 @@ function main() {
     install_pyenv_python
     config_pyenv_python
 
+    upgrade_pyenv_python
+    
     check_pyenv    
 
     clean_up

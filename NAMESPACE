@@ -2,7 +2,6 @@
 
 export(as.IOfd)
 export(as.IOfn)
-export(dmy)
 export(dmy_hello)
 export(dmy_p01_copy_zip_share_data)
 export(dmy_p01_list_zip_share_data)
