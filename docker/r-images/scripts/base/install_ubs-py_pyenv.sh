@@ -29,7 +29,7 @@ function env_dump() {
 
 function setenv_reload() {
     env_dump "setenv_reload::pre"
-    export PS1='# '; source /etc/bash.bashrc
+    export PS1='# '; source /etc/profile
     env_dump "setenv_reload::post"
 }
 
@@ -49,7 +49,6 @@ function install_build_deps() {
 
     [ "$Y_PY_PYENV_INSTALL" = 1 ] || return 0
     
-#echo "PYTHON_CONFIGURE_OPTS=${PYTHON_CONFIGURE_OPTS}" >>"${R_HOME}/etc/R_environ"
 
 apt_install \
     curl \
@@ -97,14 +96,20 @@ function install_pyenv() {
 function config_pyenv() {
 
     [ "$Y_PY_PYENV_CONFIG" = 1 ] || return 0
+
+PYTHON_CONFIGURE_OPTS=${PYTHON_CONFIGURE_OPTS:-"--enable-shared"}
+#echo "PYTHON_CONFIGURE_OPTS=${PYTHON_CONFIGURE_OPTS}" >>"${R_HOME}/etc/R_environ"
     
 # pipenv requires ~/.local/bin to be on the path...
-#cat <<"EOR" >>"${R_HOME}/etc/Renviron.site"
-#PYENV_ROOT=/opt/pyenv
-#PATH=$PYENV_ROOT/bin:~/.local/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$PATH
-#EOR
+cat <<"EOR" >>"${R_HOME}/etc/Renviron.site"
+PYTHON_CONFIGURE_OPTS="--enable-shared"
+PYENV_ROOT=/opt/pyenv
+PYENV_SHELL=bash
+PATH=~/.local/bin:/opt/pyenv/bin:/opt/pyenv/shims:/opt/pyenv/plugins/pyenv-virtualenv/shims:${PATH}
+EOR
 
-cat <<"EOF" >>/etc/bash.bashrc
+cat <<"EOF" >>/etc/profile.d/Z93-pyenv.sh
+PYTHON_CONFIGURE_OPTS=${PYTHON_CONFIGURE_OPTS:-"--enable-shared"}
 PYENV_ROOT=/opt/pyenv
 PATH=$PYENV_ROOT/bin:~/.local/bin:$PATH
 
@@ -114,6 +119,7 @@ eval "$(pyenv virtualenv-init -)"
 export PYENV_ROOT
 export PATH
 
+export X_RC_Z93_PYENV=1
 EOF
     
 }

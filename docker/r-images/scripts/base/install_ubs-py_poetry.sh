@@ -45,17 +45,22 @@ function config_poetry() {
     [ "$Y_PY_POETRY_CONFIG" = 1 ] || return 0
     
 ### PYTHON_CONFIGURE_OPTS=${PYTHON_CONFIGURE_OPTS:-"--enable-shared"}
+
+cat <<"EOR" >>"${R_HOME}/etc/Renviron.site"
+PYTHON_KEYRING_BACKEND=keyring.backends.null.Keyring
+POETRY_HOME=/opt/poetry
+PATH=~/.local/bin:/opt/poetry/bin:${PATH}
+EOR
     
-# poetry requires $POETRY_HOME/bin to be on the path...
-echo 'PYTHON_KEYRING_BACKEND="keyring.backends.null.Keyring"' >>"${R_HOME}/etc/Renviron.site"
-    
-cat <<"EOF" >>/etc/bash.bashrc
+cat <<"EOF" >>/etc/profile.d/Z94-poetry.sh
 PYTHON_KEYRING_BACKEND="keyring.backends.null.Keyring"
 POETRY_HOME=/opt/poetry
-PATH=/opt/poetry/bin:~/.local/bin:$PATH
+PATH=~/.local/bin:/opt/poetry/bin:$PATH
 export PYTHON_KEYRING_BACKEND
 export POETRY_HOME
-export PATH 
+export PATH
+
+export X_RC_Z94_POETRY=1
 EOF
     
 }
@@ -64,7 +69,8 @@ EOF
 function setenv_reload() {
 
     env_dump "setenv_poetry::pre"
-    export PS1='# '; source /etc/bash.bashrc
+    export PS1='# '; source /etc/profile
+    #export PS1='# '; source /etc/bash.bashrc
     # env_dump "setenv_poetry::src"
     # export PATH="/opt/poetry/bin:$PATH"
     env_dump "setenv_poetry::post"
