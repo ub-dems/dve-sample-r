@@ -51,7 +51,8 @@ function install_utils_sys() {
         mc \
         ranger \
         silversearcher-ag \
-        ripgrep && \
+        ripgrep \
+        tmux && \
     rm -rf /var/lib/apt/lists/*
     
 }
