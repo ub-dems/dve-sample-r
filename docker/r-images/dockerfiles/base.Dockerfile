@@ -23,6 +23,10 @@ ENV TERM=xterm
 
 COPY scripts/base /rocker_scripts
 COPY build.conf   /etc/build.conf
+ARG  Y_BUILD_CONF=/etc/build.conf
+
+ARG  Y_DEBUG_ENV=1
+ENV  X_DEBUG_ENV $Y_DEBUG_ENV
 
 # init user configuration 
 RUN /rocker_scripts/init_ubs-userconf.sh
@@ -32,6 +36,14 @@ RUN /rocker_scripts/install_ubs-commons.sh
 RUN /rocker_scripts/install_ubs-utils.sh
 
 # python support
+
+ENV PYENV_ROOT  /opt/pyenv
+ENV POETRY_HOME /opt/poetry
+RUN mkdir -p ${POETRY_HOME}/bin ${PYENV_ROOT}/bin ${PYENV_ROOT}/shims ${PYENV_ROOT}/plugins/pyenv-virtualenv/shims
+ENV PATH  ${POETRY_HOME}/bin:${PYENV_ROOT}/shims:${PYENV_ROOT}/bin:${PYENV_ROOT}/plugins/pyenv-virtualenv/shims:${PATH}
+RUN echo "# +++ #base(pre): PATH=${PATH}"
+
+RUN /rocker_scripts/install_ubs-py_system.sh
 RUN /rocker_scripts/install_ubs-py_pyenv.sh
 RUN /rocker_scripts/install_ubs-py_poetry.sh
 RUN /rocker_scripts/install_ubs-py_lang.sh
@@ -40,6 +52,8 @@ RUN /rocker_scripts/install_ubs-py_jupyter.sh
 # clean up
 RUN /rocker_scripts/install_ubs-clean.sh
 
+RUN echo "# +++ #base(post): PATH=${PATH}"
+RUN echo "# +++ #base(bash): PATH=$(bash --login -i -c 'printf \"%s\" "$PATH"' | tail -n1)"
 
 EXPOSE 8787
 
