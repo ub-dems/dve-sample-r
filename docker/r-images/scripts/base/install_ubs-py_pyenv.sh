@@ -6,31 +6,33 @@
 ##     pyenv global 3.7.9  # activate as the default python
 ##
 
+## build ARGs
 set -e
+source ${Y_BUILD_CONF:-/etc/build.conf}
 
-source /etc/build.conf
+NCPUS=${NCPUS:--1}
+
 
 function env_dump() {
     
-    [ "$Y_DEBUG" = 1 ] || return 0
+    [ "$Y_DEBUG_ENV" = 1 ] || return 0
     
     echo "+++> #ENV($0): $@"
-    echo "+++: #ENV($0): /etc/build.conf"
-    cat /etc/build.conf
     echo "+++: #ENV($0): set"
     set | grep '^Y_' | sort
     echo "+++: #ENV($0): env"
     env | sort
     echo "+++: #ENV($0): path"
     echo "PATH=$PATH"
-    echo "+++<  #ENV($0): $@"
+    echo "+++< #ENV($0): $@"
     
 }
 
-function setenv_reload() {
-    env_dump "setenv_reload::pre"
-    export PS1='# '; source /etc/profile
-    env_dump "setenv_reload::post"
+function setenv_rehash() {
+    env_dump "setenv_rehash::pre"
+    source /etc/profile
+    #export PS1='# '; source /etc/bash.bashrc
+    env_dump "setenv_rehash::post"
 }
 
 PYTHON_CONFIGURE_OPTS=${PYTHON_CONFIGURE_OPTS:-"--enable-shared"}
@@ -48,47 +50,48 @@ function apt_install() {
 function install_build_deps() {
 
     [ "$Y_PY_PYENV_INSTALL" = 1 ] || return 0
-    
 
-apt_install \
-    curl \
-    build-essential \
-    gdb \
-    lcov \
-    pkg-config \
-    libbz2-dev \
-    libffi-dev \
-    libgdbm-dev \
-    libgdbm-compat-dev \
-    liblzma-dev \
-    libncurses5-dev \
-    libreadline6-dev \
-    libsqlite3-dev \
-    libssl-dev \
-    lzma \
-    lzma-dev \
-    tk-dev \
-    uuid-dev \
-    zlib1g-dev \
-    python3-dev \
-    python3-pip
+    apt_install \
+        curl \
+        build-essential \
+        gdb \
+        lcov \
+        pkg-config \
+        libbz2-dev \
+        libffi-dev \
+        libgdbm-dev \
+        libgdbm-compat-dev \
+        liblzma-dev \
+        libncurses5-dev \
+        libreadline6-dev \
+        libsqlite3-dev \
+        libmysqlclient-dev \
+        libssl-dev \
+        lzma \
+        lzma-dev \
+        tk-dev \
+        uuid-dev \
+        zlib1g-dev
 
-python3 -m pip --no-cache-dir install --upgrade --ignore-installed \
-        pip \
-        setuptools \
-        wheel \
-        pipenv 
+#       libmysqlclient-dev # required for mysql native support
 
-    
+
 }
 
 function install_pyenv() {
 
     [ "$Y_PY_PYENV_INSTALL" = 1 ] || return 0
+
+    #export PYENV_ROOT=/opt/pyenv
+    #export PATH=$PYENV_ROOT/bin:$PATH
+
+    : ${PYENV_ROOT:=/opt/pyenv}
+
+    [ -d "$PYENV_ROOT" ] && rm -rf $PYENV_ROOT
     
 # consider a version-stable alternative for the installer?
     curl https://pyenv.run | \
-        env PYENV_ROOT=/opt/pyenv bash
+        env PYENV_ROOT=${PYENV_ROOT} bash
 
     
 }
@@ -97,66 +100,67 @@ function config_pyenv() {
 
     [ "$Y_PY_PYENV_CONFIG" = 1 ] || return 0
 
-PYTHON_CONFIGURE_OPTS=${PYTHON_CONFIGURE_OPTS:-"--enable-shared"}
-#echo "PYTHON_CONFIGURE_OPTS=${PYTHON_CONFIGURE_OPTS}" >>"${R_HOME}/etc/R_environ"
-    
-# pipenv requires ~/.local/bin to be on the path...
-cat <<"EOR" >>"${R_HOME}/etc/Renviron.site"
-PYTHON_CONFIGURE_OPTS="--enable-shared"
-PYENV_ROOT=/opt/pyenv
-PYENV_SHELL=bash
-PATH=~/.local/bin:/opt/pyenv/bin:/opt/pyenv/shims:/opt/pyenv/plugins/pyenv-virtualenv/shims:${PATH}
-EOR
+    sed -i 's!PATH="!PATH="/opt/pyenv/bin:!' \
+        "/etc/environment"
 
-cat <<"EOF" >>/etc/profile.d/Z93-pyenv.sh
+
+    : ${PYTHON_CONFIGURE_OPTS:="--enable-shared"}
+
+    cat <<EOP >/etc/profile.d/Z93-pyenv.sh
+##
+# pyenv
+#
+
+PYTHON_CONFIGURE_OPTS="${PYTHON_CONFIGURE_OPTS}"
+
+EOP
+
+    cat <<"EOF" >>/etc/profile.d/Z93-pyenv.sh
 PYTHON_CONFIGURE_OPTS=${PYTHON_CONFIGURE_OPTS:-"--enable-shared"}
-PYENV_ROOT=/opt/pyenv
-PATH=$PYENV_ROOT/bin:~/.local/bin:$PATH
+
+### -> inhrited from container ENV
+### PYENV_ROOT=/opt/pyenv
+### PATH=~/.local/bin:$PYENV_ROOT/shims:$PYENV_ROOT/bin:$PYENV_ROOT/plugins/pyenv-virtualenv/shims:$PATH
 
 eval "$(pyenv init --path)"
 eval "$(pyenv virtualenv-init -)"
+
+PATH=$(P=$(echo -n $PATH | awk -v RS=: -v ORS=: '!($0 in a) {a[$0]; print $0}'); echo -n ${P:0:-1})
 
 export PYENV_ROOT
 export PATH
 
 export X_RC_Z93_PYENV=1
 EOF
+
+    cat <<"EOB" >>/etc/bash.bashrc
+if [ "$X_RC_SYSPROFILE_INCLUDED" = "1" ]; then
+   [ "$X_DEBUG_ENV" = 1 ] && echo "### /etc/bash.bashrc(pyenv) {"
+   [ "$X_DEBUG_ENV" = 1 ] && echo $PATH
+   [ "$X_DEBUG_ENV" = 1 ] && which pyenv
+   eval "$(pyenv init -)"
+   [ "$X_DEBUG_ENV" = 1 ] && echo "### /etc/bash.bashrc(pyenv) }"
+fi
+EOB
+
+    eval "export X_ENV_PATH=$(bash --login -i -c 'printf \"%s\" "$PATH"' | tail -n1)"
     
+    sed -i '/PATH=/d' \
+        "${R_HOME}/etc/Renviron.site"
+
+    cat <<EOR >>"${R_HOME}/etc/Renviron.site"
+PYTHON_CONFIGURE_OPTS="${PYTHON_CONFIGURE_OPTS}"
+PYENV_ROOT=${PYENV_ROOT}
+PYENV_SHELL=bash
+PATH=${X_ENV_PATH}
+EOR
+    
+    echo "# +++ pyenv: PATH=${PATH}"
+
 }
 
-function update_system_python() {
 
-    if [ -e /usr/bin/python ]; then
-        return 0
-    fi
 
-    if [ -e /usr/bin/python3 ]; then
-        ln -s /usr/bin/python3 /usr/bin/python
-    fi
-
-apt_install \
-    curl \
-    build-essential \
-    gdb \
-    lcov \
-    pkg-config \
-    libbz2-dev \
-    libffi-dev \
-    libgdbm-dev \
-    libgdbm-compat-dev \
-    liblzma-dev \
-    libncurses5-dev \
-    libreadline6-dev \
-    libsqlite3-dev \
-    libssl-dev \
-    lzma \
-    lzma-dev \
-    tk-dev \
-    uuid-dev \
-    zlib1g-dev 
-
-    
-}
 
 function install_pyenv_python() {
 
@@ -164,7 +168,9 @@ function install_pyenv_python() {
 
     # python setup
 
-    env PYTHON_CONFIGURE_OPTS="--enable-shared"  \
+    : ${PYTHON_CONFIGURE_OPTS:="--enable-shared"}
+    
+    env PYTHON_CONFIGURE_OPTS=${PYTHON_CONFIGURE_OPTS}  \
         pyenv install $Y_PY_PYTHON_VERSION
 
 }
@@ -183,7 +189,7 @@ function config_pyenv_python() {
 
 }
 
-function upgrade_active_python() {
+function upgrade_pyenv_python() {
     
     [ "$Y_PY_PYENV_UPGRADE" = 1 ] || return 0
     
@@ -191,37 +197,9 @@ function upgrade_active_python() {
             pip \
             setuptools \
             wheel \
-            pipenv 
+            pipenv \
+            numpy
 
-    which -a python3 || true
-    python --version  || true
-
-    python3 -m pip --version || true
-
-    
-}
-
-function upgrade_pyenv_python() {
-    
-    [ "$Y_PY_PYENV_PYTHON" = 1 ] || return 0
-
-    upgrade_active_python    
-    
-    
-}
-
-function upgrade_system_python() {
-    
-    #   [ "$Y_PY_PYENV_PYTHON" = 1 ] && return 0
-
-    apt_install \
-        python3-dev \
-        python3-numpy \
-        python3-pip
-
-    upgrade_active_python    
-    
-    
 }
 
 
@@ -229,21 +207,28 @@ function upgrade_system_python() {
 function check_pyenv() {
     
     [ "$Y_PY_PYENV_CHECK" = 1 ] || return 0
+
+    set -x
     
-    which python || true
-    which pyenv  || true
+    which python      || true
+    which -a python3  || true
 
     python --version  || true
-    pyenv  --version  || true
 
-    pyenv  versions  || true
-    which -a python3 || true
+    which    pip      || true
+    which -a pip3     || true
+
+    pyenv --version   || true
+    pyenv   versions  || true
+    pyenv   version   || true
+    
+    set +x
     
 }
 
 
 function clean_up() {
-    rm -rf /var/lib/apt/lists/*
+    :
 }
 
 
@@ -254,16 +239,13 @@ function main() {
 
     env_dump $@
 
-    update_system_python
-    upgrade_system_python
-    
     [ "$Y_PY_PYENV_SUPPORT" = 1 ] || return 0
 
     install_build_deps
 
     install_pyenv    
     config_pyenv    
-    setenv_reload    
+    setenv_rehash    
 
     install_pyenv_python
     config_pyenv_python

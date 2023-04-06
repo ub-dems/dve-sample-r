@@ -3,18 +3,17 @@
 # @see: https://github.com/rocker-org/rocker-versioned2/blob/master/scripts/install_python.sh
 
 ## build ARGs
-
-source /etc/build.conf
+set -e
+source ${Y_BUILD_CONF:-/etc/build.conf}
 
 NCPUS=${NCPUS:--1}
 
+
 function env_dump() {
     
-    [ "$Y_DEBUG" = 1 ] || return 0
+    [ "$Y_DEBUG_ENV" = 1 ] || return 0
     
     echo "+++> #ENV($0): $@"
-    echo "+++: #ENV($0): /etc/build.conf"
-    cat /etc/build.conf
     echo "+++: #ENV($0): set"
     set | grep '^Y_' | sort
     echo "+++: #ENV($0): env"
@@ -25,30 +24,15 @@ function env_dump() {
     
 }
 
+function setenv_rehash() {
 
-
-
-
-set -e
-
-source /etc/build.conf
-
-function env_dump() {
-
-    [ "$Y_DEBUG" = 1 ] || return 0
-    
-    echo "+++> #ENV($0): $@"
-    echo "+++: #ENV($0): /etc/build.conf"
-    cat /etc/build.conf
-    echo "+++: #ENV($0): set"
-    set | grep '^Y_' | sort
-    echo "+++: #ENV($0): env"
-    env | sort
-    echo "+++: #ENV($0): path"
-    echo "PATH=$PATH"
-    echo "+++<  #ENV($0): $@"
+    env_dump "setenv_lang::pre"
+    source /etc/profile
+    #export PS1='# '; source /etc/bash.bashrc
+    env_dump "setenv_lang::post"
     
 }
+
 
 function install_reticulate() {
     
@@ -71,14 +55,6 @@ function config_reticulate() {
     
 }
 
-
-function setenv_reload() {
-
-    env_dump "setenv_lang::pre"
-    export PS1='# '; source /etc/bash.bashrc
-    env_dump "setenv_lang::post"
-    
-}
 
 
 
@@ -116,12 +92,12 @@ function clean_up() {
     
     [ "$Y_PY_RETICULATE_INSTALL" = 1 ] || return 0
 
-    setenv_reload
+    setenv_rehash
 
     install_reticulate
     config_reticulate
     
-    setenv_reload
+    setenv_rehash
 
     check_reticulate
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source /etc/build.conf
+source ${Y_BUILD_CONF:-/etc/build.conf}
 
 ## build ARGs
 NCPUS=${NCPUS:--1}
@@ -8,11 +8,9 @@ NCPUS=${NCPUS:--1}
 
 function env_dump() {
     
-    [ "$Y_DEBUG" = 1 ] || return 0
+    [ "$Y_DEBUG_ENV" = 1 ] || return 0
     
     echo "+++> #ENV($0): $@"
-    echo "+++: #ENV($0): /etc/build.conf"
-    cat /etc/build.conf
     echo "+++: #ENV($0): set"
     set | grep '^Y_' | sort
     echo "+++: #ENV($0): env"
@@ -23,10 +21,10 @@ function env_dump() {
     
 }
 
-function setenv_reload() {
-    env_dump "setenv_reload::pre"
+function setenv_rehash() {
+    env_dump "setenv_rehash::pre"
     export PS1='# '; source /etc/bash.bashrc
-    env_dump "setenv_reload::post"
+    env_dump "setenv_rehash::post"
 }
 
 
@@ -145,9 +143,7 @@ function check_jupyter() {
 
 
 function clean_up() {
-
-    rm -rf /tmp/downloaded_packages
-    
+    :
 }
 
 
@@ -161,13 +157,13 @@ function main() {
     
     [ "$Y_PY_JUPYTER_SUPPORT" = 1 ] || return 0
 
-    setenv_reload    
+    setenv_rehash    
 
     install_jupyter
     install_irkernel
     config_jupyter
     
-    setenv_reload    
+    setenv_rehash    
 
     check_jupyter
 
