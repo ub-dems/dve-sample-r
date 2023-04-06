@@ -8,17 +8,15 @@
 set -e
 
 ## build ARGs
-source /etc/build.conf
+source ${Y_BUILD_CONF:-/etc/build.conf}
 
 NCPUS=${NCPUS:--1}
 
 function env_dump() {
 
-    [ "$Y_DEBUG" = 1 ] || return 0
+    [ "$Y_DEBUG_ENV" = 1 ] || return 0
     
     echo "+++> #ENV($0): $@"
-    echo "+++: #ENV($0): /etc/build.conf"
-    cat /etc/build.conf
     echo "+++: #ENV($0): set"
     set | grep '^Y_' | sort
     echo "+++: #ENV($0): env"
@@ -81,7 +79,7 @@ function install_commons() {
 
 
 
-function setenv_reload() {
+function setenv_rehash() {
 
     env_dump "setenv_commons::pre"
     export PS1='# '; source /etc/bash.bashrc
@@ -114,10 +112,10 @@ function main() {
     
     [ "$Y_BASE_COMMONS_INSTALL" = 1 ] || return 0
 
-    setenv_reload
+    setenv_rehash
 
     install_commons
-    setenv_reload
+    setenv_rehash
 
     check_commons
 

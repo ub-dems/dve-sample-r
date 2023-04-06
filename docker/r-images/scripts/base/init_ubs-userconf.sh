@@ -7,7 +7,7 @@
 set -e
 
 ## build ARGs
-source /etc/build.conf
+source ${Y_BUILD_CONF:-/etc/build.conf}
 
 ## Set defaults for environmental variables in case they are undefined
 DEFAULT_USER=${DEFAULT_USER:-rstudio}
@@ -25,11 +25,9 @@ normal=$(tput sgr0)
 
 function env_dump() {
 
-    [ "$Y_DEBUG" = 1 ] || return 0
+    [ "$Y_DEBUG_ENV" = 1 ] || return 0
     
     echo "+++> #ENV($0): $@"
-    echo "+++: #ENV($0): /etc/build.conf"
-    cat /etc/build.conf
     echo "+++: #ENV($0): set"
     set | grep '^Y_' | sort
     echo "+++: #ENV($0): env"
@@ -73,6 +71,31 @@ function init_userconf() {
     
     
 }
+
+function init_profile() {
+
+
+# source profile from bashrc (at end) if not included    
+cat <<"EOR" >>/etc/bash.bashrc
+if [ "$X_RC_SYSPROFILE_INCLUDED" != "1" ]; then
+   if [ "$X_RC_SYSPROFILE_INCLUDING" != "1" ]; then
+      export X_RC_SYSPROFILE_INCLUDING=1
+      [ "$X_DEBUG_ENV" = 1 ] && \
+        echo "+++ >> include /etc/profile: 0=$0, PS1=$PS1"
+      . /etc/profile
+      [ "$X_DEBUG_ENV" = 1 ] && \
+        echo "+++ << include /etc/profile: 0=$0, PS1=$PS1"
+  fi
+fi
+EOR
+
+cat <<"EOF" >>/etc/profile.d/Z99-included.sh
+export X_RC_SYSPROFILE_INCLUDED=1
+EOF
+
+}
+
+
 
 
 function init_home_ssh() {
@@ -191,25 +214,35 @@ function init_rstudio_service() {
 
 function init_rstudio_logging() {
     
+     
 ##
 # enable 'info' logging
 #
-cat > /etc/rstudio/logging.conf <<EOF
-
+cat > /etc/rstudio/logging.conf <<EOC
+ 
 [*]
 log-level=info
 logger-type=syslog
-
+ 
 [@rserver]
 log-level=debug
 logger-type=file
 max-size-mb=10
-
+ 
 [file-locking]
 log-dir=/var/log/file-locking
 log-file-mode=600
 
-EOF
+EOC
+
+}
+
+function init_rstudio_environ() {
+
+    line="export PATH=$(bash --login -i -c 'printf \"%s\" "$PATH"' | tail -n1)"
+
+    sed -i "/^exec/i $line" \
+        "/etc/services.d/rstudio/run"
     
 }
 
@@ -221,12 +254,13 @@ function init_rstudio() {
     init_rstudio_config
     init_rstudio_service
     init_rstudio_logging
+    init_rstudio_environ
     
 }
 
 
 
-function setenv_reload() {
+function setenv_rehash() {
 
     env_dump "setenv_userconf::pre"
     export PS1='# '; source /etc/bash.bashrc
@@ -256,13 +290,14 @@ function main() {
     
     [ "$Y_BASE_INIT_APPLY" = 1 ] || return 0
 
-    setenv_reload
+    setenv_rehash
 
     init_userconf
+    init_profile
     init_rstudio
     init_home
     
-    setenv_reload
+    setenv_rehash
 
     check_userconf
 

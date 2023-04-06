@@ -83,6 +83,11 @@ IMAGE_REVISION ?= $(COMMIT_HASH)
 
 TAG ?= "latest"
 
+# ---(PYTHON)------------------------------------------------
+
+X_PY_PYENV_VERSION ?= $(shell (cd ${ROOT_DIR} && cat .python-version))
+
+
 # ---(runtime)------------------------------------------------
 
 RUN_PORT_INT = 8787
@@ -350,7 +355,7 @@ run/r-repl:
 		-e USERID=${RUN_USER_UID} \
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
-		-e PYENV_VERSION=system  \
+		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		-ti  \
 		${IMG_RUNTIME} \
 		'/usr/local/bin/R' ${RUNTIME_R_OPTS} ${RUNTIME_ARGS}
@@ -374,7 +379,7 @@ run/rscript-cli:
 		-e USERID=${RUN_USER_UID} \
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
-		-e PYENV_VERSION=system  \
+		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		${IMG_RUNTIME} '/usr/local/bin/Rscript' ${RUNTIME_RSCRIPT_OPTS} ${RUNTIME_ARGS}
 
 run/shell:
@@ -396,7 +401,7 @@ run/shell:
 		-e USERID=${RUN_USER_UID} \
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
-		-e PYENV_VERSION=system  \
+		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		-ti  \
 		${IMG_RUNTIME} '/bin/bash' ${RUNTIME_RSCRIPT_OPTS} ${RUNTIME_ARGS}
 
@@ -419,7 +424,7 @@ run/build:
 		-e USERID=${RUN_USER_UID} \
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
-		-e PYENV_VERSION=system  \
+		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		-ti  \
 		${IMG_RUNTIME} './build.sh' ${RUNTIME_RSCRIPT_OPTS} ${RUNTIME_ARGS}
 
@@ -442,7 +447,7 @@ run/command:
 		-e USERID=${RUN_USER_UID} \
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
-		-e PYENV_VERSION=system  \
+		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		${IMG_RUNTIME} ${RUNTIME_ARGS} ${RUNTIME_RSCRIPT_OPTS}
 
 run/term:
@@ -484,7 +489,7 @@ run/rstudio-server:
 		-e USERID=${RUN_USER_UID} \
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
-		-e PYENV_VERSION=system  \
+		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		${IMG_RUNTIME} ${RUNTIME_ARGS}
 
 run/runtime: run/rstudio-server
@@ -512,7 +517,7 @@ wrk/make:
 		-e USERID=${RUN_USER_UID} \
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
-		-e PYENV_VERSION=system  \
+		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		${IMG_WORKER} \
 		'make' ${WORKER_MAKE_OPTS} ${MAKE_ARGS}
 
@@ -527,7 +532,7 @@ wrk/build:
 		-e USERID=${RUN_USER_UID} \
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
-		-e PYENV_VERSION=system  \
+		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		${IMG_WORKER} \
 		'./build.sh' ${WORKER_MAKE_OPTS} ${MAKE_ARGS}
 
@@ -543,7 +548,7 @@ wrk/runner:
 		-e USERID=${RUN_USER_UID} \
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
-		-e PYENV_VERSION=system  \
+		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		${IMG_WORKER} \
 		${WORKER_SCRIPT_FILE} ${WORKER_SCRIPT_ARGS} ;\
 	echo -e "# ${C_BWhite}#WORKER($$?):<< $$(date -Isec) - exec --  ${C_BYellow}${WORKER_SCRIPT_FILE} ${WORKER_SCRIPT_ARGS}${C_BWhite} ${C_OFF}"
@@ -560,7 +565,7 @@ wrk/shell:
 		-e USERID=${RUN_USER_UID} \
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
-		-e PYENV_VERSION=system  \
+		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		${IMG_WORKER} \
 		'bash' ${WORKER_SCRIPT_FILE} ${WORKER_SCRIPT_ARGS}
 
