@@ -127,9 +127,24 @@ ifdef PODMAN_MODE
 DOCKER := podman
 DOCKER_BUILD_OPTIONS := 
 DOCKER_BUILD_PULL := --pull
+
+
+DOCKER_NVIDIA_TOOLKIT_OCI := /usr/share/containers/oci/hooks.d/oci-nvidia-hook.json
+
+ifneq ("$(wildcard $(DOCKER_NVIDIA_TOOLKIT_OCI))","")
+    DOCKER_NVIDIA_OPTIONS = \
+           --security-opt=label=disable \
+           --hooks-dir=/usr/share/containers/oci/hooks.d/ \
+
+#          --security-opt=no-new-privileges --cap-drop=ALL \  #rstudio compatibility
+
+else
+    DOCKER_NVIDIA_OPTIONS = ""
+endif
+
 #DOCKER_RUNTIME_OPTIONS := --ulimit=host --group-add dsdata
 #DOCKER_RUNTIME_OPTIONS := --ulimit=host --group-add keep-groups --subgidname=dsuser
-DOCKER_RUNTIME_OPTIONS := --ulimit=host --group-add keep-groups
+DOCKER_RUNTIME_OPTIONS := --ulimit=host --group-add keep-groups $(DOCKER_NVIDIA_OPTIONS)
 #DOCKER_RUNTIME_OPTIONS := --ulimit=host --annotation run.oci.keep_original_groups=1 
 endif
 

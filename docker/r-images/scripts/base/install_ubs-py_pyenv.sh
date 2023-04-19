@@ -139,6 +139,7 @@ if [ "$X_RC_SYSPROFILE_INCLUDED" = "1" ]; then
    [ "$X_DEBUG_ENV" = 1 ] && echo $PATH
    [ "$X_DEBUG_ENV" = 1 ] && which pyenv
    eval "$(pyenv init -)"
+   eval "$(pyenv virtualenv-init -)"
    [ "$X_DEBUG_ENV" = 1 ] && echo "### /etc/bash.bashrc(pyenv) }"
 fi
 EOB

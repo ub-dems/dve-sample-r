@@ -21,115 +21,87 @@ main = "dve.cli:main"
 demo = "vce.cli:main"
 
 [tool.poetry.dependencies]
-python = ">=3.10"
+python = ">=3.8,<3.11"
 
-# Keras = "*"
-# Keras-applications = "*"
-# Keras-preprocessing = "*"
-# Markdown = "*"
-# Pillow = "*"
-# PyWavelets = "*"
-# PyYaml = "*"
-# absl-py = "*"
-# airsim = "^1.5.0"
-# astor = "*"
-# atari-py = "^0.3.0"
-# cachetools = "*"
-# certifi = "*"
-# chardet  = "*"
+# {{{ TENSORFLOW: from rstudio/tensorflow/R/install.R@default_extra_packages
+
+tensorflow = {version = "=2.12.*"}
+## tensorflow-estimator = "*"
+tensorboard = "*"
+tensorflow-hub = "*"
+tensorflow-datasets = "*"
+
+### }}} // tensorflow
+
+
+# {{{ CUDA-11 TensorRT
+
+# TensorRT install: from https://docs.nvidia.com/deeplearning/tensorrt/support-matrix/index.html
+
+#tensorrt = "*"
+#tensorrt_lean = "*"
+#tensorrt_dispatch = "*"
+#libnvinfer = "*"
+
+# TensorRT compatibility: from https://docs.nvidia.com/deeplearning/tensorrt/support-matrix/index.html
+
+#nvidia-cudnn-cu11 = "*"
+#nvidia-cuda-runtime-cu11 = "*"
+#nvidia-cublas-cu11 = "*"
+
+### }}} // tensorflow
+
+
+
+# {{{ KERAS: from rstudio/keras/R/install.R@default_extra_packages
+
+# tensorflow-hub = '*'
+# tensorflow-datasets = '*'
+scipy = '*'
+requests = '*'
+pyyaml = '*'
+Pillow = '*'
+h5py = '*'
+pandas = '*'
+pydot = '*'
+
+### }}} // keras
+
+
+
+
 click = '*'
-# cycler = "*"
-# decorator = "*"
-# flask = '*'
-# flask-assets = '*'
-# flask-restful = '*'
-# dependency-injector = '>=4'
-# bootstrap-flask = '*'
-# pygithub = '*'
-# pyyaml = '*'
-
-# gast = "*"
-# gpyopt = "*"
-# google-auth = "*"
-# google-auth-oauthlib = "*"
-# google-pasta = "*"
-
-# graphframes = '*'
-# graphviz = '*'
-
-# grpcio = "*"
-# gym = "^0.18.3"
-# h5py = "*"
-# idna = "*"
-
-# igraph = '*'
-
-# imageio = "*"
-# joblib = "*"
-# kiwisolver = "*"
 matplotlib = "*"
 
 mysql-connector-python = "*"
 # requires: sudo apt install default-libmysqlclient-dev
 mysqlclient = "*"
 
-# neo4j = "*"
-# networkx = "*"
-
 numpy = "*"
 oauthlib = "*"
-# opencv-python = "^4.5.2.54"
-# opt-einsum = "*"
-pandas = "*"
+#pandas = "*"
 pandas-datareader = '*'
 piny = "*"
 pip = "*"
-# protobuf = "*"
-
-#   pyarrow = "7.0.0"
-#   pyspark = "3.3.0"
-
 
 # requires: sudo apt install libpq-dev
 #psycopg2 = "*"
 psycopg2-binary = "*"
 
-# pyasn1 = "*"
-# pyasn1-modules = "*"
-# pyparsing = "*"
-# python-dateutil = "*"
-# pytz = "*"
-pyyaml = "*"
+# pyyaml = "*"
 pyzmq = "*"
-requests = "*"
+# requests = "*"
 requests-oauthlib = "*"
-# rootpath = "*"
-# rsa = "*"
 seaborn = "*"
 # scikit-learn = "*"
 # scikit-image = "*"
-scipy = "*"
+# scipy = "*"
 # six = ">=1.7.0,<=1.15.0"
 # sklearn = "*"
 SQLAlchemy = "*"
 sympy = "*"
-# tensorflow = "^2.11"
-# tensorflow-estimator = "^2.11"
-# tensorboard = "^2.11"
-# termcolor = "*"
-
-# time ="*"
-
 toml = "*"
-
-# torch = "*"
-# torchvision = "*"
-# torchaudio ="*"
-
-# transformers ="*"
-
 urllib3 = "*"
-# wrapt = "*"
 
 
 
