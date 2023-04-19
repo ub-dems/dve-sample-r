@@ -19,7 +19,18 @@ LABEL org.opencontainers.image.vendor="ubdems" \
       it.unimib.datalab.cdc="ds-101" \
       it.unimib.datalab.tags="none"
 
-ENV TERM=xterm
+
+#ARG DEBIAN_FRONTEND=noninteractive
+
+ARG  Y_TERM_SET=xterm-256color
+ENV  TERM $Y_TERM_SET
+
+ARG  Y_TZ_SET=Europe/Rome
+ENV  TZ $Y_TZ_SET
+RUN  echo "$TZ" > /etc/timezone
+
+
+ARG  Y_KBD_LAYOUT_SET=it
 
 COPY scripts/base /rocker_scripts
 COPY build.conf   /etc/build.conf
@@ -34,6 +45,9 @@ RUN /rocker_scripts/init_ubs-userconf.sh
 # commons
 RUN /rocker_scripts/install_ubs-commons.sh
 RUN /rocker_scripts/install_ubs-utils.sh
+
+# cuda
+RUN /rocker_scripts/install_ubs-cuda-11.1.sh
 
 # python support
 
