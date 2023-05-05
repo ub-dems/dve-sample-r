@@ -1,4 +1,5 @@
-FROM ubdems/dve-sample-r.anchor
+FROM ubdems/dve-sample-r.cuda
+#FROM ubdems/dve-sample-r.anchor
 
 LABEL org.opencontainers.image.vendor="ubdems" \
       org.opencontainers.image.base.name="ubdems/dve-sample-r.anchor" \
@@ -45,9 +46,6 @@ RUN /rocker_scripts/init_ubs-userconf.sh
 # commons
 RUN /rocker_scripts/install_ubs-commons.sh
 RUN /rocker_scripts/install_ubs-utils.sh
-
-# cuda
-RUN /rocker_scripts/install_ubs-cuda-11.1.sh
 
 # python support
 
