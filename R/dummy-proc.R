@@ -41,7 +41,8 @@ log_info <- function(...) {
 #init_logging <- function(args = c()){ log_init("dummy-p01-proc.log", args=args) }
 
 #auto_load <- function() { init_logging() }
-auto_load <- function() { print("Hi") }
+#auto_load <- function() { print("Hi") }
+auto_load <- function() { return(1) }
 
 })
 m$auto_load()
@@ -62,7 +63,7 @@ dmy_p01_env_dump <- function (){
 #' @return fd
 #' @export
 dmy_p01_list_zip_share_data <- function (){
-  fn = dmy_fn_def_PJME_hourly_3y()
+  fn = dmy_fn_net_PJME_hourly_z()
   loginfo('# list_zip: %s', fn)
   fs <- file.info(fn)
   head(fs)

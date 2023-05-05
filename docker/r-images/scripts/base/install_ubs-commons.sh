@@ -62,6 +62,7 @@ function install_commons_cran() {
                remotes \
                renv \
                devtools \
+               usethis \
                cli \
                here \
                logging \

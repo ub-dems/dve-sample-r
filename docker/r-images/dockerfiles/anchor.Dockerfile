@@ -1,5 +1,6 @@
 #FROM rocker/ml:4.2.1-cuda11.1
 FROM rocker/ml-verse:4.2.3
+#FROM rocker/ml:4.2.3
 
 # @see: https://github.com/rocker-org/rocker-versioned2/pkgs/container/tidyverse/versions
 # FROM rocker/tidyverse:latest

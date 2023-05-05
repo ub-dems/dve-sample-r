@@ -5,7 +5,7 @@
 # @see: https://www.tensorflow.org/guide/gpu
 
 # from project root, run with:
-# poetry run python exec/dummy-gpu-tf.py
+# poetry run python exec/dummy-keras.py [options | --help]
 
 import argparse
 import os
@@ -24,7 +24,7 @@ ARGS = None
 TF_ENV = {
     # "CUDA_VISIBLE_DEVICES": "-1",
     # "TF_CPP_MIN_LOG_LEVEL": "1",
-    "TF_USE_CUDNN": "false",
+    # "TF_USE_CUDNN": "false",
 }
 
 
@@ -50,24 +50,32 @@ def setenv_all(args, envs):
     print("#setenv: }}}")
 
 
-def config_environ(args):
-    if args.cudnn:
-        TF_ENV["TF_USE_CUDNN"] = "true"
+def load_environ(args):
+    pass
 
-    if not args.gpu:
+
+def config_environ(args):
+    print("### > {{{ //config")
+    # if args.cudnn:
+    #     TF_ENV["TF_USE_CUDNN"] = "true"
+
+    if args.cpu:
         TF_ENV["CUDA_VISIBLE_DEVICES"] = "-1"
 
-    if args.verbose > 2:
+    if args.debug:
         TF_ENV["TF_CPP_MIN_LOG_LEVEL"] = "2"
 
     setenv_all(args, TF_ENV)
+    print("### < }}} //config")
 
 
 def show_environ(args):
+    print("### > {{{ //status")
     dump_env(args)
     gpus = tf.config.list_physical_devices("GPU")
     print("Num GPUs Available: ", len(gpus))
     print("GPUs: ", gpus)
+    print("### < }}} //status")
 
 
 def debug_enable(args):
@@ -77,16 +85,19 @@ def debug_enable(args):
 
 def setup_environ(args):
     config_environ(args)
+    load_environ(args)
     show_environ(args)
     debug_enable(args)
 
 
 def run_mult():
+    print("### {{{ //tf.matmult")
     # Create some tensors
     a = tf.constant([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]])
     b = tf.constant([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])
     c = tf.matmul(a, b)
     print(c)
+    print("### }}} //tf.matmult")
 
 
 mist_conf = {
@@ -100,6 +111,8 @@ MistData = namedtuple("MistData", ["x_train", "y_train", "x_test", "y_test"])
 
 
 def load_mist():
+    print("### > {{{ //mist.load:")
+
     num_classes = mist_conf["num_classes"]
 
     # Load the data and split it between train and test sets
@@ -120,10 +133,14 @@ def load_mist():
     y_test = utils.to_categorical(y_test, num_classes)
 
     data = MistData(x_train, y_train, x_test, y_test)
+
+    print("### < }}} //mist.load")
+
     return data
 
 
 def define_mist():
+    print("### > {{{ //mist.define")
     # model
     num_classes = mist_conf["num_classes"]
     input_shape = mist_conf["input_shape"]
@@ -144,10 +161,12 @@ def define_mist():
         loss="categorical_crossentropy", optimizer="adam", metrics=["accuracy"]
     )
     model.summary()
+    print("### < }}} //mist.define")
     return model
 
 
 def train_mist(model, data):
+    print("### > {{{ //mist.train")
     batch_size = mist_conf["batch_size"]
     epochs = mist_conf["epochs"]
     x_train, y_train = data.x_train, data.y_train
@@ -155,16 +174,19 @@ def train_mist(model, data):
     model.fit(
         x_train, y_train, batch_size=batch_size, epochs=epochs, validation_split=0.1
     )
+    print("### < }}} //mist.train")
     return model
 
 
 def eval_mist(model, data):
+    print("### > {{{ //mist.eval")
     # evaluate
     x_test, y_test = data.x_test, data.y_test
 
     score = model.evaluate(x_test, y_test, verbose=0)
     print("Test loss:", score[0])
     print("Test accuracy:", score[1])
+    print("### < }}} //mist.eval")
     return score
 
 
@@ -173,11 +195,13 @@ def save_mist(model, data, score):
 
 
 def run_mist():
+    print("### > {{{ //mist.RUN")
     data = load_mist()
     model = define_mist()
     model = train_mist(model, data)
     score = eval_mist(model, data)
     save_mist(model, data, score)
+    print("### < }}} //mist.RUN")
 
 
 def run():
@@ -188,13 +212,21 @@ def run():
 def parse_args(argv=sys.argv[1:]):
     global ARGS
     parser = argparse.ArgumentParser(
-        prog="dummy_gpt-tf",
+        prog="dummy-keras.py",
         description="GPT test with tensorflow and keras",
         epilog="Runs mist ML sample from https://www.tensorflow.org/guide/gpu",
     )
+    # parser.add_argument("--cudnn", action=argparse.BooleanOptionalAction)
     parser.add_argument("--verbose", "-v", action="count", default=0)
-    parser.add_argument("--cudnn", action=argparse.BooleanOptionalAction)
-    parser.add_argument("--gpu", action=argparse.BooleanOptionalAction, default=True)
+    parser.add_argument("--debug", "-d", action="store_true", default=False)
+    parser.add_argument("--cpu", action="store_true", default=False)
+    parser.add_argument(
+        "-c",
+        "--num_classes",
+        type=int,
+        default=mist_conf["num_classes"],
+        dest="num_classes",
+    )
     parser.add_argument(
         "-e", "--epochs", type=int, default=mist_conf["epochs"], dest="epochs"
     )
@@ -207,6 +239,7 @@ def parse_args(argv=sys.argv[1:]):
     )
 
     args = parser.parse_args(argv)
+    mist_conf["num_classes"] = args.num_classes
     mist_conf["epochs"] = args.epochs
     mist_conf["batch_size"] = args.batch_size
     ARGS = args
