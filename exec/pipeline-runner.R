@@ -10,7 +10,7 @@ devtools::load_all(".")
 require(dvesimpler)
 
 library(logging)
-library(targets)
+library(targets, warn.conflicts = FALSE)
 
 init_logging <- function(args = c()){
   log_init("pipeline-runner.log", args=args)

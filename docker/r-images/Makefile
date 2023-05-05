@@ -144,7 +144,7 @@ endif
 
 #DOCKER_RUNTIME_OPTIONS := --ulimit=host --group-add dsdata
 #DOCKER_RUNTIME_OPTIONS := --ulimit=host --group-add keep-groups --subgidname=dsuser
-DOCKER_RUNTIME_OPTIONS := --ulimit=host --group-add keep-groups $(DOCKER_NVIDIA_OPTIONS)
+DOCKER_RUNTIME_OPTIONS := --ulimit=host --group-add keep-groups $(DOCKER_NVIDIA_OPTIONS) $(DOCKER_ARGS)
 #DOCKER_RUNTIME_OPTIONS := --ulimit=host --annotation run.oci.keep_original_groups=1 
 endif
 
@@ -338,7 +338,8 @@ build-image-worker: $(foreach I, $(BLD_WORKER_IMAGES), build-image/$(I))
 build-image-all: build-image-runtime build-image-worker
 
 build-image/anchor:
-build-image/base: build-image/anchor
+build-image/cuda: build-image/anchor
+build-image/base: build-image/cuda
 build-image/${BLD_RUNTIME}: build-image/base
 build-image/${BLD_WORKER}: build-image/${BLD_RUNTIME}
 
