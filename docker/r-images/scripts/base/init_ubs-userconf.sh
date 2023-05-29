@@ -208,7 +208,21 @@ function init_rstudio_config() {
 function init_rstudio_service() {
     
     sed -i 's/"$USER" != "$DEFAULT_USER"/ "$USER" != "$DEFAULT_USER" -a "$USER" != "root"/g'      \
-                                      /etc/cont-init.d/02_userconf
+        /etc/cont-init.d/02_userconf
+
+    ex /etc/cont-init.d/02_userconf  << 'EOEX'
+/check_user_id=.*auth-minimum-user-id/
+d2
+i
+  check_user_id=$(grep -F "auth-minimum-user-id" /etc/rstudio/rserver.conf | sed -e "s/^.*= *//")
+  if [[ "$check_user_id" = '0' ]]; then
+     echo "root user already authorized in /etc/rstudio/rserver.conf: $check_user_id, not changed" 
+  elif [[ -n $check_user_id ]]; then
+.
+w!
+q
+EOEX
+
     
 }
 
@@ -262,10 +276,11 @@ function init_rstudio() {
 
 function setenv_rehash() {
 
+    set +e
     env_dump "setenv_userconf::pre"
     export PS1='# '; source /etc/bash.bashrc
     env_dump "setenv_userconf::post"
-    
+    set -e
 }
 
 

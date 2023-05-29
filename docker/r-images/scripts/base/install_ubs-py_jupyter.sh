@@ -22,9 +22,13 @@ function env_dump() {
 }
 
 function setenv_rehash() {
+    
+    set +e
     env_dump "setenv_rehash::pre"
     export PS1='# '; source /etc/bash.bashrc
     env_dump "setenv_rehash::post"
+    set -e
+    
 }
 
 

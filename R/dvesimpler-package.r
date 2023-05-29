@@ -6,6 +6,8 @@
 
 # Suppress R CMD check note
 # 
+#' @importFrom keras is_keras_available
+# 
 #' @importFrom here here
 #' @importFrom logging loginfo logdebug logerror getHandler
 #' @importFrom magrittr %>%
@@ -18,14 +20,12 @@
 # 
 #' @importFrom argparse ArgumentParser
 # 
-#' 
 #' @importFrom grDevices pdf
 #' @importFrom ggplot2 ggplot aes geom_line xlab
 #' @importFrom readr read_csv write_csv cols col_datetime
 #' @importFrom dplyr filter
 #' @importFrom utils str capture.output head View 
-#' 
-#' 
+# 
 
 utils::globalVariables(c("Datetime","PJME_MW"))
 
