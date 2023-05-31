@@ -26,10 +26,12 @@ function env_dump() {
 
 function setenv_rehash() {
 
+    set +e
     env_dump "setenv_lang::pre"
     source /etc/profile
     #export PS1='# '; source /etc/bash.bashrc
     env_dump "setenv_lang::post"
+    set -e
     
 }
 

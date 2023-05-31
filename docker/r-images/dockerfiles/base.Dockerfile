@@ -37,7 +37,7 @@ COPY scripts/base /rocker_scripts
 COPY build.conf   /etc/build.conf
 ARG  Y_BUILD_CONF=/etc/build.conf
 
-ARG  Y_DEBUG_ENV=1
+ARG  Y_DEBUG_ENV=0
 ENV  X_DEBUG_ENV $Y_DEBUG_ENV
 
 # init user configuration 

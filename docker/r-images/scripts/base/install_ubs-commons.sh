@@ -82,9 +82,11 @@ function install_commons() {
 
 function setenv_rehash() {
 
+    set +e
     env_dump "setenv_commons::pre"
     export PS1='# '; source /etc/bash.bashrc
     env_dump "setenv_commons::post"
+    set -e
     
 }
 

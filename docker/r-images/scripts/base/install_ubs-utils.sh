@@ -84,9 +84,11 @@ function install_utils() {
 
 function setenv_rehash() {
 
+    set +e
     env_dump "setenv_utils::pre"
     export PS1='# '; source /etc/bash.bashrc
     env_dump "setenv_utils::post"
+    set -e
     
 }
 

@@ -29,10 +29,14 @@ function env_dump() {
 }
 
 function setenv_rehash() {
+    
+    set +e
     env_dump "setenv_rehash::pre"
     source /etc/profile
     #export PS1='# '; source /etc/bash.bashrc
     env_dump "setenv_rehash::post"
+    set -e
+    
 }
 
 PYTHON_CONFIGURE_OPTS=${PYTHON_CONFIGURE_OPTS:-"--enable-shared"}

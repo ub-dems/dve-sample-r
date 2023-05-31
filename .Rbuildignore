@@ -45,6 +45,7 @@
 ^_pkgdown\.yml$
 ^poetry\.lock$
 ^Project\.toml$
+^\.projectile$
 ^pyproject\.toml$
 ^\.python-version$
 ^rcon$
