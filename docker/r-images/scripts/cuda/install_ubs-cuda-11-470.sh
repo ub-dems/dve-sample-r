@@ -238,9 +238,32 @@ EOK
 
 function config_blas() {
 
+    # reset openblas setup
+    # @see: https://csantill.github.io/RPerformanceWBLAS/
+
+    update-alternatives --query   libblas.so.3-x86_64-linux-gnu
+    update-alternatives --query   liblapack.so.3-x86_64-linux-gnu
+    
+    update-alternatives --auto    libblas.so.3-x86_64-linux-gnu
+    update-alternatives --auto    liblapack.so.3-x86_64-linux-gnu
+
+    update-alternatives --display libblas.so.3-x86_64-linux-gnu
+    update-alternatives --display liblapack.so.3-x86_64-linux-gnu
+    
+
     [ "$Y_NV_CUDA_BLAS" = 1 ] || return 0
 
+    
+    cat <<'EOC' > /etc/nvblas.conf
+NVBLAS_LOGFILE /var/log/nvblas.log
+NVBLAS_CPU_BLAS_LIB /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3
+NVBLAS_GPU_LIST ALL
+EOC
+
+
+
     # @see:https://github.com/rocker-org/rocker-versioned2/blob/master/scripts/config_R_cuda.sh#L35     
+    # @see:https://github.com/rocker-org/rocker-versioned2/issues/582
 
     # We don't want to set LD_PRELOAD globally
     #ENV LD_PRELOAD=/usr/local/cuda/lib64/libnvblas.so
@@ -250,14 +273,40 @@ function config_blas() {
     mv /usr/local/bin/R /usr/local/bin/R_
     cat <<'EOR' > /usr/local/bin/R
 #!/bin/bash
-LD_PRELOAD=/usr/local/cuda/lib64/libnvblas.so /usr/local/bin/R_ "$@"
+export NV_DETECTED=0
+if [ "$NV_AUTODETECT_DISABLED" != '1' ] ; then
+   command -v nvidia-smi >/dev/null && \
+                nvidia-smi -L | grep 'GPU[[:space:]]\?[[:digit:]]\+' >/dev/null && \
+                export NV_DETECTED=1
+fi
+
+case "$NV_DETECTED" in
+     1)  LD_PRELOAD=/usr/local/cuda/lib64/libnvblas.so /usr/local/bin/R_ "$@"
+     ;;
+     *)  exec /usr/local/bin/R_ "$@"
+     ;;
+esac
+
 EOR
     chmod +x /usr/local/bin/R
     
     mv /usr/local/bin/Rscript /usr/local/bin/Rscript_
     cat <<'EOR' > /usr/local/bin/Rscript
 #!/bin/bash
-LD_PRELOAD=/usr/local/cuda/lib64/libnvblas.so /usr/local/bin/Rscript_ "$@"
+export NV_DETECTED=0
+if [ "$NV_AUTODETECT_DISABLED" != '1' ] ; then
+   command -v nvidia-smi >/dev/null && \
+                nvidia-smi -L | grep 'GPU[[:space:]]\?[[:digit:]]\+' >/dev/null && \
+                export NV_DETECTED=1
+fi
+
+case "$NV_DETECTED" in
+     1)  LD_PRELOAD=/usr/local/cuda/lib64/libnvblas.so /usr/local/bin/Rscript_ "$@"
+     ;;
+     *)  exec /usr/local/bin/Rscript_ "$@"
+     ;;
+esac
+
 EOR
     chmod +x /usr/local/bin/Rscript
 

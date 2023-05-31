@@ -214,7 +214,7 @@ function init_rstudio_service() {
 /check_user_id=.*auth-minimum-user-id/
 d2
 i
-  check_user_id=$(grep -F "auth-minimum-user-id" /etc/rstudio/rserver.conf | sed -e "s/^.*= *//")
+  check_user_id="$(grep '^auth-minimum-user-id' /etc/rstudio/rserver.conf | sed  's/^.*= *\([[:graph:]]*\).*/\1/')"
   if [[ "$check_user_id" = '0' ]]; then
      echo "root user already authorized in /etc/rstudio/rserver.conf: $check_user_id, not changed" 
   elif [[ -n $check_user_id ]]; then
