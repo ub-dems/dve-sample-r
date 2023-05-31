@@ -1,9 +1,14 @@
-#FROM rocker/ml:4.2.1-cuda11.1
-FROM rocker/ml-verse:4.2.3
-#FROM rocker/ml:4.2.3
+# @see: https://rocker-project.org/images/
+# @see: https://hub.docker.com/u/rocker
 
-# @see: https://github.com/rocker-org/rocker-versioned2/pkgs/container/tidyverse/versions
-# FROM rocker/tidyverse:latest
+FROM rocker/ml-verse:4.3.0
+# FROM rocker/ml:4.3.0
+# FROM rocker/tidyverse:4.3.0
+# FROM rocker/verse:4.3.0
+# FROM rocker/geospatial:4.3.0
+
+# @see: https://github.com/rocker-org/rocker-versioned2/pkgs/container/verse/versions
+# @see: https://hub.docker.com/r/rocker/verse/tags
 # FROM rocker/verse:latest
 
 LABEL org.opencontainers.image.vendor="ubdems" \

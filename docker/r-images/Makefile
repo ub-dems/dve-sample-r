@@ -13,6 +13,16 @@
 
 #{{{ [ VARS.* ] /////////////////////////////////////////////////////////////////
 
+# ---(shell)------------------------------------------------
+
+SHELL = /bin/bash
+.SHELLFLAGS := -o pipefail -c
+#.SHELLFLAGS = -xo pipefail -c
+
+# ---(info)------------------------------------------------
+
+E_BUILD_TS ?= $(shell (date +%Y%m%d-%H%M%S-%Z))
+
 # ---(config)------------------------------------------------
 
 # Import environment variables from make.env
@@ -97,18 +107,18 @@ RUN_USER_GID = 0
 RUN_USER_NAME = root
 RUN_USER_HOME = /root
 
+
 # ---(paths)------------------------------------------------
 
 HOME_DIR ?= ${ROOT_DIR}/home/user
 LOGS_DIR ?= ${ROOT_DIR}/logs
+LOGB_DIR ?= ${ROOT_DIR}/logs/_build_/logs-${E_BUILD_TS}
 TEMP_DIR ?= ${ROOT_DIR}/temp
 
-BUILD_DIRS = ${TEMP_DIR} ${LOGS_DIR} ${HOME_DIR} 
+BUILD_DIRS = ${TEMP_DIR} ${LOGS_DIR} ${LOGB_DIR} ${HOME_DIR} 
 CLEAN_DIRS = ${TEMP_DIR}
 
 # ---(progs)------------------------------------------------
-
-SHELL := /bin/bash
 
 ifeq (${USE_DOCKER},1)
 DOCKER_MODE := true
@@ -125,7 +135,8 @@ endif
 
 ifdef PODMAN_MODE
 DOCKER := podman
-DOCKER_BUILD_OPTIONS := 
+#DOCKER_BUILD_OPTIONS := --rm --squash
+DOCKER_BUILD_OPTIONS := --rm
 DOCKER_BUILD_PULL := --pull
 
 
@@ -319,7 +330,8 @@ build-image/%:
 	export X_BLD_DOCKERFILE="$(patsubst %,${MAKE_DIR}/dockerfiles/%.Dockerfile,$*)"; \
 	export X_BLD_IMAGE_NAME="$$(grep 'org.opencontainers.image.title' $$X_BLD_DOCKERFILE | cut -d\" -f2)"; \
 	: $${X_BLD_IMAGE_NAME:=$(patsubst %,${ID_USER}/${ID_PROJECT}.%,$*)}; \
-	echo -e "# ${C_BWhite}#BUILD[*]:>> $$(date -Isec) - ${C_BYellow}$$X_BLD_IMAGE_NAME${C_BWhite} <<- $$X_BLD_DOCKERFILE ${C_OFF}"; \
+	export X_BLD_LOGFILE=${LOGB_DIR}/$$(basename $${X_BLD_IMAGE_NAME}).log; \
+	echo -e "# ${C_BWhite}#BUILD[*]:>> $$(date -Isec) - ${C_BYellow}$$X_BLD_IMAGE_NAME${C_BWhite} <<- $$X_BLD_DOCKERFILE ${C_OFF}" | tee -a ${LOGB_DIR}/build-summary.log; \
 	$(DOCKER) build \
 		-f $$X_BLD_DOCKERFILE \
 		-t $$X_BLD_IMAGE_NAME \
@@ -329,8 +341,13 @@ build-image/%:
 		--label="it.unimib.datalab.package=${ID_PACKAGE}" \
 		$(if ${COND_FORCE_PULL},$(if $(findstring $*,$(BLD_REMOTE_IMAGES)),${DOCKER_BUILD_PULL},)) \
 		$(BUILD_OPTIONS) \
-		. ; \
-	echo -e "# ${C_BWhite}#BUILD($$?):<< $$(date -Isec) - ${C_BYellow}$$X_BLD_IMAGE_NAME${C_BWhite} <<- $$X_BLD_DOCKERFILE ${C_OFF}"
+		. 2>&1 | tee -a $$X_BLD_LOGFILE; \
+		RC=$${PIPESTATUS[0]} ; \
+	echo -e "# ${C_BWhite}#BUILD($$RC):<< $$(date -Isec) - ${C_BYellow}$$X_BLD_IMAGE_NAME${C_BWhite} <<- $$X_BLD_DOCKERFILE ${C_OFF}" | tee -a ${LOGB_DIR}/build-summary.log; \
+	exit $$RC
+
+# . 2>&1 | tee -a $$X_BLD_LOGFILE ; \
+
 
 build-image-runtime: $(foreach I, $(BLD_RUNTIME_IMAGES), build-image/$(I))
 build-image-worker: $(foreach I, $(BLD_WORKER_IMAGES), build-image/$(I))
@@ -501,6 +518,7 @@ run/rstudio-server:
 		-v /user:/user  \
 		-v /vol:/vol  \
 		-e PASSWORD=$$_passw_ \
+		-e RUNROOTLESS=true \
 		-e USER=${RUN_USER_NAME} \
 		-e USERID=${RUN_USER_UID} \
 		-e GROUPID=${RUN_USER_GID} \
