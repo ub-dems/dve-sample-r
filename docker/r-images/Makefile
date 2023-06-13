@@ -150,7 +150,7 @@ ifneq ("$(wildcard $(DOCKER_NVIDIA_TOOLKIT_OCI))","")
 #          --security-opt=no-new-privileges --cap-drop=ALL \  #rstudio compatibility
 
 else
-    DOCKER_NVIDIA_OPTIONS = ""
+    DOCKER_NVIDIA_OPTIONS =
 endif
 
 #DOCKER_RUNTIME_OPTIONS := --ulimit=host --group-add dsdata
