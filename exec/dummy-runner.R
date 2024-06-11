@@ -1,6 +1,10 @@
 #!/usr/bin/env Rscript
 
-rm(list=ls())
+##
+# runner script example
+#
+
+#rm(list=ls())
 devtools::load_all(".") 
 
 require(dvesimpler)
@@ -8,11 +12,7 @@ require(dvesimpler)
 library(logging)
 
 init_logging <- function(args = c()){
-  logging::basicConfig()
-  logging::setLevel("DEBUG")
-  dir.create("./logs", showWarnings = FALSE, recursive = TRUE)  
-  logging::addHandler(logging::writeToFile, file="./logs/dummy_runner.log", level='DEBUG')
-  logging::setLevel(Sys.getenv("R_LOGGING_LEVEL", "INFO"), getHandler("basic.stdout"))
+  log_init("dummy-runner.log", args=args)
 }
 
 
@@ -22,14 +22,14 @@ s <- function(...) do.call(paste,as.list(c(..., sep=", ")))
 
 scall <- function (){
   c(
-    dummy_hello(),
-    dummy_hello("Earth"),
-    dummy_hello("Moon", "'Night")
+    dmy_hello(),
+    dmy_hello("Earth"),
+    dmy_hello("Moon", "'Night")
   )
 }
 
 vcall <- function (){
-  dummy_hello(c(
+  dmy_hello(c(
     "Mars",
     "Venus"
   ))

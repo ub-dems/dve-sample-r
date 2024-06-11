@@ -16,26 +16,38 @@ BugReports: https://gitlab.com/ub-dems-public/ds-labs/dve-sample-r/-/issues
 Depends: 
     R (>= 3.6.0)
 Imports:
+    keras,
     dplyr,
     ggplot2,
-    logging,
-    lubridate,
-    magrittr,
-    purrr,
     readr,
-    stringr,
+    argparse,
+    here,
+    logging,
+    magrittr,
+    modules,
+    reader,
+    reticulate,
+    rprojroot,
+    rzmq,
+    targets,
     yaml
 Suggests: 
     assertthat,
     cli (>= 3.3.0),
+    devtools,
     knitr,
+    lintr,
+    lubridate,
     microbenchmark,
     pacs,
+    purrr,
     rmarkdown,
+    stringr,
     testthat (>= 2.1.0)
 VignetteBuilder: 
     knitr
 Encoding: UTF-8
 LazyData: yes
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.0
+RoxygenNote: 7.2.3
+Config/build/copy-method: link

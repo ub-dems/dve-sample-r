@@ -13,6 +13,16 @@
 
 #{{{ [ VARS.* ] /////////////////////////////////////////////////////////////////
 
+# ---(shell)------------------------------------------------
+
+SHELL = /bin/bash
+.SHELLFLAGS := -o pipefail -c
+#.SHELLFLAGS = -xo pipefail -c
+
+# ---(info)------------------------------------------------
+
+E_BUILD_TS ?= $(shell (date +%Y%m%d-%H%M%S-%Z))
+
 # ---(config)------------------------------------------------
 
 # Import environment variables from make.env
@@ -83,6 +93,11 @@ IMAGE_REVISION ?= $(COMMIT_HASH)
 
 TAG ?= "latest"
 
+# ---(PYTHON)------------------------------------------------
+
+X_PY_PYENV_VERSION ?= $(shell (cd ${ROOT_DIR} && cat .python-version))
+
+
 # ---(runtime)------------------------------------------------
 
 RUN_PORT_INT = 8787
@@ -92,18 +107,18 @@ RUN_USER_GID = 0
 RUN_USER_NAME = root
 RUN_USER_HOME = /root
 
+
 # ---(paths)------------------------------------------------
 
 HOME_DIR ?= ${ROOT_DIR}/home/user
 LOGS_DIR ?= ${ROOT_DIR}/logs
+LOGB_DIR ?= ${ROOT_DIR}/logs/_build_/logs-${E_BUILD_TS}
 TEMP_DIR ?= ${ROOT_DIR}/temp
 
-BUILD_DIRS = ${TEMP_DIR} ${LOGS_DIR} ${HOME_DIR} 
+BUILD_DIRS = ${TEMP_DIR} ${LOGS_DIR} ${LOGB_DIR} ${HOME_DIR} 
 CLEAN_DIRS = ${TEMP_DIR}
 
 # ---(progs)------------------------------------------------
-
-SHELL := /bin/bash
 
 ifeq (${USE_DOCKER},1)
 DOCKER_MODE := true
@@ -120,9 +135,28 @@ endif
 
 ifdef PODMAN_MODE
 DOCKER := podman
-DOCKER_BUILD_OPTIONS := 
+#DOCKER_BUILD_OPTIONS := --rm --squash
+DOCKER_BUILD_OPTIONS := --rm
 DOCKER_BUILD_PULL := --pull
-DOCKER_RUNTIME_OPTIONS := --ulimit=host
+
+
+DOCKER_NVIDIA_TOOLKIT_OCI := /usr/share/containers/oci/hooks.d/oci-nvidia-hook.json
+
+ifneq ("$(wildcard $(DOCKER_NVIDIA_TOOLKIT_OCI))","")
+    DOCKER_NVIDIA_OPTIONS = \
+           --security-opt=label=disable \
+           --hooks-dir=/usr/share/containers/oci/hooks.d/ \
+
+#          --security-opt=no-new-privileges --cap-drop=ALL \  #rstudio compatibility
+
+else
+    DOCKER_NVIDIA_OPTIONS =
+endif
+
+#DOCKER_RUNTIME_OPTIONS := --ulimit=host --group-add dsdata
+#DOCKER_RUNTIME_OPTIONS := --ulimit=host --group-add keep-groups --subgidname=dsuser
+DOCKER_RUNTIME_OPTIONS := --ulimit=host --group-add keep-groups $(DOCKER_NVIDIA_OPTIONS) $(DOCKER_ARGS)
+#DOCKER_RUNTIME_OPTIONS := --ulimit=host --annotation run.oci.keep_original_groups=1 
 endif
 
 # ---(colors)------------------------------------------------
@@ -174,7 +208,7 @@ build_image = {\
 
 # ---(commands)------------------------------------------------
 
-.PHONY: all clean setup test pack build shell server push pull update 
+.PHONY: all init clean
 
 # ---(generic)-------------------------------------------
 
@@ -188,90 +222,67 @@ clean: clean-all
 
 # ---(run)------------------------------------------------
 
-.PHONY: prepare setup update upgrade
+.PHONY: build-prepare build-setup build-update build-upgrade
 
-prepare: # @HELP ...
-prepare: init
+build-prepare: init
 
-setup: # @HELP ...
-setup:  init prepare build-image-runtime
+build-setup:  init build-prepare build-image-runtime
 
-update: # @HELP ...
-update: init build-image-runtime
+build-update: init build-image-runtime
 
-upgrade: # @HELP ...
-upgrade: COND_FORCE_PULL := 1
-upgrade: update
+build-upgrade: COND_FORCE_PULL := 1
+build-upgrade: build-update
 
 # ---(run)------------------------------------------------
 
 .PHONY: runtime runtime-repl runtime-cli runtime-rstudio
 
-runtime: # @HELP ...
 runtime: init run/runtime
 
-runtime-repl: # @HELP ...
 runtime-repl: init run/r-repl
 
-runtime-cli: # @HELP ...
 runtime-cli: init run/rscript-cli
 
-runtime-shell: # @HELP ...
 runtime-shell: init run/shell
 
-runtime-build: # @HELP ...
 runtime-build: init run/build
 
-runtime-command: # @HELP ...
 runtime-command: init run/command
 
-runtime-term: # @HELP ...
 runtime-term: init run/term
 
-runtime-rstudio: # @HELP ...
 runtime-rstudio: init run/rstudio-server
 
 
 # ---(worker)------------------------------------------------
 
-worker-pack: # @HELP/worker ...
 worker-pack: init build-image-worker
 
-worker-push: # @HELP/worker ...
 worker-push: init wrk/push
 
-worker-pull: # @HELP/worker ...
 worker-pull: init wrk/pull
 
-worker-make: # @HELP/worker ...
 worker-make: init wrk/make
 
-worker-test: # @HELP/worker ...
 worker-test: MAKE_ARGS := 'test'
 worker-test: worker-make
 
-worker-check: # @HELP/worker ...
 worker-check: MAKE_ARGS := 'check'
 worker-check: worker-make
 
-worker-docs: # @HELP/worker ...
 worker-docs: MAKE_ARGS := 'docs'
 worker-docs: worker-make
 
-worker-build: # @HELP/worker ...
 worker-build: MAKE_ARGS := 'build'
 worker-build: worker-make
 
-worker-install: # @HELP/worker ...
 worker-install: MAKE_ARGS := 'install'
 worker-install: worker-make
 
-worker-exec: # @HELP/worker ...
 worker-exec: WORKER_SCRIPT_FILE := "./starter.sh"
 worker-exec: WORKER_SCRIPT_ARGS := ${MAKE_REST}
 worker-exec: init wrk/runner
 
-worker-shell: # @HELP/worker ...
 worker-shell: init wrk/shell
 
 worker-help:  help/worker
@@ -319,7 +330,8 @@ build-image/%:
 	export X_BLD_DOCKERFILE="$(patsubst %,${MAKE_DIR}/dockerfiles/%.Dockerfile,$*)"; \
 	export X_BLD_IMAGE_NAME="$$(grep 'org.opencontainers.image.title' $$X_BLD_DOCKERFILE | cut -d\" -f2)"; \
 	: $${X_BLD_IMAGE_NAME:=$(patsubst %,${ID_USER}/${ID_PROJECT}.%,$*)}; \
-	echo -e "# ${C_BWhite}#BUILD[*]:>> $$(date -Isec) - ${C_BYellow}$$X_BLD_IMAGE_NAME${C_BWhite} <<- $$X_BLD_DOCKERFILE ${C_OFF}"; \
+	export X_BLD_LOGFILE=${LOGB_DIR}/$$(basename $${X_BLD_IMAGE_NAME}).log; \
+	echo -e "# ${C_BWhite}#BUILD[*]:>> $$(date -Isec) - ${C_BYellow}$$X_BLD_IMAGE_NAME${C_BWhite} <<- $$X_BLD_DOCKERFILE ${C_OFF}" | tee -a ${LOGB_DIR}/build-summary.log; \
 	$(DOCKER) build \
 		-f $$X_BLD_DOCKERFILE \
 		-t $$X_BLD_IMAGE_NAME \
@@ -329,8 +341,13 @@ build-image/%:
 		--label="it.unimib.datalab.package=${ID_PACKAGE}" \
 		$(if ${COND_FORCE_PULL},$(if $(findstring $*,$(BLD_REMOTE_IMAGES)),${DOCKER_BUILD_PULL},)) \
 		$(BUILD_OPTIONS) \
-		. ; \
-	echo -e "# ${C_BWhite}#BUILD($$?):<< $$(date -Isec) - ${C_BYellow}$$X_BLD_IMAGE_NAME${C_BWhite} <<- $$X_BLD_DOCKERFILE ${C_OFF}"
+		. 2>&1 | tee -a $$X_BLD_LOGFILE; \
+		RC=$${PIPESTATUS[0]} ; \
+	echo -e "# ${C_BWhite}#BUILD($$RC):<< $$(date -Isec) - ${C_BYellow}$$X_BLD_IMAGE_NAME${C_BWhite} <<- $$X_BLD_DOCKERFILE ${C_OFF}" | tee -a ${LOGB_DIR}/build-summary.log; \
+	exit $$RC
+
+# . 2>&1 | tee -a $$X_BLD_LOGFILE ; \
+
 
 build-image-runtime: $(foreach I, $(BLD_RUNTIME_IMAGES), build-image/$(I))
 build-image-worker: $(foreach I, $(BLD_WORKER_IMAGES), build-image/$(I))
@@ -338,7 +355,8 @@ build-image-worker: $(foreach I, $(BLD_WORKER_IMAGES), build-image/$(I))
 build-image-all: build-image-runtime build-image-worker
 
 build-image/anchor:
-build-image/base: build-image/anchor
+build-image/cuda: build-image/anchor
+build-image/base: build-image/cuda
 build-image/${BLD_RUNTIME}: build-image/base
 build-image/${BLD_WORKER}: build-image/${BLD_RUNTIME}
 
@@ -370,6 +388,7 @@ run/r-repl:
 		-e USERID=${RUN_USER_UID} \
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
+		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		-ti  \
 		${IMG_RUNTIME} \
 		'/usr/local/bin/R' ${RUNTIME_R_OPTS} ${RUNTIME_ARGS}
@@ -393,6 +412,7 @@ run/rscript-cli:
 		-e USERID=${RUN_USER_UID} \
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
+		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		${IMG_RUNTIME} '/usr/local/bin/Rscript' ${RUNTIME_RSCRIPT_OPTS} ${RUNTIME_ARGS}
 
 run/shell:
@@ -414,6 +434,7 @@ run/shell:
 		-e USERID=${RUN_USER_UID} \
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
+		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		-ti  \
 		${IMG_RUNTIME} '/bin/bash' ${RUNTIME_RSCRIPT_OPTS} ${RUNTIME_ARGS}
 
@@ -436,6 +457,7 @@ run/build:
 		-e USERID=${RUN_USER_UID} \
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
+		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		-ti  \
 		${IMG_RUNTIME} './build.sh' ${RUNTIME_RSCRIPT_OPTS} ${RUNTIME_ARGS}
 
@@ -458,6 +480,7 @@ run/command:
 		-e USERID=${RUN_USER_UID} \
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
+		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		${IMG_RUNTIME} ${RUNTIME_ARGS} ${RUNTIME_RSCRIPT_OPTS}
 
 run/term:
@@ -495,10 +518,12 @@ run/rstudio-server:
 		-v /user:/user  \
 		-v /vol:/vol  \
 		-e PASSWORD=$$_passw_ \
+		-e RUNROOTLESS=true \
 		-e USER=${RUN_USER_NAME} \
 		-e USERID=${RUN_USER_UID} \
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
+		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		${IMG_RUNTIME} ${RUNTIME_ARGS}
 
 run/runtime: run/rstudio-server
@@ -526,6 +551,7 @@ wrk/make:
 		-e USERID=${RUN_USER_UID} \
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
+		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		${IMG_WORKER} \
 		'make' ${WORKER_MAKE_OPTS} ${MAKE_ARGS}
 
@@ -540,6 +566,7 @@ wrk/build:
 		-e USERID=${RUN_USER_UID} \
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
+		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		${IMG_WORKER} \
 		'./build.sh' ${WORKER_MAKE_OPTS} ${MAKE_ARGS}
 
@@ -555,6 +582,7 @@ wrk/runner:
 		-e USERID=${RUN_USER_UID} \
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
+		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		${IMG_WORKER} \
 		${WORKER_SCRIPT_FILE} ${WORKER_SCRIPT_ARGS} ;\
 	echo -e "# ${C_BWhite}#WORKER($$?):<< $$(date -Isec) - exec --  ${C_BYellow}${WORKER_SCRIPT_FILE} ${WORKER_SCRIPT_ARGS}${C_BWhite} ${C_OFF}"
@@ -571,6 +599,7 @@ wrk/shell:
 		-e USERID=${RUN_USER_UID} \
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
+		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		${IMG_WORKER} \
 		'bash' ${WORKER_SCRIPT_FILE} ${WORKER_SCRIPT_ARGS}
 

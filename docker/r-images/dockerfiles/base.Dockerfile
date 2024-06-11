@@ -1,4 +1,5 @@
-FROM ubdems/dve-sample-r.anchor
+FROM ubdems/dve-sample-r.cuda
+#FROM ubdems/dve-sample-r.anchor
 
 LABEL org.opencontainers.image.vendor="ubdems" \
       org.opencontainers.image.base.name="ubdems/dve-sample-r.anchor" \
@@ -11,18 +12,60 @@ LABEL org.opencontainers.image.vendor="ubdems" \
       it.unimib.datalab.name="dve-sample-r" \
       it.unimib.datalab.group="ub-dems-public/ds-labs" \
       it.unimib.datalab.path="ub-dems-public/ds-labs/dve-sample-r" \
+      it.unimib.datalab.schema="dve:1.0" \
       it.unimib.datalab.lang="R" \
       it.unimib.datalab.from="2022-06-01" \
       it.unimib.datalab.until="2222-02-02" \
       it.unimib.datalab.owner="ab21010" \
-      it.unimib.datalab.cdc="ds-101"
+      it.unimib.datalab.cdc="ds-101" \
+      it.unimib.datalab.tags="none"
 
-ENV TERM=xterm
+
+#ARG DEBIAN_FRONTEND=noninteractive
+
+ARG  Y_TERM_SET=xterm-256color
+ENV  TERM $Y_TERM_SET
+
+ARG  Y_TZ_SET=Europe/Rome
+ENV  TZ $Y_TZ_SET
+RUN  echo "$TZ" > /etc/timezone
+
+
+ARG  Y_KBD_LAYOUT_SET=it
 
 COPY scripts/base /rocker_scripts
+COPY build.conf   /etc/build.conf
+ARG  Y_BUILD_CONF=/etc/build.conf
 
+ARG  Y_DEBUG_ENV=0
+ENV  X_DEBUG_ENV $Y_DEBUG_ENV
+
+# init user configuration 
 RUN /rocker_scripts/init_ubs-userconf.sh
-RUN /rocker_scripts/install_ubs-base.sh
+
+# commons
+RUN /rocker_scripts/install_ubs-commons.sh
+RUN /rocker_scripts/install_ubs-utils.sh
+
+# python support
+
+ENV PYENV_ROOT  /opt/pyenv
+ENV POETRY_HOME /opt/poetry
+RUN mkdir -p ${POETRY_HOME}/bin ${PYENV_ROOT}/bin ${PYENV_ROOT}/shims ${PYENV_ROOT}/plugins/pyenv-virtualenv/shims
+ENV PATH  ${POETRY_HOME}/bin:${PYENV_ROOT}/shims:${PYENV_ROOT}/bin:${PYENV_ROOT}/plugins/pyenv-virtualenv/shims:${PATH}
+RUN echo "# +++ #base(pre): PATH=${PATH}"
+
+RUN /rocker_scripts/install_ubs-py_system.sh
+RUN /rocker_scripts/install_ubs-py_pyenv.sh
+RUN /rocker_scripts/install_ubs-py_poetry.sh
+RUN /rocker_scripts/install_ubs-py_lang.sh
+RUN /rocker_scripts/install_ubs-py_jupyter.sh
+
+# clean up
+RUN /rocker_scripts/install_ubs-clean.sh
+
+RUN echo "# +++ #base(post): PATH=${PATH}"
+RUN echo "# +++ #base(bash): PATH=$(bash --login -i -c 'printf \"%s\" "$PATH"' | tail -n1)"
 
 EXPOSE 8787
 

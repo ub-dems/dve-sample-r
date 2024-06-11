@@ -115,25 +115,52 @@ custom-help: help/custom
 
 #}}} \\\
 
-#{{{ [ CONTAINERS.* ] /////////////////////////////////////////////////////////////////
+#{{{ [ ENVIRONMENT.* ] /////////////////////////////////////////////////////////////////
 
 # ---(build)------------------------------------------------
 
-.PHONY: setup update upgrade build-help
+.PHONY: setup prepare update upgrade build-help
+
+prepare: init
+
+# @TODO: git/ssh initial sync
 
 setup: # @HELP/build initial build of all podman images
-setup:
-	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+setup:  init prepare build-setup build-validate
 
 update: # @HELP/build rebuild of modified podman images
-update:
-	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+update: init prepare build-update
 
 upgrade: # @HELP/build fresh rebuild of all podman images (pull)
-upgrade:
-	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+upgrade: init prepare build-upgrade
 
 build-help: help/build
+
+#}}} \\\
+
+#{{{ [ CONTAINERS.* ] /////////////////////////////////////////////////////////////////
+
+# ---(images)------------------------------------------------
+
+.PHONY: build-setup build-update build-upgrade
+
+build-setup:
+	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+
+build-update:
+	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+
+build-upgrade:
+	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+
+
+# ---(inner check)------------------------------------------------
+
+.PHONY: build-validate
+
+build-validate:
+	@echo "TO VALIDATE SETUP, RUN COMMAND: ./runtime.sh build all"
+
 
 # ---(run)------------------------------------------------
 

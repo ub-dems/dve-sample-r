@@ -1,8 +1,9 @@
 #!/bin/bash
 
-E_ROOT_DIR="$(dirname $0)"
+export E_ROOT_DIR="$(dirname $0)"
 #E_DOCKER_DIR="${E_ROOT_DIR}/docker/r-images"
-E_MAKE_FILE="${E_ROOT_DIR}/Makefile"
+export E_MAKE_FILE="${E_ROOT_DIR}/Makefile"
+export E_BUILD_TS="$(date +%Y%m%d-%H%M%S-%Z)"
 
 . $(dirname $0)/functions.sh
 
