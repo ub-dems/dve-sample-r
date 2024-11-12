@@ -10,6 +10,7 @@
 
 E_ROOT_DIR="$(dirname $0)"
 E_EXEC_DIR="${E_ROOT_DIR}/exec"
+E_EXEC_RUNNER="${E_EXEC_DIR}/runner.sh"
 
 export PATH=$E_EXEC_DIR:$PATH
 
@@ -59,8 +60,13 @@ exit 1
 # ---(exec)------------------------------------------------
 
 run_exec() {
-   ${E_EXEC_FILE} ${E_EXEC_ARGS}
+
+    #set -x
+    cd $E_ROOT_DIR
+    
+   ${E_EXEC_WRAP} ${E_EXEC_ARGS}
    rc=$?
+   #set +x
    return $rc
 }
 
@@ -70,40 +76,50 @@ do_exec() {
     info "< exec::($E_EXEC_NAME, $E_EXEC_ARGS) (rc: $rc)"
 }
 
+
+# ---(args)------------------------------------------------
+
+parse_args_start() {
+
+    args="$@"
+    log ">(args.run):" "$args"
+
+    cmds=""
+
+    while [ $# -gt 0 ]; do
+        case "$1" in
+            --help|-h)
+                exit_usage $@
+                ;;
+            -x|--exec)
+                E_EXEC_RUNNER="$2"
+                shift
+                ;;
+            *)
+                cmds="$cmds $1" 
+                ;;
+        esac
+        shift
+    done
+
+: ${E_EXEC_WRAP:="$E_EXEC_RUNNER"}
+: ${E_EXEC_ARGS:=$cmds}
+export     
+
+    log "<(args.sub):" "cmds: $cmds"
+            
+    
+}
+
+
+
+
 # ---(main)------------------------------------------------
 
 main() {
 
-    target=''
-
-    case "$1" in
-        -x)
-            shift
-            E_EXEC_NAME="$1"
-            shift
-            ;;
-        -?|/h|-h|--help|help)
-            exit_usage
-            ;;
-        *)
-            ;;
-    esac
-
-    : ${E_EXEC_NAME:="runner.sh"}
-    : ${E_EXEC_ARGS:=($@)}
-
-    if [ -z "$E_EXEC_FILE" ]; then
-        if [ -f "$E_EXEC_DIR/$E_EXEC_NAME" ]; then
-            E_EXEC_FILE="$E_EXEC_DIR/$E_EXEC_NAME"
-        else    
-            E_EXEC_FILE="$E_EXEC_NAME"
-        fi
-    fi
-
-    export E_EXEC_NAME
-    export E_EXEC_FILE
-    export E_EXEC_ARGS
-
+    parse_args_start $@
+    
     do_exec $@
     exit $rc
 

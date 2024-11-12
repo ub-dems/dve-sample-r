@@ -1,0 +1,16 @@
+{
+  "name": "dve-sample-py",
+  "packageManager": "yarn@3.5.0",
+  "devDependencies": {
+    "bash-language-server": "^5.4.2",
+    "dockerfile-language-server-nodejs": "^0.13.0",
+    "pyright": "^1.1.388",
+    "sql-language-server": "^1.7.0",
+    "typescript-language-server": "^4.3.3",
+    "unified-language-server": "^4.0.1",
+    "vscode-css-languageserver-bin": "^1.4.0",
+    "vscode-html-languageserver-bin": "^1.4.0",
+    "vscode-json-languageserver-bin": "^1.0.1",
+    "yaml-language-server": "^1.15.0"
+  }
+}
