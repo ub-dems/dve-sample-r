@@ -39,10 +39,12 @@ function setenv_rehash() {
 
 function install_poetry() {
 
-    pipx install --global poetry
-
-    pipx upgrade --global poetry
+    : ${POETRY_HOME:=/opt/poetry}
     
+    [ -d "$POETRY_HOME" ] && rm -rf $POETRY_HOME
+    
+    curl -sSL https://install.python-poetry.org | \
+        POETRY_HOME=$POETRY_HOME python3 -
     
 }
 
@@ -51,6 +53,9 @@ function config_poetry() {
     [ "$Y_PY_POETRY_CONFIG" = 1 ] || return 0
 
     
+sed -i 's!PATH="!PATH="/opt/poetry/bin:!' \
+    "/etc/environment"
+
 : ${PYTHON_KEYRING_BACKEND:="keyring.backends.null.Keyring"}
 
 cat <<EOP >/etc/profile.d/Z94-poetry.sh
@@ -81,6 +86,7 @@ sed -i '/PATH=/d' \
 
 cat <<EOR >>"${R_HOME}/etc/Renviron.site"
 PYTHON_KEYRING_BACKEND="${PYTHON_KEYRING_BACKEND}"
+POETRY_HOME=${POETRY_HOME}
 PATH=${PATH}
 EOR
 

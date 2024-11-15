@@ -26,7 +26,9 @@ python = "^3.12"
 
 # {{{ TENSORFLOW: from rstudio/tensorflow/R/install.R@default_extra_packages
 
-tensorflow = {version = "=2.12.*"}
+## tensorflow = {version = "*"}
+tensorflow = {version = "=2.18.*"}
+## tensorflow = {version = "=2.12.*"}
 ## tensorflow-estimator = "*"
 tensorboard = "*"
 tensorflow-hub = "*"

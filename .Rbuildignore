@@ -40,7 +40,9 @@
 ^man-roxygen$
 ^Meta$
 ^\.mypy_cache$
+^notebooks$
 ^notes$
+^package\.json$
 ^pkgdown$
 ^_pkgdown\.yml$
 ^poetry\.lock$
@@ -76,3 +78,5 @@
 ^\.travis\.yml$
 ^vignettes/rsconnect$
 ^.vimrc$
+^.yarnrc\.yml$
+^yarn\.lock$

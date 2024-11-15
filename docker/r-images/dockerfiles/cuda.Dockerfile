@@ -71,6 +71,7 @@ ENV  X_DEBUG_ENV $Y_DEBUG_ENV
 
 # cuda
 RUN /rocker_scripts/install_ubs-cuda-11-470.sh
+RUN /rocker_scripts/install_ubs-cuda-12-560.sh
 
 
 

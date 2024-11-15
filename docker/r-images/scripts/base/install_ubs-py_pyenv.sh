@@ -6,11 +6,27 @@
 ##     pyenv global 3.7.9  # activate as the default python
 ##
 
+## @see: https://chatgpt.com/share/6737538e-a018-8012-9b4a-431603f1558a
+
 ## build ARGs
 set -e
 source ${Y_BUILD_CONF:-/etc/build.conf}
 
 NCPUS=${NCPUS:--1}
+
+
+# ------------------------------------------------------
+
+: ${PYTHON_VERSION=${Y_PY_PYTHON_VERSION:-'3.12.3'}}
+: ${PYENV_ROOT:="/opt/pyenv"}
+: ${PIPX_GLOBAL_HOME:="/opt/pipx"}
+: ${PIPX_GLOBAL_BIN_DIR:="${PIPX_GLOBAL_HOME}/bin"}
+: ${PYVENVS_ROOT:="/opt/pyvenvs"}
+: ${GLOBAL_VENV:="${PYVENVS_ROOT}/global"}
+: ${APP_VENV:="/opt/app-python-env"}
+: ${APP_DIR:="/opt/app"}
+
+# ------------------------------------------------------
 
 
 function env_dump() {
@@ -28,12 +44,63 @@ function env_dump() {
     
 }
 
+
+
+function debug_pyenv() {
+    
+    [ "$Y_PY_PYENV_DEBUG" = 1 ] || return 0
+
+
+    echo "### >> PYENV::DEBUG($@)"
+    
+    echo "PATH=${PATH}"
+    echo "SHELL=${SHELL}"
+    echo "PYTHON_CONFIGURE_OPTS=${PYTHON_CONFIGURE_OPTS}"
+    
+    set -x
+    
+    which python      || true
+    which -a python3  || true
+
+    python --version  || true
+
+    which    pip      || true
+    which -a pip3     || true
+
+    pyenv --version   || true
+    pyenv   versions  || true
+    pyenv   version   || true
+
+    which   pipx      || true
+    pipx  --version   || true
+    pipx    list      || true
+    
+    set +x
+    
+    echo "### << PYENV::DEBUG($@)"
+}
+
+
+
 function setenv_rehash() {
     
     set +e
     env_dump "setenv_rehash::pre"
-    source /etc/profile
-    #export PS1='# '; source /etc/bash.bashrc
+
+    export PS1='# '
+
+    case "${SHELL:-/bin/bash}" in
+        */zsh)
+            [ -f /etc/zprofile ] && source /etc/zprofile
+            [ -f ~/.zprofile ] && source ~/.zprofile
+            [ -f ~/.zshrc ] && source ~/.zshrc
+            ;;
+        */bash|*/sh|*)
+            [ -f /etc/profile ] && source /etc/profile
+            # [ -f ~/.profile ] && source ~/.profile
+            # [ -f ~/.bashrc ] && source ~/.bashrc
+            ;;
+    esac    
     env_dump "setenv_rehash::post"
     set -e
     
@@ -51,43 +118,101 @@ function apt_install() {
     fi
 }
 
+function install_build_node() {
+
+    [ "$Y_PY_PYENV_INSTALL" = 1 ] || return 0
+
+    # @see: https://github.com/nodesource/distributions/blob/master/README.md#ubuntu-versions
+    
+    curl -fsSL https://deb.nodesource.com/setup_23.x -o /tmp/nodesource_setup.sh
+    sudo -E bash /tmp/nodesource_setup.sh
+
+
+    sudo apt-get purge -y \
+         nodejs \
+         libnode-dev
+
+    sudo apt-get autoremove -y
+
+
+    
+    sudo apt-get install -y \
+         nodejs
+
+    node -v
+    
+}
+
+
+
 function install_build_deps() {
 
     [ "$Y_PY_PYENV_INSTALL" = 1 ] || return 0
 
+    sudo apt-get update
+
     apt_install \
-        curl \
         build-essential \
-        gdb \
-        lcov \
-        pkg-config \
-        libbz2-dev \
-        libffi-dev \
-        libgdbm-dev \
-        libgdbm-compat-dev \
-        liblzma-dev \
-        libncurses5-dev \
-        libreadline6-dev \
-        libsqlite3-dev \
-        libmysqlclient-dev \
+        curl \
+        git \
         libssl-dev \
-        lzma \
-        lzma-dev \
+        zlib1g-dev \
+        libbz2-dev \
+        libreadline-dev \
+        libsqlite3-dev \
+        wget \
+        llvm \
+        libncurses5-dev \
+        libncursesw5-dev \
+        xz-utils \
         tk-dev \
-        uuid-dev \
-        zlib1g-dev
+        libffi-dev \
+        liblzma-dev \
+        python3-distutils \
+        python3-apt \
+        ca-certificates
+    
+    apt_install \
+         make \
+         wget \
+         curl \
+         gdb \
+         lcov \
+         pkg-config \
+         build-essential \
+         libssl-dev \
+         zlib1g-dev \
+         libgdbm-dev \
+         libgdbm-compat-dev \
+         libbz2-dev \
+         libreadline-dev \
+         libsqlite3-dev \
+         llvm \
+         libncurses5-dev \
+         libncursesw5-dev \
+         xz-utils \
+         tcllib \
+         tklib \
+         tk-dev \
+         uuid-dev \
+         libffi-dev \
+         liblzma-dev \
+         python3-openssl
 
-#       libmysqlclient-dev # required for mysql native support
+    apt_install \
+         mysql-client \
+         libmysqlclient-dev
 
+    apt_install \
+         libczmq-dev
 
+    install_build_node $@
+    
 }
 
 function install_pyenv() {
 
     [ "$Y_PY_PYENV_INSTALL" = 1 ] || return 0
-
-    #export PYENV_ROOT=/opt/pyenv
-    #export PATH=$PYENV_ROOT/bin:$PATH
 
     : ${PYENV_ROOT:=/opt/pyenv}
 
@@ -104,9 +229,8 @@ function config_pyenv() {
 
     [ "$Y_PY_PYENV_CONFIG" = 1 ] || return 0
 
-    sed -i 's!PATH="!PATH="/opt/pyenv/bin:!' \
+    sed -i 's!PATH="!PATH="/opt/pipx/bin:/opt/pyenv/bin:!' \
         "/etc/environment"
-
 
     : ${PYTHON_CONFIGURE_OPTS:="--enable-shared"}
 
@@ -127,11 +251,14 @@ PYTHON_CONFIGURE_OPTS=${PYTHON_CONFIGURE_OPTS:-"--enable-shared"}
 ### PATH=~/.local/bin:$PYENV_ROOT/shims:$PYENV_ROOT/bin:$PYENV_ROOT/plugins/pyenv-virtualenv/shims:$PATH
 
 eval "$(pyenv init --path)"
+eval "$(pyenv init -)"
 eval "$(pyenv virtualenv-init -)"
 
 PATH=$(P=$(echo -n $PATH | awk -v RS=: -v ORS=: '!($0 in a) {a[$0]; print $0}'); echo -n ${P:0:-1})
 
 export PYENV_ROOT
+export PIPX_GLOBAL_HOME
+export PIPX_GLOBAL_BIN_DIR
 export PATH
 
 export X_RC_Z93_PYENV=1
@@ -142,6 +269,7 @@ if [ "$X_RC_SYSPROFILE_INCLUDED" = "1" ]; then
    [ "$X_DEBUG_ENV" = 1 ] && echo "### /etc/bash.bashrc(pyenv) {"
    [ "$X_DEBUG_ENV" = 1 ] && echo $PATH
    [ "$X_DEBUG_ENV" = 1 ] && which pyenv
+   eval "$(pyenv init --path)"
    eval "$(pyenv init -)"
    eval "$(pyenv virtualenv-init -)"
    [ "$X_DEBUG_ENV" = 1 ] && echo "### /etc/bash.bashrc(pyenv) }"
@@ -157,6 +285,8 @@ EOB
 PYTHON_CONFIGURE_OPTS="${PYTHON_CONFIGURE_OPTS}"
 PYENV_ROOT=${PYENV_ROOT}
 PYENV_SHELL=bash
+PIPX_GLOBAL_HOME=${PIPX_GLOBAL_HOME}
+PIPX_GLOBAL_BIN_DIR=${PIPX_GLOBAL_BIN_DIR}
 PATH=${X_ENV_PATH}
 EOR
     
@@ -171,12 +301,19 @@ function install_pyenv_python() {
 
     [ "$Y_PY_PYENV_PYTHON" = 1 ] || return 0
 
+    debug_pyenv "install_pyenv_python::pre"
+
     # python setup
 
     : ${PYTHON_CONFIGURE_OPTS:="--enable-shared"}
     
     env PYTHON_CONFIGURE_OPTS=${PYTHON_CONFIGURE_OPTS}  \
         pyenv install $Y_PY_PYTHON_VERSION
+
+    pyenv global $Y_PY_PYTHON_VERSION
+
+    debug_pyenv "install_pyenv_python::post"
+    
 
 }
 
@@ -185,25 +322,85 @@ function config_pyenv_python() {
 
     [ "$Y_PY_PYENV_PYTHON" = 1 ] || return 0
 
+    debug_pyenv "config_pyenv_python::pre"
+
+    eval "$(pyenv virtualenv-init -)"
+
+
     # python global default
 
-    Y_PY_PYTHON_REVISION="$(pyenv versions | grep $Y_PY_PYTHON_VERSION | cut -c3- | cut -d' ' -f1)"
-    export Y_PY_PYTHON_REVISION
+    #Y_PY_PYTHON_REVISION="$(pyenv versions | grep $Y_PY_PYTHON_VERSION | cut -c3- | cut -d' ' -f1)"
+    Y_PY_PYTHON_REVISION="$(pyenv versions --bare)"
     
-    pyenv global $Y_PY_PYTHON_REVISION
+    pyenv virtualenv $Y_PY_PYTHON_VERSION global
+    
+    pyenv activate global
+
+    debug_pyenv "config_pyenv_python::post"
 
 }
 
 function upgrade_pyenv_python() {
     
     [ "$Y_PY_PYENV_UPGRADE" = 1 ] || return 0
+
+    debug_pyenv "upgrade_pyenv_python::pre"
     
     python3 -m pip --no-cache-dir install --upgrade --ignore-installed \
-            pip \
+            pip
+    
+    python3 -m pip --no-cache-dir install --upgrade --ignore-installed \
             setuptools \
             wheel \
             pipenv \
             numpy
+
+    debug_pyenv "upgrade_pyenv_python::post"
+    
+}
+
+
+function install_pyenv_extras() {
+    
+    [ "$Y_PY_PYENV_EXTRAS" = 1 ] || return 0
+
+    debug_pyenv "install_pyenv_extras::pre"
+    
+    python3 -m pip --no-cache-dir install --upgrade --ignore-installed \
+            ipython \
+            cookiecutter
+
+    debug_pyenv "install_pyenv_extras::post"
+    
+    
+
+}
+
+function install_pyenv_pipx() {
+    
+    [ "$Y_PY_PYENV_EXTRAS" = 1 ] || return 0
+
+    debug_pyenv "install_pyenv_pipx::pre"
+    
+    python3 -m pip --no-cache-dir install --upgrade --ignore-installed \
+            pipx
+
+    pyenv    rehash
+
+    python3 -m pipx ensurepath --global
+
+    debug_pyenv "install_pyenv_pipx::path"
+    
+    #setenv_rehash
+
+    pipx install --global --force pycowsay 
+    pipx list
+    pipx run pycowsay "moooo! -- pyenv=$(pyenv --version), python=$(python --version), pipx=$(pipx --version)"
+
+    pycowsay 'moooo!'
+
+    debug_pyenv "install_pyenv_pipx::post"
+    
 
 }
 
@@ -214,6 +411,10 @@ function check_pyenv() {
     [ "$Y_PY_PYENV_CHECK" = 1 ] || return 0
 
     set -x
+
+    echo "PATH=${PATH}"
+    echo "SHELL=${SHELL}"
+    echo "PYTHON_CONFIGURE_OPTS=${PYTHON_CONFIGURE_OPTS}"
     
     which python      || true
     which -a python3  || true
@@ -226,6 +427,10 @@ function check_pyenv() {
     pyenv --version   || true
     pyenv   versions  || true
     pyenv   version   || true
+
+    which   pipx      || true
+    pipx  --version   || true
+    pipx    list      || true
     
     set +x
     
@@ -256,6 +461,8 @@ function main() {
     config_pyenv_python
 
     upgrade_pyenv_python
+    install_pyenv_extras
+    install_pyenv_pipx
     
     check_pyenv    
 

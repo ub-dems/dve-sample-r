@@ -50,9 +50,14 @@ RUN /rocker_scripts/install_ubs-utils.sh
 # python support
 
 ENV PYENV_ROOT  /opt/pyenv
+ENV PIPX_GLOBAL_HOME /opt/pipx
+ENV PIPX_GLOBAL_BIN_DIR /opt/pipx/bin
 ENV POETRY_HOME /opt/poetry
-RUN mkdir -p ${POETRY_HOME}/bin ${PYENV_ROOT}/bin ${PYENV_ROOT}/shims ${PYENV_ROOT}/plugins/pyenv-virtualenv/shims
-ENV PATH  ${POETRY_HOME}/bin:${PYENV_ROOT}/shims:${PYENV_ROOT}/bin:${PYENV_ROOT}/plugins/pyenv-virtualenv/shims:${PATH}
+ENV PYVENVS_ROOT  /opt/pyvenvs
+ENV GLOBAL_VENV /opt/pyvenvs/global
+RUN mkdir -p {POETRY_HOME}/bin {PIPX_GLOBAL_HOME} {PIPX_GLOBAL_BIN_DIR} {PYVENVS_ROOT} {GLOBAL_VENV}/bin {PYENV_ROOT}/bin {PYENV_ROOT}/shims {PYENV_ROOT}/plugins/pyenv-virtualenv/shims
+RUN echo "# +++ #base(123): zzz"
+ENV PATH  ${POETRY_HOME}/bin:${PIPX_GLOBAL_BIN_DIR}:${PYENV_ROOT}/shims:${PYENV_ROOT}/bin:${PYENV_ROOT}/plugins/pyenv-virtualenv/shims:${GLOBAL_VENV}/bin:${PATH}
 RUN echo "# +++ #base(pre): PATH=${PATH}"
 
 RUN /rocker_scripts/install_ubs-py_system.sh

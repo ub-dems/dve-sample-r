@@ -50,7 +50,12 @@ function install_jupyter_system() {
 
 function install_jupyter_venv() {
 
-    echo "to install jupyter, in container shell run 'poetry install'"
+    echo "#<jupyter>: SETUP:"
+    echo "#<jupyter>:  to install jupyter, in container shell run 'poetry install'"
+    echo "#<jupyter>:  then in 'poetry shell', run 'jlpm up; jupyter lab build' "
+    echo "#<jupyter>: RUNTIME:"
+    echo "#<jupyter>:  internal: jupyter lab --notebook-dir=notebooks --no-browser --ip=0.0.0.0 --port=8888 --ServerApp.allow_remote_access=true"
+    echo "#<jupyter>:  external: ./runtime.sh lab"
 
     
 }
@@ -65,7 +70,7 @@ function install_jupyter() {
         install_jupyter_venv
     fi    
        
-    
+   
 }
 
 function install_irkernel() {
