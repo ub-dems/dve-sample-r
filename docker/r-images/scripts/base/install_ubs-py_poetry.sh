@@ -25,6 +25,53 @@ function env_dump() {
     
 }
 
+function debug_poetry() {
+    
+    [ "$Y_PY_POETRY_DEBUG" = 1 ] || return 0
+
+
+    echo "### >> POETRY::DEBUG($@)"
+    
+    echo "PATH=${PATH}"
+    echo "SHELL=${SHELL}"
+    echo "PYTHON_CONFIGURE_OPTS=${PYTHON_CONFIGURE_OPTS}"
+    
+    set -x
+    
+    which python      || true
+    which -a python3  || true
+
+    python --version  || true
+
+    which    pip      || true
+    which -a pip3     || true
+
+    pyenv --version   || true
+    pyenv   versions  || true
+    pyenv   version   || true
+
+    which   pipx      || true
+    pipx  --version   || true
+    pipx    list      || true
+
+    which   poetry      || true
+    poetry  --version   || true
+    poetry  env info    || true
+    
+    set +x
+
+    echo "--- project.env //"
+    echo "pwd=$(pwd)"
+    echo "Y_WORD_DIR=${Y_WORK_DIR}"
+    echo "Y_POETRY_LOAD=${Y_POETRY_LOAD}"
+    echo "// project.env ---"
+    
+    
+    echo "### << POETRY::DEBUG($@)"
+}
+
+
+
 function setenv_rehash() {
 
     set +e
@@ -88,20 +135,6 @@ echo "# +++ poetry: PATH=${PATH}"
 
 }
 
-function load_poetry() {
-
-    [ "$Y_PY_POETRY_LOAD" = 1 ] || return 0
-
-    # @todo: poetry env use + lock + install
-
-    # @see: https://gitlab.com/nvidia/container-images/cuda/-/blob/master/Dockerfile
-    
-    poetry config virtualenvs.create true --local
-    poetry config virtualenvs.in-project true --local
-    poetry install --no-interaction -vv
-    
-}
-
 function check_poetry() {
     
     [ "$Y_PY_POETRY_CHECK" = 1 ] || return 0
@@ -114,11 +147,11 @@ function check_poetry() {
     pyenv  --version  || true
     poetry --version  || true
 
-    # poetry env list || true
-    # poetry env info || true
-    
+    #poetry env list || true
+    #poetry env info || true
     
 }
+
 
 function clean_up() {
     :
@@ -139,11 +172,11 @@ function main() {
     setenv_rehash
 
     check_poetry
-
+    debug_poetry
+    
     clean_up
 
 
 }
-    
 
 main $@

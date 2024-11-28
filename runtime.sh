@@ -31,8 +31,14 @@ runs commands in r runtime
 where "target" is
 
   rstudio (default): runs rstudio-server bound on port 28787
+  jutyper          : runs jupyter lab bound on port 28888
+  notebook         : runs jupyter notebook bound on port 28888
+  code             : runs visual studio code server on port 28788
   repl             : runs interactive R console
   cli ...          : runs Rscript with arguments
+  upgrade ...      : runs poetry/renv lock/snapshot inside runtime
+  setup ...        : runs poetry/renv install inside runtime
+  status ...       : runs poetry/renv status inside runtime
   build ...        : runs ./build.sh with arguments inside runtime
   shell            : runs interactive shell prompt
   bash args,...    : runs shell with args,...
@@ -41,13 +47,19 @@ where "target" is
 
 Target aliases:
 
-   rstudio => ide, RStudio
-   repl    => r, R
-   cli     => rscript, Rscript
-   build   => bld, build.sh
-   shell   => sh, prompt
-   bash    => do, command
-   term    => in, attach
+   rstudio  => ide, RStudio
+   jupyter  => lab
+   notebook => note
+   code     => edit
+   repl     => r, R
+   cli      => rscript, Rscript
+   upgrade  => lock, snapshot
+   setup    => lib, install
+   status   => deps, show
+   build    => bld, build.sh
+   shell    => sh, prompt
+   bash     => do, command
+   term     => in, attach
 
 
 EXAMPLES
@@ -74,6 +86,27 @@ RStudio
 
 RStudio login with user root, and default user password as password
 
+Jupyter lab
+-----------
+
+ ./runtime.sh jupyter
+ ./runtime.sh lab
+
+
+Jupyter notebook
+----------------
+
+ ./runtime.sh notebook
+ ./runtime.sh note
+
+
+Visual Studio Code Server
+-------------------------
+
+ ./runtime.sh code
+ ./runtime.sh edit
+
+
 R Console
 ---------
 
@@ -93,9 +126,28 @@ R Script
 
 to run scripts from ./exec directory 
 
+Upgrde
+-----
 
-Shell Prompt
-------------
+ ./runtime.sh setup upgrade
+
+for ./setup.sh (upgrade mode) execution inside runtime container
+
+
+
+
+Setup
+-----
+
+ ./runtime.sh setup
+
+for ./setup.sh execution inside runtime container
+
+
+
+
+Build
+-----
 
  ./runtime.sh build all
  ./runtime.sh build test
@@ -192,6 +244,18 @@ case "${command}" in
         shift
         target=runtime-build
         ;;
+    lock|snapshot|upgrade)
+        shift
+        target=runtime-upgrade
+        ;;
+    lib|install|setup)
+        shift
+        target=runtime-setup
+        ;;
+    deps|show|status)
+        shift
+        target=runtime-status
+        ;;
     do|command)
         shift
         export LOG_ACTIVE='OFF'  
@@ -201,6 +265,18 @@ case "${command}" in
         shift
         export LOG_ACTIVE='OFF'  
         target=runtime-term
+        ;;
+    edit|code)
+        shift
+        target=runtime-code
+        ;;
+    lab|jupyter)
+        shift
+        target=runtime-lab
+        ;;
+    edit|notebook)
+        shift
+        target=runtime-notebook
         ;;
     ide|rstudio|RStudio)
         shift

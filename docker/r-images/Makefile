@@ -59,6 +59,29 @@ IMG_WORKER ?= $(shell (grep 'org.opencontainers.image.title' ${DKF_WORKER} | cut
 
 REGISTRY_HOST := svsi680reg.azurecr.io
 
+# ---(tag)------------------------------------------------
+
+BRANCH_NAME := $(shell (cd ${MAKE_DIR} && git rev-parse --abbrev-ref HEAD))
+COMMIT_HASH := $(shell (cd ${MAKE_DIR} && git rev-parse HEAD))
+IMAGE_REVISION ?= $(COMMIT_HASH)
+
+# @see: https://github.com/kubeflow/kubeflow/blob/master/components/example-notebook-servers/jupyter/Makefile
+
+GIT_COMMIT     := $(shell git rev-parse HEAD)
+GIT_TREE_STATE := $(shell test -n "`git status --porcelain`" && echo "-dirty" || echo "")
+
+REGISTRY ?= $(REGISTRY_HOST)/ubdems
+TAG      ?= sha-$(GIT_COMMIT)$(GIT_TREE_STATE)
+TAG      ?= "latest"
+
+# IMAGE_NAME := jupyter
+
+# BASE_IMAGE         := $(REGISTRY)/base:$(TAG)
+# BASE_IMAGE_FOLDERS := base
+
+
+
+
 # ---(project)------------------------------------------------
 
 ID_PROJECT_DIR ?= "$(notdir ${ROOT_DIR})"
@@ -84,19 +107,10 @@ RG_PRIVATE ?= "${RG_INTERNAL}"
 RG_PUBLIC ?= "docker.io"
 
 
-# ---(tag)------------------------------------------------
-
-BRANCH_NAME := $(shell (cd ${MAKE_DIR} && git rev-parse --abbrev-ref HEAD))
-COMMIT_HASH := $(shell (cd ${MAKE_DIR} && git rev-parse HEAD))
-IMAGE_REVISION ?= $(COMMIT_HASH)
-
-
-TAG ?= "latest"
-
 # ---(PYTHON)------------------------------------------------
 
 X_PY_PYENV_VERSION ?= $(shell (cd ${ROOT_DIR} && cat .python-version))
-
+X_PY_RUN ?= "poetry run"
 
 # ---(runtime)------------------------------------------------
 
@@ -158,6 +172,58 @@ endif
 DOCKER_RUNTIME_OPTIONS := --ulimit=host --group-add keep-groups $(DOCKER_NVIDIA_OPTIONS) $(DOCKER_ARGS)
 #DOCKER_RUNTIME_OPTIONS := --ulimit=host --annotation run.oci.keep_original_groups=1 
 endif
+
+# ---(setup)------------------------------------------------
+
+SETUP_EXTRA_RUNTIME_OPTIONS := 
+SETUP_DEFAULT_RUNTIME_OPTIONS := $(SETUP_EXTRA_RUNTIME_OPTIONS) 
+SETUP_INSTALL_RUNTIME_OPTIONS := $(SETUP_DEFAULT_RUNTIME_OPTIONS) --all
+SETUP_UPGRADE_RUNTIME_OPTIONS := $(SETUP_DEFAULT_RUNTIME_OPTIONS) --all --upgrade
+SETUP_STATUS_RUNTIME_OPTIONS  := $(SETUP_DEFAULT_RUNTIME_OPTIONS) --status
+
+RUNTIME_SETUP_OPTS := $(SETUP_INSTALL_RUNTIME_OPTIONS)
+RUNTIME_UPGRADE_OPTS := $(SETUP_UPGRADE_RUNTIME_OPTIONS)
+RUNTIME_STATUS_OPTS := $(SETUP_STATUS_RUNTIME_OPTIONS)
+
+# ---(setup)------------------------------------------------
+
+BUILD_EXTRA_RUNTIME_OPTIONS := 
+BUILD_DEFAULT_RUNTIME_OPTIONS := $(BUILD_EXTRA_RUNTIME_OPTIONS) 
+BUILD_RUNTIME_OPTIONS := $(BUILD_DEFAULT_RUNTIME_OPTIONS)
+
+RUNTIME_BUILD_OPTS := $(BUILD_RUNTIME_OPTIONS)
+
+
+# ---(rscript)------------------------------------------------
+
+RSCRIPT_EXTRA_RUNTIME_OPTIONS := 
+RSCRIPT_DEFAULT_RUNTIME_OPTIONS := $(RSCRIPT_EXTRA_RUNTIME_OPTIONS) 
+RSCRIPT_RUNTIME_OPTIONS := $(RSCRIPT_DEFAULT_RUNTIME_OPTIONS)
+
+RUNTIME_RSCRIPT_OPTS := $(RSCRIPT_RUNTIME_OPTIONS)
+
+
+# ---(codet)------------------------------------------------
+
+CODE_EXTRA_RUNTIME_OPTIONS := 
+CODE_DEFAULT_RUNTIME_OPTIONS := $(CODE_EXTRA_RUNTIME_OPTIONS) 
+CODE_RUNTIME_OPTIONS := $(CODE_DEFAULT_RUNTIME_OPTIONS)
+
+RUNTIME_CODE_OPTS := $(CODE_RUNTIME_OPTIONS)
+
+
+# ---(jupyter)------------------------------------------------
+
+JUPYTER_EXTRA_RUNTIME_OPTIONS := 
+JUPYTER_NETWORK_RUNTIME_OPTIONS := --ip=0.0.0.0 --port=8888 
+JUPYTER_AUTH_RUNTIME_OPTIONS := --ServerApp.allow_remote_access=true
+JUPYTER_BASE_RUNTIME_OPTIONS := --notebook-dir=notebooks --no-browser 
+JUPYTER_DEFAULT_RUNTIME_OPTIONS := $(JUPYTER_BASE_RUNTIME_OPTIONS) $(JUPYTER_NETWORK_RUNTIME_OPTIONS) $(JUPYTER_AUTH_RUNTIME_OPTIONS) $(JUPYTER_EXTRA_RUNTIME_OPTIONS) 
+JUPYTER_NOTEBOOK_RUNTIME_OPTIONS := $(JUPYTER_DEFAULT_RUNTIME_OPTIONS) notebook
+JUPYTER_LAB_RUNTIME_OPTIONS := lab  $(JUPYTER_DEFAULT_RUNTIME_OPTIONS) lab
+
+RUNTIME_JUPYTER_LAB_OPTS := $(JUPYTER_LAB_RUNTIME_OPTIONS)
+RUNTIME_JUPYTER_NOTEBOOK_OPTS := $(JUPYTER_NOTEBOOK_RUNTIME_OPTIONS)
 
 # ---(colors)------------------------------------------------
 
@@ -245,11 +311,23 @@ runtime-cli: init run/rscript-cli
 
 runtime-shell: init run/shell
 
+runtime-upgrade: init run/upgrade
+
+runtime-setup: init run/setup
+
+runtime-status: init run/status
+
 runtime-build: init run/build
 
 runtime-command: init run/command
 
 runtime-term: init run/term
+
+runtime-code: init run/code-server
+
+runtime-notebook: init run/jupyter-notebook
+
+runtime-lab: init run/jupyter-lab
 
 runtime-rstudio: init run/rstudio-server
 
@@ -335,6 +413,8 @@ build-image/%:
 	$(DOCKER) build \
 		-f $$X_BLD_DOCKERFILE \
 		-t $$X_BLD_IMAGE_NAME \
+		--build-arg Y_WORK_DIR="${WORK_DIR}" \
+		--build-arg Y_DEBUG_ENV="${Y_DEBUG_ENV:-0}" \
 		--label="it.unimib.datalab.project=${ID_PROJECT}" \
 		--label="it.unimib.datalab.branch=${BRANCH_NAME}" \
 		--label="it.unimib.datalab.commit=${COMMIT_HASH}" \
@@ -366,54 +446,9 @@ build-image/${BLD_WORKER}: build-image/${BLD_RUNTIME}
 #{{{ [ RUNTIME.* ] /////////////////////////////////////////////////////////////////
 
 
-# ---(server)------------------------------------------------
-
 .PHONY: run/%
 
-run/r-repl:
-	$(DOCKER)  run \
-		--rm \
-		${DOCKER_RUNTIME_OPTIONS} \
-		-v ${HOME_DIR}:${RUN_USER_HOME}:Z  \
-		-v ~/work:${RUN_USER_HOME}/work:Z  \
-		-v ~/data:${RUN_USER_HOME}/data:Z  \
-		-v ~/data:${HOME}/data:Z  \
-		-v /store/local:/store/local:Z  \
-		-v /store/share:/store/share  \
-		-v /user:/user  \
-		-v /vol:/vol  \
-		-w ${RUN_USER_HOME}/${WORK_DIR}  \
-		-e PASSWORD=$$_passw_ \
-		-e USER=${RUN_USER_NAME} \
-		-e USERID=${RUN_USER_UID} \
-		-e GROUPID=${RUN_USER_GID} \
-		-e ROOT=true  \
-		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
-		-ti  \
-		${IMG_RUNTIME} \
-		'/usr/local/bin/R' ${RUNTIME_R_OPTS} ${RUNTIME_ARGS}
-
-run/rscript-cli:
-	@echo "CLI: Rscript ${RUNTIME_ARGS}"
-	$(DOCKER)  run \
-		--rm \
-		${DOCKER_RUNTIME_OPTIONS} \
-		-v ${HOME_DIR}:${RUN_USER_HOME}:Z  \
-		-v ~/work:${RUN_USER_HOME}/work:Z  \
-		-v ~/data:${RUN_USER_HOME}/data:Z  \
-		-v ~/data:${HOME}/data:Z  \
-		-v /store/local:/store/local:Z  \
-		-v /store/share:/store/share  \
-		-v /user:/user  \
-		-v /vol:/vol  \
-		-w ${RUN_USER_HOME}/${WORK_DIR}  \
-		-e PASSWORD=$$_passw_ \
-		-e USER=${RUN_USER_NAME} \
-		-e USERID=${RUN_USER_UID} \
-		-e GROUPID=${RUN_USER_GID} \
-		-e ROOT=true  \
-		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
-		${IMG_RUNTIME} '/usr/local/bin/Rscript' ${RUNTIME_RSCRIPT_OPTS} ${RUNTIME_ARGS}
+# ---(bare)------------------------------------------------
 
 run/shell:
 	@echo "CLI: shell ${RUNTIME_ARGS}"
@@ -436,7 +471,152 @@ run/shell:
 		-e ROOT=true  \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		-ti  \
-		${IMG_RUNTIME} '/bin/bash' ${RUNTIME_RSCRIPT_OPTS} ${RUNTIME_ARGS}
+		${IMG_RUNTIME} \
+		'/bin/bash' ${RUNTIME_RSCRIPT_OPTS} ${RUNTIME_ARGS}
+
+
+run/status:
+	@echo "CLI: status ${RUNTIME_ARGS}"
+	$(DOCKER)  run \
+		--rm \
+		${DOCKER_RUNTIME_OPTIONS} \
+		-v ${HOME_DIR}:${RUN_USER_HOME}:Z  \
+		-v ~/work:${RUN_USER_HOME}/work:Z  \
+		-v ~/data:${RUN_USER_HOME}/data:Z  \
+		-v ~/data:${HOME}/data:Z  \
+		-v /store/local:/store/local:Z  \
+		-v /store/share:/store/share  \
+		-v /user:/user  \
+		-v /vol:/vol  \
+		-w ${RUN_USER_HOME}/${WORK_DIR}  \
+		-e PASSWORD=$$_passw_ \
+		-e USER=${RUN_USER_NAME} \
+		-e USERID=${RUN_USER_UID} \
+		-e GROUPID=${RUN_USER_GID} \
+		-e ROOT=true  \
+		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		-e REV_ID_PROJECT=${ID_PROJECT}  \
+		-e REV_ID_PACKAGE=${ID_PACKAGE}  \
+		-e REV_BRANCH_NAME=${BRANCH_NAME}  \
+		-e REV_COMMIT_HASH=${COMMIT_HASH}  \
+		-e REV_IMAGE_REVISION=${IMAGE_REVISION}  \
+		-e REV_GIT_COMMIT=${GIT_COMMIT}  \
+		-e REV_GIT_TREE_STATE=${GIT_TREE_STATE}  \
+		-e REV_REGISTRY=${REGISTRY}  \
+		-e REV_TAG=${TAG}  \
+		-ti  \
+		${IMG_RUNTIME} \
+		'./setup.sh' ${RUNTIME_STATUS_OPTS} ${RUNTIME_ARGS}
+
+
+run/setup:
+	@echo "CLI: setup ${RUNTIME_ARGS}"
+	$(DOCKER)  run \
+		--rm \
+		${DOCKER_RUNTIME_OPTIONS} \
+		-v ${HOME_DIR}:${RUN_USER_HOME}:Z  \
+		-v ~/work:${RUN_USER_HOME}/work:Z  \
+		-v ~/data:${RUN_USER_HOME}/data:Z  \
+		-v ~/data:${HOME}/data:Z  \
+		-v /store/local:/store/local:Z  \
+		-v /store/share:/store/share  \
+		-v /user:/user  \
+		-v /vol:/vol  \
+		-w ${RUN_USER_HOME}/${WORK_DIR}  \
+		-e PASSWORD=$$_passw_ \
+		-e USER=${RUN_USER_NAME} \
+		-e USERID=${RUN_USER_UID} \
+		-e GROUPID=${RUN_USER_GID} \
+		-e ROOT=true  \
+		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		-ti  \
+		${IMG_RUNTIME} \
+		'./setup.sh' ${RUNTIME_SETUP_OPTS} ${RUNTIME_ARGS}
+
+run/upgrade:
+	@echo "CLI: upgrade ${RUNTIME_ARGS}"
+	$(DOCKER)  run \
+		--rm \
+		${DOCKER_RUNTIME_OPTIONS} \
+		-v ${HOME_DIR}:${RUN_USER_HOME}:Z  \
+		-v ~/work:${RUN_USER_HOME}/work:Z  \
+		-v ~/data:${RUN_USER_HOME}/data:Z  \
+		-v ~/data:${HOME}/data:Z  \
+		-v /store/local:/store/local:Z  \
+		-v /store/share:/store/share  \
+		-v /user:/user  \
+		-v /vol:/vol  \
+		-w ${RUN_USER_HOME}/${WORK_DIR}  \
+		-e PASSWORD=$$_passw_ \
+		-e USER=${RUN_USER_NAME} \
+		-e USERID=${RUN_USER_UID} \
+		-e GROUPID=${RUN_USER_GID} \
+		-e ROOT=true  \
+		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		-ti  \
+		${IMG_RUNTIME} \
+		'./setup.sh' ${RUNTIME_UPGRADE_OPTS} ${RUNTIME_ARGS}
+
+
+# ---(attach)----------------------------------------------
+
+run/term:
+        #@echo "CLI: term ${RUNTIME_ARGS}"
+	$(DOCKER)  exec \
+		-ti  \
+		$(shell ${DOCKER} ps | grep ${IMG_RUNTIME} | cut -d' ' -f1 ) \
+		'/bin/bash' ${RUNTIME_RSCRIPT_OPTS} ${RUNTIME_ARGS}
+
+
+# ---(venv)------------------------------------------------
+
+run/r-repl:
+	$(DOCKER)  run \
+		--rm \
+		${DOCKER_RUNTIME_OPTIONS} \
+		-v ${HOME_DIR}:${RUN_USER_HOME}:Z  \
+		-v ~/work:${RUN_USER_HOME}/work:Z  \
+		-v ~/data:${RUN_USER_HOME}/data:Z  \
+		-v ~/data:${HOME}/data:Z  \
+		-v /store/local:/store/local:Z  \
+		-v /store/share:/store/share  \
+		-v /user:/user  \
+		-v /vol:/vol  \
+		-w ${RUN_USER_HOME}/${WORK_DIR}  \
+		-e PASSWORD=$$_passw_ \
+		-e USER=${RUN_USER_NAME} \
+		-e USERID=${RUN_USER_UID} \
+		-e GROUPID=${RUN_USER_GID} \
+		-e ROOT=true  \
+		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		-ti  \
+		${IMG_RUNTIME} \
+		${Y_PY_RUN} \
+		'/usr/local/bin/R' ${RUNTIME_R_OPTS} ${RUNTIME_ARGS}
+
+run/rscript-cli:
+	@echo "CLI: Rscript ${RUNTIME_ARGS}"
+	$(DOCKER)  run \
+		--rm \
+		${DOCKER_RUNTIME_OPTIONS} \
+		-v ${HOME_DIR}:${RUN_USER_HOME}:Z  \
+		-v ~/work:${RUN_USER_HOME}/work:Z  \
+		-v ~/data:${RUN_USER_HOME}/data:Z  \
+		-v ~/data:${HOME}/data:Z  \
+		-v /store/local:/store/local:Z  \
+		-v /store/share:/store/share  \
+		-v /user:/user  \
+		-v /vol:/vol  \
+		-w ${RUN_USER_HOME}/${WORK_DIR}  \
+		-e PASSWORD=$$_passw_ \
+		-e USER=${RUN_USER_NAME} \
+		-e USERID=${RUN_USER_UID} \
+		-e GROUPID=${RUN_USER_GID} \
+		-e ROOT=true  \
+		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		${IMG_RUNTIME} \
+		${Y_PY_RUN} \
+		'/usr/local/bin/Rscript' ${RUNTIME_RSCRIPT_OPTS} ${RUNTIME_ARGS}
 
 run/build:
 	@echo "CLI: build ${RUNTIME_ARGS}"
@@ -459,7 +639,9 @@ run/build:
 		-e ROOT=true  \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		-ti  \
-		${IMG_RUNTIME} './build.sh' ${RUNTIME_RSCRIPT_OPTS} ${RUNTIME_ARGS}
+		${IMG_RUNTIME} \
+		${Y_PY_RUN} \
+		'./build.sh' ${RUNTIME_BUILD_OPTS} ${RUNTIME_ARGS}
 
 run/command:
         #@echo "CLI: command ${RUNTIME_ARGS}"
@@ -481,14 +663,84 @@ run/command:
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
-		${IMG_RUNTIME} ${RUNTIME_ARGS} ${RUNTIME_RSCRIPT_OPTS}
+		${IMG_RUNTIME} \
+		${Y_PY_RUN} \
+		${RUNTIME_ARGS} ${RUNTIME_RSCRIPT_OPTS}
 
-run/term:
-        #@echo "CLI: term ${RUNTIME_ARGS}"
-	$(DOCKER)  exec \
-		-ti  \
-		$(shell ${DOCKER} ps | grep ${IMG_RUNTIME} | cut -d' ' -f1 ) \
-		'/bin/bash' ${RUNTIME_RSCRIPT_OPTS} ${RUNTIME_ARGS}
+run/code:
+	@echo "CODE: server ${RUNTIME_ARGS}"
+	$(DOCKER)  run \
+		--rm \
+		${DOCKER_RUNTIME_OPTIONS} \
+		-v ${HOME_DIR}:${RUN_USER_HOME}:Z  \
+		-v ~/work:${RUN_USER_HOME}/work:Z  \
+		-v ~/data:${RUN_USER_HOME}/data:Z  \
+		-v ~/data:${HOME}/data:Z  \
+		-v /store/local:/store/local:Z  \
+		-v /store/share:/store/share  \
+		-v /user:/user  \
+		-v /vol:/vol  \
+		-w ${RUN_USER_HOME}/${WORK_DIR}  \
+		-e PASSWORD=$$_passw_ \
+		-e USER=${RUN_USER_NAME} \
+		-e USERID=${RUN_USER_UID} \
+		-e GROUPID=${RUN_USER_GID} \
+		-e ROOT=true  \
+		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		${IMG_RUNTIME} \
+		${Y_PY_RUN} \
+		'code-server' ${RUNTIME_CODE_OPTS} ${RUNTIME_ARGS}
+
+
+run/jupyter-lab:
+	@echo "JUPYTER: lab ${RUNTIME_ARGS}"
+	$(DOCKER)  run \
+		--rm \
+		${DOCKER_RUNTIME_OPTIONS} \
+		-v ${HOME_DIR}:${RUN_USER_HOME}:Z  \
+		-v ~/work:${RUN_USER_HOME}/work:Z  \
+		-v ~/data:${RUN_USER_HOME}/data:Z  \
+		-v ~/data:${HOME}/data:Z  \
+		-v /store/local:/store/local:Z  \
+		-v /store/share:/store/share  \
+		-v /user:/user  \
+		-v /vol:/vol  \
+		-w ${RUN_USER_HOME}/${WORK_DIR}  \
+		-e PASSWORD=$$_passw_ \
+		-e USER=${RUN_USER_NAME} \
+		-e USERID=${RUN_USER_UID} \
+		-e GROUPID=${RUN_USER_GID} \
+		-e ROOT=true  \
+		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		${IMG_RUNTIME} \
+		${Y_PY_RUN} \
+		'jupyter' ${RUNTIME_JUPYTER_LAB_OPTS} ${RUNTIME_ARGS}
+
+
+run/jupyter-notebook:
+	@echo "JUPYTER: notebook ${RUNTIME_ARGS}"
+	$(DOCKER)  run \
+		--rm \
+		${DOCKER_RUNTIME_OPTIONS} \
+		-v ${HOME_DIR}:${RUN_USER_HOME}:Z  \
+		-v ~/work:${RUN_USER_HOME}/work:Z  \
+		-v ~/data:${RUN_USER_HOME}/data:Z  \
+		-v ~/data:${HOME}/data:Z  \
+		-v /store/local:/store/local:Z  \
+		-v /store/share:/store/share  \
+		-v /user:/user  \
+		-v /vol:/vol  \
+		-w ${RUN_USER_HOME}/${WORK_DIR}  \
+		-e PASSWORD=$$_passw_ \
+		-e USER=${RUN_USER_NAME} \
+		-e USERID=${RUN_USER_UID} \
+		-e GROUPID=${RUN_USER_GID} \
+		-e ROOT=true  \
+		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		${IMG_RUNTIME} \
+		${Y_PY_RUN} \
+		'jupyter' ${RUNTIME_JUPYTER_NOTEBOOK_OPTS} ${RUNTIME_ARGS}
+
 
 run/rstudio-server:
 	@echo "======================"

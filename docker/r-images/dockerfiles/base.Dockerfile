@@ -21,6 +21,13 @@ LABEL org.opencontainers.image.vendor="ubdems" \
       it.unimib.datalab.tags="none"
 
 
+# from makefile (autodetect) - no default
+
+ARG  Y_WORK_DIR
+ENV  X_WORK_DIR $Y_WORK_DIR
+
+
+
 #ARG DEBIAN_FRONTEND=noninteractive
 
 ARG  Y_TERM_SET=xterm-256color

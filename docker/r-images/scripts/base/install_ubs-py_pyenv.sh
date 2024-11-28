@@ -35,7 +35,7 @@ function env_dump() {
     
     echo "+++> #ENV($0): $@"
     echo "+++: #ENV($0): set"
-    set | grep '^Y_' | sort
+    set | grep -e '^Y_' | sort
     echo "+++: #ENV($0): env"
     env | sort
     echo "+++: #ENV($0): path"

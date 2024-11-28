@@ -46,39 +46,7 @@ function install_reticulate() {
     
 }
 
-function config_reticulate() {
 
-    [ "$Y_PY_RETICULATE_CONFIG" = 1 ] || return 0
-    
-    echo -e "Check the Python to use with reticulate...\n"
-#    poetry run \
-           R -q -e 'reticulate::py_discover_config(required_module = NULL, use_environment = NULL)'
-    echo -e "\nInstall Python, done!"
-    
-}
-
-
-
-
-function check_reticulate() {
-    
-    [ "$Y_PY_RETICULATE_CHECK" = 1 ] || return 0
-    
-    which python || true
-    which pyenv  || true
-    which poetry || true
-
-    python --version  || true
-    pyenv  --version  || true
-    poetry --version  || true
-
-#    poetry env info   || true
-
-#    poetry run \
-           R -e "reticulate::py_config()" \
-                      || true
-    
-}
 
 function clean_up() {
     rm -rf /var/lib/apt/lists/*
@@ -97,11 +65,8 @@ function clean_up() {
     setenv_rehash
 
     install_reticulate
-    config_reticulate
     
     setenv_rehash
-
-    check_reticulate
 
     clean_up
 
