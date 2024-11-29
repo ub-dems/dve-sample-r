@@ -281,6 +281,9 @@ EOB
     sed -i '/PATH=/d' \
         "${R_HOME}/etc/Renviron.site"
 
+    sed -i '/VIRTUAL_ENV=/d' \
+        "${R_HOME}/etc/Renviron.site"
+
     cat <<EOR >>"${R_HOME}/etc/Renviron.site"
 PYTHON_CONFIGURE_OPTS="${PYTHON_CONFIGURE_OPTS}"
 PYENV_ROOT=${PYENV_ROOT}

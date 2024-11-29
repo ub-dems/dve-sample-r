@@ -19,6 +19,7 @@ set -a
 : ${APT_Y:='-y'}
 : ${T:=$(date +%F-%H%M%S)}
 
+: ${X_VERBOSE:=''}
 
 # ------------------------------------------------------
 case "$0" in
@@ -53,13 +54,17 @@ X_TL="$(date '+%Y-%m-%d')"
 X_TS="$(date '+%s')"
 X_TM="$(date --rfc-3339=seconds)"
 
-X_NAME="$(basename $X_SRC_SCRIPT .sh)"
+#X_NAME="$(basename $X_SRC_SCRIPT .sh)"
+X_NAME="setup"
 
 X_TEMP="/tmp/$(id -u)"
-X_WORK="${X_TEMP}/${X_NAME}"
-X_LOGB="$X_WORK"
+X_WORK="$(pwd)"
+X_LOGB="./logs/sys"
 X_LOGS="${X_LOGB}/${X_TL}"
 X_LOGFILE="${X_LOGS}/${X_NAME}-${X_TS}-$(id -u).log"
+X_DUMPFILE="${X_LOGS}/${X_NAME}-${X_TS}-$(id -u).yml"
+
+
 
 : ${LC_ALL:='en_US.UTF-8'}
 : ${LANG:='en_US.UTF-8'}
@@ -89,91 +94,32 @@ EOF
 }
 
 
-dump_venv_status() {
-    cat <<EOF
-#vim: set foldmethod=marker :
-
-# {{{ --- setup-venv: [$(hostname)] - $(date) -------------
-    
-##
-# setup python venv status: ${args}
-#
-
-- env:
-   paths:
-    path: "${PATH}"
-    library_path: "${LD_LIBRARY_PATH}"
-    python: "$(which python)"
-    python-version: "$(which python >/dev/null && python --version)"
-    poetry: "$(which poetry)"
-    poetry-version: "$(which poetry >/dev/null && poetry --version)"
-    jupyter: "$(which jupyter)"
-    jupyter-version: "$(which jupyter >/dev/null && jupyter --version)"
-   venv: |
-        $(poetry env info)
-
-- r-bindings:
-   config:
-     reticulate: |
-        $(  -e "reticulate::py_config()")
-
-- jupyter:
-   paths:
-    jupyter-version: "$(which jupyter >/dev/null && jupyter --version)"
-   config:
-     lab-extensions: |
-        $(jupyter labextension list)
-     kernels: |
-        $(jupyter kernelspec list)
-
-- deps
-   tree: |
-$(poetry show --tree)
-   list: |
-$(poetry show)
-   project: |
-$(ls -l pyproject.toml poetry.lock)
- 
-
-# }}} -----
-   
-EOF
-
-}
-
-dump_renv_status() {
-    cat <<EOF
-#vim: set foldmethod=marker :
-
-# {{{ --- setup-renv: [$(hostname)] - $(date) -------------
-    
-##
-# setup R renv status: ${args}
-#
-
-- env:
-   paths:
-    path: "${PATH}"
-    library_path: "${LD_LIBRARY_PATH}"
-    R: "$(which R)"
-    R-version: "$(which R >/dev/null && R --version)"
-
-- deps
-   project: |
-$(ls -l DESCRIPTION renv.lock)
- 
-
-# }}} -----
-   
-EOF
-
+sl() {
+    cat | sed 's/^/      %\t/'
 }
 
 
+
+
+dump_header_status() {
+    cat <<EOF
+#vim: set foldmethod=marker:foldlevel=0
+---
+title: "setup status - project environment"
+project: "${REV_ID_PROJECT}"
+package: "${REV_ID_PACKAGE}"
+branch: "${REV_BRANCH_NAME}"
+commit: "${REV_TAG}"
+hostname: "$(hostname)"
+date: "$(date)"
+---
+EOF
+
+}
 
 dump_global_status() {
     cat <<EOF
-# {{{ --- setup-globals: [$(hostname)] - $(date) -------------
+# {{{ --- [setup-globals] ----------------------------------
     
 ##
 # setup global status: ${args}
@@ -184,45 +130,48 @@ dump_global_status() {
    version: 1.0.0
    script:
      name: "${X_SRC_NAME}"
-     path: "$XS"  
-     info: |
-        $(ls -l $XS)
+     file: "$XS"  
 
 - revision:
    source:
      info: |
-        $(env | grep ^REV_)
+$(env | grep ^REV_ | sl)
+
+- workspce:
+   paths:
+     curr: "$(pwd)"
+     work: "${X_WORK}"
+     logs: "${X_LOGS}"
+     temp: "${X_TEMP}"
+   contents: |
+$(ls -l pyproject.toml poetry.lock DESCRIPTION renv.lock package.json yarn.lock | sl)
+
+
+
 
 - host:
    hostname: "$(hostname)"
    release: |
-$(lsb_release -a 2>/dev/null)
+$(lsb_release -a 2>/dev/null | sl)
  
 - user:
    userid: "${USER}"
    home: "${HOME}"
    shell: "${SHELL}"
    id: |
-$(id)
+$(id | sl)
 
-- env:
-   path: "${PATH}"
-   library_path: "${LD_LIBRARY_PATH}"
+- system-env:
+   path: |
+$(echo "${PATH}" | tr ':' '\n' | sl)
+   library_path: |
+$(echo "${LD_LIBRARY_PATH}" | tr ':' '\n' | sl)
    python: "$(which python)"
-   python-version: "$(which python >/dev/null && python --version)"
-
-- login:
-    who: |
-$(who)
-    last: |
-$(last -n 10)
-
-
-
+   python-version: "$(which python >/dev/null && python --version | head -n1)"
 
 - mount:
    df: |
-$(df -h)
+$(df -h | sl)
 
 
 # }}} -----
@@ -233,26 +182,89 @@ EOF
 
 
 
-dump_header_status() {
+dump_venv_status() {
     cat <<EOF
----
-#vim: set foldmethod=marker :
+# {{{ --- [setup-venv] ----------------------------------
+    
+##
+# setup python venv status: ${args}
+#
 
-title: "setup status - project environment"
-project: "${REV_ID_PROJECT}"
-package: "${REV_ID_PACKAGE}"
-hostname: "$(hostname)"
-version: "${REV_BRANCH_NAME}#${REV_TAG}"
-date: "$(date -Idate)"
+- virtual-env:
+   paths:
+    path: |
+$(echo "${PATH}" | tr ':' '\n' | sl)
+    library_path: |
+$(echo "${LD_LIBRARY_PATH}" | tr ':' '\n' | sl)
+    python: "$(which python)"
+    python-version: "$(which python >/dev/null && python --version)"
+    poetry: "$(which poetry)"
+    poetry-version: "$(which poetry >/dev/null && poetry --version)"
+    jupyter: "$(which jupyter )"
+    jupyter-version: "$(which jupyter >/dev/null && jupyter --version)"
+   poetry-venv: |
+$(poetry env info | sl)
 
----
+- r-bindings:
+   config:
+     reticulate: |
+$(R -e "reticulate::py_config()" | sl)
+
+- jupyter:
+   paths:
+    jupyter-version: "$(which jupyter >/dev/null && jupyter --version)"
+   config:
+     lab-extensions: |
+$(jupyter labextension list || echo "NOJUPYTER" | sl)
+     kernels: |
+$(jupyter kernelspec list || echo "NOJUPYTER" | sl)
+
+- python-deps
+   list: |
+$(poetry show | sl)
+   project: |
+$(ls -l pyproject.toml poetry.lock | sl)
+ 
+
+# }}} -----
+   
+EOF
+
+}
+
+dump_renv_status() {
+    cat <<EOF
+# {{{ --- [setup-renv] ----------------------------------
+    
+##
+# setup R renv status: ${args}
+#
+
+- r-env:
+   paths:
+    path: |
+$(echo "${PATH}" | tr ':' '\n' | sl)
+    library_path: |
+$(echo "${LD_LIBRARY_PATH" | tr ':' '\n' | sl)
+    R: "$(which R)"
+    R-version: "$(which R >/dev/null && R --version | tr '"' '\'' | head -n1)"
+
+- r-deps
+   project: |
+$(ls -l DESCRIPTION renv.lock | sl)
+ 
+
+# }}} -----
+   
 EOF
 
 }
 
 
 
-exit_status() {
+
+
+dump_status_full() {
     
     dump_header_status
     dump_global_status
@@ -281,7 +293,23 @@ exit_status() {
             dump_renv_status
         )
     fi
+}
+
+dump_status() {
+
+    mkdir -p $X_LOGS
+    X_DUMPFILE="${X_LOGS}/${X_NAME}-${X_TS}-$(id -u).yml"
+
+    (dump_status_full) 2>&1 | tee -a $X_DUMPFILE 
+
+    ls -l "$X_DUMPFILE"
+    echo  "$X_DUMPFILE"
     
+}
+
+exit_status() {
+    
+    dump_status
     exit 0
 }
 
@@ -549,6 +577,22 @@ do_py_reticulate() {
       which python
       python --version
 
+
+    eval "export X_ENV_PATH=$(bash --login -i -c 'printf \"%s\" "$PATH"' | tail -n1)"
+    eval "export X_ENV_VENV=$(poetry env info --path)"
+    
+    sed -i '/PATH=/d' \
+        "${R_HOME}/etc/Renviron.site"
+
+    sed -i '/VIRTUAL_ENV=/d' \
+        "${R_HOME}/etc/Renviron.site"
+
+    cat <<EOR >>"${R_HOME}/etc/Renviron.site"
+PATH=${X_ENV_PATH}
+VIRTUAL_ENV=${X_ENV_VENV}
+EOR
+
+      
       # install2.r --error --skipmissing --skipinstalled -n $NCPUS \
       #           reticulate
       
@@ -702,13 +746,28 @@ parse_args_run() {
                 RUN_PY_VENV=1
                 RUN_PY_INSTALL=1
                 RUN_PY_SHOW=1
-                cmds="$cmds --install"
+                cmds="$cmds --install --all"
                 ;;
             
             --status|-s)
                 RUN_STATUS=1
                 RUN_PY_SHOW=1
                 cmds="$cmds --status"
+                ;;
+            
+            --verbose|-v)
+                X_VERBOSE:='1'
+                cmds="$cmds -v"
+                ;;
+            
+            -vv)
+                X_VERBOSE:='12'
+                cmds="$cmds -vv"
+                ;;
+            
+            -vvv)
+                X_VERBOSE:='123'
+                cmds="$cmds -vvv"
                 ;;
             
             *)
@@ -718,13 +777,13 @@ parse_args_run() {
         shift
     done
 
-    PY_OPTS=":"
+    PY_OPTS=""
     PY_OPTS="$PY_OPTS:$Y_PY_SYSTEM_SUPPORT"
     PY_OPTS="$PY_OPTS:$Y_PY_PYENV_SUPPORT"
     PY_OPTS="$PY_OPTS:$Y_PY_POETRY_SUPPORT"
     
     case "$PY_OPTS" in
-        :0:*|:*:0:*|:*:0)
+        :1:*|:*:0:*|:*:*:0)
             RUN_PY_RESET=0
             RUN_PY_VENV=0
             RUN_PY_INSTALL=0
