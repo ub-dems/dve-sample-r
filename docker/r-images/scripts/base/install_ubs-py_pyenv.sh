@@ -7,6 +7,8 @@
 ##
 
 ## @see: https://chatgpt.com/share/6737538e-a018-8012-9b4a-431603f1558a
+## @see: https://github.com/rocker-org/rocker-versioned2/blob/master/dockerfiles/ml_devel.Dockerfile
+## @see: https://rstudio.github.io/reticulate/articles/versions.html
 
 ## build ARGs
 set -e

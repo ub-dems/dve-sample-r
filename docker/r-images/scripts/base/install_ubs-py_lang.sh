@@ -39,10 +39,45 @@ function setenv_rehash() {
 function install_reticulate() {
     
     [ "$Y_PY_RETICULATE_INSTALL" = 1 ] || return 0
+
+    eval "export X_ENV_PATH=$(bash --login -i -c 'printf \"%s\" "$PATH"' | tail -n1)"
+ #   eval "export X_ENV_VENV=$(poetry env info --path)"
+    
+    sed -i '/PATH=/d' \
+        "${R_HOME}/etc/Renviron.site"
+
+    sed -i '/VIRTUAL_ENV=/d' \
+        "${R_HOME}/etc/Renviron.site"
+
+    cat <<EOR >>"${R_HOME}/etc/Renviron.site"
+PATH=${X_ENV_PATH}
+#VIRTUAL_ENV=${X_ENV_VENV}
+EOR
+
     
     ## R - python
     install2.r --error --skipmissing --skipinstalled -n $NCPUS \
                reticulate
+    
+}
+
+function install_irkernel() {
+    
+    [ "$Y_PY_RETICULATE_IRKERNEL" = 1 ] || return 0
+
+      R --quiet   -e 'remotes::install_github("IRkernel/IRkernel@*release")'
+    
+}
+
+function install_langserver() {
+    
+    [ "$Y_PY_RETICULATE_LANGSERV" = 1 ] || return 0
+
+    # R --vanilla -e 'install.packages("languageserver")'
+    
+    install2.r --error --skipmissing --skipinstalled -n $NCPUS \
+               languageserver
+    
     
 }
 
@@ -65,6 +100,10 @@ function clean_up() {
     setenv_rehash
 
     install_reticulate
+    
+    install_irkernel
+    
+    install_langserver
     
     setenv_rehash
 

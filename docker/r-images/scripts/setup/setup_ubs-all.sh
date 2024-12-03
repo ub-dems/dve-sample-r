@@ -484,6 +484,66 @@ exit_main() {
 
 # ////////////////////////////////////////////////////////////////////////
 
+
+deactivate () {
+    # reset old environment variables
+    if [ -n "${_OLD_VIRTUAL_PATH:-}" ] ; then
+        PATH="${_OLD_VIRTUAL_PATH:-}"
+        export PATH
+        unset _OLD_VIRTUAL_PATH
+    fi
+    if [ -n "${_OLD_VIRTUAL_PYTHONHOME:-}" ] ; then
+        PYTHONHOME="${_OLD_VIRTUAL_PYTHONHOME:-}"
+        export PYTHONHOME
+        unset _OLD_VIRTUAL_PYTHONHOME
+    fi
+
+    # This should detect bash and zsh, which have a hash command that must
+    # be called to get it to forget past commands.  Without forgetting
+    # past commands the $PATH changes we made may not be respected
+    if [ -n "${BASH:-}" -o -n "${ZSH_VERSION:-}" ] ; then
+        hash -r 2> /dev/null
+    fi
+
+    if [ -n "${_OLD_VIRTUAL_PS1:-}" ] ; then
+        PS1="${_OLD_VIRTUAL_PS1:-}"
+        export PS1
+        unset _OLD_VIRTUAL_PS1
+    fi
+
+    unset VIRTUAL_ENV
+    unset VIRTUAL_ENV_PROMPT
+    if [ ! "${1:-}" = "nondestructive" ] ; then
+    # Self destruct!
+        unset -f deactivate
+    fi
+}
+
+
+
+
+# ////////////////////////////////////////////////////////////////////////
+
+do_py_init() {
+
+    log ">(do_py_init):" "py - venv init, ..."
+    
+    if [ -n "$VIRTUAL_ENV" ]; then
+        warn "+(do_py_init):" "py - venv active: VIRTUAL_ENV=$VIRTUAL_ENV, deactivating, ..."
+        # unset irrelevant variables
+        deactivate nondestructive
+        warn "+(do_py_init):" "py - venv active: VIRTUAL_ENV=$VIRTUAL_ENV, deactivating, done."
+    fi
+
+    poetry env info
+    poetry env list
+    log "+(do_py_init):" "py - venv detected: (rc:$?)"
+
+    log "<(do_py_init):" "py - venv init,  done."
+    
+}
+
+
 do_py_remove() {
 
     log ">(do_py_remove):" "py - venv remove, ..."
@@ -503,8 +563,8 @@ do_py_venv() {
     log ">(do_py_venv):" "py - venv define, ..."
 
     if ! poetry env list > /dev/null; then
-        poetry config virtualenvs.create true --local
-        poetry config virtualenvs.in-project true --local
+        #poetry config virtualenvs.create true --local
+        #poetry config virtualenvs.in-project false --local
         poetry env use $(which python)
         [ -L ./venv ] && rm ./venv
         ln -s "~/$(realpath $(poetry  env info -p) --relative-to=$HOME -s)" ./venv
@@ -577,24 +637,38 @@ do_py_reticulate() {
       which python
       python --version
 
-
-    eval "export X_ENV_PATH=$(bash --login -i -c 'printf \"%s\" "$PATH"' | tail -n1)"
-    eval "export X_ENV_VENV=$(poetry env info --path)"
-    
-    sed -i '/PATH=/d' \
-        "${R_HOME}/etc/Renviron.site"
-
-    sed -i '/VIRTUAL_ENV=/d' \
-        "${R_HOME}/etc/Renviron.site"
-
-    cat <<EOR >>"${R_HOME}/etc/Renviron.site"
-PATH=${X_ENV_PATH}
-VIRTUAL_ENV=${X_ENV_VENV}
-EOR
+      # @see: docker/r-images/scripts/base/install_ubs-py_lang.sh
+      
+      # R - python
+      # install2.r --error --skipmissing --skipinstalled -n $NCPUS  reticulate
 
       
-      # install2.r --error --skipmissing --skipinstalled -n $NCPUS \
-      #           reticulate
+      # @see: https://rstudio.github.io/reticulate/articles/versions.html#order-of-discovery
+
+      eval "export X_ENV_PATH=$(bash --login -i -c 'printf \"%s\" "$PATH"' | tail -n1)"
+      eval "export X_ENV_VENV=$(poetry env info --path)"
+
+      export RETICULATE_PYTHON_ENV="$(poetry env info --path)"
+
+      touch ~/.Rsession
+      touch ~/.Renviron
+    
+      sed -i '/PATH=/d' \
+          ~/.Renviron
+
+      sed -i '/VIRTUAL_ENV=/d' \
+          ~/.Renviron
+
+      sed -i '/RETICULATE_PYTHON_ENV=/d' \
+          ~/.Renviron
+
+      cat <<EOR >> ~/.Renviron
+PATH=${X_ENV_PATH}
+VIRTUAL_ENV=${X_ENV_VENV}
+RETICULATE_PYTHON_ENV=${RETICULATE_PYTHON_ENV}
+EOR
+    
+      
       
       R -q -e 'reticulate::py_discover_config(required_module = NULL, use_environment = NULL)'
 
@@ -608,9 +682,7 @@ EOR
 }
 
 
-
-
-do_py_jupyter() {
+do_py_jupyter_build() {
 
     log ">(do_py_jupyter):" "py - jupyter prepare, ..."
 
@@ -618,14 +690,8 @@ do_py_jupyter() {
 
     ( source $(poetry env info --path)/bin/activate
 
-      which python
-      which jupyter
-
-      python --version
-      jupyter --version
-
-      jupyter --paths
-      jupyter server --generate-config
+      [ -f ~/.jupyter/jupyter_server_config.py ] || \
+          jupyter server --generate-config
 
       jupyter labextension disable "@jupyterlab/apputils-extension:announcements"
 
@@ -633,11 +699,6 @@ do_py_jupyter() {
       node --version
       which -a jlpm
       jlpm --version
-      
-      jupyter --version
-
-      R --quiet   -e 'remotes::install_github("IRkernel/IRkernel@*release")'
-      R --vanilla -e 'install.packages("languageserver")'      
       
       if [ ! -f ./.yarnrc.yml ] ; then
           warn "jupyter ./.yarnrc.yml not found, ..."
@@ -680,9 +741,6 @@ do_py_jupyter() {
       jupyter lab clean --all
       jupyter lab build --debug
       
-      jupyter labextension list
-      jupyter kernelspec list
-      
       
     )
 
@@ -690,9 +748,58 @@ do_py_jupyter() {
     
 }
 
+do_py_irkernel_reg() {
+
+    log ">(do_py_irkernel):" "py - irkernel install, ..."
+
+    # run in poetry shell -- venv activated
+
+    ( source $(poetry env info --path)/bin/activate
+
+
+      # @see: https://github.com/IRkernel/IRkernel
+
+      R --quiet   -e 'IRkernel::installspec()'
+
+      jupyter labextension install @techrah/text-shortcuts  # for RStudio’s shortcuts
+      
+    )
+
+    log "<(do_py_irkernel):" "py - irkernel install,  done."
+    
+}
+
+
+
+do_py_jupyter_show() {
+
+    log ">(do_py_jupyter_show):" "py - jupyter show, ..."
+
+    # run in poetry shell -- venv activated
+
+    ( source $(poetry env info --path)/bin/activate
+
+      which python
+      which jupyter
+
+      python --version
+      jupyter --version
+
+      jupyter --paths
+
+      jupyter labextension list
+      jupyter kernelspec list
+      
+      
+    )
+
+    log "<(do_py_jupyter_show):" "py - jupyter show,  done."
+    
+}
+
 do_py_show() {
 
-    log ">(do_py_reticulate):" "py - reticulate config, ..."
+    log ">(do_py_show):" "py - show config, ..."
 
     # run in poetry shell -- venv activated
 
@@ -701,12 +808,22 @@ do_py_show() {
       which python
       python --version
 
-      poetry show --tree
+      case "$X_VERBOSE" in
+          1*)
+              poetry show
+              ;;
+          12*)
+              poetry show --tree
+              ;;
+          *)
+              ;;
+      esac    
 
+      R -e "reticulate::py_config()"
       
     )
 
-    log "<(do_py_reticulate):" "py - reticulate config, done."
+    log "<(do_py_show):" "py - show config, done."
     
 }
 
@@ -745,6 +862,8 @@ parse_args_run() {
             --all)
                 RUN_PY_VENV=1
                 RUN_PY_INSTALL=1
+                RUN_PY_BIND=1
+                RUN_PY_JUPYTER=1
                 RUN_PY_SHOW=1
                 cmds="$cmds --install --all"
                 ;;
@@ -813,6 +932,8 @@ main_run() {
     parse_args_run $@
 
     #check_is_remote
+
+    do_py_init
     
     log ">(main.run):" "args:$args -- cmds: $cmds, ..."
     
@@ -823,15 +944,24 @@ main_run() {
 
     if [ "$RUN_PY_VENV" = '1' ]; then
         do_py_venv $@
+        rc_exit $?
+    fi
+
+    if [ "$RUN_PY_INSTALL" = '1' ]; then
         do_py_lock $@
         do_py_install $@
         rc_exit $?
     fi
 
-    if [ "$RUN_PY_INSTALL" = '1' ]; then
-        do_py_venv $@
-        do_py_lock $@
-        do_py_install $@
+    if [ "$RUN_PY_BIND" = '1' ]; then
+        do_py_reticulate $@
+        rc_exit $?
+    fi
+
+    if [ "$RUN_PY_JUPYTER" = '1' ]; then
+        do_py_jupyter_build $@
+        do_py_irkernel_reg $@
+        do_py_jupyter_show $@
         rc_exit $?
     fi
 
