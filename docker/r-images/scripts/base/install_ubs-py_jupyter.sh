@@ -74,34 +74,28 @@ function install_jupyter() {
 }
 
 function install_irkernel() {
-
+    
     [ "$Y_PY_JUPYTER_IRKERNEL" = 1 ] || return 0
-    
-    R --quiet -e 'remotes::install_github("IRkernel/IRkernel@*release")'
-    
-    #install2.r --error --skipmissing --skipinstalled -n $NCPUS \
-    #          IRkernel
 
+      R --quiet   -e 'remotes::install_github("IRkernel/IRkernel@*release")'
     
 }
+
+function install_langserver() {
+    
+    [ "$Y_PY_JUPYTER_LANGSERV" = 1 ] || return 0
+
+    # R --vanilla -e 'install.packages("languageserver")'
+    
+    install2.r --error --skipmissing --skipinstalled -n $NCPUS \
+               languageserver
+    
+    
+}
+
+
 
 function config_jupyter_system() {
-    
-    R --quiet -e 'IRkernel::installspec(user = FALSE)'
-    
-}
-
-function config_jupyter_venv() {
-    
-    R --quiet -e 'IRkernel::installspec(user = TRUE)'
-    
-}
-
-
-
-function config_jupyter() {
-
-    [ "$Y_PY_JUPYTER_CONFIG" = 1 ] || return 0
 
     echo -e "Check jupyter availability...\n"
 
@@ -112,6 +106,23 @@ function config_jupyter() {
     jupyter --version || true
 
     
+    R --quiet -e 'IRkernel::installspec(user = FALSE)'
+    
+}
+
+function config_jupyter_venv() {
+    
+    echo "#<jupyter>:  to enable IRkernel in jupyter, in container shell run:"
+    echo "#<jupyter>:  R --quiet -e 'IRkernel::installspec(user = TRUE)'"
+    
+}
+
+
+
+function config_jupyter() {
+
+    [ "$Y_PY_JUPYTER_CONFIG" = 1 ] || return 0
+
     if [ "$Y_PY_JUPYTER_SYSTEM" = 1 ]; then
         config_jupyter_system
     else    
@@ -133,10 +144,8 @@ function config_jupyter() {
 }
 
 
-function check_jupyter() {
+function check_jupyter_system() {
 
-    [ "$Y_PY_JUPYTER_CHECK" = 1 ] || return 0
-    
     # Check jupyter
     echo -e "Check jupyter version...\n"
 
@@ -149,6 +158,30 @@ function check_jupyter() {
     echo -e "\nInstall jupyter, done!"
     
 }
+
+function check_jupyter_venv() {
+    
+    echo "#<jupyter>:  to ckeck jupyter, in container shell run:"
+    echo "#<jupyter>:  jupyter --version"
+    echo "#<jupyter>:  jupyter --paths"
+    echo "#<jupyter>:  jupyter jupyter labextension list"
+    echo "#<jupyter>:  jupyter kernelspec list"
+    
+}
+
+
+function check_jupyter() {
+
+    [ "$Y_PY_JUPYTER_CHECK" = 1 ] || return 0
+    
+    if [ "$Y_PY_JUPYTER_SYSTEM" = 1 ]; then
+        check_jupyter_system
+    else    
+        check_jupyter_venv
+    fi    
+    
+}
+
 
 
 function clean_up() {
@@ -169,7 +202,11 @@ function main() {
     setenv_rehash    
 
     install_jupyter
+
     install_irkernel
+    
+    install_langserver
+    
     config_jupyter
     
     setenv_rehash    

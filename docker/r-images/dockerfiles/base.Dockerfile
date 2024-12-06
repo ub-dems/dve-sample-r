@@ -24,17 +24,17 @@ LABEL org.opencontainers.image.vendor="ubdems" \
 # from makefile (autodetect) - no default
 
 ARG  Y_WORK_DIR
-ENV  X_WORK_DIR $Y_WORK_DIR
+ENV  X_WORK_DIR=$Y_WORK_DIR
 
 
 
 #ARG DEBIAN_FRONTEND=noninteractive
 
 ARG  Y_TERM_SET=xterm-256color
-ENV  TERM $Y_TERM_SET
+ENV  TERM=$Y_TERM_SET
 
 ARG  Y_TZ_SET=Europe/Rome
-ENV  TZ $Y_TZ_SET
+ENV  TZ=$Y_TZ_SET
 RUN  echo "$TZ" > /etc/timezone
 
 
@@ -45,7 +45,7 @@ COPY build.conf   /etc/build.conf
 ARG  Y_BUILD_CONF=/etc/build.conf
 
 ARG  Y_DEBUG_ENV=0
-ENV  X_DEBUG_ENV $Y_DEBUG_ENV
+ENV  X_DEBUG_ENV=$Y_DEBUG_ENV
 
 # init user configuration 
 RUN /rocker_scripts/init_ubs-userconf.sh
@@ -56,22 +56,36 @@ RUN /rocker_scripts/install_ubs-utils.sh
 
 # python support
 
-ENV PYENV_ROOT  /opt/pyenv
-ENV PIPX_GLOBAL_HOME /opt/pipx
-ENV PIPX_GLOBAL_BIN_DIR /opt/pipx/bin
-ENV POETRY_HOME /opt/poetry
-ENV PYVENVS_ROOT  /opt/pyvenvs
-ENV GLOBAL_VENV /opt/pyvenvs/global
-RUN mkdir -p {POETRY_HOME}/bin {PIPX_GLOBAL_HOME} {PIPX_GLOBAL_BIN_DIR} {PYVENVS_ROOT} {GLOBAL_VENV}/bin {PYENV_ROOT}/bin {PYENV_ROOT}/shims {PYENV_ROOT}/plugins/pyenv-virtualenv/shims
-RUN echo "# +++ #base(123): zzz"
-ENV PATH  ${POETRY_HOME}/bin:${PIPX_GLOBAL_BIN_DIR}:${PYENV_ROOT}/shims:${PYENV_ROOT}/bin:${PYENV_ROOT}/plugins/pyenv-virtualenv/shims:${GLOBAL_VENV}/bin:${PATH}
+ENV VIRTUAL_ENV=
+ENV VIRTUAL_ALT=/opt/venv
+
+ENV PYENV_ROOT=/opt/pyenv
+ENV PIPX_GLOBAL_HOME=/opt/pipx
+ENV PIPX_GLOBAL_BIN_DIR=/opt/pipx/bin
+ENV POETRY_HOME=/opt/poetry
+ENV PYVENVS_ROOT=/opt/pyvenvs
+ENV GLOBAL_VENV=/opt/pyvenvs/global
+
+ENV FNM_ROOT=/opt/fnm
+ENV NODE_ROOT=/opt/nodejs
+ENV FNM_DIR=$NODE_ROOT
+ENV RUST_ROOT=/opt/rust
+ENV RUSTUP_HOME=/opt/rust
+ENV CARGO_HOME=/opt/cargo
+
+#RUN mkdir -p ${POETRY_HOME}/bin ${PIPX_GLOBAL_HOME} ${PIPX_GLOBAL_BIN_DIR} ${PYVENVS_ROOT} ${GLOBAL_VENV}/bin ${PYENV_ROOT}/bin ${PYENV_ROOT}/shims ${PYENV_ROOT}/plugins/pyenv-virtualenv/shims
+#RUN echo "# +++ #base(123): zzz"
+ENV PATH=${POETRY_HOME}/bin:${PIPX_GLOBAL_BIN_DIR}:${PYENV_ROOT}/shims:${PYENV_ROOT}/bin:${PYENV_ROOT}/plugins/pyenv-virtualenv/shims:${GLOBAL_VENV}/bin:${NODE_ROOT}/bin:${CARGO_HOME}/bin${RUSTUP_HOME}/bin:${PATH}
 RUN echo "# +++ #base(pre): PATH=${PATH}"
+
+RUN /rocker_scripts/install_ubs-rs_rust.sh
+RUN /rocker_scripts/install_ubs-js_node.sh
 
 RUN /rocker_scripts/install_ubs-py_system.sh
 RUN /rocker_scripts/install_ubs-py_pyenv.sh
-RUN /rocker_scripts/install_ubs-py_poetry.sh
-RUN /rocker_scripts/install_ubs-py_lang.sh
-RUN /rocker_scripts/install_ubs-py_jupyter.sh
+#RUN /rocker_scripts/install_ubs-py_poetry.sh
+#RUN /rocker_scripts/install_ubs-py_lang.sh
+#RUN /rocker_scripts/install_ubs-py_jupyter.sh
 
 # clean up
 RUN /rocker_scripts/install_ubs-clean.sh
@@ -79,6 +93,7 @@ RUN /rocker_scripts/install_ubs-clean.sh
 RUN echo "# +++ #base(post): PATH=${PATH}"
 RUN echo "# +++ #base(bash): PATH=$(bash --login -i -c 'printf \"%s\" "$PATH"' | tail -n1)"
 
+EXPOSE 8888
 EXPOSE 8787
 
 CMD ["/init"]

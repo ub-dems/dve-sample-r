@@ -17,6 +17,7 @@ source ${Y_BUILD_CONF:-/etc/build.conf}
 NCPUS=${NCPUS:--1}
 
 
+set -a
 # ------------------------------------------------------
 
 : ${PYTHON_VERSION=${Y_PY_PYTHON_VERSION:-'3.12.3'}}
@@ -29,6 +30,7 @@ NCPUS=${NCPUS:--1}
 : ${APP_DIR:="/opt/app"}
 
 # ------------------------------------------------------
+set +a
 
 
 function env_dump() {
@@ -120,33 +122,6 @@ function apt_install() {
     fi
 }
 
-function install_build_node() {
-
-    [ "$Y_PY_PYENV_INSTALL" = 1 ] || return 0
-
-    # @see: https://github.com/nodesource/distributions/blob/master/README.md#ubuntu-versions
-    
-    curl -fsSL https://deb.nodesource.com/setup_23.x -o /tmp/nodesource_setup.sh
-    sudo -E bash /tmp/nodesource_setup.sh
-
-
-    sudo apt-get purge -y \
-         nodejs \
-         libnode-dev
-
-    sudo apt-get autoremove -y
-
-
-    
-    sudo apt-get install -y \
-         nodejs
-
-    node -v
-    
-}
-
-
-
 function install_build_deps() {
 
     [ "$Y_PY_PYENV_INSTALL" = 1 ] || return 0
@@ -170,14 +145,16 @@ function install_build_deps() {
         tk-dev \
         libffi-dev \
         liblzma-dev \
-        python3-distutils \
         python3-apt \
+        python3-distutils \
+        python3-openssl \
         ca-certificates
     
     apt_install \
          make \
          wget \
          curl \
+         unzip \
          gdb \
          lcov \
          pkg-config \
@@ -208,7 +185,6 @@ function install_build_deps() {
     apt_install \
          libczmq-dev
 
-    install_build_node $@
     
 }
 
@@ -398,6 +374,7 @@ function install_pyenv_pipx() {
     
     #setenv_rehash
 
+    pipx reinstall-all
     pipx install --global --force pycowsay 
     pipx list
     pipx run pycowsay "moooo! -- pyenv=$(pyenv --version), python=$(python --version), pipx=$(pipx --version)"
@@ -442,6 +419,8 @@ function check_pyenv() {
 }
 
 
+
+
 function clean_up() {
     :
 }
@@ -469,7 +448,7 @@ function main() {
     install_pyenv_extras
     install_pyenv_pipx
     
-    check_pyenv    
+    check_pyenv
 
     clean_up
 

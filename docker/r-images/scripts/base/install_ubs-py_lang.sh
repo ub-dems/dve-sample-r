@@ -61,27 +61,6 @@ EOR
     
 }
 
-function install_irkernel() {
-    
-    [ "$Y_PY_RETICULATE_IRKERNEL" = 1 ] || return 0
-
-      R --quiet   -e 'remotes::install_github("IRkernel/IRkernel@*release")'
-    
-}
-
-function install_langserver() {
-    
-    [ "$Y_PY_RETICULATE_LANGSERV" = 1 ] || return 0
-
-    # R --vanilla -e 'install.packages("languageserver")'
-    
-    install2.r --error --skipmissing --skipinstalled -n $NCPUS \
-               languageserver
-    
-    
-}
-
-
 
 function clean_up() {
     rm -rf /var/lib/apt/lists/*
@@ -100,10 +79,6 @@ function clean_up() {
     setenv_rehash
 
     install_reticulate
-    
-    install_irkernel
-    
-    install_langserver
     
     setenv_rehash
 
