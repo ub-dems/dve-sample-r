@@ -9,6 +9,17 @@ source ${Y_BUILD_CONF:-/etc/build.conf}
 
 NCPUS=${NCPUS:--1}
 
+set -a
+# ------------------------------------------------------
+
+: ${POETRY_HOME:="/opt/poetry"}
+
+: ${PYTHON_KEYRING_BACKEND:="keyring.backends.null.Keyring"}
+
+# ------------------------------------------------------
+set +a
+
+
 
 function env_dump() {
 
@@ -98,7 +109,6 @@ function config_poetry() {
     [ "$Y_PY_POETRY_CONFIG" = 1 ] || return 0
 
     
-: ${PYTHON_KEYRING_BACKEND:="keyring.backends.null.Keyring"}
 
 cat <<EOP >/etc/profile.d/Z94-poetry.sh
 ##
@@ -118,6 +128,71 @@ export PYTHON_KEYRING_BACKEND
 ### export POETRY_HOME
 ### export PATH
 
+: "${X_AUTO_ENV:=1}"
+
+deactivate_init () {
+    # reset old environment variables
+    if [ -n "${_OLD_VIRTUAL_PATH:-}" ] ; then
+        PATH="${_OLD_VIRTUAL_PATH:-}"
+        export PATH
+        unset _OLD_VIRTUAL_PATH
+    fi
+    if [ -n "${_OLD_VIRTUAL_PYTHONHOME:-}" ] ; then
+        PYTHONHOME="${_OLD_VIRTUAL_PYTHONHOME:-}"
+        export PYTHONHOME
+        unset _OLD_VIRTUAL_PYTHONHOME
+    fi
+
+    # This should detect bash and zsh, which have a hash command that must
+    # be called to get it to forget past commands.  Without forgetting
+    # past commands the $PATH changes we made may not be respected
+    if [ -n "${BASH:-}" -o -n "${ZSH_VERSION:-}" ] ; then
+        hash -r 2> /dev/null
+    fi
+
+    if [ -n "${_OLD_VIRTUAL_PS1:-}" ] ; then
+        PS1="${_OLD_VIRTUAL_PS1:-}"
+        export PS1
+        unset _OLD_VIRTUAL_PS1
+    fi
+
+    unset VIRTUAL_ENV
+    unset VIRTUAL_ENV_PROMPT
+    if [ ! "${1:-}" = "nondestructive" ] ; then
+    # Self destruct!
+        unset -f deactivate
+    fi
+}
+
+
+py_clear_env() {
+
+   if [ -n "$VIRTUAL_ENV" ]; then
+      deactivate_init nondestructive
+   fi
+
+}
+
+py_auto_env() {
+
+   [ "$X_AUTO_ENV" = "1" ] || return 0
+   [ -n "$X_WORK_DIR" ]    || return 0
+
+   X_POETRY_VENV="$(cd $X_WORK_DIR && poetry env info --path)"
+   [ -x "$X_POETRY_VENV/bin/activate" ]    || return 0
+
+   source "$X_POETRY_VENV/bin/activate"
+
+}
+
+
+py_poetry_init() {
+  py_clear_env
+  py_auto_env
+}
+
+py_poetry_init
+
 export X_RC_Z94_POETRY=1
 EOF
 
@@ -134,6 +209,22 @@ EOR
 echo "# +++ poetry: PATH=${PATH}"
 
 }
+
+function check_pipx() {
+    
+    [ "$Y_PY_POETRY_CHECK" = 1 ] || return 0
+    
+    which python || true
+    which pyenv  || true
+    which pipx   || true
+
+    python --version  || false
+    pyenv  --version  || false
+    pipx   --version  || false
+
+    
+}
+
 
 function check_poetry() {
     
@@ -167,6 +258,8 @@ function main() {
 
     setenv_rehash
 
+    check_pipx
+    
     install_poetry
     config_poetry
     setenv_rehash

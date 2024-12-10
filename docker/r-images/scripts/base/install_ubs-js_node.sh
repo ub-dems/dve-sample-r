@@ -96,7 +96,7 @@ FNM_DIR=${FNM_DIR}
 EOF
     
 
-    cat <<"EOF" >>"/etc/profile.d/Z94-rust.sh"
+    cat <<"EOF" >>"/etc/profile.d/Z92-node.sh"
 ##
 # node/fnm
 #
@@ -123,10 +123,10 @@ function check_node() {
     set -x
     
     which -a node     || true
-    node --version    || true
+    node --version    || false
 
     which -a npm      || true
-    npm --version     || true
+    npm --version     || false
     
     set +x
     
@@ -169,9 +169,9 @@ function install_node() {
         eval "$(fnm --fnm-dir ${FNM_DIR} env)"
     fi
 
-    # echo "export FNM_DIR=$NODE_ROOT/.fnm" >> /etc/environment
+    echo "export FNM_DIR=$NODE_ROOT/.fnm" >> /etc/environment
     # echo "export PATH=$NODE_ROOT/bin:\$PATH" >> /etc/environment
-    # source /etc/environment
+    source /etc/environment
 
 
     # download and install Node.js

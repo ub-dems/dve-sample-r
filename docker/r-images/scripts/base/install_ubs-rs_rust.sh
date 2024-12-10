@@ -95,7 +95,7 @@ CARGO_HOME=/opt/cargo
 EOF
     
 
-    cat <<"EOF" >>"/etc/profile.d/Z94-rust.sh"
+    cat <<"EOF" >>"/etc/profile.d/Z91-rust.sh"
 ##
 # rust/cargo environmnet
 #

@@ -621,6 +621,8 @@ do_py_install() {
     
     poetry install --no-interaction -vv
     
+    info "poetry install -- (rc: $?) -- from $(ls -l poetry.lock)"
+    
     log "<(do_py_install):" "py - install,  done."
     
 }
@@ -664,7 +666,8 @@ do_py_reticulate() {
 
       cat <<EOR >> ~/.Renviron
 PATH=${X_ENV_PATH}
-VIRTUAL_ENV=${X_ENV_VENV}
+#X_ENV_VENV=${X_ENV_VENV}
+#VIRTUAL_ENV=${VIRTUAL_ENV}
 RETICULATE_PYTHON_ENV=${RETICULATE_PYTHON_ENV}
 EOR
     

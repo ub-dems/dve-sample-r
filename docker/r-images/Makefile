@@ -494,6 +494,7 @@ run/status:
 		-e USERID=${RUN_USER_UID} \
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
+		-e X_AUTO_ENV=0  \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		-e REV_ID_PROJECT=${ID_PROJECT}  \
 		-e REV_ID_PACKAGE=${ID_PACKAGE}  \
@@ -528,6 +529,7 @@ run/setup:
 		-e USERID=${RUN_USER_UID} \
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
+		-e X_AUTO_ENV=0  \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		-ti  \
 		${IMG_RUNTIME} \
@@ -552,6 +554,7 @@ run/upgrade:
 		-e USERID=${RUN_USER_UID} \
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
+		-e X_AUTO_ENV=0  \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		-ti  \
 		${IMG_RUNTIME} \

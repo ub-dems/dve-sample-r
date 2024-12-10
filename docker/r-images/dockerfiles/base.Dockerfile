@@ -56,8 +56,8 @@ RUN /rocker_scripts/install_ubs-utils.sh
 
 # python support
 
-ENV VIRTUAL_ENV=
-ENV VIRTUAL_ALT=/opt/venv
+ENV VIRTUAL_ENV=/opt/venv
+ENV VIRTUAL_IMG=/opt/venv.img
 
 ENV PYENV_ROOT=/opt/pyenv
 ENV PIPX_GLOBAL_HOME=/opt/pipx
@@ -68,7 +68,7 @@ ENV GLOBAL_VENV=/opt/pyvenvs/global
 
 ENV FNM_ROOT=/opt/fnm
 ENV NODE_ROOT=/opt/nodejs
-ENV FNM_DIR=$NODE_ROOT
+ENV FNM_DIR=$NODE_ROOT/.fnm
 ENV RUST_ROOT=/opt/rust
 ENV RUSTUP_HOME=/opt/rust
 ENV CARGO_HOME=/opt/cargo
@@ -83,9 +83,9 @@ RUN /rocker_scripts/install_ubs-js_node.sh
 
 RUN /rocker_scripts/install_ubs-py_system.sh
 RUN /rocker_scripts/install_ubs-py_pyenv.sh
-#RUN /rocker_scripts/install_ubs-py_poetry.sh
-#RUN /rocker_scripts/install_ubs-py_lang.sh
-#RUN /rocker_scripts/install_ubs-py_jupyter.sh
+RUN /rocker_scripts/install_ubs-py_poetry.sh
+RUN /rocker_scripts/install_ubs-py_lang.sh
+RUN /rocker_scripts/install_ubs-py_jupyter.sh
 
 # clean up
 RUN /rocker_scripts/install_ubs-clean.sh

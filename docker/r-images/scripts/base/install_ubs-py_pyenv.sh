@@ -29,6 +29,11 @@ set -a
 : ${APP_VENV:="/opt/app-python-env"}
 : ${APP_DIR:="/opt/app"}
 
+: ${PYTHON_CONFIGURE_OPTS:="--enable-shared"}
+
+# ${VIRTUAL_ENV:="/opt/venv"}
+# ${VIRTUAL_IMG:="/opt/venv.img"}
+
 # ------------------------------------------------------
 set +a
 
@@ -192,8 +197,6 @@ function install_pyenv() {
 
     [ "$Y_PY_PYENV_INSTALL" = 1 ] || return 0
 
-    : ${PYENV_ROOT:=/opt/pyenv}
-
     [ -d "$PYENV_ROOT" ] && rm -rf $PYENV_ROOT
     
 # consider a version-stable alternative for the installer?
@@ -209,8 +212,6 @@ function config_pyenv() {
 
     sed -i 's!PATH="!PATH="/opt/pipx/bin:/opt/pyenv/bin:!' \
         "/etc/environment"
-
-    : ${PYTHON_CONFIGURE_OPTS:="--enable-shared"}
 
     cat <<EOP >/etc/profile.d/Z93-pyenv.sh
 ##
@@ -286,8 +287,6 @@ function install_pyenv_python() {
 
     # python setup
 
-    : ${PYTHON_CONFIGURE_OPTS:="--enable-shared"}
-    
     env PYTHON_CONFIGURE_OPTS=${PYTHON_CONFIGURE_OPTS}  \
         pyenv install $Y_PY_PYTHON_VERSION
 
@@ -313,9 +312,11 @@ function config_pyenv_python() {
     #Y_PY_PYTHON_REVISION="$(pyenv versions | grep $Y_PY_PYTHON_VERSION | cut -c3- | cut -d' ' -f1)"
     Y_PY_PYTHON_REVISION="$(pyenv versions --bare)"
     
-    pyenv virtualenv $Y_PY_PYTHON_VERSION global
+    #pyenv virtualenv $Y_PY_PYTHON_VERSION global
     
-    pyenv activate global
+    #pyenv activate global
+
+    pyenv global $Y_PY_PYTHON_VERSION
 
     debug_pyenv "config_pyenv_python::post"
 
@@ -362,7 +363,19 @@ function install_pyenv_pipx() {
     [ "$Y_PY_PYENV_EXTRAS" = 1 ] || return 0
 
     debug_pyenv "install_pyenv_pipx::pre"
-    
+
+# optional environment variables:
+#   PIPX_HOME              Overrides default pipx location. Virtual Environments will be installed to $PIPX_HOME/venvs.
+#   PIPX_GLOBAL_HOME       Used instead of PIPX_HOME when the `--global` option is given.
+#   PIPX_BIN_DIR           Overrides location of app installations. Apps are symlinked or copied here.
+#   PIPX_GLOBAL_BIN_DIR    Used instead of PIPX_BIN_DIR when the `--global` option is given.
+#   PIPX_MAN_DIR           Overrides location of manual pages installations. Manual pages are symlinked or copied here.
+#   PIPX_GLOBAL_MAN_DIR    Used instead of PIPX_MAN_DIR when the `--global` option is given.
+#   PIPX_DEFAULT_PYTHON    Overrides default python used for commands.
+#   USE_EMOJI              Overrides emoji behavior. Default value varies based on platform.
+#   PIPX_HOME_ALLOW_SPACE  Overrides default warning on spaces in the home path
+
+    export PIP_REQUIRE_VIRTUALENV=false
     python3 -m pip --no-cache-dir install --upgrade --ignore-installed \
             pipx
 
@@ -386,6 +399,35 @@ function install_pyenv_pipx() {
 
 }
 
+function define_pyenv_default() {
+    
+    [ "$Y_PY_PYENV_DEFAULT" = 1 ] || return 0
+
+    debug_pyenv "define_pyenv_default::pre"
+
+    pyenv virtualenv $Y_PY_PYTHON_VERSION default
+
+
+    if [ -n "$VIRTUAL_ENV" ]; then
+        if [ -d "$VIRTUAL_ENV" ]; then
+            mv "${VIRTUAL_ENV}" "${VIRTUAL_ENV}.img"
+        fi
+
+        debug_pyenv "define_pyenv_default::defined"
+
+        ln -s ${PYENV_ROOT}/versions/$Y_PY_PYTHON_VERSION/envs/default "$VIRTUAL_ENV"
+        
+        ls -lda ${VIRTUAL_ENV}
+        ls -lda ${VIRTUAL_ENV}/*
+
+    fi    
+
+    debug_pyenv "define_pyenv_default::post"
+    
+    
+
+}
+
 
 
 function check_pyenv() {
@@ -401,18 +443,21 @@ function check_pyenv() {
     which python      || true
     which -a python3  || true
 
-    python --version  || true
+    python --version  || false
 
     which    pip      || true
     which -a pip3     || true
+    pip    --version  || false
 
-    pyenv --version   || true
+    pyenv --version   || false
     pyenv   versions  || true
     pyenv   version   || true
 
     which   pipx      || true
-    pipx  --version   || true
-    pipx    list      || true
+    pipx  --version   || false
+    
+    pipx    list \
+          --global    || true
     
     set +x
     
@@ -447,6 +492,8 @@ function main() {
     upgrade_pyenv_python
     install_pyenv_extras
     install_pyenv_pipx
+
+    define_pyenv_default
     
     check_pyenv
 
