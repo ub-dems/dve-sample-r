@@ -9,6 +9,13 @@ source ${Y_BUILD_CONF:-/etc/build.conf}
 
 NCPUS=${NCPUS:--1}
 
+set -x
+# ------------------------------------------------------
+[ -f /etc/profile ] && source /etc/profile
+[ -f ~/.profile ] && source ~/.profile
+# ------------------------------------------------------
+set +x
+
 
 set -a
 # ------------------------------------------------------
@@ -95,7 +102,11 @@ EOF
 
 
 sl() {
-    cat | sed 's/^/      %\t/'
+    cat | sed 's/^/      %\t/' | sed 's/\t$//'
+}
+
+sk() {
+    cat | sed 's/^/       %\t/' | sed 's/\t$//'
 }
 
 
@@ -120,34 +131,31 @@ EOF
 dump_global_status() {
     cat <<EOF
 # {{{ --- [setup-globals] ----------------------------------
-    
+
 ##
-# setup global status: ${args}
+# setup global status: ${args}.
 #
 
 
 - meta:
    version: 1.0.0
    script:
-     name: "${X_SRC_NAME}"
-     file: "$XS"  
+    name: "${X_SRC_NAME}"
+    file: "$XS"  
 
 - revision:
    source:
-     info: |
+    info: |
 $(env | grep ^REV_ | sl)
 
 - workspce:
    paths:
-     curr: "$(pwd)"
-     work: "${X_WORK}"
-     logs: "${X_LOGS}"
-     temp: "${X_TEMP}"
+    curr: "$(pwd)"
+    work: "${X_WORK}"
+    logs: "${X_LOGS}"
+    temp: "${X_TEMP}"
    contents: |
 $(ls -l pyproject.toml poetry.lock DESCRIPTION renv.lock package.json yarn.lock | sl)
-
-
-
 
 - host:
    hostname: "$(hostname)"
@@ -180,6 +188,64 @@ EOF
 
 }
 
+dump_extras_status() {
+    cat <<EOF
+# {{{ --- [setup-extras] ----------------------------------
+
+##
+# setup extra languge and tools: ${args}
+#
+
+- rust:
+   environ:
+    CARGO_HOME: "${CARGO_HOME}"
+    RUSTUP_HOME: "${RUSTUP_HOME}"
+   binaries:
+    cargo:
+     path: |
+$(which cargo  2>/dev/null || echo "NOCARGO" | sk)
+     vers: |
+$(cargo --version || echo "NOCARGO" | sk)
+    rustup:
+     path: |
+$(which rustup  2>/dev/null || echo "NOCARGO" | sk)
+     vers: |
+$(rustup --version || echo "NOCARGO" | sk)
+    rustc:
+     path: |
+$(which rustc  2>/dev/null || echo "NOCARGO" | sk)
+     vers: |
+$(rustc --version || echo "NOCARGO" | sk)
+
+
+- node:
+   environ:
+    NODE_VERSION: "${NODE_VERSION}"
+    FNM_DIR: "${FNM_DIR}"
+   binaries:
+    fnm:
+     path: |
+$(which fnm  2>/dev/null || echo "NOFNM" | sk)
+     vers: |
+$(fnm --version || echo "NOFNM" | sk)
+    node:
+     path: |
+$(which node  2>/dev/null || echo "NONODE" | sk)
+     vers: |
+$(node --version || echo "NONODE" | sk)
+    npm:
+     path: |
+$(which npm 2>/dev/null || echo "NONPM" | sk)
+     vers: |
+$(npm --version || echo "NONPM" | sk)
+
+ 
+
+# }}} -----
+   
+EOF
+
+}
 
 
 dump_venv_status() {
@@ -196,12 +262,12 @@ dump_venv_status() {
 $(echo "${PATH}" | tr ':' '\n' | sl)
     library_path: |
 $(echo "${LD_LIBRARY_PATH}" | tr ':' '\n' | sl)
-    python: "$(which python)"
-    python-version: "$(which python >/dev/null && python --version)"
+    python: "$(which python || )"
+    python-version: "$(python --version || echo "NOPYTHON")"
     poetry: "$(which poetry)"
-    poetry-version: "$(which poetry >/dev/null && poetry --version)"
-    jupyter: "$(which jupyter )"
-    jupyter-version: "$(which jupyter >/dev/null && jupyter --version)"
+    poetry-version: "$(poetry --version)"
+    jupyter: "$(which jupyter)"
+    jupyter-version: "$(jupyter --version)"
    poetry-venv: |
 $(poetry env info | sl)
 
@@ -212,7 +278,7 @@ $(R -e "reticulate::py_config()" | sl)
 
 - jupyter:
    paths:
-    jupyter-version: "$(which jupyter >/dev/null && jupyter --version)"
+    jupyter-version: "$(which jupyter 2>/dev/null && jupyter --version)"
    config:
      lab-extensions: |
 $(jupyter labextension list || echo "NOJUPYTER" | sl)
@@ -240,7 +306,7 @@ dump_renv_status() {
 # setup R renv status: ${args}
 #
 
-- r-env:
+- renv:
    paths:
     path: |
 $(echo "${PATH}" | tr ':' '\n' | sl)
@@ -249,7 +315,7 @@ $(echo "${LD_LIBRARY_PATH" | tr ':' '\n' | sl)
     R: "$(which R)"
     R-version: "$(which R >/dev/null && R --version | tr '"' '\'' | head -n1)"
 
-- r-deps
+- rdeps
    project: |
 $(ls -l DESCRIPTION renv.lock | sl)
  
@@ -268,7 +334,8 @@ dump_status_full() {
     
     dump_header_status
     dump_global_status
-
+    dump_extras_status
+    
     if poetry env list > /dev/null; then
         ( source $(poetry env info --path)/bin/activate
 
@@ -279,9 +346,6 @@ dump_status_full() {
           which python
           python --version
 
-          # install2.r --error --skipmissing --skipinstalled -n $NCPUS \
-              #           reticulate
-      
           R -q -e 'reticulate::py_discover_config(required_module = NULL, use_environment = NULL)'
 
           R -e "reticulate::py_config()"
@@ -698,10 +762,15 @@ do_py_jupyter_build() {
 
       jupyter labextension disable "@jupyterlab/apputils-extension:announcements"
 
+      
+      log "-(do_py_jupyter):" "py - jupyter node check, ..."
+      set -x
       which -a node
       node --version
       which -a jlpm
       jlpm --version
+      set +x
+      log "-(do_py_jupyter):" "py - jupyter node check (node version: $(node --version)), don"
       
       if [ ! -f ./.yarnrc.yml ] ; then
           warn "jupyter ./.yarnrc.yml not found, ..."

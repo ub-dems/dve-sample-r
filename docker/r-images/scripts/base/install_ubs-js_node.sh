@@ -102,7 +102,7 @@ EOF
 #
 
 if command -v fnm &> /dev/null; then
-    eval "$(fnm env)"
+    eval "$(fnm env --shell=bash)"
 fi
 EOF
     

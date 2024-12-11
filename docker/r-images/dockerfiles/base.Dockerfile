@@ -75,7 +75,7 @@ ENV CARGO_HOME=/opt/cargo
 
 #RUN mkdir -p ${POETRY_HOME}/bin ${PIPX_GLOBAL_HOME} ${PIPX_GLOBAL_BIN_DIR} ${PYVENVS_ROOT} ${GLOBAL_VENV}/bin ${PYENV_ROOT}/bin ${PYENV_ROOT}/shims ${PYENV_ROOT}/plugins/pyenv-virtualenv/shims
 #RUN echo "# +++ #base(123): zzz"
-ENV PATH=${POETRY_HOME}/bin:${PIPX_GLOBAL_BIN_DIR}:${PYENV_ROOT}/shims:${PYENV_ROOT}/bin:${PYENV_ROOT}/plugins/pyenv-virtualenv/shims:${GLOBAL_VENV}/bin:${NODE_ROOT}/bin:${CARGO_HOME}/bin${RUSTUP_HOME}/bin:${PATH}
+ENV PATH=${POETRY_HOME}/bin:${PIPX_GLOBAL_BIN_DIR}:${PYENV_ROOT}/shims:${PYENV_ROOT}/bin:${PYENV_ROOT}/plugins/pyenv-virtualenv/shims:${GLOBAL_VENV}/bin:${NODE_ROOT}/bin:${CARGO_HOME}/bin:${RUSTUP_HOME}/bin:${PATH}
 RUN echo "# +++ #base(pre): PATH=${PATH}"
 
 RUN /rocker_scripts/install_ubs-rs_rust.sh
