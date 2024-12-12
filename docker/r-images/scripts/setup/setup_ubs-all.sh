@@ -904,9 +904,200 @@ do_py_show() {
 
 # ////////////////////////////////////////////////////////////////////////
 
+
+do_renv_install() {
+
+    log ">(do_renv_install):" "renv - install, ..."
+
+    # run in poetry shell -- venv activated
+
+    ( source $(poetry env info --path)/bin/activate
+
+      R -q -e 'renv::install()' ; rc_renv_install=$?
+
+      case "$rc_renv_install" in
+          0) info "=(do_renv_install):" "renv - install => ok" ;;
+          *) error "#(do_renv_install):" "renv - install => KO -- (rc:$rc_renv_install)" ;;
+      esac    
+      
+    )
+
+    log "<(do_renv_install):" "renv - install, done."
+    
+    return $rc_renv_install
+}
+
+do_renv_upgrade() {
+
+    log ">(do_renv_upgrade):" "renv - upgrade, ..."
+
+    # run in poetry shell -- venv activated
+
+    ( source $(poetry env info --path)/bin/activate
+
+      R -q -e 'renv::upgrade()' ; rc_renv_upgrade=$?
+
+      case "$rc_renv_upgrade" in
+          0) info "=(do_renv_upgrade):" "renv - upgrade => ok" ;;
+          *) error "#(do_renv_upgrade):" "renv - upgrade => KO -- (rc:$rc_renv_upgrade)" ;;
+      esac    
+      
+    )
+
+    log "<(do_renv_upgrade):" "renv - upgrade, done."
+    
+    return $rc_renv_upgrade
+}
+
+do_renv_snapshot() {
+
+    log ">(do_renv_snapshot):" "renv - snapshot, ..."
+
+    # run in poetry shell -- venv activated
+
+    ( source $(poetry env info --path)/bin/activate
+
+      R -q -e 'renv::snapshot()' ; rc_renv_snapshot=$?
+
+      case "$rc_renv_snapshot" in
+          0) info "=(do_renv_snapshot):" "renv - snapshot => ok" ;;
+          *) error "#(do_renv_snapshot):" "renv - snapshot => KO -- (rc:$rc_renv_snapshot)" ;;
+      esac    
+      
+    )
+
+    log "<(do_renv_snapshot):" "renv - snapshot, done."
+    
+    return $rc_renv_snapshot
+}
+
+do_renv_restore() {
+
+    log ">(do_renv_restore):" "renv - restore, ..."
+
+    # run in poetry shell -- venv activated
+
+    ( source $(poetry env info --path)/bin/activate
+
+      R -q -e 'renv::restore()' ; rc_renv_restore=$?
+
+      case "$rc_renv_restore" in
+          0) info "=(do_renv_restore):" "renv - restore => ok" ;;
+          *) error "#(do_renv_restore):" "renv - restore => KO -- (rc:$rc_renv_restore)" ;;
+      esac    
+      
+    )
+
+    log "<(do_renv_restore):" "renv - restore, done."
+
+    return $rc_renv_restore
+    
+}
+
+do_renv_show() {
+
+    log ">(do_renv_show):" "renv - show status, ..."
+
+    # run in poetry shell -- venv activated
+
+    ( source $(poetry env info --path)/bin/activate
+
+      R -q -e 'renv::status()'
+
+      log ":(do_renv_show):" "Project::DESCRIPTION: $(ls -l DESCRIPTION)"
+      log ":(do_renv_show):" "Project::renv.lock:   $(ls -l renv.lock)"
+
+    )
+
+    log "<(do_renv_show):" "renv - show status, done."
+    
+}
+
+
+do_renv_reset() {
+
+    log ">(do_renv_reset):" "renv - reset, ..."
+
+    # run in poetry shell -- venv activated
+
+    ( source $(poetry env info --path)/bin/activate
+      
+      if [ -f ./renv.lock ]; then
+          rm ./renv.lock
+      else
+          warn "./renv.lock not found, skip"
+      fi
+      
+    )
+
+    log "<(do_renv_reset):" "renv - reset, done."
+    
+}
+
+do_re_setup() {
+
+    log ">(do_re_setup):" "renv - setup, ..."
+
+    do_renv_show
+    
+    if [ "$RUN_RE_RESTORE" = "1" ] && \
+           [ -f ./renv.lock ]; then
+
+        do_renv_restore ; rc_renv_restore=$?
+    
+        case "$rc_renv_restore" in
+            0) ;;
+            *) return $rc_renv_restore
+               ;;
+        esac
+        
+    else
+
+        do_renv_install ; rc_renv_install=$?
+    
+        case "$rc_renv_install" in
+            0) ;;
+            *) return $rc_renv_install
+               ;;
+        esac
+
+        if [ "$RUN_RE_UPGRADE" = "1" ] ; then
+        
+            do_renv_upgrade ; rc_renv_upgrade=$?
+    
+            case "$rc_renv_upgrade" in
+                0) ;;
+                *) return $rc_renv_upgrade
+                   ;;
+            esac    
+        
+        fi
+        
+        do_renv_snapshot
+        
+    fi
+    do_renv_show
+
+    log "<(do_re_setup):" "renv - setup, done."
+    
+}
+
+do_re_force() {
+
+    log ">(do_re_upgrade):" "renv - upgrade, ..."
+
+    do_renv_reset
+    do_renv_setup
+    
+    log "<(do_re_upgrade):" "renv - upgrade, done."
+    
+}
+
+
+
+# ////////////////////////////////////////////////////////////////////////
+
 parse_args_run() {
-
-
     
     if [ $# -lt 1 ];then
         set -- $@ --status
@@ -921,6 +1112,11 @@ parse_args_run() {
     RUN_PY_VENV=1
     RUN_PY_INSTALL=1
     RUN_PY_SHOW=1
+    RUN_RE_RESET=0
+    RUN_RE_SETUP=0
+    RUN_RE_UPGRADE=0
+    RUN_RE_RESTORE=0
+    RUN_RE_SHOW=0
     cmds=""
 
     while [ $# -gt 0 ]; do
@@ -928,6 +1124,9 @@ parse_args_run() {
             
             --upgrade)
                 RUN_PY_RESET=1
+                RUN_RE_RESET=1
+                RUN_RE_UPGRADE="$Y_RE_RENV_UPGRADE"
+                RUN_RE_RESTORE="$Y_RE_RENV_RESTORE"
                 cmds="$cmds --upgrade"
                 ;;
             
@@ -937,12 +1136,16 @@ parse_args_run() {
                 RUN_PY_BIND=1
                 RUN_PY_JUPYTER=1
                 RUN_PY_SHOW=1
+                RUN_RE_SETUP=1
+                RUN_RE_UPGRADE="$Y_RE_RENV_UPGRADE"
+                RUN_RE_RESTORE="$Y_RE_RENV_RESTORE"
                 cmds="$cmds --install --all"
                 ;;
             
             --status|-s)
                 RUN_STATUS=1
                 RUN_PY_SHOW=1
+                RUN_RE_SHOW=1
                 cmds="$cmds --status"
                 ;;
             
@@ -984,14 +1187,39 @@ parse_args_run() {
             ;;
     esac
 
+    RE_OPTS=""
+    RE_OPTS="$RE_OPTS:$Y_RE_ANY_SUPPORT"
+    RE_OPTS="$RE_OPTS:$Y_RE_RENV_SUPPORT"
+    RE_OPTS="$RE_OPTS:$Y_RE_RENV_INSTALL"
+    
+    case "$RE_OPTS" in
+        :0:*|:*:0:*|:*:*:0)
+            RUN_RE_RESET=0
+            RUN_RE_SETUP=0
+            RUN_RE_RESTORE=0
+            RUN_RE_UPGRADE=0
+            RUN_RE_SHOW=0
+            ;;
+        *)
+            ;;
+    esac
+    
+
     set +x
 
-    debug "#(args): {\n $(set | sort | grep -e ^PY_OPTS -e ^RUN_  -e ^X_  -e ^Y_ ) \n} ###"
+    debug "#(args): {\n $(set | sort | grep -e ^PY_OPTS -e ^RE_OPTS -e ^RUN_  -e ^X_  -e ^Y_ ) \n} ###"
 
     env_defined RUN_PY_RESET
     env_defined RUN_PY_INSTALL
     env_defined RUN_PY_VENV
     env_defined RUN_PY_SHOW
+
+    env_defined RUN_RE_RESET
+    env_defined RUN_RE_SETUP
+    env_defined RUN_RE_RESTORE
+    env_defined RUN_RE_UPGRADE
+    env_defined RUN_RE_SHOW
+    
 
     log "<(args):" "cmds: $cmds"
     
@@ -1039,6 +1267,21 @@ main_run() {
 
     if [ "$RUN_PY_SHOW" = '1' ]; then
         do_py_show $@
+        rc_exit $?
+    fi
+
+    if [ "$RUN_RE_RESET" = '1' ]; then
+        do_re_force $@
+        rc_exit $?
+    fi
+
+    if [ "$RUN_RE_SETUP" = '1' ]; then
+        do_re_setup $@
+        rc_exit $?
+    fi
+
+    if [ "$RUN_RE_SHOW" = '1' ]; then
+        do_re_show $@
         rc_exit $?
     fi
 
