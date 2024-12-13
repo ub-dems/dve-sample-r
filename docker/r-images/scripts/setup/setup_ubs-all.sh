@@ -9,12 +9,12 @@ source ${Y_BUILD_CONF:-/etc/build.conf}
 
 NCPUS=${NCPUS:--1}
 
-set -x
+#set -x
 # ------------------------------------------------------
 [ -f /etc/profile ] && source /etc/profile
 [ -f ~/.profile ] && source ~/.profile
 # ------------------------------------------------------
-set +x
+#set +x
 
 
 set -a
@@ -27,6 +27,12 @@ set -a
 : ${T:=$(date +%F-%H%M%S)}
 
 : ${X_VERBOSE:=''}
+: ${X_FULL_MODE:=''}
+: ${X_CACHE_MODE:=''}
+: ${X_DOTS_MODE:=''}
+: ${X_ALL_MODE:=''}
+: ${X_PYTHON_MODE:=''}
+: ${X_R_MODE:=''}
 
 # ------------------------------------------------------
 case "$0" in
@@ -388,6 +394,11 @@ C_On_Blue='\033[44m'
 C_IBlue='\033[0;94m'
 C_On_IBlue='\033[0;104m'
 C_BIBlue='\033[1;94m'
+C_Cyan='\033[0;36m'
+C_BCyan='\033[1;36m'
+C_ICyan='\033[0;96m'
+C_UCyan='\033[4;36m'
+C_BICyan='\033[1;96m'
 C_BYellow='\033[1;33m'
 C_IYellow='\033[0;93m'
 C_BIYellow='\033[1;93m'
@@ -428,18 +439,19 @@ _log() {
     lwho=$(printf '%s@%s' ${USER} $(hostname))
     mess="${CLOG}$(date '+%Y-%m-%d %H:%M:%S %s') | $lwho | $llev | ${LCTX} | $$ | $* ${C_OFF}"
     if [ -z "${X_LOGFILE}" ]; then
-        echo -e ${mess}
+        echo -e "${mess}"
     else
-        echo -e ${mess} | tee -a ${X_LOGFILE} 1>&2
+        echo -e "${mess}" | tee -a ${X_LOGFILE} 1>&2
     fi
 }
 trace() { [ "${EX_TRACE}" = "1" ] && LOG_LEVEL='TRACE' CLOG="$C_Black" _log $*; }
-debug() { LOG_LEVEL='DEBUG' CLOG="$C_Green"   _log $*; }
-info()  { LOG_LEVEL='INFO.'  CLOG="$C_BIBlue"  _log $*; }
-warn()  { LOG_LEVEL='WARN.'  CLOG="$C_BYellow" _log $*; }
-error() { LOG_LEVEL='ERROR' CLOG="$C_IRed"    _log $*; }
-fatal() { LOG_LEVEL='FATAL' CLOG="$C_BIRed"   _log $*; }
-log()   { LOG_LEVEL='_LOG_'   CLOG="$C_BBlue"   _log $*; }
+dump()  { LOG_LEVEL='DUMP.' CLOG="$C_Cyan"     _log $*; }
+debug() { LOG_LEVEL='DEBUG' CLOG="$C_Green"    _log $*; }
+info()  { LOG_LEVEL='INFO.' CLOG="$C_BIBlue"   _log $*; }
+warn()  { LOG_LEVEL='WARN.' CLOG="$C_BYellow"  _log $*; }
+error() { LOG_LEVEL='ERROR' CLOG="$C_IRed"     _log $*; }
+fatal() { LOG_LEVEL='FATAL' CLOG="$C_BIRed"    _log $*; }
+log()   { LOG_LEVEL='_LOG_' CLOG="$C_BBlue"    _log $*; }
 die ()  { fatal $*; ask_exit; }
 fail () { fatal $@; } # halt ...
 todo () { warn "#TODO: " $*; }
@@ -622,6 +634,47 @@ do_py_remove() {
     
 }
 
+do_py_dots() {
+
+    log ">(do_py_dots):" "py - dots remove, ..."
+
+    set -x
+
+    [ -d ~/.ipython ] && rm -rf ~/.ipython
+    [ -d ~/.jupyter ] && rm -rf ~/.jupyter
+
+    set +x
+
+    log "<(do_py_dots):" "py - dots remove,  done."
+    
+}
+
+do_py_cache() {
+
+    log ">(do_py_cache):" "py - cache remove, ..."
+
+    set -x
+
+    [ -d ~/.npm ] && rm -rf ~/.npm
+    [ -d ~/.yarn ] && rm -rf ~/.yarn
+    [ -d ~/.local/share/jupyter ] && rm -rf ~/.local/share/jupyter
+    [ -d ~/.local/share/pipx ] && rm -rf ~/.local/share/pipx
+    [ -d ~/.local/share/virtualenv ] && rm -rf ~/.local/share/virtualenv
+    [ -d ~/.local/state/fnm_multishells ] && rm -rf ~/.local/state/fnm_multishells
+    [ -d ~/.cache/pipx ] && rm -rf ~/.cache/pipx
+    [ -d ~/.cache/pypoetry ] && rm -rf ~/.cache/pypoetry
+
+    [ -d ./.yarn ] && rm -rf ./yarn
+    [ -d ./node_modules ] && rm -rf ./node_modules/*
+
+    set +x
+
+    log "<(do_py_cache):" "py - cache remove,  done."
+    
+}
+
+
+
 do_py_venv() {
 
     log ">(do_py_venv):" "py - venv define, ..."
@@ -657,6 +710,24 @@ do_py_reset() {
     do_py_remove
 
     log "<(do_py_reset):" "py - unlock,  done."
+    
+}
+
+do_py_clear() {
+
+    log ">(do_py_clear):" "py - clear($X_DOTS_MODE$X_CACHE_MODE), ..."
+
+    do_py_remove
+
+    if [ "$X_DOTS_MODE" = "1" ]; then
+        do_py_dots
+    fi
+       
+    if [ "$X_CACHE_MODE" = "1" ]; then
+        do_py_cache
+    fi
+
+    log "<(do_py_clear):" "py clear($X_DOTS_MODE$X_CACHE_MODE), done."
     
 }
 
@@ -904,6 +975,79 @@ do_py_show() {
 
 # ////////////////////////////////////////////////////////////////////////
 
+do_re_remove() {
+
+    log ">(do_re_remove):" "re - renv packages remove, ..."
+
+    if [ -d ~/.cache/R/renv ]; then
+        chmod -R a+w ~/.cache/R/renv
+        rm -rf       ~/.cache/R/renv
+    else
+        warn "renv not found, skip"
+    fi
+
+    log "<(do_re_remove):" "re - renv packages remove, done."
+    
+}
+
+do_re_dots() {
+
+    log ">(do_re_dots):" "re - dots remove, ..."
+
+    set -x
+
+    [ -f ~/.Renviron ] && rm -rf ~/.Renviron
+
+    set +x
+
+    log "<(do_re_dots):" "re - dots remove,  done."
+    
+}
+
+do_re_cache() {
+
+    log ">(do_re_cache):" "re - cache remove, ..."
+
+    set -x
+
+    [ -d ./renv/sandbox ] && rm -rf ./renv/sandbox
+    [ -d ./renv/library ] && rm -rf ./renv/library
+    [ -d ./renv/local ] && rm -rf ./renv/local
+    [ -d ./renv/cellar ] && rm -rf ./renv/cellar
+    [ -d ./renv/lock ] && rm -rf ./renv/lock
+    [ -d ./renv/python ] && rm -rf ./renv/python
+    [ -d ./renv/staging ] && rm -rf ./renv/staging
+    
+    [ -f ./renv/activate.R ] && rm -rf ./renv/activate.R
+
+    set +x
+
+    log "<(do_re_cache):" "re - cache remove,  done."
+    
+}
+
+
+
+
+do_re_clear() {
+
+    log ">(do_re_clear):" "re - clear($X_DOTS_MODE$X_CACHE_MODE), ..."
+
+    do_re_remove
+
+    if [ "$X_DOTS_MODE" = "1" ]; then
+        do_re_dots
+    fi
+       
+    if [ "$X_CACHE_MODE" = "1" ]; then
+        do_re_cache
+    fi
+
+    log "<(do_re_clear):" "re clear($X_DOTS_MODE$X_CACHE_MODE), done."
+    
+}
+
+
 
 do_renv_install() {
 
@@ -1061,7 +1205,7 @@ do_re_setup() {
                ;;
         esac
 
-        if [ "$RUN_RE_UPGRADE" = "1" ] ; then
+        if [ "$RUN_RE_UPGRADE" = "-1" ] ; then
         
             do_renv_upgrade ; rc_renv_upgrade=$?
     
@@ -1108,19 +1252,31 @@ parse_args_run() {
 
     set -x
     
+    RUN_PY_CLEAR=0
     RUN_PY_RESET=0
-    RUN_PY_VENV=1
-    RUN_PY_INSTALL=1
-    RUN_PY_SHOW=1
+    RUN_PY_VENV=0
+    RUN_PY_INSTALL=0
+    RUN_PY_SHOW=0
+    RUN_RE_CLEAR=0
     RUN_RE_RESET=0
     RUN_RE_SETUP=0
     RUN_RE_UPGRADE=0
     RUN_RE_RESTORE=0
     RUN_RE_SHOW=0
+    
+    X_ALL_MODE=1
+    X_PYTHON_MODE=0
+    X_R_MODE=0
     cmds=""
 
     while [ $# -gt 0 ]; do
         case "$1" in
+            
+            --clear)
+                RUN_PY_CLEAR=1
+                RUN_RE_CLEAR=1
+                cmds="$cmds --clear"
+                ;;
             
             --upgrade)
                 RUN_PY_RESET=1
@@ -1147,6 +1303,35 @@ parse_args_run() {
                 RUN_PY_SHOW=1
                 RUN_RE_SHOW=1
                 cmds="$cmds --status"
+                ;;
+            
+            --python|-P)
+                X_ALL_MODE:='0'
+                X_PYTHON_MODE:='1'
+                cmds="$cmds -P"
+                ;;
+            
+            --r|-R)
+                X_ALL_MODE:='0'
+                X_R_MODE:='1'
+                cmds="$cmds -R"
+                ;;
+            
+            --full|-F)
+                X_FULL_MODE='1'
+                X_CACHE_MODE='1'
+                X_DOTS_MODE='1'
+                cmds="$cmds -F"
+                ;;
+            
+            --dots|-D)
+                X_DOTS_MODE:='1'
+                cmds="$cmds -D"
+                ;;
+            
+            --cache|-C)
+                X_CACHE_MODE:='1'
+                cmds="$cmds -C"
                 ;;
             
             --verbose|-v)
@@ -1178,6 +1363,7 @@ parse_args_run() {
     
     case "$PY_OPTS" in
         :1:*|:*:0:*|:*:*:0)
+            RUN_PY_CLEAR=0
             RUN_PY_RESET=0
             RUN_PY_VENV=0
             RUN_PY_INSTALL=0
@@ -1194,6 +1380,7 @@ parse_args_run() {
     
     case "$RE_OPTS" in
         :0:*|:*:0:*|:*:*:0)
+            RUN_RE_CLEAR=0
             RUN_RE_RESET=0
             RUN_RE_SETUP=0
             RUN_RE_RESTORE=0
@@ -1203,17 +1390,51 @@ parse_args_run() {
         *)
             ;;
     esac
-    
+
+    case "$X_ALL_MODE" in
+        1)
+            X_PYTHON_MODE="1"
+            X_R_MODE="1"
+            ;;
+        *)  ;;
+    esac
+
+
+    case "$X_PYTHON_MODE" in
+        0)
+            RUN_PY_CLEAR=0
+            RUN_PY_RESET=0
+            RUN_PY_VENV=0
+            RUN_PY_INSTALL=0
+            RUN_PY_SHOW=0
+            ;;
+        *)  ;;
+    esac
+
+    case "$X_R_MODE" in
+        0)
+            RUN_RE_CLEAR=0
+            RUN_RE_RESET=0
+            RUN_RE_SETUP=0
+            RUN_RE_RESTORE=0
+            RUN_RE_UPGRADE=0
+            RUN_RE_SHOW=0
+            ;;
+        *)  ;;
+    esac
 
     set +x
 
     debug "#(args): {\n $(set | sort | grep -e ^PY_OPTS -e ^RE_OPTS -e ^RUN_  -e ^X_  -e ^Y_ ) \n} ###"
+    dump  "#(args): {\n $(set | sort | grep -e ^PY_OPTS -e ^RE_OPTS -e ^RUN_  -e ^X_  -e ^Y_ ) \n} ###"
 
+    env_defined RUN_PY_CLEAR
     env_defined RUN_PY_RESET
     env_defined RUN_PY_INSTALL
     env_defined RUN_PY_VENV
     env_defined RUN_PY_SHOW
 
+    env_defined RUN_RE_CLEAR
     env_defined RUN_RE_RESET
     env_defined RUN_RE_SETUP
     env_defined RUN_RE_RESTORE
@@ -1237,6 +1458,11 @@ main_run() {
     
     log ">(main.run):" "args:$args -- cmds: $cmds, ..."
     
+    if [ "$RUN_PY_CLEAR" = '1' ]; then
+        do_py_clear $@
+        rc_exit $?
+    fi
+
     if [ "$RUN_PY_RESET" = '1' ]; then
         do_py_reset $@
         rc_exit $?
@@ -1267,6 +1493,11 @@ main_run() {
 
     if [ "$RUN_PY_SHOW" = '1' ]; then
         do_py_show $@
+        rc_exit $?
+    fi
+
+    if [ "$RUN_RE_CLEAR" = '1' ]; then
+        do_re_clear $@
         rc_exit $?
     fi
 

@@ -179,10 +179,12 @@ SETUP_EXTRA_RUNTIME_OPTIONS :=
 SETUP_DEFAULT_RUNTIME_OPTIONS := $(SETUP_EXTRA_RUNTIME_OPTIONS) 
 SETUP_INSTALL_RUNTIME_OPTIONS := $(SETUP_DEFAULT_RUNTIME_OPTIONS) --all
 SETUP_UPGRADE_RUNTIME_OPTIONS := $(SETUP_DEFAULT_RUNTIME_OPTIONS) --all --upgrade
+SETUP_CLEAR_RUNTIME_OPTIONS   := $(SETUP_DEFAULT_RUNTIME_OPTIONS) --clear
 SETUP_STATUS_RUNTIME_OPTIONS  := $(SETUP_DEFAULT_RUNTIME_OPTIONS) --status
 
 RUNTIME_SETUP_OPTS := $(SETUP_INSTALL_RUNTIME_OPTIONS)
 RUNTIME_UPGRADE_OPTS := $(SETUP_UPGRADE_RUNTIME_OPTIONS)
+RUNTIME_CLEAR_OPTS := $(SETUP_CLEAR_RUNTIME_OPTIONS)
 RUNTIME_STATUS_OPTS := $(SETUP_STATUS_RUNTIME_OPTIONS)
 
 # ---(setup)------------------------------------------------
@@ -237,6 +239,7 @@ C_On_Blue=\033[44m
 C_IBlue=\033[0;94m
 C_On_IBlue=\033[0;104m
 C_BIBlue=\033[1;94m
+C_Cyan=\033[0;36m
 C_BCyan=\033[1;36m
 C_ICyan=\033[0;96m
 C_UCyan=\033[4;36m
@@ -310,6 +313,8 @@ runtime-repl: init run/r-repl
 runtime-cli: init run/rscript-cli
 
 runtime-shell: init run/shell
+
+runtime-clear: init run/clear
 
 runtime-upgrade: init run/upgrade
 
@@ -559,6 +564,31 @@ run/upgrade:
 		-ti  \
 		${IMG_RUNTIME} \
 		'./setup.sh' ${RUNTIME_UPGRADE_OPTS} ${RUNTIME_ARGS}
+
+run/clear:
+	@echo "CLI: clear ${RUNTIME_ARGS}"
+	$(DOCKER)  run \
+		--rm \
+		${DOCKER_RUNTIME_OPTIONS} \
+		-v ${HOME_DIR}:${RUN_USER_HOME}:Z  \
+		-v ~/work:${RUN_USER_HOME}/work:Z  \
+		-v ~/data:${RUN_USER_HOME}/data:Z  \
+		-v ~/data:${HOME}/data:Z  \
+		-v /store/local:/store/local:Z  \
+		-v /store/share:/store/share  \
+		-v /user:/user  \
+		-v /vol:/vol  \
+		-w ${RUN_USER_HOME}/${WORK_DIR}  \
+		-e PASSWORD=$$_passw_ \
+		-e USER=${RUN_USER_NAME} \
+		-e USERID=${RUN_USER_UID} \
+		-e GROUPID=${RUN_USER_GID} \
+		-e ROOT=true  \
+		-e X_AUTO_ENV=0  \
+		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		-ti  \
+		${IMG_RUNTIME} \
+		'./setup.sh' ${RUNTIME_CLEAR_OPTS} ${RUNTIME_ARGS}
 
 
 # ---(attach)----------------------------------------------

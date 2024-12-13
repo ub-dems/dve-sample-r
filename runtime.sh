@@ -35,13 +35,14 @@ where "target" is
   notebook         : runs jupyter notebook bound on port 28888
   code             : runs visual studio code server on port 28788
   repl             : runs interactive R console
-  cli ...          : runs Rscript with arguments
-  upgrade ...      : runs poetry/renv lock/snapshot inside runtime
-  setup ...        : runs poetry/renv install inside runtime
-  status ...       : runs poetry/renv status inside runtime
-  build ...        : runs ./build.sh with arguments inside runtime
+  cli ...           : runs Rscript with arguments
+  clear ...         : clear all virtual environmnet and packages
+  upgrade ...       : runs poetry/renv lock/snapshot inside runtime
+  setup ...         : runs poetry/renv install inside runtime
+  status ...        : runs poetry/renv status inside runtime
+  build ...         : runs ./build.sh with arguments inside runtime
   shell            : runs interactive shell prompt
-  bash args,...    : runs shell with args,...
+  bash args,...     : runs shell with args,...
   term             : attach interactive shell to running runtime
 
 
@@ -54,6 +55,7 @@ Target aliases:
    repl     => r, R
    cli      => rscript, Rscript
    upgrade  => lock, snapshot
+   clear    => zap
    setup    => lib, install
    status   => deps, show
    build    => bld, build.sh
@@ -124,26 +126,12 @@ R Script
  ./runtime.sh rscript exec/dummy_runner.R  
  ./runtime.sh Rscript exec/dummy_runner.R  
 
-to run scripts from ./exec directory 
-
-Upgrde
------
-
- ./runtime.sh setup upgrade
-
-for ./setup.sh (upgrade mode) execution inside runtime container
+to run scripts from ./exec directory
 
 
 
 
-Setup
------
-
- ./runtime.sh setup
-
-for ./setup.sh execution inside runtime container
-
-
+=====
 
 
 Build
@@ -175,6 +163,43 @@ or with command args
  ./runtime.sh do whoami
 
 to run execute shell commands
+
+
+
+VIRTUAL ENVIRONMENTS
+===============================
+
+Clear
+-----
+
+ ./runtime.sh clear
+
+for ./setup.sh (clear all) execution inside runtime container
+
+
+Upgrade
+-----
+
+ ./runtime.sh upgrade
+
+for ./setup.sh (upgrade mode) execution inside runtime container
+
+
+Setup
+-----
+
+ ./runtime.sh setup
+
+for ./setup.sh execution inside runtime container
+
+
+Status
+-----
+
+ ./runtime.sh status
+
+for ./setup.sh status reporting inside runtime container
+
 
 
 
@@ -243,6 +268,10 @@ case "${command}" in
     bld|build|build.sh)
         shift
         target=runtime-build
+        ;;
+    clear|zap)
+        shift
+        target=runtime-clear
         ;;
     lock|snapshot|upgrade)
         shift

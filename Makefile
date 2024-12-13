@@ -165,7 +165,8 @@ build-validate:
 # ---(run)------------------------------------------------
 
 .PHONY: runtime-repl runtime-cli runtime-shell
-.PHONY: runtime-upgrade runtime-setup runtime-status runtime-build
+.PHONY: runtime-upgrade runtime-setup runtime-status runtime-clear
+.PHONY: runtime-build
 .PHONY: runtime-rstudio runtime-lab runtime-notebook runtime-code
 .PHONY: runtime-command runtime-term runtime-help
 
@@ -179,6 +180,10 @@ runtime-cli:
 
 runtime-shell: # @HELP/runtime ...
 runtime-shell:
+	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+
+runtime-clear: # @HELP/runtime ...
+runtime-clear:
 	cd ${IMG_MAKE_DIR} && $(MAKE) $@
 
 runtime-upgrade: # @HELP/runtime ...
