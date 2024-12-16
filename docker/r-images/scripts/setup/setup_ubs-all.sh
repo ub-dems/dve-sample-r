@@ -72,6 +72,8 @@ X_NAME="setup"
 
 X_TEMP="/tmp/$(id -u)"
 X_WORK="$(pwd)"
+X_SAVB="./temp/_setup_"
+X_SAVE="${X_SAVB}/${X_TL}"
 X_LOGB="./logs/sys"
 X_LOGS="${X_LOGB}/${X_TL}"
 X_LOGFILE="${X_LOGS}/${X_NAME}-${X_TS}-$(id -u).log"
@@ -997,6 +999,8 @@ do_re_dots() {
     set -x
 
     [ -f ~/.Renviron ] && rm -rf ~/.Renviron
+    
+    # [ -f ./renv/activate.R ] && rm -rf ./renv/activate.R
 
     set +x
 
@@ -1017,8 +1021,6 @@ do_re_cache() {
     [ -d ./renv/lock ] && rm -rf ./renv/lock
     [ -d ./renv/python ] && rm -rf ./renv/python
     [ -d ./renv/staging ] && rm -rf ./renv/staging
-    
-    [ -f ./renv/activate.R ] && rm -rf ./renv/activate.R
 
     set +x
 
@@ -1047,6 +1049,63 @@ do_re_clear() {
     
 }
 
+
+do_renv_init() {
+
+    log ">(do_renv_init):" "renv - init, ..."
+
+    # run in poetry shell -- venv activated
+
+    if [ -f ./renv/activate.R ]; then
+        log "-(do_renv_init):" "renv - init, ./renv/activate.R found: skip"
+        return 0
+    fi
+    
+
+    X_SAVE_RENV="${X_SAVE}/renv"
+    X_SAVE_RENV_PRE="${X_SAVE_RENV}/init-pre"
+    X_SAVE_RENV_POST="${X_SAVE_RENV}/init-post"
+
+    mkdir -p $X_SAVE_RENV_PRE
+    mkdir -p $X_SAVE_RENV_POST
+
+    [ -f ./.Rprofile ]          && mv ./.Rprofile          $X_SAVE_RENV_PRE
+    [ -f ./renv.lock ]          && mv ./renv.lock          $X_SAVE_RENV_PRE
+    [ -f ./renv/settings.json ] && mv ./renv/settings.json $X_SAVE_RENV_PRE
+    [ -f ./renv/activate.R ]    && mv ./renv/activate.R    $X_SAVE_RENV_PRE
+
+    R -q -e 'renv::init(bare=TRUE, load=FALSE)' ; rc_renv_init=$?
+    
+    case "$rc_renv_init" in
+        0) info "=(do_renv_init):" "renv - init => ok" ;;
+        *) error "#(do_renv_init):" "renv - init => KO -- (rc:$rc_renv_init)" ;;
+    esac    
+    
+    [ -f ./.Rprofile ]          && cp ./.Rprofile          $X_SAVE_RENV_POST
+    [ -f ./renv.lock ]          && cp ./renv.lock          $X_SAVE_RENV_POST
+    [ -f ./renv/settings.json ] && cp ./renv/settings.json $X_SAVE_RENV_POST
+    [ -f ./renv/activate.R ]    && cp ./renv/activate.R    $X_SAVE_RENV_POST
+
+    cp -pv $X_SAVE_RENV_PRE/.Rprofile      ./.Rprofile
+    # cp -pv $X_SAVE_RENV_PRE/renv.lock    ./renv.lock
+    cp -pv $X_SAVE_RENV_PRE/settings.json  ./renv/settings.json
+    cp -pv $X_SAVE_RENV_POST/activate.R    ./renv/activate.R
+
+    set -x
+
+    [ -f $X_SAVE_RENV_PRE/.Rprofile ] && [ -f $X_SAVE_RENV_POST/.Rprofile ] && \
+        diff $X_SAVE_RENV_PRE/.Rprofile $X_SAVE_RENV_POST/.Rprofile
+
+    [ -f $X_SAVE_RENV_PRE/settings.json ] && [ -f $X_SAVE_RENV_POST/settings.json ] && \
+        diff $X_SAVE_RENV_PRE/settings.json $X_SAVE_RENV_POST/settings.json
+
+
+    set +x
+
+    log "<(do_renv_install):" "renv - install, done."
+    
+    return $rc_renv_install
+}
 
 
 do_renv_install() {
@@ -1182,6 +1241,7 @@ do_re_setup() {
 
     log ">(do_re_setup):" "renv - setup, ..."
 
+    do_renv_init
     do_renv_show
     
     if [ "$RUN_RE_RESTORE" = "1" ] && \
@@ -1455,6 +1515,7 @@ main_run() {
     #check_is_remote
 
     do_py_init
+    do_renv_init
     
     log ">(main.run):" "args:$args -- cmds: $cmds, ..."
     
