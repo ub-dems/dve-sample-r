@@ -131,8 +131,6 @@ function install_build_deps() {
 
     [ "$Y_PY_PYENV_INSTALL" = 1 ] || return 0
 
-    sudo apt-get update
-
     apt_install \
         build-essential \
         curl \

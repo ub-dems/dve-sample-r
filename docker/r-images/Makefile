@@ -114,8 +114,14 @@ X_PY_RUN ?= "poetry run"
 
 # ---(runtime)------------------------------------------------
 
-RUN_PORT_INT = 8787
-RUN_PORT_EXT = 28787
+RUN_PORT_A_INT = 8888
+RUN_PORT_A_EXT = 28888
+RUN_PORT_B_INT = 8787
+RUN_PORT_B_EXT = 28787
+RUN_PORT_C_INT = 8686
+RUN_PORT_C_EXT = 28686
+RUN_PORT_D_INT = 8080
+RUN_PORT_D_EXT = 28080
 RUN_USER_UID = 0
 RUN_USER_GID = 0
 RUN_USER_NAME = root
@@ -207,6 +213,7 @@ RUNTIME_RSCRIPT_OPTS := $(RSCRIPT_RUNTIME_OPTIONS)
 
 # ---(codet)------------------------------------------------
 
+# --accept-server-license-terms
 CODE_EXTRA_RUNTIME_OPTIONS := 
 CODE_DEFAULT_RUNTIME_OPTIONS := $(CODE_EXTRA_RUNTIME_OPTIONS) 
 CODE_RUNTIME_OPTIONS := $(CODE_DEFAULT_RUNTIME_OPTIONS)
@@ -457,9 +464,14 @@ build-image/${BLD_WORKER}: build-image/${BLD_RUNTIME}
 
 run/shell:
 	@echo "CLI: shell ${RUNTIME_ARGS}"
+	@export _passw_=$$(cat ~/.rup/*); \
 	$(DOCKER)  run \
 		--rm \
 		${DOCKER_RUNTIME_OPTIONS} \
+		-p ${RUN_PORT_A_EXT}:${RUN_PORT_A_INT} \
+		-p ${RUN_PORT_B_EXT}:${RUN_PORT_B_INT} \
+		-p ${RUN_PORT_C_EXT}:${RUN_PORT_C_INT} \
+		-p ${RUN_PORT_D_EXT}:${RUN_PORT_D_INT} \
 		-v ${HOME_DIR}:${RUN_USER_HOME}:Z  \
 		-v ~/work:${RUN_USER_HOME}/work:Z  \
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
@@ -482,6 +494,7 @@ run/shell:
 
 run/status:
 	@echo "CLI: status ${RUNTIME_ARGS}"
+	@export _passw_=$$(cat ~/.rup/*); \
 	$(DOCKER)  run \
 		--rm \
 		${DOCKER_RUNTIME_OPTIONS} \
@@ -517,6 +530,7 @@ run/status:
 
 run/setup:
 	@echo "CLI: setup ${RUNTIME_ARGS}"
+	@export _passw_=$$(cat ~/.rup/*); \
 	$(DOCKER)  run \
 		--rm \
 		${DOCKER_RUNTIME_OPTIONS} \
@@ -542,6 +556,7 @@ run/setup:
 
 run/upgrade:
 	@echo "CLI: upgrade ${RUNTIME_ARGS}"
+	@export _passw_=$$(cat ~/.rup/*); \
 	$(DOCKER)  run \
 		--rm \
 		${DOCKER_RUNTIME_OPTIONS} \
@@ -567,6 +582,7 @@ run/upgrade:
 
 run/clear:
 	@echo "CLI: clear ${RUNTIME_ARGS}"
+	@export _passw_=$$(cat ~/.rup/*); \
 	$(DOCKER)  run \
 		--rm \
 		${DOCKER_RUNTIME_OPTIONS} \
@@ -604,6 +620,7 @@ run/term:
 # ---(venv)------------------------------------------------
 
 run/r-repl:
+	@export _passw_=$$(cat ~/.rup/*); \
 	$(DOCKER)  run \
 		--rm \
 		${DOCKER_RUNTIME_OPTIONS} \
@@ -629,6 +646,7 @@ run/r-repl:
 
 run/rscript-cli:
 	@echo "CLI: Rscript ${RUNTIME_ARGS}"
+	@export _passw_=$$(cat ~/.rup/*); \
 	$(DOCKER)  run \
 		--rm \
 		${DOCKER_RUNTIME_OPTIONS} \
@@ -653,6 +671,7 @@ run/rscript-cli:
 
 run/build:
 	@echo "CLI: build ${RUNTIME_ARGS}"
+	@export _passw_=$$(cat ~/.rup/*); \
 	$(DOCKER)  run \
 		--rm \
 		${DOCKER_RUNTIME_OPTIONS} \
@@ -678,6 +697,7 @@ run/build:
 
 run/command:
         #@echo "CLI: command ${RUNTIME_ARGS}"
+	@export _passw_=$$(cat ~/.rup/*); \
 	$(DOCKER)  run \
 		--rm \
 		${DOCKER_RUNTIME_OPTIONS} \
@@ -700,11 +720,13 @@ run/command:
 		${Y_PY_RUN} \
 		${RUNTIME_ARGS} ${RUNTIME_RSCRIPT_OPTS}
 
-run/code:
+run/code-server:
 	@echo "CODE: server ${RUNTIME_ARGS}"
+	@export _passw_=$$(cat ~/.rup/*); \
 	$(DOCKER)  run \
 		--rm \
 		${DOCKER_RUNTIME_OPTIONS} \
+		-p ${RUN_PORT_C_EXT}:${RUN_PORT_C_INT} \
 		-v ${HOME_DIR}:${RUN_USER_HOME}:Z  \
 		-v ~/work:${RUN_USER_HOME}/work:Z  \
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
@@ -727,9 +749,11 @@ run/code:
 
 run/jupyter-lab:
 	@echo "JUPYTER: lab ${RUNTIME_ARGS}"
+	@export _passw_=$$(cat ~/.rup/*); \
 	$(DOCKER)  run \
 		--rm \
 		${DOCKER_RUNTIME_OPTIONS} \
+		-p ${RUN_PORT_A_EXT}:${RUN_PORT_A_INT} \
 		-v ${HOME_DIR}:${RUN_USER_HOME}:Z  \
 		-v ~/work:${RUN_USER_HOME}/work:Z  \
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
@@ -752,9 +776,11 @@ run/jupyter-lab:
 
 run/jupyter-notebook:
 	@echo "JUPYTER: notebook ${RUNTIME_ARGS}"
+	@export _passw_=$$(cat ~/.rup/*); \
 	$(DOCKER)  run \
 		--rm \
 		${DOCKER_RUNTIME_OPTIONS} \
+		-p ${RUN_PORT_A_EXT}:${RUN_PORT_A_INT} \
 		-v ${HOME_DIR}:${RUN_USER_HOME}:Z  \
 		-v ~/work:${RUN_USER_HOME}/work:Z  \
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
@@ -782,18 +808,18 @@ run/rstudio-server:
 	@echo "USER: ${RUN_USER_NAME}"
 	@echo "PASS: <user-pass>"
 	@echo ""
-	@echo "URL: http://localhost:${RUN_PORT_EXT}"
+	@echo "URL: http://localhost:${RUN_PORT_B_EXT}"
 	@echo ""
 	@echo "View:"
 	@echo ""
-	@echo " X2Go:      chromium-browser http://localhost:${RUN_PORT_EXT}"
-	@echo " nomachine: firefox          http://localhost:${RUN_PORT_EXT}"
+	@echo " X2Go:      chromium-browser http://localhost:${RUN_PORT_B_EXT}"
+	@echo " nomachine: firefox          http://localhost:${RUN_PORT_B_EXT}"
 	@echo ""
 	@export _passw_=$$(cat ~/.rup/*); \
 	$(DOCKER)  run \
 		--rm \
 		${DOCKER_RUNTIME_OPTIONS} \
-		-p ${RUN_PORT_EXT}:${RUN_PORT_INT} \
+		-p ${RUN_PORT_B_EXT}:${RUN_PORT_B_INT} \
 		-v ${HOME_DIR}:${RUN_USER_HOME}:Z  \
 		-v ~/work:${RUN_USER_HOME}/work:Z  \
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
@@ -830,6 +856,10 @@ wrk/make:
 	$(DOCKER)  run \
 		--rm \
 		${DOCKER_RUNTIME_OPTIONS} \
+		-p ${RUN_PORT_A_EXT}:${RUN_PORT_A_INT} \
+		-p ${RUN_PORT_B_EXT}:${RUN_PORT_B_INT} \
+		-p ${RUN_PORT_C_EXT}:${RUN_PORT_C_INT} \
+		-p ${RUN_PORT_D_EXT}:${RUN_PORT_D_INT} \
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
 		-w ${WORKER_DIR}  \
 		-e USER=${RUN_USER_NAME} \
@@ -845,6 +875,10 @@ wrk/build:
 	$(DOCKER)  run \
 		--rm \
 		${DOCKER_RUNTIME_OPTIONS} \
+		-p ${RUN_PORT_A_EXT}:${RUN_PORT_A_INT} \
+		-p ${RUN_PORT_B_EXT}:${RUN_PORT_B_INT} \
+		-p ${RUN_PORT_C_EXT}:${RUN_PORT_C_INT} \
+		-p ${RUN_PORT_D_EXT}:${RUN_PORT_D_INT} \
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
 		-w ${WORKER_DIR}  \
 		-e USER=${RUN_USER_NAME} \
@@ -861,6 +895,10 @@ wrk/runner:
 	$(DOCKER)  run \
 		--rm \
 		${DOCKER_RUNTIME_OPTIONS} \
+		-p ${RUN_PORT_A_EXT}:${RUN_PORT_A_INT} \
+		-p ${RUN_PORT_B_EXT}:${RUN_PORT_B_INT} \
+		-p ${RUN_PORT_C_EXT}:${RUN_PORT_C_INT} \
+		-p ${RUN_PORT_D_EXT}:${RUN_PORT_D_INT} \
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
 		-w ${WORKER_DIR}  \
 		-e USER=${RUN_USER_NAME} \
@@ -878,6 +916,10 @@ wrk/shell:
 		--rm \
 		-it \
 		${DOCKER_RUNTIME_OPTIONS} \
+		-p ${RUN_PORT_A_EXT}:${RUN_PORT_A_INT} \
+		-p ${RUN_PORT_B_EXT}:${RUN_PORT_B_INT} \
+		-p ${RUN_PORT_C_EXT}:${RUN_PORT_C_INT} \
+		-p ${RUN_PORT_D_EXT}:${RUN_PORT_D_INT} \
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
 		-w ${WORKER_DIR}  \
 		-e USER=${RUN_USER_NAME} \

@@ -15,11 +15,11 @@ NCPUS=${NCPUS:--1}
 
 set -a
 # ------------------------------------------------------
-: "${Y_PY_NODE_VERSION:=22.12}"
+: "${Y_JS_NODE_VERSION:=22.12}"
 : "${FNM_ROOT:=/opt/fnm}"
 : "${NODE_ROOT:=/opt/nodejs}"
 : "${FNM_DIR:=$NODE_ROOT/.fnm}"
-: "${NODE_VERSION:=$Y_PY_NODE_VERSION}"
+: "${NODE_VERSION:=$Y_JS_NODE_VERSION}"
 # ------------------------------------------------------
 set +a
 
@@ -194,7 +194,7 @@ function clean_up() {
 
 function main() {
     
-    [ "$Y_PY_ANY_SUPPORT" = 1 ] || return 0
+    [ "$Y_JS_ANY_SUPPORT" = 1 ] || return 0
 
     env_dump $@
 

@@ -1297,6 +1297,52 @@ do_re_force() {
     
 }
 
+# ////////////////////////////////////////////////////////////////////////
+
+do_js_code() {
+
+    log ">(do_js_code):" "js - code server config, ..."
+
+    if [ -f ~/.config/code-server/config.yaml ] && \
+       grep -q '#@setup:' ~/.config/code-server/config.yaml; then
+        log ".(do_js_code):" "js - code server already configured, skip."
+    else
+
+        X_SAVE_CODE="${X_SAVE}/code"
+        X_SAVE_CODE_PRE="${X_SAVE_CODE}/init-pre"
+        X_SAVE_CODE_POST="${X_SAVE_CODE}/init-post"
+
+        mkdir -p $X_SAVE_CODE_PRE
+        mkdir -p $X_SAVE_CODE_POST
+
+        
+
+        [ -f ~/.config/code-server/config.yaml ] && \
+            mv ~/.config/code-server/config.yaml    $X_SAVE_CODE_PRE
+
+        if [ -f ~/.config/code-server/custom.yaml ]; then
+            cp -pv ~/.config/code-server/custom.yaml ~/.config/code-server/config.yaml
+        else
+
+            mkdir -p    ~/.config/code-server
+            cat <<EOF > ~/.config/code-server/config.yaml
+#@setup: $(date)
+bind-addr: 127.0.0.1:8686
+auth: password
+password: ${PASSWORD}
+cert: false
+EOF
+
+        fi    
+
+        [ -f ~/.config/code-server/config.yaml ] && \
+            cp ~/.config/code-server/config.yaml    $X_SAVE_CODE_POST
+    fi
+
+    log "<(do_js_code):" "js - code server config, done."
+    
+}
+
 
 
 # ////////////////////////////////////////////////////////////////////////
@@ -1317,6 +1363,7 @@ parse_args_run() {
     RUN_PY_VENV=0
     RUN_PY_INSTALL=0
     RUN_PY_SHOW=0
+    RUN_JS_CODE=0
     RUN_RE_CLEAR=0
     RUN_RE_RESET=0
     RUN_RE_SETUP=0
@@ -1352,6 +1399,7 @@ parse_args_run() {
                 RUN_PY_BIND=1
                 RUN_PY_JUPYTER=1
                 RUN_PY_SHOW=1
+                RUN_JS_CODE=1
                 RUN_RE_SETUP=1
                 RUN_RE_UPGRADE="$Y_RE_RENV_UPGRADE"
                 RUN_RE_RESTORE="$Y_RE_RENV_RESTORE"
@@ -1455,6 +1503,7 @@ parse_args_run() {
         1)
             X_PYTHON_MODE="1"
             X_R_MODE="1"
+            X_CODE_MODE="1"
             ;;
         *)  ;;
     esac
@@ -1483,6 +1532,13 @@ parse_args_run() {
         *)  ;;
     esac
 
+    case "$X_CODE_MODE" in
+        0)
+            RUN_JS_CODE=0
+            ;;
+        *)  ;;
+    esac
+
     set +x
 
     debug "#(args): {\n $(set | sort | grep -e ^PY_OPTS -e ^RE_OPTS -e ^RUN_  -e ^X_  -e ^Y_ ) \n} ###"
@@ -1500,6 +1556,8 @@ parse_args_run() {
     env_defined RUN_RE_RESTORE
     env_defined RUN_RE_UPGRADE
     env_defined RUN_RE_SHOW
+    
+    env_defined RUN_JS_CODE
     
 
     log "<(args):" "cmds: $cmds"
@@ -1574,6 +1632,11 @@ main_run() {
 
     if [ "$RUN_RE_SHOW" = '1' ]; then
         do_re_show $@
+        rc_exit $?
+    fi
+
+    if [ "$RUN_JS_CODE" = '1' ]; then
+        do_js_code $@
         rc_exit $?
     fi
 

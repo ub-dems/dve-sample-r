@@ -50,8 +50,7 @@ function install_commons_sys() {
         tasksel \
         numactl \
         inxi \
-        htop && \
-    rm -rf /var/lib/apt/lists/*
+        htop
     
 }
 

@@ -171,7 +171,7 @@ function clean_up() {
 
 function main() {
     
-    [ "$Y_PY_ANY_SUPPORT" = 1 ] || return 0
+    [ "$Y_RS_ANY_SUPPORT" = 1 ] || return 0
 
     env_dump $@
 

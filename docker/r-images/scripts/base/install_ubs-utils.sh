@@ -53,8 +53,7 @@ function install_utils_sys() {
         iputils-ping \
         iputils-tracepath \
         iputils-clockdiff \
-        tmux && \
-    rm -rf /var/lib/apt/lists/*
+        tmux
     
 }
 
