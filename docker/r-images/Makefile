@@ -110,7 +110,7 @@ RG_PUBLIC ?= "docker.io"
 # ---(PYTHON)------------------------------------------------
 
 X_PY_PYENV_VERSION ?= $(shell (cd ${ROOT_DIR} && cat .python-version))
-X_PY_RUN ?= "poetry run"
+X_PY_RUN ?= "source /etc/profile && poetry run"
 
 # ---(runtime)------------------------------------------------
 
@@ -226,7 +226,7 @@ RUNTIME_CODE_OPTS := $(CODE_RUNTIME_OPTIONS)
 JUPYTER_EXTRA_RUNTIME_OPTIONS := 
 JUPYTER_NETWORK_RUNTIME_OPTIONS := --ip=0.0.0.0 --port=8888 
 JUPYTER_AUTH_RUNTIME_OPTIONS := --ServerApp.allow_remote_access=true
-JUPYTER_BASE_RUNTIME_OPTIONS := --notebook-dir=notebooks --no-browser 
+JUPYTER_BASE_RUNTIME_OPTIONS := --notebook-dir=notebooks --no-browser --allow-root
 JUPYTER_DEFAULT_RUNTIME_OPTIONS := $(JUPYTER_BASE_RUNTIME_OPTIONS) $(JUPYTER_NETWORK_RUNTIME_OPTIONS) $(JUPYTER_AUTH_RUNTIME_OPTIONS) $(JUPYTER_EXTRA_RUNTIME_OPTIONS) 
 JUPYTER_NOTEBOOK_RUNTIME_OPTIONS := $(JUPYTER_DEFAULT_RUNTIME_OPTIONS) notebook
 JUPYTER_LAB_RUNTIME_OPTIONS := lab  $(JUPYTER_DEFAULT_RUNTIME_OPTIONS) lab
@@ -641,7 +641,7 @@ run/r-repl:
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		-ti  \
 		${IMG_RUNTIME} \
-		${Y_PY_RUN} \
+		${X_PY_RUN} \
 		'/usr/local/bin/R' ${RUNTIME_R_OPTS} ${RUNTIME_ARGS}
 
 run/rscript-cli:
@@ -666,7 +666,7 @@ run/rscript-cli:
 		-e ROOT=true  \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		${IMG_RUNTIME} \
-		${Y_PY_RUN} \
+		${X_PY_RUN} \
 		'/usr/local/bin/Rscript' ${RUNTIME_RSCRIPT_OPTS} ${RUNTIME_ARGS}
 
 run/build:
@@ -692,7 +692,7 @@ run/build:
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		-ti  \
 		${IMG_RUNTIME} \
-		${Y_PY_RUN} \
+		${X_PY_RUN} \
 		'./build.sh' ${RUNTIME_BUILD_OPTS} ${RUNTIME_ARGS}
 
 run/command:
@@ -717,7 +717,7 @@ run/command:
 		-e ROOT=true  \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		${IMG_RUNTIME} \
-		${Y_PY_RUN} \
+		${X_PY_RUN} \
 		${RUNTIME_ARGS} ${RUNTIME_RSCRIPT_OPTS}
 
 run/code-server:
@@ -743,7 +743,7 @@ run/code-server:
 		-e ROOT=true  \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		${IMG_RUNTIME} \
-		${Y_PY_RUN} \
+		${X_PY_RUN} \
 		'code-server' ${RUNTIME_CODE_OPTS} ${RUNTIME_ARGS}
 
 
@@ -770,7 +770,7 @@ run/jupyter-lab:
 		-e ROOT=true  \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		${IMG_RUNTIME} \
-		${Y_PY_RUN} \
+		${X_PY_RUN} \
 		'jupyter' ${RUNTIME_JUPYTER_LAB_OPTS} ${RUNTIME_ARGS}
 
 
@@ -797,7 +797,7 @@ run/jupyter-notebook:
 		-e ROOT=true  \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		${IMG_RUNTIME} \
-		${Y_PY_RUN} \
+		${X_PY_RUN} \
 		'jupyter' ${RUNTIME_JUPYTER_NOTEBOOK_OPTS} ${RUNTIME_ARGS}
 
 
