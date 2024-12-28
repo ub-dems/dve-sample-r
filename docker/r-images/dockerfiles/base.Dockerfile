@@ -82,6 +82,7 @@ RUN /rocker_scripts/install_ubs-rs_rust.sh
 RUN /rocker_scripts/install_ubs-js_node.sh
 RUN /rocker_scripts/install_ubs-js_code.sh
 
+RUN /rocker_scripts/install_ubs-py_base.sh
 RUN /rocker_scripts/install_ubs-py_system.sh
 RUN /rocker_scripts/install_ubs-py_pyenv.sh
 RUN /rocker_scripts/install_ubs-py_poetry.sh
@@ -99,5 +100,8 @@ EXPOSE 8787
 EXPOSE 8686
 EXPOSE 8080
 
-CMD ["/init"]
+#CMD ["/init"]
 #CMD ["R"]
+
+COPY scripts/start /etc/dsbox/runtime/
+ENTRYPOINT ["/etc/dsbox/runtime/runtime_entrypoint.sh"]

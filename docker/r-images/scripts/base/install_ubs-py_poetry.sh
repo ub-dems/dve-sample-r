@@ -107,7 +107,6 @@ function install_poetry() {
 function config_poetry() {
 
     [ "$Y_PY_POETRY_CONFIG" = 1 ] || return 0
-
     
 
 cat <<EOP >/etc/profile.d/Z94-poetry.sh
@@ -115,7 +114,9 @@ cat <<EOP >/etc/profile.d/Z94-poetry.sh
 # poetry 
 #
 
-PYTHON_KEYRING_BACKEND="${PYTHON_KEYRING_BACKEND}"
+# interpolate build environment
+
+PYTHON_KEYRING_BACKEND=${PYTHON_KEYRING_BACKEND}
 
 EOP
 
@@ -128,7 +129,18 @@ export PYTHON_KEYRING_BACKEND
 ### export POETRY_HOME
 ### export PATH
 
+
+set -a
+# ------------------------------------------------------
+
+: ${POETRY_HOME:="/opt/poetry"}
+: ${PYTHON_KEYRING_BACKEND:="keyring.backends.null.Keyring"}
+
 : "${X_AUTO_ENV:=1}"
+
+# ------------------------------------------------------
+set +a
+
 
 deactivate_init () {
     # reset old environment variables
@@ -178,8 +190,9 @@ py_auto_env() {
    [ "$X_AUTO_ENV" = "1" ] || return 0
    [ -n "$X_WORK_DIR" ]    || return 0
 
-   X_POETRY_VENV="$(cd $X_WORK_DIR && poetry env info --path)"
-   [ -x "$X_POETRY_VENV/bin/activate" ]    || return 0
+   ### X_POETRY_VENV="$(cd $X_WORK_DIR && poetry env info --path)"
+   X_POETRY_VENV="$(poetry env info --path)"
+   [ -f "$X_POETRY_VENV/bin/activate" ]    || return 0
 
    source "$X_POETRY_VENV/bin/activate"
 

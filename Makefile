@@ -159,7 +159,7 @@ build-upgrade:
 .PHONY: build-validate
 
 build-validate:
-	@echo "TO VALIDATE SETUP, RUN COMMAND: ./runtime.sh build all"
+	@echo "TO COMPLETE RUNTIME SETUP, RUN COMMAND: ./runtime.sh setup"
 
 
 # ---(run)------------------------------------------------

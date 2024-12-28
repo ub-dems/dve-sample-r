@@ -211,16 +211,11 @@ function config_pyenv() {
     sed -i 's!PATH="!PATH="/opt/pipx/bin:/opt/pyenv/bin:!' \
         "/etc/environment"
 
-    cat <<EOP >/etc/profile.d/Z93-pyenv.sh
+    cat <<"EOF" >>/etc/profile.d/Z93-pyenv.sh
 ##
 # pyenv
 #
 
-PYTHON_CONFIGURE_OPTS="${PYTHON_CONFIGURE_OPTS}"
-
-EOP
-
-    cat <<"EOF" >>/etc/profile.d/Z93-pyenv.sh
 PYTHON_CONFIGURE_OPTS=${PYTHON_CONFIGURE_OPTS:-"--enable-shared"}
 
 ### -> inhrited from container ENV
@@ -236,6 +231,7 @@ PATH=$(P=$(echo -n $PATH | awk -v RS=: -v ORS=: '!($0 in a) {a[$0]; print $0}');
 export PYENV_ROOT
 export PIPX_GLOBAL_HOME
 export PIPX_GLOBAL_BIN_DIR
+export PYTHON_CONFIGURE_OPTS
 export PATH
 
 export X_RC_Z93_PYENV=1
