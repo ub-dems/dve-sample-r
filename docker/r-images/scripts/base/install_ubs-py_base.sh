@@ -94,7 +94,7 @@ function undo_image_venv() {
     
     [ "$Y_PY_BASE_UNDO" = 1 ] || return 0
 
-    debug_pyenv "py_base_undo_venv::pre"
+    debug_pybase "py_base_undo_venv::pre"
 
 
     if [ -n "$VIRTUAL_ENV" ]; then
@@ -102,11 +102,11 @@ function undo_image_venv() {
             mv "${VIRTUAL_ENV}" "${VIRTUAL_ENV}.img"
         fi
 
-        debug_pyenv "py_base_undo_venv::defined"
+        debug_pybase "py_base_undo_venv::defined"
 
     fi    
 
-    debug_pyenv "py_base_undo_venv::post"
+    debug_pybase "py_base_undo_venv::post"
 
 }
 
@@ -114,6 +114,8 @@ function undo_image_venv() {
 function undo_image_environ() {
 
     [ "$Y_PY_BASE_VANILLA" = 1 ] || return 0
+    
+    debug_pybase "py_base_undo_image::pre"
 
     sed -i '/VIRTUAL_ENV=/d' \
         "/etc/environment"
@@ -174,22 +176,14 @@ py_base_clear() {
 
 py_base_environ() {
 
-set -a
-# ------------------------------------------------------
+[ "$X_DEBUG_ENV" = '1' ] && set -x
 
-: ${SHELL:="/bin/bash"}
-
-
-# ------------------------------------------------------
-set +a
-
-
-if [ -n "$BASH_VERSION" ]; then 
-   alias ll='ls -lhF --group-directories-first'
-   alias gst='git status'
-   alias gss='git status -s'
+if [ -n "$BASH_VERSION" ]; then
+   [ -f /etc/bash.aliases ] && source /etc/bash.aliases || true
+   [ -f ~/.bash_aliases ] && source ~/.bash_aliases  || true
 fi
 
+[ "$X_DEBUG_ENV" = '1' ] && set +x
 
 }
 
@@ -204,6 +198,23 @@ py_base_init
 export X_RC_Z93_PYBASE=1
 EOF
 
+    cat <<"EOA" >>/etc/bash.aliases
+##
+# py-base: /etc/bash.aliases
+#
+
+alias ll='ls -lhF --color=auto --group-directories-first'
+alias gst='git status'
+alias gss='git status -s'
+
+EOA
+
+    cat <<"EOC" >>/etc/bash.bashrc
+[ -f /etc/bash.aliases ] && source /etc/bash.aliases || true
+[ -f ~/.bash_aliases ] && source ~/.bash_aliases  || true
+EOC
+
+    debug_pybase "py_base_undo_image::post"
 
 }
 
@@ -222,7 +233,7 @@ function check_base() {
     which python      || true
     which -a python3  || true
 
-    python --version  || false
+    python3 --version  || false
     
     set +x
     

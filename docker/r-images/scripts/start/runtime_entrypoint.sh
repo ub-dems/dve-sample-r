@@ -3,7 +3,18 @@
 ##
 # taken from /opt/nvidia/nvidia_entrypoint.sh
 #
-set -x 
+set -a
+[ -f ~/.env ] && source ~/.env || true
+[ -f ./.env ] && source ./.env || true
+set +a
+
+[ "$X_DEBUG_ENV" = '1' ] && set -x
+
+### printenv | grep ^X_
+### set -x
+
+export X_ENTRYPOINT="$0" 
+
 # Gather parts in alpha order
 shopt -s nullglob extglob
 _SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
@@ -36,14 +47,19 @@ for _file in "${_PARTS[@]}"; do
   esac
 done
 
-echo
+if [ "$X_DEBUG_ENV" = '1' ]; then
+
+    echo
+    echo "### ..."
+    echo "### wd=$(pwd)"
+    echo "### PATH=$PATH"
+    echo "### args=$@"
+    echo "### ..."
+
+fi
 
 
-echo "### ..."
-echo "### wd=$(pwd)"
-echo "### PATH=$PATH"
-echo "### args=$@"
-echo "### ..."
+### set +x
 
 # This script can either be a wrapper around arbitrary command lines,
 # or it will simply exec bash if no arguments were given
@@ -54,4 +70,4 @@ else
 fi
 
 
-set +x
+[ "$X_DEBUG_ENV" = '1' ] && set +x

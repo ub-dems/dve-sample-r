@@ -425,7 +425,7 @@ build-image/%:
 	$(DOCKER) build \
 		-f $$X_BLD_DOCKERFILE \
 		-t $$X_BLD_IMAGE_NAME \
-		--build-arg Y_WORK_DIR="${WORK_DIR}" \
+		--build-arg Y_WORK_DIR="${RUN_USER_HOME}/${WORK_DIR}" \
 		--build-arg Y_DEBUG_ENV="${Y_DEBUG_ENV:-0}" \
 		--label="it.unimib.datalab.project=${ID_PROJECT}" \
 		--label="it.unimib.datalab.branch=${BRANCH_NAME}" \
@@ -486,6 +486,8 @@ run/shell:
 		-e USERID=${RUN_USER_UID} \
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
+		-e X_DEBUG="${X_DEBUG:-0}" \
+		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		-ti  \
 		${IMG_RUNTIME} \
@@ -512,6 +514,8 @@ run/status:
 		-e USERID=${RUN_USER_UID} \
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
+		-e X_DEBUG="${X_DEBUG:-0}" \
+		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e X_AUTO_ENV=0  \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		-e REV_ID_PROJECT=${ID_PROJECT}  \
@@ -548,6 +552,8 @@ run/setup:
 		-e USERID=${RUN_USER_UID} \
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
+		-e X_DEBUG="${X_DEBUG:-0}" \
+		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e X_AUTO_ENV=0  \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		-ti  \
@@ -574,6 +580,8 @@ run/upgrade:
 		-e USERID=${RUN_USER_UID} \
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
+		-e X_DEBUG="${X_DEBUG:-0}" \
+		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e X_AUTO_ENV=0  \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		-ti  \
@@ -600,6 +608,8 @@ run/clear:
 		-e USERID=${RUN_USER_UID} \
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
+		-e X_DEBUG="${X_DEBUG:-0}" \
+		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e X_AUTO_ENV=0  \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		-ti  \
@@ -638,6 +648,8 @@ run/r-repl:
 		-e USERID=${RUN_USER_UID} \
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
+		-e X_DEBUG="${X_DEBUG:-0}" \
+		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		-ti  \
 		${IMG_RUNTIME} \
@@ -664,6 +676,8 @@ run/rscript-cli:
 		-e USERID=${RUN_USER_UID} \
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
+		-e X_DEBUG="${X_DEBUG:-0}" \
+		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		${IMG_RUNTIME} \
 		${X_PY_RUN} \
@@ -689,6 +703,8 @@ run/build:
 		-e USERID=${RUN_USER_UID} \
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
+		-e X_DEBUG="${X_DEBUG:-0}" \
+		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		-ti  \
 		${IMG_RUNTIME} \
@@ -715,6 +731,8 @@ run/command:
 		-e USERID=${RUN_USER_UID} \
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
+		-e X_DEBUG="${X_DEBUG:-0}" \
+		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		${IMG_RUNTIME} \
 		${X_PY_RUN} \
@@ -741,6 +759,8 @@ run/code-server:
 		-e USERID=${RUN_USER_UID} \
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
+		-e X_DEBUG="${X_DEBUG:-0}" \
+		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		${IMG_RUNTIME} \
 		${X_PY_RUN} \
@@ -768,6 +788,8 @@ run/jupyter-lab:
 		-e USERID=${RUN_USER_UID} \
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
+		-e X_DEBUG="${X_DEBUG:-0}" \
+		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		${IMG_RUNTIME} \
 		'jupyter' ${RUNTIME_JUPYTER_LAB_OPTS} ${RUNTIME_ARGS}
@@ -794,6 +816,8 @@ run/jupyter-notebook:
 		-e USERID=${RUN_USER_UID} \
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
+		-e X_DEBUG="${X_DEBUG:-0}" \
+		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		${IMG_RUNTIME} \
 		${X_PY_RUN} \
@@ -833,6 +857,8 @@ run/rstudio-server:
 		-e USERID=${RUN_USER_UID} \
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
+		-e X_DEBUG="${X_DEBUG:-0}" \
+		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		${IMG_RUNTIME} ${RUNTIME_ARGS}
 

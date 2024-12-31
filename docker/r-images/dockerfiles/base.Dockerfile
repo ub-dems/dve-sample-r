@@ -30,6 +30,21 @@ ENV  X_WORK_DIR=$Y_WORK_DIR
 
 #ARG DEBIAN_FRONTEND=noninteractive
 
+ARG  Y_SHELL_SET=/bin/bash
+ENV  SHELL=$Y_SHELL_SET
+
+
+
+ARG  Y_EDITOR_SET=vim
+ENV  EDITOR=$Y_EDITOR_SET
+ARG  Y_VISUAL_SET=vim
+ENV  VISUAL=$Y_VISUAL_SET
+ARG  Y_PAGER_SET=less
+ENV  PAGER=$Y_PAGER_SET
+
+
+
+
 ARG  Y_TERM_SET=xterm-256color
 ENV  TERM=$Y_TERM_SET
 
@@ -104,4 +119,5 @@ EXPOSE 8080
 #CMD ["R"]
 
 COPY scripts/start /etc/dsbox/runtime/
+RUN  chmod -R a+x  /etc/dsbox/runtime/
 ENTRYPOINT ["/etc/dsbox/runtime/runtime_entrypoint.sh"]

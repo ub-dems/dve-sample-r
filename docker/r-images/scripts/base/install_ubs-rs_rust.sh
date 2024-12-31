@@ -140,7 +140,6 @@ function check_rust() {
 
     which -a rustc  || true
     rustc --version  || true
-
     
     set +x
     
