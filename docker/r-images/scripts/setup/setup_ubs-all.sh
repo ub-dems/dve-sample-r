@@ -1116,7 +1116,7 @@ do_renv_install() {
 
     ( source $(poetry env info --path)/bin/activate
 
-      R -q -e 'renv::install()' ; rc_renv_install=$?
+      R -q -e 'renv::install(dependencies = TRUE)' ; rc_renv_install=$?
 
       case "$rc_renv_install" in
           0) info "=(do_renv_install):" "renv - install => ok" ;;

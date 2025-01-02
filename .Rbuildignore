@@ -12,10 +12,13 @@
 ^[^/]+.sh
 ^data-raw$
 ^\.dir-locals\.el$
+^\.devcontainer$
 ^doc$
 ^docker$
-^.dockerignore.*$
+^\.dockerignore.*$
 ^docs$
+^\.editorconfig$
+^env-args.txt$
 ^etc$
 ^\.github$
 ^\.github/workflows/pkgdown\.yaml$
@@ -40,6 +43,7 @@
 ^man-roxygen$
 ^Meta$
 ^\.mypy_cache$
+^node_modules$
 ^notebooks$
 ^notes$
 ^package\.json$
@@ -73,10 +77,12 @@
 ^_targets$
 ^_targets\.R$
 ^temp$
+^todo.org$
 ^travis$
 ^travis/check_format\.sh$
 ^\.travis\.yml$
 ^vignettes/rsconnect$
 ^.vimrc$
+^.yarn$
 ^.yarnrc\.yml$
 ^yarn\.lock$

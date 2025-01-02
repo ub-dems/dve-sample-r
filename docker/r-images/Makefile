@@ -234,6 +234,14 @@ JUPYTER_LAB_RUNTIME_OPTIONS := lab $(JUPYTER_DEFAULT_RUNTIME_OPTIONS)
 RUNTIME_JUPYTER_LAB_OPTS := $(JUPYTER_LAB_RUNTIME_OPTIONS)
 RUNTIME_JUPYTER_NOTEBOOK_OPTS := $(JUPYTER_NOTEBOOK_RUNTIME_OPTIONS)
 
+# ---(rstudio)------------------------------------------------
+
+RSTUDIO_EXTRA_RUNTIME_OPTIONS := 
+RSTUDIO_DEFAULT_RUNTIME_OPTIONS := $(RSTUDIO_EXTRA_RUNTIME_OPTIONS) 
+RSTUDIO_RUNTIME_OPTIONS := $(RSTUDIO_DEFAULT_RUNTIME_OPTIONS)
+
+RUNTIME_RSTUDIO_OPTS := $(RSTUDIO_RUNTIME_OPTIONS)
+
 # ---(colors)------------------------------------------------
 
 C_OFF=\033[0m
@@ -851,6 +859,7 @@ run/rstudio-server:
 		-v /store/share:/store/share  \
 		-v /user:/user  \
 		-v /vol:/vol  \
+		-w ${RUN_USER_HOME}/${WORK_DIR}  \
 		-e PASSWORD=$$_passw_ \
 		-e RUNROOTLESS=true \
 		-e USER=${RUN_USER_NAME} \
@@ -860,7 +869,8 @@ run/rstudio-server:
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
-		${IMG_RUNTIME} ${RUNTIME_ARGS}
+		${IMG_RUNTIME} \
+		'/init' ${RUNTIME_RSTUDIO_OPTS} ${RUNTIME_ARGS}
 
 run/runtime: run/rstudio-server
 

@@ -13,6 +13,38 @@ E_MAKE_FILE="${E_ROOT_DIR}/Makefile"
 #E_DOCKER_DIR="${E_ROOT_DIR}/docker/r-images"
 #E_MAKE_FILE="${E_DOCKER_DIR}/Makefile"
 
+set -a
+
+: ${E_CONF_DIR:="${E_ROOT_DIR}/docker/r-images"}
+: ${E_CONF_FILE:="${E_CONF_DIR}/runtime.conf"}
+
+[ -r "${E_CONF_FILE}" ] && source "${E_CONF_FILE}" || true
+
+
+: ${X_PRJ_KIND:="${X_DEF_KIND}"}
+
+if [ "${X_PRJ_KIND}" = 'auto' ]; then
+    if [ -n "$(shopt -s nullglob; echo *.Rproj)" ]; then
+        X_RUN_KIND='R'
+    else    
+        X_RUN_KIND='P'
+    fi
+else    
+   X_RUN_KIND="${X_PRJ_KIND}"
+fi    
+    
+case "$X_RUN_KIND" in
+    R) X_DEF_RUN_COMMAND="$X_DEF_RUN_R_COMMAND" ;;
+    *) X_DEF_RUN_COMMAND="$X_DEF_RUN_P_COMMAND" ;;
+esac    
+        
+: ${X_RUN_COMMAND:="${X_DEF_RUN_COMMAND}"}
+
+: ${X_DEBUG:="${X_DEF_DEBUG}"}
+: ${X_DEBUG_ENV:="${X_DEF_DEBUG_ENV}"}
+
+set +a
+
 . $(dirname $0)/functions.sh
 
 #}}} \\\    
@@ -30,19 +62,19 @@ runs commands in r runtime
 
 where "target" is
 
-  rstudio (default): runs rstudio-server bound on port 28787
+  rstudio          : runs rstudio-server bound on port 28787
   jutyper          : runs jupyter lab bound on port 28888
   notebook         : runs jupyter notebook bound on port 28888
   code             : runs visual studio code server on port 28788
   repl             : runs interactive R console
-  cli ...           : runs Rscript with arguments
-  clear ...         : clear all virtual environmnet and packages
-  upgrade ...       : runs poetry/renv lock/snapshot inside runtime
-  setup ...         : runs poetry/renv install inside runtime
-  status ...        : runs poetry/renv status inside runtime
-  build ...         : runs ./build.sh with arguments inside runtime
+  cli ...          : runs Rscript with arguments
+  clear ...        : clear all virtual environmnet and packages
+  upgrade ...      : runs poetry/renv lock/snapshot inside runtime
+  setup ...        : runs poetry/renv install inside runtime
+  status ...       : runs poetry/renv status inside runtime
+  build ...        : runs ./build.sh with arguments inside runtime
   shell            : runs interactive shell prompt
-  bash args,...     : runs shell with args,...
+  bash args,...    : runs shell with args,...
   term             : attach interactive shell to running runtime
 
 
@@ -250,7 +282,7 @@ main() {
     
     target=''
     
-    : ${command:=${1:-'rstudio'}}
+    : ${command:=${1:-"${X_RUN_COMMAND}"}}
 
 case "${command}" in
     repl|r|R)

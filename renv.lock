@@ -101,17 +101,16 @@
     },
     "argparse": {
       "Package": "argparse",
-      "Version": "2.2.4",
+      "Version": "2.2.5",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
         "R",
         "R6",
         "findpython",
-        "jsonlite",
-        "utils"
+        "jsonlite"
       ],
-      "Hash": "9d15808bebe2f46f991b408efb2f291b"
+      "Hash": "e57988b5f8832fedf35c7836333402d0"
     },
     "backports": {
       "Package": "backports",
@@ -619,12 +618,11 @@
     },
     "pillar": {
       "Package": "pillar",
-      "Version": "1.9.0",
+      "Version": "1.10.0",
       "Source": "Repository",
       "Repository": "RSPM",
       "Requirements": [
         "cli",
-        "fansi",
         "glue",
         "lifecycle",
         "rlang",
@@ -632,7 +630,7 @@
         "utils",
         "vctrs"
       ],
-      "Hash": "15da5a8412f317beeee6175fbc76f4bb"
+      "Hash": "101ca350beea21261a15ba169d7a8513"
     },
     "pkgconfig": {
       "Package": "pkgconfig",
@@ -828,13 +826,13 @@
     },
     "rzmq": {
       "Package": "rzmq",
-      "Version": "0.9.14",
+      "Version": "0.9.15",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
         "R"
       ],
-      "Hash": "175cc0bd787525bdeae241390e1dd5cb"
+      "Hash": "a89e5ea39c3902b170cf725996d48857"
     },
     "scales": {
       "Package": "scales",
