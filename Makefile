@@ -159,12 +159,16 @@ build-upgrade:
 .PHONY: build-validate
 
 build-validate:
-	@echo "TO VALIDATE SETUP, RUN COMMAND: ./runtime.sh build all"
+	@echo "TO COMPLETE RUNTIME SETUP, RUN COMMAND: ./runtime.sh setup"
 
 
 # ---(run)------------------------------------------------
 
-.PHONY: runtime-repl runtime-cli runtime-shell runtime-build runtime-command runtime-term runtime-rstudio runtime-help
+.PHONY: runtime-repl runtime-cli runtime-shell
+.PHONY: runtime-upgrade runtime-setup runtime-status runtime-clear
+.PHONY: runtime-build
+.PHONY: runtime-rstudio runtime-lab runtime-notebook runtime-code
+.PHONY: runtime-command runtime-term runtime-help
 
 runtime-repl: # @HELP/runtime ...
 runtime-repl:
@@ -176,6 +180,22 @@ runtime-cli:
 
 runtime-shell: # @HELP/runtime ...
 runtime-shell:
+	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+
+runtime-clear: # @HELP/runtime ...
+runtime-clear:
+	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+
+runtime-upgrade: # @HELP/runtime ...
+runtime-upgrade:
+	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+
+runtime-setup: # @HELP/runtime ...
+runtime-setup:
+	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+
+runtime-status: # @HELP/runtime ...
+runtime-status:
 	cd ${IMG_MAKE_DIR} && $(MAKE) $@
 
 runtime-build: # @HELP/runtime ...
@@ -192,6 +212,18 @@ runtime-term:
 
 runtime-rstudio: # @HELP/runtime ...
 runtime-rstudio:
+	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+
+runtime-lab: # @HELP/runtime ...
+runtime-lab:
+	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+
+runtime-notebook: # @HELP/runtime ...
+runtime-notebook:
+	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+
+runtime-code: # @HELP/runtime ...
+runtime-code:
 	cd ${IMG_MAKE_DIR} && $(MAKE) $@
 
 runtime-help: help/runtime

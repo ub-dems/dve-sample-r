@@ -29,6 +29,7 @@ Imports:
     reticulate,
     rprojroot,
     rzmq,
+    scriptName,
     targets,
     yaml
 Suggests: 
@@ -40,14 +41,16 @@ Suggests:
     lubridate,
     microbenchmark,
     pacs,
+    processx,
     purrr,
     rmarkdown,
     stringr,
+    usethis,
     testthat (>= 2.1.0)
 VignetteBuilder: 
     knitr
 Encoding: UTF-8
 LazyData: yes
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.2
 Config/build/copy-method: link

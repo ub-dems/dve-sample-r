@@ -13,6 +13,38 @@ E_MAKE_FILE="${E_ROOT_DIR}/Makefile"
 #E_DOCKER_DIR="${E_ROOT_DIR}/docker/r-images"
 #E_MAKE_FILE="${E_DOCKER_DIR}/Makefile"
 
+set -a
+
+: ${E_CONF_DIR:="${E_ROOT_DIR}/docker/r-images"}
+: ${E_CONF_FILE:="${E_CONF_DIR}/runtime.conf"}
+
+[ -r "${E_CONF_FILE}" ] && source "${E_CONF_FILE}" || true
+
+
+: ${X_PRJ_KIND:="${X_DEF_KIND}"}
+
+if [ "${X_PRJ_KIND}" = 'auto' ]; then
+    if [ -n "$(shopt -s nullglob; echo *.Rproj)" ]; then
+        X_RUN_KIND='R'
+    else    
+        X_RUN_KIND='P'
+    fi
+else    
+   X_RUN_KIND="${X_PRJ_KIND}"
+fi    
+    
+case "$X_RUN_KIND" in
+    R) X_DEF_RUN_COMMAND="$X_DEF_RUN_R_COMMAND" ;;
+    *) X_DEF_RUN_COMMAND="$X_DEF_RUN_P_COMMAND" ;;
+esac    
+        
+: ${X_RUN_COMMAND:="${X_DEF_RUN_COMMAND}"}
+
+: ${X_DEBUG:="${X_DEF_DEBUG}"}
+: ${X_DEBUG_ENV:="${X_DEF_DEBUG_ENV}"}
+
+set +a
+
 . $(dirname $0)/functions.sh
 
 #}}} \\\    
@@ -30,9 +62,16 @@ runs commands in r runtime
 
 where "target" is
 
-  rstudio (default): runs rstudio-server bound on port 28787
+  rstudio          : runs rstudio-server bound on port 28787
+  jutyper          : runs jupyter lab bound on port 28888
+  notebook         : runs jupyter notebook bound on port 28888
+  code             : runs visual studio code server on port 28788
   repl             : runs interactive R console
   cli ...          : runs Rscript with arguments
+  clear ...        : clear all virtual environmnet and packages
+  upgrade ...      : runs poetry/renv lock/snapshot inside runtime
+  setup ...        : runs poetry/renv install inside runtime
+  status ...       : runs poetry/renv status inside runtime
   build ...        : runs ./build.sh with arguments inside runtime
   shell            : runs interactive shell prompt
   bash args,...    : runs shell with args,...
@@ -41,13 +80,20 @@ where "target" is
 
 Target aliases:
 
-   rstudio => ide, RStudio
-   repl    => r, R
-   cli     => rscript, Rscript
-   build   => bld, build.sh
-   shell   => sh, prompt
-   bash    => do, command
-   term    => in, attach
+   rstudio  => ide, RStudio
+   jupyter  => lab
+   notebook => note
+   code     => edit
+   repl     => r, R
+   cli      => rscript, Rscript
+   upgrade  => lock, snapshot
+   clear    => zap
+   setup    => lib, install
+   status   => deps, show
+   build    => bld, build.sh
+   shell    => sh, prompt
+   bash     => do, command
+   term     => in, attach
 
 
 EXAMPLES
@@ -74,6 +120,27 @@ RStudio
 
 RStudio login with user root, and default user password as password
 
+Jupyter lab
+-----------
+
+ ./runtime.sh jupyter
+ ./runtime.sh lab
+
+
+Jupyter notebook
+----------------
+
+ ./runtime.sh notebook
+ ./runtime.sh note
+
+
+Visual Studio Code Server
+-------------------------
+
+ ./runtime.sh code
+ ./runtime.sh edit
+
+
 R Console
 ---------
 
@@ -91,11 +158,16 @@ R Script
  ./runtime.sh rscript exec/dummy_runner.R  
  ./runtime.sh Rscript exec/dummy_runner.R  
 
-to run scripts from ./exec directory 
+to run scripts from ./exec directory
 
 
-Shell Prompt
-------------
+
+
+=====
+
+
+Build
+-----
 
  ./runtime.sh build all
  ./runtime.sh build test
@@ -123,6 +195,43 @@ or with command args
  ./runtime.sh do whoami
 
 to run execute shell commands
+
+
+
+VIRTUAL ENVIRONMENTS
+===============================
+
+Clear
+-----
+
+ ./runtime.sh clear
+
+for ./setup.sh (clear all) execution inside runtime container
+
+
+Upgrade
+-----
+
+ ./runtime.sh upgrade
+
+for ./setup.sh (upgrade mode) execution inside runtime container
+
+
+Setup
+-----
+
+ ./runtime.sh setup
+
+for ./setup.sh execution inside runtime container
+
+
+Status
+-----
+
+ ./runtime.sh status
+
+for ./setup.sh status reporting inside runtime container
+
 
 
 
@@ -173,7 +282,7 @@ main() {
     
     target=''
     
-    : ${command:=${1:-'rstudio'}}
+    : ${command:=${1:-"${X_RUN_COMMAND}"}}
 
 case "${command}" in
     repl|r|R)
@@ -192,6 +301,22 @@ case "${command}" in
         shift
         target=runtime-build
         ;;
+    clear|zap)
+        shift
+        target=runtime-clear
+        ;;
+    lock|snapshot|upgrade)
+        shift
+        target=runtime-upgrade
+        ;;
+    lib|install|setup)
+        shift
+        target=runtime-setup
+        ;;
+    deps|show|status)
+        shift
+        target=runtime-status
+        ;;
     do|command)
         shift
         export LOG_ACTIVE='OFF'  
@@ -201,6 +326,18 @@ case "${command}" in
         shift
         export LOG_ACTIVE='OFF'  
         target=runtime-term
+        ;;
+    edit|code)
+        shift
+        target=runtime-code
+        ;;
+    lab|jupyter)
+        shift
+        target=runtime-lab
+        ;;
+    edit|notebook)
+        shift
+        target=runtime-notebook
         ;;
     ide|rstudio|RStudio)
         shift

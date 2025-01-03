@@ -1,0 +1,6 @@
+#+title:      00index
+#+date:       [2024-01-22 Mon 16:12]
+#+filetags:   :<meta>:
+#+identifier: 20240122T161259
+
+- [[denote:20241009T171120][30multi]]

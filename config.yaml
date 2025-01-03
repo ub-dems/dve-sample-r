@@ -6,6 +6,26 @@ data:
 
   db:
 
+    dve:
+
+      type: mysql
+      driver: mysqlconnector
+      # driver: mysqldb
+      
+      pool:
+        name: "dve"
+        size: 3
+        
+      host: ${X_DB_DVE_HOST:-localhost}
+      port: ${X_DB_DVE_PORT:-3306}
+      user: ${X_DB_DVE_USER:-gct}
+      password: ${X_DB_DVE_PASSWORD:-*hidden*}
+      database: ${X_DB_DVE_DATABASE:-gct}
+      
+      uri: "{type}+{driver}://{user}:{password}@{host}:{port}/{database}"
+
+      
+
     demo:
       alias: demo_my
 
