@@ -19,15 +19,6 @@ setwd(env_script_dir)
 
 
 
-#curdir <- getwd()
-#setwd("~/latex/papers/hron/14_monti/2024knockoff2/simulations/progs/")
-#source("utils.R")
-#setwd(curdir)
-
-
-
-
-
 ##
 # runner script example
 #
@@ -35,7 +26,6 @@ setwd(env_script_dir)
 #rm(list=ls())
 devtools::load_all(".") 
 
-require(rob)
 
 library(logging)
 
@@ -57,6 +47,26 @@ task <- function(){
   0
 }
 
+task <- function(){
+  loginfo('#> task, ...')
+
+  s1 <- dmy_hello("jupiter")
+  s2 <- dmy_alter("jupiter")
+
+  print (s1," -- ",s2)
+
+  loginfo('#: dmy_hello: %s', s1)
+  loginfo('#: dmy_alter: %s', s2)
+
+  of <- dmy_sepal_plot()
+  print (" saved plot:",of)
+
+  loginfo('#: dmy_sepal_plot: %s', of)
+
+  rc <- 0 
+  loginfo('#< task, done.')
+  rc
+}
 
 main <- function(){
   args <- commandArgs(trailingOnly=TRUE)
@@ -65,7 +75,7 @@ main <- function(){
   logdebug('#? args: %s', paste(commandArgs(),sep = ", "))
   print(sx <- sessionInfo())
   logfinest(sx)
-  rc <- 0 
+  rc <- task() 
   print(elapsed <- system.time({ rc <- task()  }))
   loginfo('#< end(%d): %s', rc, summary(elapsed))
   rc

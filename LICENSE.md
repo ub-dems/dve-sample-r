@@ -1,7 +1,7 @@
 The MIT License (MIT)
 =====================
 
-Copyright © 2020-2023 Università degli Studi di Milano-Bicocca
+Copyright © 2020-2025 Università degli Studi di Milano-Bicocca
 
 Permission is hereby granted, free of charge, to any person
 obtaining a copy of this software and associated documentation
