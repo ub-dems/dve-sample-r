@@ -1,0 +1,20 @@
+{
+    "_see": [
+        "https://code.visualstudio.com/docs/devcontainers/attach-container",
+        "https://chatgpt.com/share/676557a0-04b0-8012-999b-2e2c3f28f5df"
+    ],
+  "name": "runtime project container",
+  "remoteUser": "root",
+  "containerName": "hardcore_hellman",
+  "workspaceFolder": "/root/work",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance"
+      ]
+    }
+  },
+  "forwardPorts": [],
+  "postCreateCommand": "# echo 'poetry install'"
+}

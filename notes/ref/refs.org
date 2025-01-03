@@ -1,0 +1,68 @@
+# ---
+#+TITLE: Project References
+#+SUBTITLE: Full bibliogrphy
+#+AUTHOR: --
+#+DATE: <2024-02-08>
+# ---
+#+LINK: rh362-7.4 https://rol.redhat.com/rol/app/courses/rh362-7.4/pages/pr01
+#+LINK: rh362-9.1 https://rol.redhat.com/rol/app/courses/rh362-9.1/pages/pr01
+#+OPTIONS: toc:t h:6
+#+STARTUP: show2levels
+#+SETUPFILE: style.org
+#+LATEX_COMPILER: lualatex
+#+LATEX_HEADER: \def\xref{references}
+#+bibliography: references.bib
+
+#+LATEX: \newpage
+-----
+* NOTES
+** Tags
+ * [[denote:20240122T161259][00index]]
+** Examples
+ * [[denote:20241009T171120][30multi]]
+
+#+ATTR_LATEX: :width .6\textwidth :thickness 0.8pt
+-----
+
+#+LATEX: \newpage
+
+* REFERENCES
+** Azure docs
+ * [cite:@AzDNSprivate] Microsoft Azure (2023) Azure Private Endpoint private DNS zone values, .
+ * [cite:@AzDNSprivate2] Microsoft Azure (2023) What is an Azure Private DNS zone?, .
+ * [cite:@AzDNSprivateQS] Microsoft Azure (2023) Quickstart: Create an Azure DNS Private Resolver using the Azure portal, .
+
+** Red Hat RHEL docs
+ * [cite:@RhelIDMsssd] Red Hat (2023) Understanding SSSD and its benefits, .
+ * [cite:@RhelIDMdocs] Red Hat (2023) Red Hat Identity Management Documentation, .
+ * [cite:@RhelIDMkrb5] Red Hat (2023) Managing Kerberos ticket policies, .
+ * [cite:@RhelIDMplan] Red Hat (2023) Planning Identity Management, .
+ * [cite:@RhelIDMids] Red Hat (2023) Managing IdM users, groups, hosts, and access control rules, .
+ * [cite:@RhelIDMfirefox] Red Hat (2022) Configuring Firefox to Use Kerberos for Single Sign-On, .
+ * [cite:@RhelIDMkrb5policy] Red Hat (2022) Managing the Kerberos Domain, .
+ * [cite:@RhelIDMkrb5flags] Red Hat (2022) Managing Kerberos Flags and Principal Aliases, .
+
+** OSS docs
+ * [cite:@lwnIDMsssd] LWN net (2011) SSSD: System Security Services Daemon, .
+ * [cite:@lxjAAApam] LinuxJournal (1997) Pluggable Authentication Modules for Linux, .
+ * [cite:@rfc4120krb5] RFC (2005) RFC4120: The Kerberos Network Authentication Service (V5), .
+ * [cite:@uscTRkrb5] USC/ISI-tr (1994) Kerberos: An Authentication Service for Computer Networks, .
+
+
+#+LATEX: \newpage
+
+* BIBLIOGRAPHY
+** org-citations
+#+print_bibliography:
+
+#+ATTR_LATEX: :width .6\textwidth :thickness 0.8pt
+-----
+
+** bib-references
+
+#+BEGIN_EXPORT latex
+\nocite{*}
+\bibliographystyle{IEEEtran}
+\bibliography{\xref}
+#+END_EXPORT
+

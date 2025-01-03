@@ -396,6 +396,8 @@ function main() {
 
     [ "$Y_NV_CUDA_SUPPORT" = 1 ] || return 0
 
+    [ "$Y_NV_CUDA_SETUP" = '11.470' ] || return 0
+
     install_compiler
     install_cudnn
     install_nvinfer

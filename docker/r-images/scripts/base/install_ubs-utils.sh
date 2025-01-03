@@ -50,8 +50,10 @@ function install_utils_sys() {
         ranger \
         silversearcher-ag \
         ripgrep \
-        tmux && \
-    rm -rf /var/lib/apt/lists/*
+        iputils-ping \
+        iputils-tracepath \
+        iputils-clockdiff \
+        tmux
     
 }
 

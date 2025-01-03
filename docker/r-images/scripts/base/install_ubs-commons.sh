@@ -42,6 +42,7 @@ function install_commons_sys() {
     [ "$Y_BASE_COMMONS_SYS" = 1 ] || return 0
     
     apt_install \
+        libgsl-dev \
         libzmq3-dev \
         default-libmysqlclient-dev \
         parallel \
@@ -49,8 +50,7 @@ function install_commons_sys() {
         tasksel \
         numactl \
         inxi \
-        htop && \
-    rm -rf /var/lib/apt/lists/*
+        htop
     
 }
 
