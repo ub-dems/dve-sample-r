@@ -17,7 +17,9 @@ set -a
 
 : ${E_CONF_DIR:="${E_ROOT_DIR}/docker/r-images"}
 : ${E_CONF_FILE:="${E_CONF_DIR}/runtime.conf"}
+: ${E_META_FILE:="${E_CONF_DIR}/project.conf"}
 
+[ -r "${E_META_FILE}" ] && source "${E_META_FILE}" || true
 [ -r "${E_CONF_FILE}" ] && source "${E_CONF_FILE}" || true
 
 
