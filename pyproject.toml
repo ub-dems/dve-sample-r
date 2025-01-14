@@ -1,13 +1,21 @@
-[tool.poetry]
+[project]
 name = "dve_sample_r"
 version = "2.0.0a1"
 description = "R Template Project with Podman and Jypyter Support"
-authors = ["Datalab DEMS <datalab@unimib.it>"]
+authors = [
+    {name = "Datalab DEMS", email = "datalab@unimib.it"}
+]
 license = "GNU General Public License v3.0"
 readme = "README.md"
 documentation = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-r/-/wikis/home"
 homepage = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-r"
 repository = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-r.git"
+
+dynamic = [ "dependencies" ]
+requires-python = "^3.12"
+
+[tool.poetry]
+requires-poetry = ">=2.0"
 packages = [{ include = "*", from = "src" }]
 
 [tool.setuptools]
@@ -16,7 +24,7 @@ include-package-data = true
 [tool.setuptools.package-data]
 res = [ "resources/*", "resources/*/*" ]
 
-[tool.poetry.scripts]
+[projct.scripts]
 main = "dve.cli:main"
 demo = "vce.cli:main"
 
@@ -186,7 +194,7 @@ more-itertools = "*"
 
 
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 
 # {{{ JUPYTER: from https://docs.jupyter.org/en/latest/install.html
 
@@ -659,7 +667,7 @@ docstring-code-format = true
 
 [build-system]
 requires = [
-    "poetry-core>=1.0.0",
+    "poetry-core>=2.0",
     "setuptools",
     "wheel",
     "incremental",
