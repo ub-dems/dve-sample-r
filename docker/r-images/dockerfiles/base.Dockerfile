@@ -104,6 +104,8 @@ RUN /rocker_scripts/install_ubs-py_poetry.sh
 RUN /rocker_scripts/install_ubs-py_lang.sh
 RUN /rocker_scripts/install_ubs-py_jupyter.sh
 
+RUN /rocker_scripts/install_ubs-re_seal.sh
+
 # clean up
 RUN /rocker_scripts/install_ubs-clean.sh
 

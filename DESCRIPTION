@@ -14,7 +14,7 @@ URL: https://www.unimib.it,
      https://gitlab.com/ub-dems-public/ds-labs/dve-sample-r
 BugReports: https://gitlab.com/ub-dems-public/ds-labs/dve-sample-r/-/issues
 Depends: 
-    R (>= 3.6.0)
+    R (>= 4.0.0)
 Imports:
     keras,
     dplyr,

@@ -98,9 +98,8 @@ function setenv_rehash() {
 function install_poetry() {
 
     pipx install --global poetry
-
     pipx upgrade --global poetry
-    
+    pipx inject  --global poetry poetry-plugin-shell
     
 }
 

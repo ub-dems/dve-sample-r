@@ -386,6 +386,42 @@ exit_status() {
 }
 
 # --------------------------------------------------------------
+
+docs_renv_refs() {
+    cat <<'EOF'
+---
+# R config
+
+## R environment settings
+
+* [Managing R with .Rprofile, .Renviron, Rprofile.site, Renviron.site, rsession.conf, and repos.conf](https://support.posit.co/hc/en-us/articles/360047157094-Managing-R-with-Rprofile-Renviron-Rprofile-site-Renviron-site-rsession-conf-and-repos-conf)
+
+> R will source only one .Rprofile file.
+> So if you have both a project-specific .Rprofile file and a user .Rprofile file
+> that you want to use, you explicitly source the user-level .Rprofile
+> at the top of your project-level .Rprofile with source("~/.Rprofile").
+
+
+* [Setting same R library order in RStudio Server and command-line R](https://forum.posit.co/t/setting-same-r-library-order-in-rstudio-server-and-command-line-r/169545/3)
+
+> Then R searches for the site-wide startup profile file of R code
+> unless the command line option ‘--no-site-file’ was given.  The
+> path of this file is taken from the value of the ‘R_PROFILE’
+> environment variable (after tilde expansion).  If this variable is
+> unset, the default is ‘R_HOME/etc/Rprofile.site’, which is used if
+> it exists (which it does not in a ‘factory-fresh’ installation).
+
+EOF
+
+}
+
+
+
+docs_refs() {
+    docs_renv_refs
+}
+
+# --------------------------------------------------------------
 C_OFF='\033[0m'
 C_Green='\033[0;32m'
 C_IGreen='\033[0;92m'
@@ -806,6 +842,7 @@ PATH=${X_ENV_PATH}
 #X_ENV_VENV=${X_ENV_VENV}
 #VIRTUAL_ENV=${VIRTUAL_ENV}
 RETICULATE_PYTHON_ENV=${RETICULATE_PYTHON_ENV}
+_R_CHECK_SYSTEM_CLOCK_=0
 EOR
     
       
