@@ -163,18 +163,32 @@ DOCKER_BUILD_OPTIONS := --rm
 DOCKER_BUILD_PULL := --pull
 
 
-DOCKER_NVIDIA_TOOLKIT_OCI := /usr/share/containers/oci/hooks.d/oci-nvidia-hook.json
+DOCKER_NVIDIA_TOOLKIT_CTK := /etc/cdi/nvidia.yaml
 
-ifneq ("$(wildcard $(DOCKER_NVIDIA_TOOLKIT_OCI))","")
-    DOCKER_NVIDIA_OPTIONS = \
-           --security-opt=label=disable \
-           --hooks-dir=/usr/share/containers/oci/hooks.d/ \
+ifneq ("$(wildcard $(DOCKER_NVIDIA_TOOLKIT_CTK))","")
+    DOCKER_NVIDIA_CTK_OPTIONS = \
+           --security-opt label=type:nvidia_container_t  \
+	   --device nvidia.com/gpu=all \
 
+#          --runtime nvidia --gpus=all \
+#          --security-opt=label=disable \
 #          --security-opt=no-new-privileges --cap-drop=ALL \  #rstudio compatibility
 
 else
-    DOCKER_NVIDIA_OPTIONS =
+    DOCKER_NVIDIA_CTK_OPTIONS =
 endif
+
+DOCKER_NVIDIA_TOOLKIT_OCI := /usr/share/containers/oci/hooks.d/oci-nvidia-hook.json
+ifneq ("$(wildcard $(DOCKER_NVIDIA_TOOLKIT_OCI))","")
+    DOCKER_NVIDIA_OCI_OPTIONS = \
+           --hooks-dir=/usr/share/containers/oci/hooks.d/ \
+
+else
+    DOCKER_NVIDIA_OCI_OPTIONS =
+endif
+
+DOCKER_NVIDIA_OPTIONS := $(DOCKER_NVIDIA_CTK_OPTIONS) $(DOCKER_NVIDIA_OCI_OPTIONS)
+
 
 #DOCKER_RUNTIME_OPTIONS := --ulimit=host --group-add dsdata
 #DOCKER_RUNTIME_OPTIONS := --ulimit=host --group-add keep-groups --subgidname=dsuser
