@@ -196,17 +196,17 @@ function main() {
     
     [ "$Y_JS_ANY_SUPPORT" = 1 ] || return 0
 
-    env_dump $@
+    env_dump "$@"
 
     [ "$Y_JS_NODE_SUPPORT" = 1 ] || return 0
 
-    purge_node $@
-    install_node $@
-    config_node $@
+    purge_node "$@"
+    install_node "$@"
+    config_node "$@"
 
     setenv_rehash    
     
-    check_node $@
+    check_node "$@"
 
     clean_up
 

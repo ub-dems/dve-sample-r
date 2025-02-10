@@ -164,7 +164,7 @@ function check_jupyter_venv() {
     echo "#<jupyter>:  to ckeck jupyter, in container shell run:"
     echo "#<jupyter>:  jupyter --version"
     echo "#<jupyter>:  jupyter --paths"
-    echo "#<jupyter>:  jupyter jupyter labextension list"
+    echo "#<jupyter>:  jupyter labextension list"
     echo "#<jupyter>:  jupyter kernelspec list"
     
 }
