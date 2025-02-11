@@ -106,6 +106,9 @@ RG_LOCAL ?= "localhost"
 RG_PRIVATE ?= "${RG_INTERNAL}"
 RG_PUBLIC ?= "docker.io"
 
+PRC_RUNTIME ?= "run-${ID_PROJECT}"
+PRC_WORKER ?= "wrk-${ID_PROJECT}"
+
 
 # ---(PYTHON)------------------------------------------------
 
@@ -160,18 +163,32 @@ DOCKER_BUILD_OPTIONS := --rm
 DOCKER_BUILD_PULL := --pull
 
 
-DOCKER_NVIDIA_TOOLKIT_OCI := /usr/share/containers/oci/hooks.d/oci-nvidia-hook.json
+DOCKER_NVIDIA_TOOLKIT_CTK := /etc/cdi/nvidia.yaml
 
-ifneq ("$(wildcard $(DOCKER_NVIDIA_TOOLKIT_OCI))","")
-    DOCKER_NVIDIA_OPTIONS = \
-           --security-opt=label=disable \
-           --hooks-dir=/usr/share/containers/oci/hooks.d/ \
+ifneq ("$(wildcard $(DOCKER_NVIDIA_TOOLKIT_CTK))","")
+    DOCKER_NVIDIA_CTK_OPTIONS = \
+           --security-opt label=type:nvidia_container_t  \
+	   --device nvidia.com/gpu=all \
 
+#          --runtime nvidia --gpus=all \
+#          --security-opt=label=disable \
 #          --security-opt=no-new-privileges --cap-drop=ALL \  #rstudio compatibility
 
 else
-    DOCKER_NVIDIA_OPTIONS =
+    DOCKER_NVIDIA_CTK_OPTIONS =
 endif
+
+DOCKER_NVIDIA_TOOLKIT_OCI := /usr/share/containers/oci/hooks.d/oci-nvidia-hook.json
+ifneq ("$(wildcard $(DOCKER_NVIDIA_TOOLKIT_OCI))","")
+    DOCKER_NVIDIA_OCI_OPTIONS = \
+           --hooks-dir=/usr/share/containers/oci/hooks.d/ \
+
+else
+    DOCKER_NVIDIA_OCI_OPTIONS =
+endif
+
+DOCKER_NVIDIA_OPTIONS := $(DOCKER_NVIDIA_CTK_OPTIONS) $(DOCKER_NVIDIA_OCI_OPTIONS)
+
 
 #DOCKER_RUNTIME_OPTIONS := --ulimit=host --group-add dsdata
 #DOCKER_RUNTIME_OPTIONS := --ulimit=host --group-add keep-groups --subgidname=dsuser
@@ -472,7 +489,7 @@ build-image/${BLD_WORKER}: build-image/${BLD_RUNTIME}
 
 run/shell:
 	@echo "CLI: shell ${RUNTIME_ARGS}"
-	@export _passw_=$$(cat ~/.rup/*); \
+	@export _passw_=$$(cat ~/.rup/*); set -x; \
 	$(DOCKER)  run \
 		--rm \
 		${DOCKER_RUNTIME_OPTIONS} \
@@ -498,6 +515,8 @@ run/shell:
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		-ti  \
+		--name  \
+		${PRC_RUNTIME}.sh-$$PPID \
 		${IMG_RUNTIME} \
 		'/bin/bash' ${RUNTIME_RSCRIPT_OPTS} ${RUNTIME_ARGS}
 
@@ -536,6 +555,8 @@ run/status:
 		-e REV_REGISTRY=${REGISTRY}  \
 		-e REV_TAG=${TAG}  \
 		-ti  \
+		--name  \
+		${PRC_RUNTIME}.status-$$PPID \
 		${IMG_RUNTIME} \
 		'./setup.sh' ${RUNTIME_STATUS_OPTS} ${RUNTIME_ARGS}
 
@@ -565,6 +586,8 @@ run/setup:
 		-e X_AUTO_ENV=0  \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		-ti  \
+		--name  \
+		${PRC_RUNTIME}.setup-$$PPID \
 		${IMG_RUNTIME} \
 		'./setup.sh' ${RUNTIME_SETUP_OPTS} ${RUNTIME_ARGS}
 
@@ -593,6 +616,8 @@ run/upgrade:
 		-e X_AUTO_ENV=0  \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		-ti  \
+		--name  \
+		${PRC_RUNTIME}.setup-$$PPID \
 		${IMG_RUNTIME} \
 		'./setup.sh' ${RUNTIME_UPGRADE_OPTS} ${RUNTIME_ARGS}
 
@@ -621,6 +646,8 @@ run/clear:
 		-e X_AUTO_ENV=0  \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		-ti  \
+		--name  \
+		${PRC_RUNTIME}.setup-$$PPID \
 		${IMG_RUNTIME} \
 		'./setup.sh' ${RUNTIME_CLEAR_OPTS} ${RUNTIME_ARGS}
 
@@ -660,6 +687,8 @@ run/r-repl:
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		-ti  \
+		--name  \
+		${PRC_RUNTIME}.r-$$PPID \
 		${IMG_RUNTIME} \
 		${X_PY_RUN} \
 		'/usr/local/bin/R' ${RUNTIME_R_OPTS} ${RUNTIME_ARGS}
@@ -687,6 +716,9 @@ run/rscript-cli:
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		-ti  \
+		--name  \
+		${PRC_RUNTIME}.rs-$$PPID \
 		${IMG_RUNTIME} \
 		${X_PY_RUN} \
 		'/usr/local/bin/Rscript' ${RUNTIME_RSCRIPT_OPTS} ${RUNTIME_ARGS}
@@ -715,6 +747,8 @@ run/build:
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		-ti  \
+		--name  \
+		${PRC_RUNTIME}.build-$$PPID \
 		${IMG_RUNTIME} \
 		${X_PY_RUN} \
 		'./build.sh' ${RUNTIME_BUILD_OPTS} ${RUNTIME_ARGS}
@@ -742,6 +776,8 @@ run/command:
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		--name  \
+		${PRC_RUNTIME}.do-$$PPID \
 		${IMG_RUNTIME} \
 		${X_PY_RUN} \
 		${RUNTIME_ARGS} ${RUNTIME_RSCRIPT_OPTS}
@@ -770,6 +806,8 @@ run/code-server:
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		--name  \
+		${PRC_RUNTIME}.code-$$PPID \
 		${IMG_RUNTIME} \
 		${X_PY_RUN} \
 		'code-server' ${RUNTIME_CODE_OPTS} ${RUNTIME_ARGS}
@@ -799,6 +837,8 @@ run/jupyter-lab:
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		--name  \
+		${PRC_RUNTIME}.lab-$$PPID \
 		${IMG_RUNTIME} \
 		'jupyter' ${RUNTIME_JUPYTER_LAB_OPTS} ${RUNTIME_ARGS}
 
@@ -827,6 +867,8 @@ run/jupyter-notebook:
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		--name  \
+		${PRC_RUNTIME}.note-$$PPID \
 		${IMG_RUNTIME} \
 		${X_PY_RUN} \
 		'jupyter' ${RUNTIME_JUPYTER_NOTEBOOK_OPTS} ${RUNTIME_ARGS}
@@ -869,6 +911,8 @@ run/rstudio-server:
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		--name  \
+		${PRC_RUNTIME}.rstudio-$$PPID \
 		${IMG_RUNTIME} \
 		'/init' ${RUNTIME_RSTUDIO_OPTS} ${RUNTIME_ARGS}
 
@@ -902,6 +946,8 @@ wrk/make:
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		--name  \
+		${PRC_WORKER}.make-$$PPID \
 		${IMG_WORKER} \
 		'make' ${WORKER_MAKE_OPTS} ${MAKE_ARGS}
 
@@ -921,6 +967,8 @@ wrk/build:
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		--name  \
+		${PRC_WORKER}.build-$$PPID \
 		${IMG_WORKER} \
 		'./build.sh' ${WORKER_MAKE_OPTS} ${MAKE_ARGS}
 
@@ -941,6 +989,8 @@ wrk/runner:
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		--name  \
+		${PRC_WORKER}.run-$$PPID \
 		${IMG_WORKER} \
 		${WORKER_SCRIPT_FILE} ${WORKER_SCRIPT_ARGS} ;\
 	echo -e "# ${C_BWhite}#WORKER($$?):<< $$(date -Isec) - exec --  ${C_BYellow}${WORKER_SCRIPT_FILE} ${WORKER_SCRIPT_ARGS}${C_BWhite} ${C_OFF}"
@@ -962,6 +1012,8 @@ wrk/shell:
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		--name  \
+		${PRC_WORKER}.sh-$$PPID \
 		${IMG_WORKER} \
 		'bash' ${WORKER_SCRIPT_FILE} ${WORKER_SCRIPT_ARGS}
 
