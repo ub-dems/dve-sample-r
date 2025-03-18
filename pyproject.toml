@@ -69,6 +69,7 @@ torch = {version = "*"}
 ##torch = {version = "=2.5.*"}
 ##torch = {version = "=2.5.*", source = "torch124"}
 ##torch = {version = "=2.1.1*", source = "torch121"}
+torchvision = {version = "*"}
 #torch_geometric = {version = "*"}
 
 ### }}} // torch
@@ -86,6 +87,10 @@ torch = {version = "*"}
 # --- [core] -----------------------------------
 numpy = '*'
 pandas = '*'
+
+# --- [cuda] -----------------------------------
+pynvml = '*'
+nvidia-ml-py = '*'
 
 # --- [raw] -----------------------------------
 pandas-datareader = '*'

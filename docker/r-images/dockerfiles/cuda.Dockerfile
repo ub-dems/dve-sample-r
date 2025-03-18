@@ -23,31 +23,55 @@ LABEL org.opencontainers.image.vendor="ubdems" \
 #ARG DEBIAN_FRONTEND=noninteractive
 
 
-ENV NV_CUDNN_VERSION 8.6.0.163
-ENV NV_CUDNN_PACKAGE_NAME "libcudnn8"
-ENV NV_CUDNN_PACKAGE_LIST "libcudnn8 libcudnn8-dev"
 
-ENV NV_CUDNN_PACKAGE "libcudnn8=$NV_CUDNN_VERSION-1+cuda11.8"
-ENV NV_CUDNN_PACKAGE_DEV "libcudnn8-dev=$NV_CUDNN_VERSION-1+cuda11.8"
+ENV NV_TOOLKIT_VERSION 12-8.1
 
-ENV NV_NVINFER_VERSION 8.6.0.12
-ENV NV_NVINFER_PACKAGE_NAME "libnvinfer8"
-ENV NV_NVINFER_PACKAGE_ALIAS "libnvinfer7"
-ENV NV_NVINFER_PACKAGE_LIST "libnvinfer8 libnvinfer-dev libnvinfer-headers-dev libnvinfer-headers-plugin-dev libnvinfer-plugin8 libnvinfer-plugin-dev"
+ENV NV_TOOLKIT_PACKAGE_NAME "cuda-toolkit-12-8"
+ENV NV_TOOLKIT_PACKAGE_LIST "cuda-toolkit-12-8"
 
-ENV NV_NVINFER_VER "$NV_NVINFER_VERSION-1+cuda11.8"
-
-ENV NV_NVINFER_PACKAGES "libnvinfer8=$NV_NVINFER_VER libnvinfer-dev=$NV_NVINFER_VER libnvinfer-headers-dev=$NV_NVINFER_VER libnvinfer-headers-plugin-dev=$NV_NVINFER_VER libnvinfer-plugin8=$NV_NVINFER_VER libnvinfer-plugin-dev=$NV_NVINFER_VER"
+ENV NV_TOOLKIT_PACKAGE "cuda-toolkit-12-8"
 
 
-ENV NV_NVCC_PACKAGE_NAME "cuda-nvcc-11-8"
-ENV NV_NVCC_PACKAGE "$NV_NVCC_PACKAGE_NAME"
+
+ENV NV_CUDNN_VERSION 9.8.0.87
+
+ENV NV_CUDNN_PACKAGE_NAME "libcudnn9-cuda-12"
+ENV NV_CUDNN_PACKAGE_LIST "libcudnn9-cuda-12 libcudnn8-dev"
+
+ENV NV_CUDNN_PACKAGE "libcudnn9-cuda-12"
+ENV NV_CUDNN_PACKAGE_DEV "libcudnn9-dev-cuda-12"
 
 
-ENV NV_DRIVER_COMP 470
-ENV NV_DRIVER_DIST 520
+# ENV NV_NVINFER_VERSION 10.9.0.34
+# ENV NV_NVINFER_VER "$NV_NVINFER_VERSION-1+cuda12.8"
 
-ENV NV_DRIVER_LINE "$NV_DRIVER_COMP"
+ENV NV_NVINFER_PACKAGE_NAME "libnvinfer10"
+# ENV NV_NVINFER_PACKAGE_LIST "libnvinfer10 libnvinfer-dev libnvinfer-headers-dev libnvinfer-headers-plugin-dev libnvinfer-plugin8 libnvinfer-plugin-dev"
+
+
+ENV NV_NVINFER_PACKAGES "\
+libnvinfer-bin \
+libnvinfer-dev \
+libnvinfer-dispatch-dev \
+libnvinfer-dispatch10 \
+libnvinfer-headers-dev \
+libnvinfer-headers-plugin-dev \
+libnvinfer-lean-dev \
+libnvinfer-lean10 \
+libnvinfer-plugin-dev \
+libnvinfer-plugin10 \
+libnvinfer-samples \
+libnvinfer-vc-plugin-dev \
+libnvinfer-vc-plugin10 \
+libnvinfer10"
+
+ENV NV_NVTOP_PACKAGES "nvtop nvitop"
+
+
+# ENV NV_DRIVER_COMP 470
+# ENV NV_DRIVER_DIST 520
+
+# ENV NV_DRIVER_LINE "$NV_DRIVER_COMP"
 
 
 

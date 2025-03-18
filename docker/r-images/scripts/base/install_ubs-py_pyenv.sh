@@ -37,7 +37,58 @@ set -a
 # ------------------------------------------------------
 set +a
 
+# ---(colors)------------------------------------------------
+C_OFF='\033[0m'
+C_Green='\033[0;32m'
+C_IGreen='\033[0;92m'
+C_Blue='\033[0;34m'
+C_BBlue='\033[1;34m'
+C_UBlue='\033[4;34m'
+C_On_Blue='\033[44m'
+C_IBlue='\033[0;94m'
+C_On_IBlue='\033[0;104m'
+C_BIBlue='\033[1;94m'
+C_BCyan='\033[1;36m'
+C_ICyan='\033[0;96m'
+C_UCyan='\033[4;36m'
+C_BICyan='\033[1;96m'
+C_BYellow='\033[1;33m'
+C_IYellow='\033[0;93m'
+C_BIYellow='\033[1;93m'
+C_BRed='\033[1;31m'
+C_IRed='\033[0;91m'
+C_URed='\033[4;31m'
+C_BIRed='\033[1;91m'
+C_BWhite='\033[1;37m'
+C_IWhite='\033[0;97m'
+C_UWhite='\033[4;37m'
+C_BIWhite='\033[1;97m'
 
+# ---(logs)------------------------------------------------
+CLOG=""
+LCTX="-"
+LOG_LOGGER="$(basename $0 .sh)"
+LOG_LEVEL=""
+function _log() {
+
+    local mess
+    local llev
+    lcat="$LOG_LOGGER"
+    llev=$(printf '%-5s' ${LOG_LEVEL:-'LOG'})
+    mess="${C_BICyan}$(date '+%Y-%m-%d %H:%M:%S %s') ${C_OFF}${CLOG}| $lwho | $lcat | $llev | ${LCTX} | $$ | $* ${C_OFF}"
+
+    echo -e ${mess}
+    
+}
+debug() { LOG_LEVEL='DEBUG' CLOG="$C_BWhite"   _log $*; }
+info()  { LOG_LEVEL='INFO.'  CLOG="$C_UBlue"  _log $*; }
+warn()  { LOG_LEVEL='WARN.'  CLOG="$C_BYellow" _log $*; }
+error() { LOG_LEVEL='ERROR' CLOG="$C_IRed"    _log $*; }
+fatal() { LOG_LEVEL='FATAL' CLOG="$C_BIRed"   _log $*; }
+log()   { LOG_LEVEL='_LOG_'   CLOG="$C_BBlue"   _log $*; }
+die ()  { fatal $*; exit 1; }
+
+# ---(env)------------------------------------------------
 function env_dump() {
     
     [ "$Y_DEBUG_ENV" = 1 ] || return 0
@@ -127,67 +178,81 @@ function apt_install() {
     fi
 }
 
+##
+# Python build dependencies:
+#
 function install_build_deps() {
 
     [ "$Y_PY_PYENV_INSTALL" = 1 ] || return 0
 
+    debug "> install python build deps, ..."
+
+    # @see: https://devguide.python.org/getting-started/setup-building/#build-dependencies
     apt_install \
-        build-essential \
-        curl \
-        git \
-        libssl-dev \
-        zlib1g-dev \
-        libbz2-dev \
-        libreadline-dev \
-        libsqlite3-dev \
-        wget \
-        llvm \
-        libncurses5-dev \
-        libncursesw5-dev \
-        xz-utils \
-        tk-dev \
-        libffi-dev \
-        liblzma-dev \
-        python3-apt \
-        python3-distutils \
-        python3-openssl \
-        ca-certificates
-    
-    apt_install \
-         make \
-         wget \
-         curl \
-         unzip \
+         build-essential \
          gdb \
          lcov \
          pkg-config \
+         libbz2-dev \
+         libffi-dev \
+         libgdbm-dev \
+         libgdbm-compat-dev \
+         liblzma-dev \
+         libncurses5-dev \
+         libreadline6-dev \
+         libsqlite3-dev \
+         libssl-dev \
+         lzma \
+         lzma-dev \
+         tk-dev \
+         uuid-dev \
+         zlib1g-dev
+    # Note that Debian 12 and Ubuntu 24.04 do not have the libmpdec-dev package.
+    # You can safely remove it from the install list above and
+    # the Python build will use a bundled version.    
+    #    libmpdec-dev
+
+    # @see: https://github.com/pyenv/pyenv/wiki#suggested-build-environment
+    apt_install \
          build-essential \
          libssl-dev \
          zlib1g-dev \
-         libgdbm-dev \
-         libgdbm-compat-dev \
          libbz2-dev \
          libreadline-dev \
          libsqlite3-dev \
-         llvm \
-         libncurses5-dev \
+         curl \
+         git \
          libncursesw5-dev \
          xz-utils \
-         tcllib \
-         tklib \
          tk-dev \
-         uuid-dev \
+         libxml2-dev \
+         libxmlsec1-dev \
          libffi-dev \
-         liblzma-dev \
-         python3-openssl
+         liblzma-dev
 
+    # misc
+    apt_install \
+        make \
+        wget \
+        unzip \
+        llvm \
+        tcllib \
+        tklib \
+        python3-apt \
+        python3-distlib \
+        python3-openssl \
+        ca-certificates
+    
+    # @see: mysql native
     apt_install \
          mysql-client \
          libmysqlclient-dev
 
+    # @see: 0mq
     apt_install \
          libczmq-dev
 
+    debug "< install python build deps, done."
     
 }
 
@@ -474,6 +539,8 @@ function main() {
 
     [ "$Y_PY_PYENV_SUPPORT" = 1 ] || return 0
 
+    info "> script($0) -- STARTED, ..."
+
     install_build_deps
 
     install_pyenv    
@@ -493,6 +560,7 @@ function main() {
 
     clean_up
 
+    info "> script($0) -- DONE."
 
 }
 
