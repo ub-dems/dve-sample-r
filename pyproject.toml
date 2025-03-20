@@ -34,8 +34,9 @@ python = "^3.12"
 
 # {{{ TENSORFLOW: from rstudio/tensorflow/R/install.R@default_extra_packages
 
-## tensorflow = {version = "*"}
-tensorflow = {version = "=2.18.*"}
+tensorflow = {extras = ["and-cuda"], version = "^2.19.0"}
+## tensorflow = {version = "=2.25.*"}
+## tensorflow = {version = "=2.18.*"}
 ## tensorflow = {version = "=2.12.*"}
 ## tensorflow-estimator = "*"
 tensorboard = "*"
@@ -56,20 +57,20 @@ tensorflow-datasets = "*"
 
 # TensorRT compatibility: from https://docs.nvidia.com/deeplearning/tensorrt/support-matrix/index.html
 
-#nvidia-cudnn-cu11 = "*"
-#nvidia-cuda-runtime-cu11 = "*"
-#nvidia-cublas-cu11 = "*"
+nvidia-cudnn-cu12 = "*"
+nvidia-cuda-runtime-cu12 = "*"
+nvidia-cublas-cu12 = "*"
 
 ### }}} // tensorflow
 
 
 # {{{ TORCH: from https://pytorch.org/get-started/locally/
 
-torch = {version = "*"}
+##torch = {version = "*"}
 ##torch = {version = "=2.5.*"}
 ##torch = {version = "=2.5.*", source = "torch124"}
 ##torch = {version = "=2.1.1*", source = "torch121"}
-torchvision = {version = "*"}
+##torchvision = {version = "*"}
 #torch_geometric = {version = "*"}
 
 ### }}} // torch

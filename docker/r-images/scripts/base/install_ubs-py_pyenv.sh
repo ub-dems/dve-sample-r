@@ -68,20 +68,22 @@ C_BIWhite='\033[1;97m'
 CLOG=""
 LCTX="-"
 LOG_LOGGER="$(basename $0 .sh)"
+LOG_WHO="${IMG_TYPE:-'----'}"
 LOG_LEVEL=""
 function _log() {
 
     local mess
     local llev
+    lwho="$LOG_WHO"
     lcat="$LOG_LOGGER"
     llev=$(printf '%-5s' ${LOG_LEVEL:-'LOG'})
-    mess="${C_BICyan}$(date '+%Y-%m-%d %H:%M:%S %s') ${C_OFF}${CLOG}| $lwho | $lcat | $llev | ${LCTX} | $$ | $* ${C_OFF}"
+    mess="${C_BIGreen}$(date '+%Y-%m-%d %H:%M:%S %s') ${C_OFF}${CLOG}| $lwho | $lcat | $llev | ${LCTX} | $$ | $* ${C_OFF}"
 
     echo -e ${mess}
     
 }
-debug() { LOG_LEVEL='DEBUG' CLOG="$C_BWhite"   _log $*; }
-info()  { LOG_LEVEL='INFO.'  CLOG="$C_UBlue"  _log $*; }
+debug() { LOG_LEVEL='DEBUG' CLOG="$C_Green"   _log $*; }
+info()  { LOG_LEVEL='INFO.'  CLOG="$C_BICyan"  _log $*; }
 warn()  { LOG_LEVEL='WARN.'  CLOG="$C_BYellow" _log $*; }
 error() { LOG_LEVEL='ERROR' CLOG="$C_IRed"    _log $*; }
 fatal() { LOG_LEVEL='FATAL' CLOG="$C_BIRed"   _log $*; }
