@@ -1,0 +1,396 @@
+# ---
+#+TITLE: ML frameworks dependencies
+#+SUBTITLE:  python/system dependencies for ML frameworks
+#+AUTHOR: --
+#+DATE: <2025-03-20>
+# ---
+
+
+:PROPERTIES:
+:header-args:R:          :session *R*
+:END:
+
+
+* @TASKS
+** TODO Python Project Environment
+*** TODO tensorflow support
+
+**** TODO tf system setup
+**** TODO tf project specs
+**** TODO tf resolved deps
+**** TODO tf test notbooks
+*** TODO torch setup
+**** TODO torch system setup
+**** TODO torch project specs
+**** TODO torch resolved deps
+**** TODO torch test notbooks
+
+* REFERENCES
+** TensorFlow references
+- [[https://medium.com/@Joachim8675309/installing-pythons-with-pyenv-54cca2196cd3][Installing Pythons with PyEnv]]
+- [[https://realpython.com/intro-to-pyenv/][Managing Multiple Python Versions With pyenv]]
+** Torch references
+- [[https://python-poetry.org/][Poetry]]
+- [[https://pipenv.pypa.io/en/latest/][Pipenv: Python Dev Workflow for Human]]
+- [[https://plugins.jetbrains.com/plugin/14307-poetry][Poetry PyCharm Plugin]]
+- [[https://visualstudiomagazine.com/articles/2021/04/20/vscode-python-421.aspx][VS Code Python Tooling Gets 'Most Requested' Feature: Poetry Support]]
+- [[https://www.pythoncheatsheet.org/blog/python-projects-with-poetry-and-vscode-part-1/][Python projects with Poetry and VSCode]]
+
+* Tensorflow Support
+
+
+** System Setup
+#+BEGIN_SRC bash :eval no
+
+
+#+END_SRC
+
+
+** Project Specs
+
+#+BEGIN_SRC toml
+
+[tool.poetry.dependencies]
+python = "^3.12"
+# python = ">=3.8,<3.11"
+
+# {{{ TENSORFLOW: from rstudio/tensorflow/R/install.R@default_extra_packages
+
+tensorflow = {extras = ["and-cuda"], version = "^2.19.0"}
+## tensorflow = {version = "=2.25.*"}
+## tensorflow = {version = "=2.18.*"}
+## tensorflow = {version = "=2.12.*"}
+## tensorflow-estimator = "*"
+tensorboard = "*"
+tensorflow-hub = "*"
+tensorflow-datasets = "*"
+
+### }}} // tensorflow
+
+
+# {{{ CUDA-11 TensorRT
+
+# TensorRT install: from https://docs.nvidia.com/deeplearning/tensorrt/support-matrix/index.html
+
+#tensorrt = "*"
+#tensorrt_lean = "*"
+#tensorrt_dispatch = "*"
+#libnvinfer = "*"
+
+# TensorRT compatibility: from https://docs.nvidia.com/deeplearning/tensorrt/support-matrix/index.html
+
+nvidia-cudnn-cu12 = "*"
+nvidia-cuda-runtime-cu12 = "*"
+nvidia-cublas-cu12 = "*"
+
+### }}} // tensorflow
+
+
+
+# {{{ KERAS: from rstudio/keras/R/install.R@default_extra_packages
+
+# tensorflow-hub = '*'
+# tensorflow-datasets = '*'
+
+### }}} // keras
+
+
+
+#+END_SRC
+
+** Resolved  Dependencies
+#+BEGIN_SRC bash :eval no
+
+cat <<EOF
+
+tensorflow 2.19.0 TensorFlow is an open source machine learning framework for everyone.
+├── absl-py >=1.0.0
+├── astunparse >=1.6.0
+│   ├── six >=1.6.1,<2.0
+│   └── wheel >=0.23.0,<1.0
+├── flatbuffers >=24.3.25
+├── gast >=0.2.1,<0.5.0 || >0.5.0,<0.5.1 || >0.5.1,<0.5.2 || >0.5.2
+├── google-pasta >=0.1.1
+│   └── six *
+├── grpcio >=1.24.3,<2.0
+├── h5py >=3.11.0
+│   └── numpy >=1.19.3
+├── keras >=3.5.0
+│   ├── absl-py *
+│   ├── h5py *
+│   │   └── numpy >=1.19.3
+│   ├── ml-dtypes *
+│   │   ├── numpy >=2.1.0 (circular dependency aborted here)
+│   │   └── numpy >=1.26.0 (circular dependency aborted here)
+│   ├── namex *
+│   ├── numpy * (circular dependency aborted here)
+│   ├── optree *
+│   │   └── typing-extensions >=4.5.0
+│   ├── packaging *
+│   └── rich *
+│       ├── markdown-it-py >=2.2.0
+│       │   └── mdurl >=0.1,<1.0
+│       └── pygments >=2.13.0,<3.0.0
+├── libclang >=13.0.0
+├── ml-dtypes >=0.5.1,<1.0.0
+│   ├── numpy >=2.1.0
+│   └── numpy >=1.26.0 (circular dependency aborted here)
+├── numpy >=1.26.0,<2.2.0
+├── nvidia-cublas-cu12 12.5.3.2
+├── nvidia-cuda-cupti-cu12 12.5.82
+├── nvidia-cuda-nvcc-cu12 12.5.82
+├── nvidia-cuda-nvrtc-cu12 12.5.82
+├── nvidia-cuda-runtime-cu12 12.5.82
+├── nvidia-cudnn-cu12 9.3.0.75
+│   └── nvidia-cublas-cu12 *
+├── nvidia-cufft-cu12 11.2.3.61
+│   └── nvidia-nvjitlink-cu12 *
+├── nvidia-curand-cu12 10.3.6.82
+├── nvidia-cusolver-cu12 11.6.3.83
+│   ├── nvidia-cublas-cu12 *
+│   ├── nvidia-cusparse-cu12 *
+│   │   └── nvidia-nvjitlink-cu12 *
+│   └── nvidia-nvjitlink-cu12 * (circular dependency aborted here)
+├── nvidia-cusparse-cu12 12.5.1.3
+│   └── nvidia-nvjitlink-cu12 *
+├── nvidia-nccl-cu12 2.23.4
+├── nvidia-nvjitlink-cu12 12.5.82
+├── opt-einsum >=2.3.2
+├── packaging *
+├── protobuf >=3.20.3,<4.21.0 || >4.21.0,<4.21.1 || >4.21.1,<4.21.2 || >4.21.2,<4.21.3 || >4.21.3,<4.21.4 || >4.21.4,<4.21.5 || >4.21.5,<6.0.0dev
+├── requests >=2.21.0,<3
+│   ├── certifi >=2017.4.17
+│   ├── charset-normalizer >=2,<4
+│   ├── idna >=2.5,<4
+│   └── urllib3 >=1.21.1,<3
+├── setuptools *
+├── six >=1.12.0
+├── tensorboard >=2.19.0,<2.20.0
+│   ├── absl-py >=0.4
+│   ├── grpcio >=1.48.2
+│   ├── markdown >=2.6.8
+│   ├── numpy >=1.12.0
+│   ├── packaging *
+│   ├── protobuf >=3.19.6,<4.24.0 || >4.24.0
+│   ├── setuptools >=41.0.0
+│   ├── six >1.9
+│   ├── tensorboard-data-server >=0.7.0,<0.8.0
+│   └── werkzeug >=1.0.1
+│       └── markupsafe >=2.1.1
+├── termcolor >=1.1.0
+├── typing-extensions >=3.6.6
+└── wrapt >=1.11.0
+
+    
+tensorflow-datasets 4.9.8 tensorflow/datasets is a library of datasets ready to use with TensorFlow.
+├── absl-py *
+├── array-record >=0.5.0
+│   ├── absl-py *
+│   └── etils *
+│       ├── absl-py * (circular dependency aborted here)
+│       ├── einops *
+│       ├── fsspec *
+│       ├── importlib-resources *
+│       ├── numpy *
+│       ├── tqdm *
+│       │   └── colorama *
+│       ├── typing-extensions *
+│       ├── typing-extensions * (circular dependency aborted here)
+│       ├── typing-extensions * (circular dependency aborted here)
+│       └── zipp *
+├── dm-tree *
+│   ├── absl-py >=0.6.1
+│   ├── attrs >=18.2.0
+│   ├── numpy >=2.1.0
+│   ├── numpy >=1.26.0 (circular dependency aborted here)
+│   └── wrapt >=1.11.2
+├── etils >=1.9.1
+│   ├── absl-py *
+│   ├── einops *
+│   ├── fsspec *
+│   ├── importlib-resources *
+│   ├── numpy *
+│   ├── tqdm *
+│   │   └── colorama *
+│   ├── typing-extensions *
+│   ├── typing-extensions * (circular dependency aborted here)
+│   ├── typing-extensions * (circular dependency aborted here)
+│   └── zipp *
+├── immutabledict *
+├── numpy *
+├── promise *
+│   └── six *
+├── protobuf >=3.20
+├── psutil *
+├── pyarrow *
+├── requests >=2.19.0
+│   ├── certifi >=2017.4.17
+│   ├── charset-normalizer >=2,<4
+│   ├── idna >=2.5,<4
+│   └── urllib3 >=1.21.1,<3
+├── simple-parsing *
+│   ├── docstring-parser >=0.15,<1.0
+│   └── typing-extensions >=4.5.0
+├── tensorflow-metadata *
+│   ├── absl-py >=0.9,<3.0.0
+│   ├── googleapis-common-protos >=1.56.4,<2
+│   │   └── protobuf >=3.20.2,<4.21.1 || >4.21.1,<4.21.2 || >4.21.2,<4.21.3 || >4.21.3,<4.21.4 || >4.21.4,<4.21.5 || >4.21.5,<7.0.0
+│   └── protobuf >=4.25.2,<6.0.0dev (circular dependency aborted here)
+├── termcolor *
+├── toml *
+├── tqdm *
+│   └── colorama *
+└── wrapt *
+
+    
+tensorflow-hub 0.16.1 TensorFlow Hub is a library to foster the publication, discovery, and consumption of reusable parts of machine learning models.
+├── numpy >=1.12.0
+├── protobuf >=3.19.6
+└── tf-keras >=2.14.1
+    └── tensorflow >=2.19,<2.20
+        ├── absl-py >=1.0.0
+        ├── astunparse >=1.6.0
+        │   ├── six >=1.6.1,<2.0
+        │   └── wheel >=0.23.0,<1.0
+        ├── flatbuffers >=24.3.25
+        ├── gast >=0.2.1,<0.5.0 || >0.5.0,<0.5.1 || >0.5.1,<0.5.2 || >0.5.2
+        ├── google-pasta >=0.1.1
+        │   └── six * (circular dependency aborted here)
+        ├── grpcio >=1.24.3,<2.0
+        ├── h5py >=3.11.0
+        │   └── numpy >=1.19.3
+        ├── keras >=3.5.0
+        │   ├── absl-py * (circular dependency aborted here)
+        │   ├── h5py * (circular dependency aborted here)
+        │   ├── ml-dtypes *
+        │   │   ├── numpy >=2.1.0 (circular dependency aborted here)
+        │   │   └── numpy >=1.26.0 (circular dependency aborted here)
+        │   ├── namex *
+        │   ├── numpy * (circular dependency aborted here)
+        │   ├── optree *
+        │   │   └── typing-extensions >=4.5.0
+        │   ├── packaging *
+        │   └── rich *
+        │       ├── markdown-it-py >=2.2.0
+        │       │   └── mdurl >=0.1,<1.0
+        │       └── pygments >=2.13.0,<3.0.0
+        ├── libclang >=13.0.0
+        ├── ml-dtypes >=0.5.1,<1.0.0 (circular dependency aborted here)
+        ├── numpy >=1.26.0,<2.2.0 (circular dependency aborted here)
+        ├── nvidia-cublas-cu12 12.5.3.2
+        ├── nvidia-cuda-cupti-cu12 12.5.82
+        ├── nvidia-cuda-nvcc-cu12 12.5.82
+        ├── nvidia-cuda-nvrtc-cu12 12.5.82
+        ├── nvidia-cuda-runtime-cu12 12.5.82
+        ├── nvidia-cudnn-cu12 9.3.0.75
+        │   └── nvidia-cublas-cu12 * (circular dependency aborted here)
+        ├── nvidia-cufft-cu12 11.2.3.61
+        │   └── nvidia-nvjitlink-cu12 *
+        ├── nvidia-curand-cu12 10.3.6.82
+        ├── nvidia-cusolver-cu12 11.6.3.83
+        │   ├── nvidia-cublas-cu12 * (circular dependency aborted here)
+        │   ├── nvidia-cusparse-cu12 *
+        │   │   └── nvidia-nvjitlink-cu12 * (circular dependency aborted here)
+        │   └── nvidia-nvjitlink-cu12 * (circular dependency aborted here)
+        ├── nvidia-cusparse-cu12 12.5.1.3 (circular dependency aborted here)
+        ├── nvidia-nccl-cu12 2.23.4
+        ├── nvidia-nvjitlink-cu12 12.5.82 (circular dependency aborted here)
+        ├── opt-einsum >=2.3.2
+        ├── packaging * (circular dependency aborted here)
+        ├── protobuf >=3.20.3,<4.21.0 || >4.21.0,<4.21.1 || >4.21.1,<4.21.2 || >4.21.2,<4.21.3 || >4.21.3,<4.21.4 || >4.21.4,<4.21.5 || >4.21.5,<6.0.0dev
+        ├── requests >=2.21.0,<3
+        │   ├── certifi >=2017.4.17
+        │   ├── charset-normalizer >=2,<4
+        │   ├── idna >=2.5,<4
+        │   └── urllib3 >=1.21.1,<3
+        ├── setuptools *
+        ├── six >=1.12.0 (circular dependency aborted here)
+        ├── tensorboard >=2.19.0,<2.20.0
+        │   ├── absl-py >=0.4 (circular dependency aborted here)
+        │   ├── grpcio >=1.48.2 (circular dependency aborted here)
+        │   ├── markdown >=2.6.8
+        │   ├── numpy >=1.12.0 (circular dependency aborted here)
+        │   ├── packaging * (circular dependency aborted here)
+        │   ├── protobuf >=3.19.6,<4.24.0 || >4.24.0 (circular dependency aborted here)
+        │   ├── setuptools >=41.0.0 (circular dependency aborted here)
+        │   ├── six >1.9 (circular dependency aborted here)
+        │   ├── tensorboard-data-server >=0.7.0,<0.8.0
+        │   └── werkzeug >=1.0.1
+        │       └── markupsafe >=2.1.1
+        ├── termcolor >=1.1.0
+        ├── typing-extensions >=3.6.6 (circular dependency aborted here)
+        └── wrapt >=1.11.0
+
+tensorboard 2.19.0 TensorBoard lets you watch Tensors Flow
+├── absl-py >=0.4
+├── grpcio >=1.48.2
+├── markdown >=2.6.8
+├── numpy >=1.12.0
+├── packaging *
+├── protobuf >=3.19.6,<4.24.0 || >4.24.0
+├── setuptools >=41.0.0
+├── six >1.9
+├── tensorboard-data-server >=0.7.0,<0.8.0
+└── werkzeug >=1.0.1
+    └── markupsafe >=2.1.1
+
+
+numpy 2.1.3 Fundamental package for array computing in Python
+      
+nvidia-cublas-cu12 12.5.3.2 CUBLAS native runtime libraries
+nvidia-cuda-runtime-cu12 12.5.82 CUDA Runtime native Libraries
+nvidia-cudnn-cu12 9.3.0.75 cuDNN runtime libraries
+└── nvidia-cublas-cu12 *
+nvidia-ml-py 12.570.86 Python Bindings for the NVIDIA Management Library
+        
+    
+EOF    
+
+#+END_SRC
+
+
+** Test Notebooks
+#+BEGIN_SRC bash :eval no
+
+jupyter nbconvert --to markdown --execute notebooks/nv-test/nv-os-check.ipynb
+bat  -P                                   notebooks/nv-test/nv-os-check.md
+
+jupyter nbconvert --to markdown --execute notebooks/nv-test/nv-py-tensorflow-test.ipynb
+bat  -P                                   notebooks/nv-test/nv-py-tensorflow-test.md
+
+#+END_SRC
+
+
+
+
+* Torch Support
+
+
+
+** System Setup
+#+BEGIN_SRC bash :eval no
+
+
+#+END_SRC
+
+
+** Project Specs
+
+#+BEGIN_SRC toml
+
+
+#+END_SRC
+
+** Resolved  Dependencies
+#+BEGIN_SRC bash :eval no
+
+
+#+END_SRC
+
+
+** Test Notebooks
+#+BEGIN_SRC bash :eval no
+
+
+#+END_SRC
+

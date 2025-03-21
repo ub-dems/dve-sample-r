@@ -1,0 +1,1015 @@
+# ---
+#+TITLE: setup.org: pyenv/poetry user setup
+#+SUBTITLE:  python project enviroment
+#+AUTHOR: --
+#+DATE: <2022-06-25>
+# ---
+
+#+PROPERTY: header-args:bash :dir /ssh:nvs@s60|sudo:dsuser@s60:/home/dsuser
+##PROPERTY: header-args:bash :dir /ssh:nvs@s11|sudo:dsuser@d60:/home/dsuser
+
+:PROPERTIES:
+:header-args:R:          :session *R*
+:END:
+
+
+* @TASKS
+** TODO Python Project Environment
+*** TODO makefile setup
+**** TODO pyenv install setup
+**** TODO poetry makefile setup
+*** TODO makefile tasks
+**** TODO unit test
+**** TODO lint, check 
+**** TODO dist package
+*** TODO podman support
+**** TODO pyenv image layer
+**** TODO poetry image layer
+**** TODO runtime image layer
+**** TODO worker image layer
+*** TODO job tracking
+**** TODO job entry args
+**** TODO job logging
+**** TODO job tracking
+
+
+* REFERENCES
+** pyenv references
+- [[https://medium.com/@Joachim8675309/installing-pythons-with-pyenv-54cca2196cd3][Installing Pythons with PyEnv]]
+- [[https://realpython.com/intro-to-pyenv/][Managing Multiple Python Versions With pyenv]]
+** poetry references
+- [[https://python-poetry.org/][Poetry]]
+- [[https://pipenv.pypa.io/en/latest/][Pipenv: Python Dev Workflow for Human]]
+- [[https://plugins.jetbrains.com/plugin/14307-poetry][Poetry PyCharm Plugin]]
+- [[https://visualstudiomagazine.com/articles/2021/04/20/vscode-python-421.aspx][VS Code Python Tooling Gets 'Most Requested' Feature: Poetry Support]]
+- [[https://www.pythoncheatsheet.org/blog/python-projects-with-poetry-and-vscode-part-1/][Python projects with Poetry and VSCode]]
+** python projects
+- [[https://py-pkgs.org/][Python Packages]]
+- [[https://realpython.com/python-wheels/][What Are Python Wheels and Why Should You Care?]]
+- [[https://lucumr.pocoo.org/2014/1/27/python-on-wheels/][Python on Wheels]]
+- [[https://xkcd.com/1987/][Python Environment]]
+** jupyter references
+- [[https://jupyter-notebook.readthedocs.io/en/latest/][Jupyter Notebook Documentation]]
+- [[https://jupyterlab-lsp.readthedocs.io/en/latest/][Jupyter[Lab] Language Server Protocol]]
+- [[https://github.com/jupyter/notebook][Jupyter Notebook (GitHub)]]
+- [[https://github.com/jupyterlab/jupyterlab][JupyterLab (GitHub)]]
+- [[https://github.com/jupyter/jupyter/wiki/Jupyter-kernels][Jupyter kernels]]
+- [[https://jupyter-docker-stacks.readthedocs.io/en/latest/][Jupyter Docker Stacks]]
+- [[https://github.com/jupyter/docker-stacks/][Jupyter Docker Stacks (GitHub)]]
+- [[https://rocker-project.org/images/versioned/binder.html][Rocker Binder]]
+- [[https://github.com/rocker-org/rocker-versioned2/blob/master/scripts/install_jupyter.sh][Rocker Binder (install_jupyter.sh)]]
+
+
+
+* STATUS
+** Access Check
+
+
+#+NAME: whoami
+#+HEADER: :dir /ssh:nvs@s11|sudo:s11:/root
+#+BEGIN_SRC bash
+  whoami
+#+END_SRC
+
+#+RESULTS: whoami
+: root
+
+#+NAME: hostnamectl
+#+BEGIN_SRC bash
+  hostnamectl
+#+END_SRC
+
+#+RESULTS: hostnamectl
+
+#+NAME: ip
+#+BEGIN_SRC bash
+  ip -br -4 a
+#+END_SRC
+
+#+NAME: uptime
+#+BEGIN_SRC bash
+  uptime
+#+END_SRC
+
+#+RESULTS: uptime
+
+#+NAME: date
+#+BEGIN_SRC bash
+  date
+#+END_SRC
+
+#+RESULTS: date
+
+
+* PYENV
+
+** Build Dependencies
+
+#+BEGIN_SRC bash :eval no
+
+##
+# python build-deps
+# 
+# ubuntu 18.04 - @see: tcl/tk u18.04 fix
+# 
+
+# apt/deb
+sudo apt install -y \
+     make \
+     build-essential \
+     libssl-dev \
+     zlib1g-dev \
+     libbz2-dev \
+     libreadline-dev \
+     libsqlite3-dev \
+     wget \
+     curl \
+     llvm \
+     libncurses5-dev \
+     libncursesw5-dev \
+     xz-utils \
+     tcllib \
+     tklib \
+     tk-dev \
+     libffi-dev \
+     liblzma-dev \
+     python3-openssl
+sudo apt install -y \
+     mysql-client \
+     libmysqlclient-dev
+sudo apt install -y \
+     libczmq-dev
+sudo apt install -y \
+     nodejs
+
+
+# yum/dnf
+sudo dnf builddep python3
+sudo dnf install \
+     wget \
+     yum-utils \
+     make \
+     gcc \
+     tcl-devel \
+     tk-devel \
+     openssl-devel \
+     bzip2-devel \
+     libffi-devel zlib-devel
+sudo dnf install mysql mysql-devel
+sudo dnf install zeromq-devel
+sudo dnf install nodejs
+
+# arch
+sudo pacman -S \
+     bluez-libs mpdecimal gdb bzip2 expat gdbm \
+     libffi libnsl libxcrypt openssl zlib \
+     sqlite mpdecimal xz tk \
+     mariadb-clients \
+     zeromq \
+     nodejs
+
+#+END_SRC
+
+** TCL/TK Support
+#+BEGIN_SRC bash :eval no
+
+##
+# ubuntu 18.04 - @see: tcl/tk u18.04 fix
+# 
+
+pkg-config tk --libs
+
+# ---(runas: root)--------------------------
+sudo -i
+
+cd /usr/lib/x86_64-linux-gnu/pkgconfig
+
+ls -l tcl* tk*
+
+cat <<'EOF' | sed -e 's/^ *//'  > tcl8.6.pc
+# tcl pkg-config source file
+prefix=/usr
+exec_prefix=/usr
+libdir=/usr/lib/x86_64-linux-gnu
+includedir=/usr/include/tcl8.6
+
+Name: Tool Command Language
+Description: Tcl is a powerful, easy-to-learn dynamic programming language, suitable for a wide range of uses.
+URL: https://www.tcl-tk.org/
+Version: 8.6.12
+Requires.private: zlib >= 1.2.3
+Libs: -L${libdir} -ltcl8.6 -ltclstub8.6
+Libs.private: -ldl -lz  -lpthread -lm
+Cflags: -I${includedir}
+
+EOF
+
+cat <<'EOF' | sed -e 's/^ *//'  > tk8.6.pc
+# tk pkg-config source file
+
+prefix=/usr
+exec_prefix=/usr
+libdir=/usr/lib/x86_64-linux-gnu
+includedir=/usr/include/tcl8.6
+
+Name: The Tk Toolkit
+Description: Tk is a cross-platform graphical user interface toolkit, the standard GUI not only for Tcl, but for many other dynamic languages as well.
+URL: https://www.tcl-lang.org/
+Version: 8.6.12
+Requires: tcl >= 8.6
+Libs: -L${libdir} -ltk8.6 -ltkstub8.6
+Libs.private: -lXft -lfontconfig -lfreetype -lfontconfig -lX11 -lXss -lXext
+Cflags: -I${includedir}
+
+EOF
+
+ln -s tcl8.6.pc tcl.pc
+ln -s tk8.6.pc  tk.pc
+
+
+cd /usr/lib/x86_64-linux-gnu/pkgconfig
+
+ls -l tcl* tk*
+
+exit
+
+# -------------------------------
+
+pkg-config tk --libs
+
+
+#+END_SRC
+
+** Install
+
+#+BEGIN_SRC bash
+
+# ===( install )===========================
+
+[ -d ~/.pyenv ] || curl https://pyenv.run | bash
+( cd ~/.pyenv   && git  pull )
+
+
+# ===( reload )===========================
+
+unset PY_RC_ENV; exec $SHELL --login
+
+#+END_SRC
+
+** Profile
+
+#+BEGIN_SRC bash
+
+# ===( profile )===========================
+
+# ===( rc )===========================
+
+cat <<'EOF' | sed -e 's/^ *//'  >> ~/.bashrc
+# {{{ [ CUSTOM ] /////////////////////////////////////////////////////////////
+
+# ===( python:begin )===========================
+
+# ---(conda:begin)-----
+
+##
+#  conda environment
+#
+if [ -f ~/.py-env.off ]; then
+if [ -f ~/.conda.on ]; then
+if [ -x $HOME/anaconda/bin/conda ]; then    
+
+# >>> conda initialize >>>
+# !! Contents within this block are managed by 'conda init' !!
+__conda_setup="$($HOME/anaconda/bin/conda 'shell.bash' 'hook' 2> /dev/null)"
+if [ $? -eq 0 ]; then
+    eval "$__conda_setup"
+else
+    if [ -f "$HOME/anaconda/etc/profile.d/conda.sh" ]; then
+        . "$HOME/anaconda/etc/profile.d/conda.sh"
+    else
+        export PATH="$HOME/anaconda/bin:$PATH"
+    fi
+fi
+unset __conda_setup
+# <<< conda initialize <<<
+source ~/.conda.on || true  
+fi
+fi
+fi
+# ---(conda:end)-----
+
+
+# ---(pyenv:begin)-----
+
+##
+#  pyenv environment
+#
+if [ ! -f ~/.py-env.off ]; then
+if [ -d $HOME/.pyenv ]; then
+# ~/.profile   
+if [ -z "$PY_RC_ENV" ]; then
+   export PY_RC_ENV=1
+   command -v conda >/dev/null && conda deactivate || true              
+   [ -z "$PYENV_ROOT" ] && export PYENV_ROOT="$HOME/.pyenv"
+   if [ -n "$PYENV_ROOT" ] ; then
+      command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
+   fi
+   eval "$(pyenv init --path)"
+fi   
+# ~/.(bash|zsh)rc
+eval "$(pyenv init -)"
+fi
+fi
+
+##
+#  poetry environment
+#
+if [ ! -f ~/.py-poetry.off ]; then
+if [ -x $HOME/.local/bin/poetry ]; then    
+    export PY_RC_POETRY=1
+py_rc_poetry_sh() {
+   command -v poetry >/dev/null || export PY_POETRY="$(which poetry)"
+   [ -z "$PYTHON_KEYRING_BACKEND" ] && export PYTHON_KEYRING_BACKEND="keyring.backends.null.Keyring"
+}
+py_rc_poetry_sh
+fi
+fi
+# ---(pyenv:end)-----
+
+# ===( python:end )===========================
+
+
+# }}} --- custom
+EOF
+
+
+cat <<'EOF' | sed -e 's/^ *//'  >> ~/.zshrc
+# {{{ [ CUSTOM ] /////////////////////////////////////////////////////////////
+
+# ===( python:begin )===========================
+
+# ---(conda:begin)-----
+
+##
+#  conda environment
+#
+if [ -f ~/.py-env.off ]; then
+if [ -f ~/.conda.on ]; then
+if [ -x $HOME/anaconda/bin/conda ]; then    
+
+# >>> conda initialize >>>
+# !! Contents within this block are managed by 'conda init' !!
+__conda_setup="$($HOME/anaconda/bin/conda 'shell.zsh' 'hook' 2> /dev/null)"
+if [ $? -eq 0 ]; then
+    eval "$__conda_setup"
+else
+    if [ -f "$HOME/anaconda/etc/profile.d/conda.sh" ]; then
+        . "$HOME/anaconda/etc/profile.d/conda.sh"
+    else
+        export PATH="$HOME/anaconda/bin:$PATH"
+    fi
+fi
+unset __conda_setup
+# <<< conda initialize <<<
+source ~/.conda.on || true  
+fi
+fi
+fi
+# ---(conda:end)-----
+
+# ---(pyenv:begin)-----
+
+##
+#  pyenv environment
+#
+
+if [ ! -f ~/.py-env.off ]; then
+if [ -d $HOME/.pyenv ]; then
+
+# ~/.profile   
+
+if [ -z "$PY_RC_ENV" ]; then
+   export PY_RC_ENV=1
+
+   command -v conda >/dev/null && conda deactivate || true              
+
+   [ -z "$PYENV_ROOT" ] && export PYENV_ROOT="$HOME/.pyenv"
+   if [ -n "$PYENV_ROOT" ] ; then
+      command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
+   fi
+   eval "$(pyenv init --path)"
+
+fi   
+
+# ~/.(bash|zsh)rc
+
+eval "$(pyenv init -)"
+
+fi
+fi
+
+##
+#  poetry environment
+#
+
+if [ ! -f ~/.py-poetry.off ]; then
+if [ -x $HOME/.local/bin/poetry ]; then    
+    export PY_RC_POETRY=1
+py_rc_poetry_sh() {
+   command -v poetry >/dev/null || export PY_POETRY="$(which poetry)"
+   [ -z "$PYTHON_KEYRING_BACKEND" ] && export PYTHON_KEYRING_BACKEND="keyring.backends.null.Keyring"
+}
+py_rc_poetry_sh
+fi
+fi
+
+# ---(pyenv:end)-----
+
+# ===( python:end )===========================
+
+
+# }}} --- custom
+EOF
+
+
+
+# ===( reload )===========================
+
+unset PY_RC_ENV; exec $SHELL --login
+
+#+END_SRC
+
+** Version
+
+
+#+BEGIN_SRC bash
+
+# ===( install )===========================
+
+eval "$(pyenv init -)"
+
+pyenv --version
+
+pyenv versions
+
+#export PYTHON_CONFIGURE_OPTS="--enable-shared --with-tcltk-includes='-I/usr/include/tcl' --with-tcltk-libs='-L/usr/lib/x86_64-linux-gnu -ltcl8.6 -ltk8.6'"
+#export PYTHON_CONFIGURE_OPTS="--enable-shared --with-tcltk-includes='$(pkg-config tk --cflags)' --with-tcltk-libs='$(pkg-config tk --libs)'" 
+#export PYTHON_CONFIGURE_OPTS="--enable-shared --with-tcltk-includes='-I/usr/include/tcl8.6' --with-tcltk-libs='-ltk8.6 -ltkstub8.6 -ltcl8.6 -ltclstub8.6'" 
+
+export PYTHON_CONFIGURE_OPTS="--enable-shared"
+
+
+PYRC_PY_CURRENT=$(curl https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py/-/raw/main/.python-version); echo $PYRC_PY_CURRENT
+
+: ${PYRC_PY_VERSION:=$PYRC_PY_CURRENT}; export PYRC_PY_VERSION
+[ -f ~/.python-version ] || echo "${PYRC_PY_VERSION}" > ~/.python-version
+cat ~/.python-version
+
+[ -f ~/.python-version ]   && pyenv install --verbose $(cat ~/.python-version) 2>&1 \
+        | tee /tmp/pyenv-install-$(date -Isec).log; ls -l /tmp/pyenv-install-*
+
+[ -f ./.python-version ]   && pyenv install --verbose $(cat ./.python-version) 2>&1 \
+        | tee /tmp/pyenv-install-$(date -Isec).log; ls -l /tmp/pyenv-install-*
+
+
+pyenv versions
+
+
+# ===( activate )===========================
+
+unset PY_RC_ENV; exec $SHELL --login
+
+eval "$(pyenv init --path)"
+eval "$(pyenv init -)"
+eval "$(pyenv virtualenv-init -)"
+
+pyenv versions
+pyenv versions --bare
+
+pyenv shell $(cat ~/.python-version)
+
+which python
+python --version
+
+pyenv global $(cat ~/.python-version)
+
+#+END_SRC
+
+** Tools
+
+#+BEGIN_SRC bash
+
+unset PY_RC_ENV; exec $SHELL --login
+
+which python
+python --version
+
+
+python3 -m pip --no-cache-dir install --upgrade --ignore-installed \
+        pip
+
+python3 -m pip --no-cache-dir install --upgrade --ignore-installed \
+        setuptools \
+        wheel \
+        pipenv \
+        numpy
+
+python3 -m pip --no-cache-dir install --upgrade --ignore-installed \
+        ipython \
+        cookiecutter
+
+pyenv    rehash
+pipenv --version
+
+
+
+##
+# pipx
+#
+
+# export PIP_REQUIRE_VIRTUALENV=false
+unset PIP_REQUIRE_VIRTUALENV
+
+python3 -m pip --no-cache-dir install --upgrade --ignore-installed \
+        pipx
+
+pyenv    rehash
+
+python3 -m pipx ensurepath
+
+pipx reinstall-all
+pipx install --force pycowsay 
+pipx list
+pipx run pycowsay "moooo! -- pyenv=$(pyenv --version), python=$(python --version), pipx=$(pipx --version)"
+
+
+unset PY_RC_ENV; exec $SHELL --login
+
+pycowsay 'moooo!'
+
+
+##
+# check
+#
+
+function check_pyenv() {
+    
+    [ "$Y_PY_PYENV_CHECK" = 1 ] || return 0
+
+    set -x
+
+    echo "PATH=${PATH}"
+    echo "SHELL=${SHELL}"
+    echo "PYTHON_CONFIGURE_OPTS=${PYTHON_CONFIGURE_OPTS}"
+    
+    which python      || true
+    which -a python3  || true
+
+    python --version  || false
+
+    which    pip      || true
+    which -a pip3     || true
+    pip    --version  || false
+
+    pyenv --version   || false
+    pyenv   versions  || true
+    pyenv   version   || true
+
+    which   pipx      || true
+    pipx  --version   || false
+    
+    pipx    list      || true
+    
+    set +x
+    
+}
+
+Y_PY_PYENV_CHECK=1 check_pyenv
+
+#+END_SRC
+
+* POETRY
+** Install
+
+
+#+BEGIN_SRC bash
+
+# ===( clean )===========================
+
+# curl -sSL https://install.python-poetry.org | POETRY_UNINSTALL=1 python3 -
+
+pipx uninstall poetry
+
+rm -rf ~/.cache/pypoetry
+rm -rf ~/.config/pypoetry
+
+
+# ===( get )===========================
+
+# curl -sSL https://install.python-poetry.org | python3 -
+
+pipx install poetry
+pipx upgrade poetry
+pipx inject  poetry poetry-plugin-shell
+
+
+# ===( reload )===========================
+
+unset PY_RC_ENV; exec $SHELL --login
+
+# ===( check )===========================
+
+poetry --version
+
+PYTHON_KEYRING_BACKEND="keyring.backends.null.Keyring"  \
+                      poetry self update
+
+#+END_SRC
+
+** Build
+
+
+#+BEGIN_SRC bash
+
+#   
+
+if [ ! -d ~/work/vs/dve-sample-py ]; then
+    mkdir -p ~/work/vs
+    cd       ~/work/vs
+    git clone https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py.git
+fi      
+cd ~/work/vs/dve-sample-py
+git remote update
+git branch -av
+git status
+git pull
+
+#
+
+cat ./pyproject.toml
+
+
+#eval "$(pyenv init -)"
+
+[ -f ./.python-version ]   && pyenv shell $(cat ./.python-version)
+[ ! -f ./.python-version ] && pyenv shell $(cat ~/.python-version)
+
+
+which python
+pyenv versions
+python --version
+pipenv --version
+poetry --version
+
+poetry env list
+poetry env info
+#poetry env use -- $(which python)
+poetry env use -- $(cat ./.python-version)
+poetry env list
+poetry env info
+
+
+ln -s ~/"$(realpath $(poetry  env info -p) --relative-to=$HOME -s)" ./venv
+
+
+export PYTHON_KEYRING_BACKEND="keyring.backends.null.Keyring"
+
+poetry cache clear --all pypi
+
+# poetry lock
+
+poetry install
+
+poetry show
+poetry show --tree
+
+
+#+END_SRC
+
+* JUPYTER
+
+
+** Node
+
+#+BEGIN_SRC bash
+
+# ------------------------------------------------------
+: "${Y_JS_NODE_VERSION:=22.12}"
+: "${FNM_ROOT:=$HOME/.fnm}"
+: "${NODE_ROOT:=$HOME/.nodejs}"
+: "${FNM_DIR:=$NODE_ROOT/.fnm}"
+: "${NODE_VERSION:=$Y_JS_NODE_VERSION}"
+# ------------------------------------------------------
+
+function install_node() {
+
+    [ "$Y_JS_NODE_INSTALL" = 1 ] || return 0
+
+
+    # installs fnm (Fast Node Manager)
+    curl -fsSL https://fnm.vercel.app/install | \
+        bash -s -- --install-dir "$FNM_ROOT" --skip-shell    
+
+    # fnm
+    FNM_PATH="$FNM_ROOT"
+    ln -sf "$FNM_ROOT/fnm" ~/.local/bin/fnm
+
+    export FNM_DIR=$NODE_ROOT/.fnm
+    #export PATH=$NODE_ROOT/bin:$PATH
+    
+    
+    if [ -d "$FNM_PATH" ]; then
+        #export PATH="$FNM_PATH:$PATH"
+        eval "$(fnm --fnm-dir ${FNM_DIR} env)"
+    fi
+
+    cat <<EOF >> ~/.pam_environment
+NODE_VERSION=${NODE_VERSION}
+FNM_DIR=${FNM_DIR}
+EOF
+    
+    source ~/.pam_environment
+
+
+    # download and install Node.js
+    fnm use --fnm-dir ${FNM_DIR} --install-if-missing ${NODE_VERSION}
+    fnm default ${NODE_VERSION}
+
+    # ln -sf "$NODE_ROOT/.fnm/node-versions/$NODE_VERSION/installation/bin/node" /usr/local/bin/node
+    # ln -sf "$NODE_ROOT/.fnm/node-versions/$NODE_VERSION/installation/bin/npm" /usr/local/bin/npm
+
+
+}
+
+Y_JS_NODE_INSTALL=1  install_node
+
+
+function check_node() {
+    
+    [ "$Y_JS_NODE_CHECK" = 1 ] || return 0
+
+    echo "Verifying node and npm installation..."
+
+    echo "PATH=${PATH}"
+    echo "SHELL=${SHELL}"
+    
+    set -x
+    
+    which -a node     || true
+    node --version    || false
+
+    which -a npm      || true
+    npm --version     || false
+    
+    set +x
+    
+}
+
+Y_JS_NODE_CHECK=1 check_node
+
+
+#+END_SRC
+
+
+** Configure
+
+#+BEGIN_SRC bash
+
+#eval "$(pyenv init -)"
+
+[ -f ./.python-version ]   && pyenv shell $(cat ./.python-version)
+[ ! -f ./.python-version ] && pyenv shell $(cat ~/.python-version)
+
+poetry shell
+
+which python
+which jupyter
+
+python --version
+jupyter --version
+
+##
+# jupyter configuration: see above for jupyter referencs 
+#
+
+# config
+#rm -rf ~/.jupyter
+jupyter --paths
+jupyter server --generate-config
+
+
+# nb extensions
+
+#jupyter nbextension install --py luxwidget
+#jupyter nbextension enable --py luxwidget
+
+# lab extensions
+
+jupyter labextension disable "@jupyterlab/apputils-extension:announcements"
+#jupyter labextension install "@jupyter-widgets/jupyterlab-manager"
+#jupyter labextension install luxwidget
+
+
+# LSP
+
+which -a node
+node --version
+which -a jlpm
+jlpm --version
+
+# R support
+# R --vanilla -e 'install.packages("languageserver")'
+
+# npm install --user --save-dev  \
+    #   bash-language-server \
+    #   dockerfile-language-server-nodejs \
+    #   pyright \
+    #   sql-language-server \
+    #   typescript-language-server \
+    #   unified-language-server \
+    #   vscode-css-languageserver-bin \
+    #   vscode-html-languageserver-bin \
+    #   vscode-json-languageserver-bin \
+    #   yaml-language-server
+
+# npm audit report
+# npm audit fix
+# npm audit fix --force
+
+ls -la .yarnrc.yml
+[ -f ./.yarnrc.yml ] || cat <<'  EOF' | sed -e 's/^ *//'  >> ./.yarnrc.yml
+  nodeLinker: node-modules
+  EOF
+ls -la .yarnrc.yml
+cat    .yarnrc.yml
+
+
+# ===( node upgrade )===========================
+
+ls -lda package.json yarn.lock node_modules/
+jlpm init
+ls -lda package.json yarn.lock node_modules/
+git status
+
+jlpm add --dev  \
+     bash-language-server \
+     dockerfile-language-server-nodejs \
+     pyright \
+     sql-language-server \
+     typescript-language-server \
+     unified-language-server \
+     vscode-css-languageserver-bin \
+     vscode-html-languageserver-bin \
+     vscode-json-languageserver-bin \
+     yaml-language-server
+
+ls -lda package.json yarn.lock node_modules/
+
+jlpm up
+
+git status
+
+# ===( node install )===========================
+
+jlpm install
+
+ls -lda package.json yarn.lock node_modules/
+git status
+ls -lda node_modules/*language*server* node_modules/pyright
+jlpm info -A
+
+
+# clean+build
+jupyter lab clean --all
+jupyter lab build --debug
+
+
+#+END_SRC
+
+** Test
+
+#+BEGIN_SRC bash
+
+alias jupyter='eval "$(pyenv init -)"; pyenv exec poetry run jupyter'
+
+jupyter --version
+jupyter --paths
+jupyter labextension list
+jupyter kernelspec list
+
+
+# lab
+
+jupyter lab --notebook-dir=notebooks --no-browser
+#jupyter lab --notebook-dir=notebooks --no-browser --debug
+
+
+# lab (public)
+jupyter lab --notebook-dir=notebooks --no-browser --ip=0.0.0.0 --port=8888 --ServerApp.allow_remote_access=true
+
+
+# nb
+
+jupyter notebook --notebook-dir=./notebooks
+
+(cd ./notebooks; jupyter nbconvert --to notebook --execute sys-test/py-env-dump.ipynb)
+
+jupyter notebook --notebook-dir=./notebooks sys-test/py-env-dump.nbconvert.ipynb
+
+# [ -d ./notebooks ] && (cd ./notebooks; jupyter console)
+
+##
+#
+#
+
+cd ~/work/bp/...
+
+
+(poetry run jupyter lab --notebook-dir=notebooks --no-browser)
+# (poetry run jupyter notebook --notebook-dir=./notebooks --no-browser)
+
+#+END_SRC
+
+
+* JULIA
+** Install
+
+
+#+BEGIN_SRC bash
+
+      # ===( get )===========================
+
+      sudo mkdir -p       /opt/local/julia
+      sudo chgrp -R users /opt/local/julia
+      sudo chmod -R g+sw  /opt/local/julia
+
+
+      mkdir -p /opt/local/julia/Julia
+      cd       /opt/local/julia/Julia
+
+      wget https://julialang-s3.julialang.org/bin/linux/x64/1.8/julia-1.8.3-linux-x86_64.tar.gz
+
+      [ -L ./julia ] && rm ./julia
+
+      ln -s ./julia-1.8.3 julia
+
+
+
+      # ===( profile )===========================
+
+      sudo cat >> /etc/profile.d/ZC96-julia.sh <<'EOF'
+
+  if  [ "$(id -u)" != "0" ]; then
+
+  set -a
+  : ${JU_BASE:="/opt/local/julia/Julia"}
+  : ${JU_HOME:="$JU_BASE/julia"}
+  set +a
+  export PATH=$JU_HOME/bin:$PATH
+
+
+  fi
+
+
+    EOF
+
+    . /etc/profile.d/ZC96-julia.sh
+
+    which julia
+
+    julia --version
+    julia <<< 'versioninfo();'
+
+
+#+END_SRC
+
+** Build
+
+
+#+BEGIN_SRC bash
+
+
+      # packages
+
+  poetry shell
+
+  poetry env info
+
+  export PYTHON=$(which python)
+
+      julia << 'EOF'
+  ]
+      status
+      update
+      
+      activate .
+      instantiate
+      status
+
+    EOF        
+
+
+#+END_SRC
+
+
+
