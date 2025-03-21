@@ -19,6 +19,8 @@ LABEL org.opencontainers.image.vendor="ubdems" \
       it.unimib.datalab.cdc="ds-101" \
       it.unimib.datalab.tags="none"
 
+ENV IMG_TYPE run
+
 COPY scripts/runtime /rocker_scripts
 #COPY scripts/setup   /rocker_scripts
 
