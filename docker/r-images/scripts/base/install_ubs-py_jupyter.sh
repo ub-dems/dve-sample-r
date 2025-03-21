@@ -46,7 +46,7 @@ function _log() {
     lwho="$LOG_WHO"
     lcat="$LOG_LOGGER"
     llev=$(printf '%-5s' ${LOG_LEVEL:-'LOG'})
-    mess="${C_BIGreen}$(date '+%Y-%m-%d %H:%M:%S %s') ${C_OFF}${CLOG}| $lwho | $lcat | $llev | ${LCTX} | $$ | $* ${C_OFF}"
+    mess="${C_IGreen}$(date '+%Y-%m-%d %H:%M:%S %s') ${C_OFF}${CLOG}| $lwho | $lcat | $llev | ${LCTX} | $$ | $* ${C_OFF}"
 
     echo -e ${mess}
     
