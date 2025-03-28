@@ -32,6 +32,33 @@ demo = "vce.cli:main"
 python = "^3.12"
 # python = ">=3.8,<3.11"
 
+
+# {{{ CUDA: Cuda-12 from NVIDIA package index
+
+# NVIDIA Tensorflow cuda binaries: from https://github.com/nvidia/tensorflow/
+
+# Tensorflow 2.19 cuda dependencies
+# @see: https://github.com/tensorflow/tensorflow/blob/v2.19.0/ci/official/requirements_updater/requirements.in#L31
+
+# nvidia-cuda-runtime-cu12 = {version = "*", source = "nvidia"}
+
+
+nvidia-cublas-cu12 = {version = "*"}
+nvidia-cuda-cupti-cu12 = {version = "*"}
+nvidia-cuda-nvcc-cu12 = {version = "*"}
+nvidia-cuda-nvrtc-cu12 = {version = "*"}
+nvidia-cuda-runtime-cu12 = {version = "*"}
+nvidia-cudnn-cu12 = {version = "*"}
+nvidia-cufft-cu12 = {version = "*"}
+nvidia-curand-cu12 = {version = "*"}
+nvidia-cusolver-cu12 = {version = "*"}
+nvidia-cusparse-cu12 = {version = "*"}
+nvidia-nccl-cu12 = {version = "*"}
+nvidia-nvjitlink-cu12 = {version = "*"}
+
+### }}} // cuda
+
+
 # {{{ TENSORFLOW: from rstudio/tensorflow/R/install.R@default_extra_packages
 
 tensorflow = {extras = ["and-cuda"], version = "^2.19.0"}
@@ -46,20 +73,16 @@ tensorflow-datasets = "*"
 ### }}} // tensorflow
 
 
-# {{{ CUDA-11 TensorRT
+# {{{ TENSORFLOW: TensorRT
 
 # TensorRT install: from https://docs.nvidia.com/deeplearning/tensorrt/support-matrix/index.html
+# TensorRT compatibility: from https://docs.nvidia.com/deeplearning/tensorrt/support-matrix/index.html
 
-#tensorrt = "*"
+tensorrt = "*"
+
 #tensorrt_lean = "*"
 #tensorrt_dispatch = "*"
 #libnvinfer = "*"
-
-# TensorRT compatibility: from https://docs.nvidia.com/deeplearning/tensorrt/support-matrix/index.html
-
-nvidia-cudnn-cu12 = "*"
-nvidia-cuda-runtime-cu12 = "*"
-nvidia-cublas-cu12 = "*"
 
 ### }}} // tensorflow
 
@@ -68,10 +91,10 @@ nvidia-cublas-cu12 = "*"
 
 ##torch = {version = "*"}
 ##torch = {version = "=2.5.*"}
-##torch = {version = "=2.5.*", source = "torch124"}
+# torch = {version = "=2.5.*", source = "torch124"}
 ##torch = {version = "=2.1.1*", source = "torch121"}
-##torchvision = {version = "*"}
-#torch_geometric = {version = "*"}
+# torchvision = {version = "*"}
+##torch_geometric = {version = "*"}
 
 ### }}} // torch
 
@@ -330,6 +353,17 @@ priority = "explicit"
 name = "torch124"
 url = "https://download.pytorch.org/whl/cu124"
 priority = "explicit"
+
+[[tool.poetry.source]]
+name = "nvidia"
+url = "https://pypi.ngc.nvidia.com"
+priority = "supplemental"
+
+[[tool.poetry.source]]
+name = "pypi-public"
+url = "https://pypi.org/simple/"
+priority = "primary"
+
 
 
 
