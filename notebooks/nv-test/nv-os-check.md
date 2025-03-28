@@ -6,17 +6,21 @@
 ```
 
     /home/gp21012/.cache/pypoetry/virtualenvs/dve-sample-r-x2RGOxK1-py3.12/bin
-    /run/user/21012/fnm_multishells/72620_1742484503061/bin
+    /run/user/21012/fnm_multishells/124873_1743177110819/bin
     /home/gp21012/.local/share/fnm
     /home/gp21012/.pyenv/shims
-    /run/user/21012/fnm_multishells/72537_1742484502897/bin
+    /run/user/21012/fnm_multishells/124790_1743177110659/bin
     /home/gp21012/.local/share/fnm
-    /run/user/21012/fnm_multishells/10375_1742473525703/bin
+    /run/user/21012/fnm_multishells/124543_1743177102418/bin
     /home/gp21012/.local/share/fnm
-    /home/gp21012/.pyenv/bin
-    /run/user/21012/fnm_multishells/10210_1742473525453/bin
+    /run/user/21012/fnm_multishells/124453_1743177102247/bin
     /home/gp21012/.local/share/fnm
     /home/gp21012/.local/bin
+    /run/user/21012/fnm_multishells/51728_1743163143869/bin
+    /home/gp21012/.local/share/fnm
+    /home/gp21012/.pyenv/bin
+    /run/user/21012/fnm_multishells/51571_1743163143375/bin
+    /home/gp21012/.local/share/fnm
     /home/gp21012/.cargo/bin
     /home/gp21012/.local/bin
     /usr/local/sbin
@@ -34,6 +38,7 @@
     /usr/local/MATLAB/R2024a/bin
     /usr/local/MATLAB/R2024a/bin/glnxa64
     /home/gp21012/.local/bin
+    /home/gp21012/.local/bin
     /usr/lib/jvm/bin
     /usr/lib/jvm/jre/bin
     /usr/local/stata
@@ -49,7 +54,7 @@
 !nvidia-smi
 ```
 
-    Thu Mar 20 16:47:28 2025       
+    Fri Mar 28 16:52:09 2025       
     +-----------------------------------------------------------------------------------------+
     | NVIDIA-SMI 570.124.06             Driver Version: 570.124.06     CUDA Version: 12.8     |
     |-----------------------------------------+------------------------+----------------------+
@@ -58,7 +63,7 @@
     |                                         |                        |               MIG M. |
     |=========================================+========================+======================|
     |   0  Tesla V100-PCIE-16GB           Off |   00000001:00:00.0 Off |                    0 |
-    | N/A   29C    P0             26W /  250W |       1MiB /  16384MiB |      0%      Default |
+    | N/A   29C    P0             24W /  250W |       1MiB /  16384MiB |      0%      Default |
     |                                         |                        |                  N/A |
     +-----------------------------------------+------------------------+----------------------+
                                                                                              
@@ -87,7 +92,7 @@
 !nvidia-smi -L
 ```
 
-    GPU 0: Tesla V100-PCIE-16GB (UUID: GPU-1963a9d7-8ed4-7459-78f2-b4394f0a1acb)
+    GPU 0: Tesla V100-PCIE-16GB (UUID: GPU-a2db1942-76d6-3572-10f1-3d0b0e1fbd72)
 
 
 
@@ -220,7 +225,7 @@
     
     ==============NVSMI LOG==============
     
-    Timestamp                                 : Thu Mar 20 16:47:29 2025
+    Timestamp                                 : Fri Mar 28 16:52:10 2025
     Driver Version                            : 570.124.06
     CUDA Version                              : 12.8
     
@@ -241,8 +246,8 @@
         Driver Model
             Current                           : N/A
             Pending                           : N/A
-        Serial Number                         : 0324817027618
-        GPU UUID                              : GPU-1963a9d7-8ed4-7459-78f2-b4394f0a1acb
+        Serial Number                         : 1424719040118
+        GPU UUID                              : GPU-a2db1942-76d6-3572-10f1-3d0b0e1fbd72
         Minor Number                          : 0
         VBIOS Version                         : 88.00.4F.00.04
         MultiGPU Board                        : No
@@ -305,10 +310,12 @@
                 Firmware                      : N/A
             Replays Since Reset               : 0
             Replay Number Rollovers           : 0
+
+
             Tx Throughput                     : 50 KB/s
 
 
-            Rx Throughput                     : 50 KB/s
+            Rx Throughput                     : 100 KB/s
             Atomic Caps Outbound              : N/A
             Atomic Caps Inbound               : N/A
         Fan Speed                             : N/A
@@ -381,14 +388,14 @@
                     Total                     : 0
             Aggregate
                 Single Bit            
-                    Device Memory             : 86
+                    Device Memory             : 0
                     Register File             : 0
                     L1 Cache                  : 0
                     L2 Cache                  : 0
                     Texture Memory            : N/A
                     Texture Shared            : N/A
                     CBU                       : N/A
-                    Total                     : 86
+                    Total                     : 0
                 Double Bit            
                     Device Memory             : 0
                     Register File             : 0
@@ -399,7 +406,7 @@
                     CBU                       : 0
                     Total                     : 0
         Retired Pages
-            Single Bit ECC                    : 1
+            Single Bit ECC                    : 0
             Double Bit ECC                    : 0
             Pending Page Blacklist            : No
         Remapped Rows                         : N/A
@@ -410,13 +417,11 @@
             GPU Slowdown Temp                 : 87 C
             GPU Max Operating Temp            : 83 C
             GPU Target Temperature            : N/A
-            Memory Current Temp               : 30 C
+            Memory Current Temp               : 27 C
             Memory Max Operating Temp         : 85 C
         GPU Power Readings
-            Average Power Draw               
-
-     : N/A
-            Instantaneous Power Draw          : 26.71 W
+            Average Power Draw                : N/A
+            Instantaneous Power Draw          : 24.07 W
             Current Power Limit               : 250.00 W
             Requested Power Limit             : 250.00 W
             Default Power Limit               : 250.00 W
@@ -641,8 +646,6 @@
     [36mnvidia-cusparse-cu12         [39m [39;1m12.5.1.3      [39;22m CUSPARSE native runtime libraries
     [36mnvidia-ml-py                 [39m [39;1m12.570.86     [39;22m Python Bindings for the NVIDIA...
     [36mnvidia-nccl-cu12             [39m [39;1m2.23.4        [39;22m NVIDIA Collective Communicatio...
-
-
     [36mnvidia-nvjitlink-cu12        [39m [39;1m12.5.82       [39;22m Nvidia JIT LTO Library
     [36moauthlib                     [39m [39;1m3.2.2         [39;22m A generic, spec-compliant, tho...
     [36mopenpyxl                     [39m [39;1m3.1.5         [39;22m A Python library to read/write...
@@ -1750,8 +1753,6 @@
     │       │   │   └── [36mtyping-extensions[39m >=4.0.0 (circular dependency aborted here)
     │       │   ├── [34mbleach[39m !=5.0.0 
     │       │   │   ├── [36mtinycss2[39m >=1.1.0,<1.5 
-
-
     │       │   │   │   └── [33mwebencodings[39m >=0.4 
     │       │   │   └── [36mwebencodings[39m * (circular dependency aborted here)
     │       │   ├── [34mdefusedxml[39m * 
@@ -1926,6 +1927,8 @@
     │   │   │   │   └── [36mtraitlets[39m >=5.3 
     │   │   │   ├── [34mpython-dateutil[39m >=2.8.2 (circular dependency aborted here)
     │   │   │   ├── [34mpyzmq[39m >=23.0 
+
+
     │   │   │   │   └── [36mcffi[39m * (circular dependency aborted here)
     │   │   │   ├── [34mtornado[39m >=6.2 
     │   │   │   └── [34mtraitlets[39m >=5.3 (circular dependency aborted here)
@@ -2946,8 +2949,6 @@
     │   │       │   │   │       └── [35mtyping-extensions[39m >=4.4.0 (circular dependency aborted here)
     │   │       │   │   ├── [33mreferencing[39m >=0.28.4 (circular dependency aborted here)
     │   │       │   │   ├── [33mrfc3339-validator[39m * 
-
-
     │   │       │   │   │   └── [32msix[39m * (circular dependency aborted here)
     │   │       │   │   ├── [33mrfc3986-validator[39m >0.1.0 
     │   │       │   │   ├── [33mrpds-py[39m >=0.7.1 (circular dependency aborted here)
@@ -3162,6 +3163,8 @@
     │       │   │   ├── [36mfqdn[39m * 
     │       │   │   ├── [36midna[39m * (circular dependency aborted here)
     │       │   │   ├── [36misoduration[39m * 
+
+
     │       │   │   │   └── [33marrow[39m >=0.15.0 
     │       │   │   │       ├── [32mpython-dateutil[39m >=2.7.0 (circular dependency aborted here)
     │       │   │   │       └── [32mtypes-python-dateutil[39m >=2.8.10 
@@ -3233,10 +3236,25 @@
     └── [33mtornado[39m >=6.2.0
     [36mnumpy[39m [39;1m2.1.3[39;22m Fundamental package for array computing in Python
     [36mnvidia-cublas-cu12[39m [39;1m12.5.3.2[39;22m CUBLAS native runtime libraries
+    [36mnvidia-cuda-cupti-cu12[39m [39;1m12.5.82[39;22m CUDA profiling tools runtime libs.
+    [36mnvidia-cuda-nvcc-cu12[39m [39;1m12.5.82[39;22m CUDA nvcc
+    [36mnvidia-cuda-nvrtc-cu12[39m [39;1m12.5.82[39;22m NVRTC native runtime libraries
     [36mnvidia-cuda-runtime-cu12[39m [39;1m12.5.82[39;22m CUDA Runtime native Libraries
     [36mnvidia-cudnn-cu12[39m [39;1m9.3.0.75[39;22m cuDNN runtime libraries
     └── [33mnvidia-cublas-cu12[39m *
+    [36mnvidia-cufft-cu12[39m [39;1m11.2.3.61[39;22m CUFFT native runtime libraries
+    └── [33mnvidia-nvjitlink-cu12[39m *
+    [36mnvidia-curand-cu12[39m [39;1m10.3.6.82[39;22m CURAND native runtime libraries
+    [36mnvidia-cusolver-cu12[39m [39;1m11.6.3.83[39;22m CUDA solver native runtime libraries
+    ├── [33mnvidia-cublas-cu12[39m *
+    ├── [33mnvidia-cusparse-cu12[39m *
+    │   └── [32mnvidia-nvjitlink-cu12[39m * 
+    └── [33mnvidia-nvjitlink-cu12[39m *
+    [36mnvidia-cusparse-cu12[39m [39;1m12.5.1.3[39;22m CUSPARSE native runtime libraries
+    └── [33mnvidia-nvjitlink-cu12[39m *
     [36mnvidia-ml-py[39m [39;1m12.570.86[39;22m Python Bindings for the NVIDIA Management Library
+    [36mnvidia-nccl-cu12[39m [39;1m2.23.4[39;22m NVIDIA Collective Communication Library (NCCL) Runtime
+    [36mnvidia-nvjitlink-cu12[39m [39;1m12.5.82[39;22m Nvidia JIT LTO Library
     [36moauthlib[39m [39;1m3.2.2[39;22m A generic, spec-compliant, thorough implementation of the OAuth request-signing logic
     [36mopenpyxl[39m [39;1m3.1.5[39;22m A Python library to read/write Excel 2010 xlsx/xlsm files
     └── [33met-xmlfile[39m *
@@ -3290,7 +3308,7 @@
     └── [33mtomlkit[39m >=0.10.1
     [36mpynvml[39m [39;1m12.0.0[39;22m Python utilities for the NVIDIA Management Library
     └── [33mnvidia-ml-py[39m >=12.0.0,<13.0.0a0
-    [36mpyproject-flake8[39m [39;1m0.0.1a4[39;22m pyproject-flake8 (`pflake8`), a monkey patching wrapper to connect flake8 with pyproject.toml configuration
+    [36mpyproject-flake8[39m [39;1m0.0.1a4[39;22m pyproject-flake8 (`pflake8`), a monkey patching wrapper to connect flake8 with pyproject.toml configuration 
     └── [33mflake8[39m *
         ├── [32mmccabe[39m >=0.7.0,<0.8.0 
         ├── [32mpycodestyle[39m >=2.12.0,<2.13.0 
