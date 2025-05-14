@@ -81,6 +81,7 @@
 ^travis$
 ^travis/check_format\.sh$
 ^\.travis\.yml$
+^venv$
 ^vignettes/rsconnect$
 ^.vimrc$
 ^.yarn$
