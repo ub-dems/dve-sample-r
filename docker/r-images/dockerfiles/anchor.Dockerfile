@@ -14,7 +14,7 @@ FROM rocker/geospatial:4.4.3
 # FROM rocker/verse:latest
 
 LABEL org.opencontainers.image.vendor="ubdems" \
-      org.opencontainers.image.base.name="rocker/tidyverse:latest" \
+      org.opencontainers.image.base.name="rocker/geospatial:4.4.3" \
       org.opencontainers.image.title="ubdems/dve-sample-r.anchor" \
       org.opencontainers.image.source="https://gitlab.com/ub-dems-public/ds-labs/dve-sample-r" \
       org.opencontainers.image.authors="DEMS/datalab <dsuser.dems@gmail.com>" \

@@ -216,9 +216,9 @@ CUST_S_REPO_HOST='https://gitlab.com/'
 CUST_S_REGS_PATH='ubdems'
 CUST_S_REGS_HOST='docker.io'
 # ---(environment versions)---
-CUST_S_IMAGE_ANCHOR='rocker/tidyverse:latest'
-CUST_S_VERS_BASE='(>= 3.6.0)'
-CUST_S_VERS_ROXY='7.2.0'
+CUST_S_IMAGE_ANCHOR='rocker/geospatial:4.4.3'
+CUST_S_VERS_BASE='(>= 4.0.0)'
+CUST_S_VERS_ROXY='7.3.2'
 # ---(data import links)---
 CUST_S_DATA_LINK='dve-ds'
 CUST_S_DATA_DEMO='1'
@@ -261,27 +261,27 @@ CUST_T_REPO_HOST='https://gitlab.com/'
 CUST_T_REGS_PATH='ubdems'
 CUST_T_REGS_HOST='docker.io'
 # ---(environment versions)---
-CUST_T_IMAGE_ANCHOR='rocker/tidyverse:latest'
-CUST_T_VERS_BASE='(>= 3.6.0)'
-CUST_T_VERS_ROXY='7.2.0'
+CUST_T_IMAGE_ANCHOR='rocker/geospatial:4.4.3'
+CUST_T_VERS_BASE='(>= 4.0.0)'
+CUST_T_VERS_ROXY='7.3.2'
 # ---(data import links)---
 CUST_T_DATA_LINK='dve-ds'
 CUST_T_DATA_DEMO='1'
 # ---(renv support options)---
 CUST_T_RENV_OPTS='enable,auto'
 # ---(project description)---
-CUST_T_INFO_AUTH_NAME='_datalab_'
-CUST_T_INFO_AUTH_SURNAME='_DEMS_'
-CUST_T_INFO_AUTH_EMAIL='_datalab@unimib.it_'
-CUST_T_INFO_DESC='_TODO:description_'
-CUST_T_INFO_TITLE='_TODO:title_'
+CUST_T_INFO_AUTH_NAME='datalab'
+CUST_T_INFO_AUTH_SURNAME='DEMS'
+CUST_T_INFO_AUTH_EMAIL='datalab@unimib.it'
+CUST_T_INFO_DESC='TODO:description'
+CUST_T_INFO_TITLE='TODO:title'
 # ---(image labels)---
-CUST_T_INFO_USER_EMAIL='_dsuser.dems@gmail.com'
+CUST_T_INFO_USER_EMAIL='dsuser.dems@gmail.com'
 CUST_T_INFO_AUTHORS="${CUST_T_INFO_AUTH_SURNAME}/${CUST_T_INFO_AUTH_NAME} <${CUST_T_INFO_USER_EMAIL}>"
-CUST_T_INFO_FROM='_2022-08-02_'
-CUST_T_INFO_OWNER='_ab21010_'
-CUST_T_INFO_CDC='_ds-101_'
-CUST_T_INFO_TAGS='_none_'
+CUST_T_INFO_FROM='2022-08-02'
+CUST_T_INFO_OWNER='ab21010'
+CUST_T_INFO_CDC='ds-101'
+CUST_T_INFO_TAGS='none'
 EOF
 #+END_SRC
 
