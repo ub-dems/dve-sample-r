@@ -6,7 +6,11 @@
 
 # Suppress R CMD check note
 # 
-#' @importFrom keras is_keras_available
+#@[nv]# ' @importFrom keras is_keras_available
+# 
+#' @importFrom Rcpp cppFunction
+#' @importFrom RcppArmadillo armadillo_get_number_of_omp_threads
+#' @importFrom RcppEigen fastLm
 # 
 #' @importFrom here here
 #' @importFrom logging loginfo logdebug logerror getHandler

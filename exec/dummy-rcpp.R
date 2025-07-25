@@ -10,6 +10,8 @@ devtools::load_all(".")
 require(dvesimpler)
 
 library(logging)
+library(Rcpp)
+library(RcppArmdillo)
 library(microbenchmark)
 
 init_logging <- function(args = c()){
@@ -35,18 +37,20 @@ cppFunction('double dummy_local_mean(NumericVector x) {
 
 lcall <- function (){
   x <- runif(1e5)
-  microbenchmark(
-    mean(x),
-    dummy_local_mean(x)
-  )
+  c( armadillo_get_number_of_omp_threads(),
+    microbenchmark(
+      mean(x),
+      dummy_local_mean(x)
+    ))
 }
 
 pcall <- function (){
   x <- runif(1e5)
-  microbenchmark(
-    mean(x),
-    dummy_mean(x)
-  )
+ c( armadillo_get_number_of_omp_threads(),
+   microbenchmark(
+     mean(x),
+     dummy_mean(x)
+   ))
 }
 
 task <- function(){
