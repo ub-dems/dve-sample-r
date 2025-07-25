@@ -17,6 +17,9 @@ Depends:
     R (>= 4.0.0)
 Imports:
     keras,
+    Rcpp,
+    RcppArmadillo,
+    RcppEigen,
     dplyr,
     ggplot2,
     readr,
