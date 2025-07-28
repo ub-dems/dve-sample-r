@@ -50,6 +50,7 @@ Suggests:
     stringr,
     usethis,
     testthat (>= 2.1.0)
+LinkingTo: Rcpp
 VignetteBuilder: 
     knitr
 Encoding: UTF-8
