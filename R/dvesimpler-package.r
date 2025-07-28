@@ -4,13 +4,15 @@
 #' @keywords internal
 "_PACKAGE"
 
-# Suppress R CMD check note
+## usethis namespace: start
 # 
-#' @importFrom keras is_keras_available
 # 
-#' @importFrom Rcpp cppFunction
+#' @useDynLib dvesimpler, .registration = TRUE
+#' @importFrom Rcpp cppFunction sourceCpp
 #' @importFrom RcppArmadillo armadillo_get_number_of_omp_threads
 #' @importFrom RcppEigen fastLm
+# 
+#' @importFrom keras is_keras_available
 # 
 #' @importFrom here here
 #' @importFrom logging loginfo logdebug logerror getHandler
@@ -31,6 +33,7 @@
 #' @importFrom dplyr filter
 #' @importFrom utils str capture.output head View 
 # 
+## usethis namespace: end
 
 utils::globalVariables(c("Datetime","PJME_MW"))
 

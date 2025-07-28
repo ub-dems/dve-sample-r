@@ -7,11 +7,11 @@
 #rm(list=ls())
 devtools::load_all(".") 
 
-require(dvesimpler)
+library(dvesimpler)
 
 library(logging)
 library(Rcpp)
-library(RcppArmdillo)
+library(RcppArmadillo)
 library(microbenchmark)
 
 init_logging <- function(args = c()){
@@ -24,7 +24,7 @@ v <- function(...) cat(sprintf(...), "\n", sep=' ', file=stderr())
 s <- function(...) do.call(paste,as.list(c(..., sep=", ")))
 
 
-cppFunction('double dummy_local_mean(NumericVector x) {
+cppFunction('double dummy_l_mean(NumericVector x) {
   int n = x.size();
   double total = 0;
 
@@ -37,20 +37,22 @@ cppFunction('double dummy_local_mean(NumericVector x) {
 
 lcall <- function (){
   x <- runif(1e5)
-  c( armadillo_get_number_of_omp_threads(),
-    microbenchmark(
-      mean(x),
-      dummy_local_mean(x)
-    ))
+  c( sprintf("OMP Threads: %d\n",armadillo_get_number_of_omp_threads()),
+     paste(capture.output(print( 
+       microbenchmark(
+        mean(x),
+        dummy_l_mean(x)
+     ))), collapse = "\n"))
 }
 
 pcall <- function (){
   x <- runif(1e5)
- c( armadillo_get_number_of_omp_threads(),
-   microbenchmark(
-     mean(x),
-     dummy_mean(x)
-   ))
+ c( sprintf("OMP Threads: %d\n",armadillo_get_number_of_omp_threads()),
+    paste(capture.output(print( 
+      microbenchmark(
+      mean(x),
+      dummy_mean(x)
+    ))), collapse = "\n"))
 }
 
 task <- function(){

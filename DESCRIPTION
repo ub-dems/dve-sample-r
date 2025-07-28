@@ -49,8 +49,9 @@ Suggests:
     rmarkdown,
     stringr,
     usethis,
+    roxygen2 (>= 7.3.2),
     testthat (>= 2.1.0)
-LinkingTo: Rcpp
+LinkingTo: Rcpp, RcppEigen
 VignetteBuilder: 
     knitr
 Encoding: UTF-8
