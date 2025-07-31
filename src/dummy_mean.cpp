@@ -1,10 +1,56 @@
-// [[Rcpp::depends(RcppArmadillo)]]
-// [[Rcpp::depends(RcppEigen)]]
+/*
+ * Package: dvesimpler
+ * File: dummy_mean.cpp
+ * Author: datalab
+ * Description: Simple Demo C++ source file with Rcpp
+ * Seealso: ../notes/howtos/Rcpp-HOWTO.md
+ * Seealso: ../notes/howtos/Rcpp-HOWTO-claude-v4.md
+ * Seealso: ../src/dummy-stats.cpp
+ * Seealso: ../src/dvesimpler.h
+ * Seealso: ../exec/dummy-rcpp.R
+ * Seealso: ../src/Makevars
+ * Seealso: ../R/dvesimpler-package.r
+ * Seealso: ../DESCRIPTION
+ * Created: 2025
+ * License: GPL (>= 2)
+ */
+
+// Enable C++11 support
 // [[Rcpp::plugins(cpp11)]]
 
-#include <numeric>
+// Rcpp dependencies
 #include <Rcpp.h>
+/*
+#include <RcppArmadillo.h>
+#include <RcppEigen.h>
+#include <RcppGSL.h>
+*/
+
+
+
+// Standard library headers
+#include <algorithm>
+#include <cmath>
+#include <exception>
+#include <functional>
+#include <iterator>
+#include <limits>
+#include <memory>
+#include <numeric>
+#include <random>
+#include <stdexcept>
+#include <string>
+#include <vector>
+
+// Declare dependencies
+// [[Rcpp::depends(RcppArmadillo)]]
+// [[Rcpp::depends(RcppEigen)]]
+// [[Rcpp::depends(RcppGSL)]]
+
+// Use namespaces
 using namespace Rcpp;
+using namespace std;
+
 
 
 //' Sample Rcpp arithmetic mean (C)
@@ -15,7 +61,7 @@ using namespace Rcpp;
 //'
 //' @export
 // [[Rcpp::export]]
-double dummy_mean_v0(NumericVector xs) {
+double dmy_mean_v0(NumericVector xs) {
    int n = xs.size();
    double total = 0;
    
@@ -36,7 +82,7 @@ double dummy_mean_v0(NumericVector xs) {
 //' @return         arithmetic mean
 //'
 // [[Rcpp::export]]
-double dummy_mean_v1(NumericVector xs) {
+double dmy_mean_v1(NumericVector xs) {
    int n = xs.size();
    double total = 0;
    
@@ -55,7 +101,7 @@ double dummy_mean_v1(NumericVector xs) {
 //' @return         arithmetic mean
 //'
 // [[Rcpp::export]]
-double dummy_mean_v2(NumericVector xs) {
+double dmy_mean_v2(NumericVector xs) {
    int n = xs.size();
    return std::accumulate(xs.begin(), xs.end(), 0.0) / n;
  }
@@ -68,7 +114,7 @@ double dummy_mean_v2(NumericVector xs) {
 //' @return         arithmetic mean
 //'
 // [[Rcpp::export]]
-double dummy_mean_v3(NumericVector xs) {
+double dmy_mean_v3(NumericVector xs) {
    int n = xs.size();
    double total = 0;
    
@@ -86,8 +132,9 @@ double dummy_mean_v3(NumericVector xs) {
 //'
 //' @export
 // [[Rcpp::export]]
- double dummy_mean(NumericVector xs) {
-   return dummy_mean_v3(xs);
+Rcpp::NumericVector dmy_mean(NumericVector xs) {
+   double result = dmy_mean_v3(xs);
+   return Rcpp::NumericVector::create(result); 
  }
  
  
@@ -97,6 +144,6 @@ library(microbenchmark)
 x <- runif(1e5)
 microbenchmark(
   mean(x),
-  dummy_mean(x)
+  dmy_mean(x)
 )
 */
