@@ -1,4 +1,4 @@
-# Q:1 (Claude)
+# A:1 (Claude) - summary
 > Comprehensive Rcpp Guide for R Packages
 
 
@@ -45,8 +45,7 @@ CRAN submission and enterprise deployment scenarios.
 
 -----------------------------------------------------------------------------------------
 
-# A:1 (Claude)
-
+# A:1 (Claude) - notes
 > Comprehensive Rcpp Guide for R Packages
 
 ## 1. C++11 Rcpp Sources Coding Style
@@ -810,7 +809,11 @@ test_that("memory usage is reasonable", {
 })
 ```
 
----
+-----------------------------------------------------------------------------------------
+
+# A:1 (Claude) - template
+> Comprehensive Rcpp Guide for R Packages
+
 
 ## Full Skeleton of a C++ Source
 
@@ -1515,7 +1518,15 @@ List package_info() {
  * =============================================================================
  */
 
----
+```
+
+
+-----------------------------------------------------------------------------------------
+
+# A:1 (Claude) - configuration
+> Comprehensive Rcpp Guide for R Packages
+
+
 
 ## Roxygen2 Documentation and DESCRIPTION File Requisites
 
@@ -1635,6 +1646,12 @@ PKG_CXXFLAGS = -O2 -Wall -DARMA_DONT_PRINT_ERRORS
 ```
 
 ---
+
+-----------------------------------------------------------------------------------------
+
+# A:1 (Claude) - CI/CD pipelines
+> Comprehensive Rcpp Guide for R Packages
+
 
 ## GitHub and GitLab Packaging Action Pipeline
 
