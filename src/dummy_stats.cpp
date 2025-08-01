@@ -111,6 +111,27 @@ namespace {  // Anonymous namespace for internal functions
 
 } // end anonymous namespace
 
+
+// [[Rcpp::export]]
+NumericVector safe_divide(NumericVector a, NumericVector b) {
+  if (a.size() != b.size()) {
+    Rcpp::stop("Vectors must be same length");
+  }
+  
+  NumericVector result(a.size());
+  for (int i = 0; i < a.size(); ++i) {
+    if (b[i] == 0) {
+      Rcpp::warning("Division by zero at index %d", i);
+      result[i] = NA_REAL;
+    } else {
+      result[i] = a[i] / b[i];
+    }
+  }
+  return result;
+}
+
+
+
 /*
  * =============================================================================
  * BASIC STATISTICAL FUNCTIONS
@@ -131,12 +152,12 @@ namespace {  // Anonymous namespace for internal functions
 //' @examples
 //' \dontrun{
 //' data <- rnorm(100)
-//' stats <- robust_summary_stats(data)
+//' stats <- dmy_summary_stats(data)
 //' }
 //'
 //' @export
 // [[Rcpp::export]]
-List robust_summary_stats(const NumericVector& data,
+List dmy_summary_stats(const NumericVector& data,
                          double confidence_level = 0.95,
                          bool na_rm = true) {
     
@@ -146,13 +167,37 @@ List robust_summary_stats(const NumericVector& data,
             stop("confidence_level must be between 0 and 1");
         }
         
-        NumericVector clean_data = na_rm ? na_omit(data) : data;
-        validate_input(clean_data, "data");
+        NumericVector xs = na_rm ? na_omit(data) : data;
+        validate_input(xs, "data");
+
+
+        // Get R environment
+        Environment base("package:base");
+        Environment stats("package:stats");
+    
+        // Call R functions
+        Function r_mean = base["mean"];
+        Function r_sd = stats["sd"];
+        Function r_sd = stats["var"];
+        Function r_quantile = stats["quantile"];
+
+        /*
+        // Call tidyverse functions
+        Rcpp::Environment dplyr_ns = Rcpp::Environment::namespace_env("dplyr");
+        Rcpp::Function mutate = dplyr_ns["mutate"];
+        */
+    
+        // Execute R functions
+        double mean_r_val = as<double>(r_mean(xs));
+        double var_r_val = as<double>(r_var(xs));
+        double sd_r_val = as<double>(r_sd(xs));
+        NumericVector quantiles = r_quantile(xs, 
+                                             NumericVector::create(0.25, 0.5, 0.75));
         
         // Basic statistics
-        const auto n = static_cast<double>(clean_data.size());
-        const double mean_val = mean(clean_data);
-        const double var_val = var(clean_data);
+        const auto n = static_cast<double>(xs.size());
+        const double mean_val = mean(xs);
+        const double var_val = var(xs);
         const double sd_val = safe_sqrt(var_val);
         
         // Confidence interval
@@ -162,46 +207,51 @@ List robust_summary_stats(const NumericVector& data,
         
         return List::create(
             Named("n") = n,
-            Named("mean") = mean_val,
-            Named("variance") = var_val,
-            Named("sd") = sd_val,
+            Named("mean") = mean_r_val,
+            Named("variance") = var_r_val,
+            Named("sd") = sd_r_val,
+            Named("mean.c") = mean_val,
+            Named("variance.c") = var_val,
+            Named("sd.c") = sd_val,
             Named("ci_lower") = mean_val - margin_error,
             Named("ci_upper") = mean_val + margin_error,
-            Named("confidence_level") = confidence_level
+            Named("confidence_level") = confidence_level,
+            Named("q25") = quantiles[0],
+            Named("median") = quantiles[1],
+            Named("q75") = quantiles[2]
+            
         );
         
-    } catch (const std::exception& e) {
-        stop("Error in robust_summary_stats: %s", e.what());
+    } catch (const std::exception& ex) {
+        stop("Error in dmy_summary_stats: %s", ex.what());
     }
 }
 
+/*
+ * =============================================================================
+ * DATA TRANSFORMATION FUNCTIONS
+ * =============================================================================
+ */
 
+//' Calculate a Summry Dataframme as a sum, by group colun
+//'
+//' Aggregate by sum value column bt group column
+//' 
+//' @param df An input dataframme
+//' @param group_col keys column name
+//' @param value_col values column name
+//'
+//' @return A two column dataframe with keys and valuue
+//'
+//' @examples
+//' \dontrun{
+//' data <- rnorm(100)
+//' stats <- dmy_summary_stats(data)
+//' }
+//'
+//' @export
 // [[Rcpp::export]]
-void process_data(Rcpp::NumericVector data) {
-    try {
-        if (data.size() == 0) {
-            Rcpp::stop("Input data cannot be empty.");
-        }
-        // ... processing logic ...
-        Rcpp::Rcout << "Processing complete." << std::endl;
-    } catch (std::exception &ex) {
-        Rcpp::warning("An exception occurred: %s", ex.what());
-    }
-}
-
-// [[Rcpp::export]]
-Rcpp::RObject call_dplyr_mutate() {
-    Rcpp::Environment dplyr_ns = Rcpp::Environment::namespace_env("dplyr");
-    Rcpp::Function mutate = dplyr_ns["mutate"];
-
-    // Example usage (conceptual)
-    // ... create a data frame and arguments ...
-    // return mutate( ... );
-    return R_NilValue; // Placeholder
-}
-
-// [[Rcpp::export]]
-DataFrame rcpp_dplyr_grouped_sum(DataFrame df, String group_col, String value_col) {
+DataFrame dmy_dplyr_grouped_sum(DataFrame df, String group_col, String value_col) {
   // Extract columns
   CharacterVector groups = df[group_col];
   NumericVector values = df[value_col];
@@ -233,24 +283,6 @@ DataFrame rcpp_dplyr_grouped_sum(DataFrame df, String group_col, String value_co
   );
 }
 
-
-// [[Rcpp::export]]
-NumericVector safe_divide(NumericVector a, NumericVector b) {
-  if (a.size() != b.size()) {
-    Rcpp::stop("Vectors must be same length");
-  }
-  
-  NumericVector result(a.size());
-  for (int i = 0; i < a.size(); ++i) {
-    if (b[i] == 0) {
-      Rcpp::warning("Division by zero at index %d", i);
-      result[i] = NA_REAL;
-    } else {
-      result[i] = a[i] / b[i];
-    }
-  }
-  return result;
-}
 
 
 

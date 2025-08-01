@@ -9,7 +9,7 @@
 namespace dvesimpler
 {
 
-  Rcpp::NumericVector dummy_mean(NumericVector xs);
+  Rcpp::NumericVector dmy_mean(NumericVector xs);
   
 }
 

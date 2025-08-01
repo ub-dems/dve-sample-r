@@ -8,7 +8,10 @@
 
 namespace dvesimpler {
 
-  Rcpp::NumericVector dummy_mean(NumericVector xs);
+  Rcpp::DataFrame dmy_dplyr_grouped_sum(Rcpp::DataFrame df, Rcpp::String group_col, Rcpp::String value_col)
+  Rcpp::List dmy_summary_stats(const Rcpp::NumericVector& data,
+                         double confidence_level = 0.95,
+                               bool na_rm = true);    
   
 }
 
