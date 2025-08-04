@@ -16,7 +16,6 @@ BugReports: https://gitlab.com/ub-dems-public/ds-labs/dve-sample-r/-/issues
 Depends: 
     R (>= 4.0.0)
 Imports:
-    keras,
     Rcpp,
     RcppArmadillo,
     RcppEigen,
@@ -51,7 +50,7 @@ Suggests:
     usethis,
     roxygen2 (>= 7.3.2),
     testthat (>= 2.1.0)
-LinkingTo: Rcpp, RcppEigen
+LinkingTo: Rcpp, RcppArmadillo, RcppEigen
 VignetteBuilder: 
     knitr
 Encoding: UTF-8

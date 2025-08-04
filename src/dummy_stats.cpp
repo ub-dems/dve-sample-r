@@ -18,12 +18,19 @@
 // Enable C++11 support
 // [[Rcpp::plugins(cpp11)]]
 
-// Rcpp dependencies
-#include <Rcpp.h>
+// Declare dependencies
+// [[Rcpp::depends(RcppArmadillo)]]
+// [[Rcpp::depends(RcppEigen)]]
 
 /*
+// {{Rcpp::depends(RcppGSL)}}
+*/
+// Rcpp dependencies
 #include <RcppArmadillo.h>
+#include <Rcpp.h>
 #include <RcppEigen.h>
+
+/*
 #include <RcppGSL.h>
 */
 
@@ -53,13 +60,8 @@
 // Package Public Functions
 
 #define DVESIMPLER_INTERNALS 1
-#include <dvesimpler.h>
+#include "dvesimpler.h"
 
-
-// Declare dependencies
-// [[Rcpp::depends(RcppArmadillo)]]
-// [[Rcpp::depends(RcppEigen)]]
-// [[Rcpp::depends(RcppGSL)]]
 
 // Use namespaces
 using namespace Rcpp;
@@ -84,35 +86,27 @@ using MapVector = Eigen::Map<Eigen::VectorXd>;
 
 namespace {  // Anonymous namespace for internal functions
 
-    // Input validation helper
-    void validate_input(const NumericVector& data, const std::string& param_name) {
-        if (data.size() == 0) {
-            throw std::invalid_argument(param_name + " cannot be empty");
-        }
+// Input validation helper
+void validate_input(const NumericVector& data, const std::string& param_name) {
+  if (data.size() == 0) {
+    throw std::invalid_argument(param_name + " cannot be empty");
+  }
         
-        if (any(is_infinite(data))) {
-            throw std::invalid_argument(param_name + " contains infinite values");
-        }
-    }
+  if (any(is_infinite(data))) {
+    throw std::invalid_argument(param_name + " contains infinite values");
+  }
+}
+
+  
     
-    // Safe mathematical operations
-    double safe_sqrt(double value) {
-        if (value < 0) {
-            throw std::domain_error("Cannot take square root of negative number");
-        }
-        return std::sqrt(value);
-    }
-    
-    // Memory-efficient matrix operations
-    template<typename T>
-    void initialize_matrix(T& matrix, double fill_value = 0.0) {
-        std::fill(matrix.begin(), matrix.end(), fill_value);
-    }
+// Safe mathematical operations
+double safe_sqrt(double value) {
+  if (value < 0) {
+    throw std::domain_error("Cannot take square root of negative number");
+  }
+  return std::sqrt(value);
+}
 
-} // end anonymous namespace
-
-
-// [[Rcpp::export]]
 NumericVector safe_divide(NumericVector a, NumericVector b) {
   if (a.size() != b.size()) {
     Rcpp::stop("Vectors must be same length");
@@ -131,10 +125,73 @@ NumericVector safe_divide(NumericVector a, NumericVector b) {
 }
 
 
+  
+    
+// Memory-efficient matrix operations
+template<typename T>
+void initialize_matrix(T& matrix, double fill_value = 0.0) {
+  std::fill(matrix.begin(), matrix.end(), fill_value);
+}
+
+} // end anonymous namespace
+
+namespace dvesimpler {  // package namespace
 
 /*
  * =============================================================================
- * BASIC STATISTICAL FUNCTIONS
+ * INTERNAL PACKAGE LINKAGE
+ * =============================================================================
+ */
+
+//' Calculate Aritmetic Mean 
+//'
+//' Compute mean directly without C or R library funcions
+//' with exported package function
+//' See: dummy_mean.cpp
+//'
+//' @param data A numeric vector
+//'
+//' @return Arithmetic mean of data
+//'
+//' @examples
+//' \dontrun{
+//' data <- rnorm(100)
+//' m <- dmy_custom_mean(data)
+//' }
+//'
+//' @export
+// [[Rcpp::export]]
+Rcpp::NumericVector dmy_custom_mean(Rcpp::NumericVector data) {
+  return dvesimpler::dmy_mean(data);
+}
+
+//' Calculate Aritmetic Mean (alternate version)
+//'
+//' Compute mean directly without C or R library funcions
+//' with not exported (internal) package function
+//' See: dummy_mean.cpp
+//'
+//' @param data A numeric vector
+//'
+//' @return Arithmetic mean of data
+//'
+//' @examples
+//' \dontrun{
+//' data <- rnorm(100)
+//' m <- dmy_custom_mean_v0(data)
+//' }
+//'
+//' @export
+// [[Rcpp::export]]
+Rcpp::NumericVector dmy_custom_mean_v0(Rcpp::NumericVector data) {
+   double result = dvesimpler::dmy_mean_v0(data);
+   return Rcpp::NumericVector::create(result); 
+}
+
+
+/*
+ * =============================================================================
+ * DATA STATS COMPUTATION FUNCTIONS (R LIBRARY INTEGRATION)
  * =============================================================================
  */
 
@@ -158,73 +215,73 @@ NumericVector safe_divide(NumericVector a, NumericVector b) {
 //' @export
 // [[Rcpp::export]]
 List dmy_summary_stats(const NumericVector& data,
-                         double confidence_level = 0.95,
-                         bool na_rm = true) {
+                       double confidence_level,
+                       bool na_rm) {
     
-    try {
-        // Input validation
-        if (confidence_level <= 0 || confidence_level >= 1) {
-            stop("confidence_level must be between 0 and 1");
-        }
-        
-        NumericVector xs = na_rm ? na_omit(data) : data;
-        validate_input(xs, "data");
-
-
-        // Get R environment
-        Environment base("package:base");
-        Environment stats("package:stats");
-    
-        // Call R functions
-        Function r_mean = base["mean"];
-        Function r_sd = stats["sd"];
-        Function r_sd = stats["var"];
-        Function r_quantile = stats["quantile"];
-
-        /*
-        // Call tidyverse functions
-        Rcpp::Environment dplyr_ns = Rcpp::Environment::namespace_env("dplyr");
-        Rcpp::Function mutate = dplyr_ns["mutate"];
-        */
-    
-        // Execute R functions
-        double mean_r_val = as<double>(r_mean(xs));
-        double var_r_val = as<double>(r_var(xs));
-        double sd_r_val = as<double>(r_sd(xs));
-        NumericVector quantiles = r_quantile(xs, 
-                                             NumericVector::create(0.25, 0.5, 0.75));
-        
-        // Basic statistics
-        const auto n = static_cast<double>(xs.size());
-        const double mean_val = mean(xs);
-        const double var_val = var(xs);
-        const double sd_val = safe_sqrt(var_val);
-        
-        // Confidence interval
-        const double alpha = 1.0 - confidence_level;
-        const double t_value = R::qt(1.0 - alpha/2.0, n - 1, 1, 0);
-        const double margin_error = t_value * sd_val / std::sqrt(n);
-        
-        return List::create(
-            Named("n") = n,
-            Named("mean") = mean_r_val,
-            Named("variance") = var_r_val,
-            Named("sd") = sd_r_val,
-            Named("mean.c") = mean_val,
-            Named("variance.c") = var_val,
-            Named("sd.c") = sd_val,
-            Named("ci_lower") = mean_val - margin_error,
-            Named("ci_upper") = mean_val + margin_error,
-            Named("confidence_level") = confidence_level,
-            Named("q25") = quantiles[0],
-            Named("median") = quantiles[1],
-            Named("q75") = quantiles[2]
-            
-        );
-        
-    } catch (const std::exception& ex) {
-        stop("Error in dmy_summary_stats: %s", ex.what());
+  try {
+    // Input validation
+    if (confidence_level <= 0 || confidence_level >= 1) {
+      stop("confidence_level must be between 0 and 1");
     }
+        
+    NumericVector xs = na_rm ? na_omit(data) : data;
+    validate_input(xs, "data");
+
+    // --( R libs: stats functions )-------------------------------
+
+    // Get R environment
+    Environment base("package:base");
+    Environment stats("package:stats");
+    
+    // Call R functions
+    Function r_mean = base["mean"];
+    Function r_sd = stats["sd"];
+    Function r_var = stats["var"];
+    Function r_quantile = stats["quantile"];
+
+    // Execute R functions
+    double mean_r_val = as<double>(r_mean(xs));
+    double var_r_val = as<double>(r_var(xs));
+    double sd_r_val = as<double>(r_sd(xs));
+    NumericVector quantiles = r_quantile(xs, 
+                                         NumericVector::create(0.25, 0.5, 0.75));
+        
+
+    // --( C libs: stats functions )-------------------------------
+
+    // Basic statistics
+    const auto n = static_cast<double>(xs.size());
+    const double mean_val = mean(xs);
+    const double var_val = var(xs);
+    const double sd_val = safe_sqrt(var_val);
+        
+    // Confidence interval
+    const double alpha = 1.0 - confidence_level;
+    const double t_value = R::qt(1.0 - alpha/2.0, n - 1, 1, 0);
+    const double margin_error = t_value * sd_val / std::sqrt(n);
+        
+    // --( named R list result )-------------------------------
+    
+    return List::create(
+        Named("n") = n,
+        Named("mean") = mean_r_val,
+        Named("variance") = var_r_val,
+        Named("sd") = sd_r_val,
+        Named("mean.c") = mean_val,
+        Named("variance.c") = var_val,
+        Named("sd.c") = sd_val,
+        Named("ci_lower") = mean_val - margin_error,
+        Named("ci_upper") = mean_val + margin_error,
+        Named("confidence_level") = confidence_level,
+        Named("q25") = quantiles[0],
+        Named("median") = quantiles[1],
+        Named("q75") = quantiles[2]
+            
+                        );
+        
+  } catch (const std::exception& ex) {
+    stop("Error in dmy_summary_stats: %s", ex.what());
+  }
 }
 
 /*
@@ -278,69 +335,10 @@ DataFrame dmy_dplyr_grouped_sum(DataFrame df, String group_col, String value_col
   }
   
   return DataFrame::create(
-    Named("group") = out_groups,
-    Named("sum") = out_sums
-  );
+      Named("group") = out_groups,
+      Named("sum") = out_sums
+                           );
 }
-
-
-
-
-
-/*
- * =============================================================================
- * DATA STATS COMPUTATION FUNCTIONS (R LIBRARY I INTEGRATION)
- * =============================================================================
- */
-
-//' Compute Basic Statistics 
-//'
-//' Performs computation using standard R library functions.
-//'
-//' @param data NumericVector
-//' 
-//' @return List with named computed statistics
-//'
-//' @export
-// [[Rcpp::export]]
-NumericVector dummy_r_stats(const NumericVector& data) {
-  
-    if (data.size() == 0) {
-        Rcpp::stop("Input data cannot be empty.");
-    }
-    
-    // Get R environment
-    Environment base("package:base");
-    Environment stats("package:stats");
-    
-    // Call R functions
-    Function r_mean = base["mean"];
-    Function r_sd = stats["sd"];
-    Function r_quantile = stats["quantile"];
-    
-    // Execute R functions
-    double mean_val = as<double>(r_mean(data));
-    double sd_val = as<double>(r_sd(data));
-    NumericVector quantiles = r_quantile(data, 
-                                        NumericVector::create(0.25, 0.5, 0.75));
-    
-    return NumericVector::create(
-        Named("mean") = mean_val,
-        Named("sd") = sd_val,
-        Named("q25") = quantiles[0],
-        Named("median") = quantiles[1],
-        Named("q75") = quantiles[2]
-    );
-}
-
-
-
-/*
- * =============================================================================
- * DATA MANIPULATION FUNCTIONS (TIDYVERSE INTEGRATION)
- * =============================================================================
- */
-
 
 //' Efficient Group Operations
 //'
@@ -355,78 +353,97 @@ NumericVector dummy_r_stats(const NumericVector& data) {
 //'
 //' @export
 // [[Rcpp::export]]
-DataFrame dummy_group_op(const DataFrame& data,
-                                    const std::string& group_col,
-                                    const std::string& value_col,
-                                    const std::string& operation) {
+DataFrame dmy_group_op(const DataFrame& data,
+                       const std::string& group_col,
+                       const std::string& value_col,
+                       const std::string& operation) {
     
-    try {
+  try {
 
-      /*      
-    Rcpp::Environment dplyr_ns = Rcpp::Environment::namespace_env("dplyr");
-    Rcpp::Function mutate = dplyr_ns["mutate"];
-      */    
+/*      
+        Rcpp::Environment dplyr_ns = Rcpp::Environment::namespace_env("dplyr");
+        Rcpp::Function mutate = dplyr_ns["mutate"];
+*/    
       
-        // Extract columns
-        CharacterVector groups = data[group_col];
-        NumericVector values = data[value_col];
+    // Extract columns
+    CharacterVector groups = data[group_col];
+    NumericVector values = data[value_col];
         
-        if (groups.size() != values.size()) {
-            stop("Group and value columns must have the same length");
-        }
-        
-        // Find unique groups
-        CharacterVector unique_groups = unique(groups);
-        std::vector<double> results(unique_groups.size());
-        
-        // Perform group operations
-        for (int i = 0; i < unique_groups.size(); ++i) {
-            std::string current_group = as<std::string>(unique_groups[i]);
-            std::vector<double> group_values;
-            
-            // Collect values for current group
-            for (int j = 0; j < groups.size(); ++j) {
-                if (as<std::string>(groups[j]) == current_group) {
-                    if (!NumericVector::is_na(values[j])) {
-                        group_values.push_back(values[j]);
-                    }
-                }
-            }
-            
-            // Calculate result based on operation
-            if (group_values.empty()) {
-                results[i] = NA_REAL;
-            } else if (operation == "mean") {
-                results[i] = std::accumulate(group_values.begin(), group_values.end(), 0.0) / group_values.size();
-            } else if (operation == "sum") {
-                results[i] = std::accumulate(group_values.begin(), group_values.end(), 0.0);
-            } else if (operation == "count") {
-                results[i] = static_cast<double>(group_values.size());
-            } else if (operation == "sd") {
-                if (group_values.size() < 2) {
-                    results[i] = NA_REAL;
-                } else {
-                    double mean_val = std::accumulate(group_values.begin(), group_values.end(), 0.0) / group_values.size();
-                    double sum_sq_diff = 0.0;
-                    for (double val : group_values) {
-                        sum_sq_diff += std::pow(val - mean_val, 2);
-                    }
-                    results[i] = std::sqrt(sum_sq_diff / (group_values.size() - 1));
-                }
-            } else {
-                stop("Unknown operation: %s", operation.c_str());
-            }
-        }
-        
-        return DataFrame::create(
-            Named(group_col) = unique_groups,
-            Named("result") = NumericVector(results.begin(), results.end())
-        );
-        
-    } catch (const std::exception& e) {
-        stop("Error in dummy_group_op: %s", e.what());
+    if (groups.size() != values.size()) {
+      stop("Group and value columns must have the same length");
     }
+        
+    // Find unique groups
+    CharacterVector unique_groups = unique(groups);
+    std::vector<double> results(unique_groups.size());
+        
+    // Perform group operations
+    for (int i = 0; i < unique_groups.size(); ++i) {
+      std::string current_group = as<std::string>(unique_groups[i]);
+      std::vector<double> group_values;
+            
+      // Collect values for current group
+      for (int j = 0; j < groups.size(); ++j) {
+        if (as<std::string>(groups[j]) == current_group) {
+          if (!NumericVector::is_na(values[j])) {
+            group_values.push_back(values[j]);
+          }
+        }
+      }
+            
+      // Calculate result based on operation
+      if (group_values.empty()) {
+        results[i] = NA_REAL;
+      } else if (operation == "mean") {
+        results[i] = std::accumulate(group_values.begin(), group_values.end(), 0.0) / group_values.size();
+      } else if (operation == "sum") {
+        results[i] = std::accumulate(group_values.begin(), group_values.end(), 0.0);
+      } else if (operation == "count") {
+        results[i] = static_cast<double>(group_values.size());
+      } else if (operation == "sd") {
+        if (group_values.size() < 2) {
+          results[i] = NA_REAL;
+        } else {
+          double mean_val = std::accumulate(group_values.begin(), group_values.end(), 0.0) / group_values.size();
+          double sum_sq_diff = 0.0;
+          for (double val : group_values) {
+            sum_sq_diff += std::pow(val - mean_val, 2);
+          }
+          results[i] = std::sqrt(sum_sq_diff / (group_values.size() - 1));
+        }
+      } else {
+        stop("Unknown operation: %s", operation.c_str());
+      }
+    }
+        
+    return DataFrame::create(
+        Named(group_col) = unique_groups,
+        Named("result") = NumericVector(results.begin(), results.end())
+                             );
+        
+  } catch (const std::exception& e) {
+    stop("Error in dummy_group_op: %s", e.what());
+  }
 }
+
+
+
+
+/*
+ * =============================================================================
+ * DATA STATS COMPUTATION FUNCTIONS (R LIBRARY I INTEGRATION)
+ * =============================================================================
+ */
+
+
+/*
+ * =============================================================================
+ * DATA MANIPULATION FUNCTIONS (TIDYVERSE INTEGRATION)
+ * =============================================================================
+ */
+
+} // namespace: dvesimpler
+
 
 
 /*
@@ -445,8 +462,10 @@ DataFrame dummy_group_op(const DataFrame& data,
 // [[Rcpp::export]]
 List package_info() {
     return List::create(
-        Named("package") = "YourPackageName",
-        Named("rcpp_version") = "1.0.12",
+        Named("package") = "dvesimpler",
+        Named("rcpp_version") = "1.1.0",
+        Named("armadillo_version") = "14.6.0-1",
+        Named("eigen_version") = "3.4.0",
         Named("cpp_standard") = "C++11",
         Named("compiled") = __DATE__ " " __TIME__
     );

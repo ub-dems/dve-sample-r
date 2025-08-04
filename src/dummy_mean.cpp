@@ -20,11 +20,6 @@
 
 // Rcpp dependencies
 #include <Rcpp.h>
-/*
-#include <RcppArmadillo.h>
-#include <RcppEigen.h>
-#include <RcppGSL.h>
-*/
 
 
 
@@ -44,13 +39,13 @@
 
 // Declare dependencies
 // [[Rcpp::depends(RcppArmadillo)]]
-// [[Rcpp::depends(RcppEigen)]]
-// [[Rcpp::depends(RcppGSL)]]
+
 
 // Use namespaces
 using namespace Rcpp;
 using namespace std;
 
+namespace dvesimpler {  // package namespace
 
 
 //' Sample Rcpp arithmetic mean (C)
@@ -59,8 +54,6 @@ using namespace std;
 //'
 //' @return         arithmetic mean
 //'
-//' @export
-// [[Rcpp::export]]
 double dmy_mean_v0(NumericVector xs) {
    int n = xs.size();
    double total = 0;
@@ -81,7 +74,6 @@ double dmy_mean_v0(NumericVector xs) {
 //'
 //' @return         arithmetic mean
 //'
-// [[Rcpp::export]]
 double dmy_mean_v1(NumericVector xs) {
    int n = xs.size();
    double total = 0;
@@ -100,7 +92,6 @@ double dmy_mean_v1(NumericVector xs) {
 //'
 //' @return         arithmetic mean
 //'
-// [[Rcpp::export]]
 double dmy_mean_v2(NumericVector xs) {
    int n = xs.size();
    return std::accumulate(xs.begin(), xs.end(), 0.0) / n;
@@ -113,7 +104,6 @@ double dmy_mean_v2(NumericVector xs) {
 //'
 //' @return         arithmetic mean
 //'
-// [[Rcpp::export]]
 double dmy_mean_v3(NumericVector xs) {
    int n = xs.size();
    double total = 0;
@@ -147,3 +137,5 @@ microbenchmark(
   dmy_mean(x)
 )
 */
+
+}

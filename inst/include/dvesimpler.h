@@ -1,20 +1,21 @@
 /*
  * Package: dvesimpler
- * File: dummy_stats.cpp
+ * File: dvesimpler.h
  * Author: datalab
  * Description: Demo C++ source file with Rcpp
  * Seealso: ../notes/howtos/Rcpp-HOWTO.md
  * Seealso: ../notes/howtos/Rcpp-HOWTO-claude-v4.md
  * Seealso: ../src/dummy-mean.cpp
+ * Seealso: ../src/dummy-stats.cpp
  * Seealso: ../src/dvesimpler.h
- * Seealso: ../exec/dummy-rcpp.R
+ * Seealso: ../exec/dummy-rcpp-mean.R
+ * Seealso: ../exec/dummy-rcpp-stats.R
  * Seealso: ../src/Makevars
  * Seealso: ../R/dvesimpler-package.r
  * Seealso: ../DESCRIPTION
  * Created: 2025
  * License: GPL (>= 2)
  */
-#pragma once
 
 // Enable C++11 support
 // [[Rcpp::plugins(cpp11)]]
@@ -26,16 +27,18 @@
 /*
 // {{Rcpp::depends(RcppGSL)}}
 */
+
+#pragma once
+
 // Rcpp dependencies
 #include <RcppArmadillo.h>
 #include <Rcpp.h>
 #include <RcppEigen.h>
 
+namespace dvesimpler
+{
 
-// Include internal package module dependencies
-#include "dummy_mean.h"
-
-namespace dvesimpler {
+  Rcpp::NumericVector dmy_mean(Rcpp::NumericVector xs);
 
   Rcpp::NumericVector dmy_custom_mean(Rcpp::NumericVector data);
   Rcpp::NumericVector dmy_custom_mean_v0(Rcpp::NumericVector data);

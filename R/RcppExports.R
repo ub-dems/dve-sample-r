@@ -7,10 +7,7 @@
 #'
 #' @return         arithmetic mean
 #'
-#' @export
-dummy_mean_v0 <- function(xs) {
-    .Call(`_dvesimpler_dummy_mean_v0`, xs)
-}
+NULL
 
 #' Sample Rcpp arithmetic mean (STL)
 #'
@@ -18,9 +15,7 @@ dummy_mean_v0 <- function(xs) {
 #'
 #' @return         arithmetic mean
 #'
-dummy_mean_v1 <- function(xs) {
-    .Call(`_dvesimpler_dummy_mean_v1`, xs)
-}
+NULL
 
 #' Sample Rcpp arithmetic mean (NUM)
 #'
@@ -28,9 +23,7 @@ dummy_mean_v1 <- function(xs) {
 #'
 #' @return         arithmetic mean
 #'
-dummy_mean_v2 <- function(xs) {
-    .Call(`_dvesimpler_dummy_mean_v2`, xs)
-}
+NULL
 
 #' Sample Rcpp arithmetic mean (C++11)
 #'
@@ -38,9 +31,7 @@ dummy_mean_v2 <- function(xs) {
 #'
 #' @return         arithmetic mean
 #'
-dummy_mean_v3 <- function(xs) {
-    .Call(`_dvesimpler_dummy_mean_v3`, xs)
-}
+NULL
 
 #' Sample Rcpp arithmetic mean (API)
 #'
@@ -49,7 +40,119 @@ dummy_mean_v3 <- function(xs) {
 #' @return         arithmetic mean
 #'
 #' @export
-dummy_mean <- function(xs) {
-    .Call(`_dvesimpler_dummy_mean`, xs)
+dmy_mean <- function(xs) {
+    .Call(`_dvesimpler_dmy_mean`, xs)
+}
+
+#' Calculate Aritmetic Mean 
+#'
+#' Compute mean directly without C or R library funcions
+#' with exported package function
+#' See: dummy_mean.cpp
+#'
+#' @param data A numeric vector
+#'
+#' @return Arithmetic mean of data
+#'
+#' @examples
+#' \dontrun{
+#' data <- rnorm(100)
+#' m <- dmy_custom_mean(data)
+#' }
+#'
+#' @export
+dmy_custom_mean <- function(data) {
+    .Call(`_dvesimpler_dmy_custom_mean`, data)
+}
+
+#' Calculate Aritmetic Mean (alternate version)
+#'
+#' Compute mean directly without C or R library funcions
+#' with not exported (internal) package function
+#' See: dummy_mean.cpp
+#'
+#' @param data A numeric vector
+#'
+#' @return Arithmetic mean of data
+#'
+#' @examples
+#' \dontrun{
+#' data <- rnorm(100)
+#' m <- dmy_custom_mean_v0(data)
+#' }
+#'
+#' @export
+dmy_custom_mean_v0 <- function(data) {
+    .Call(`_dvesimpler_dmy_custom_mean_v0`, data)
+}
+
+#' Calculate Robust Summary Statistics
+#'
+#' Computes comprehensive summary statistics for a numeric vector with
+#' robust error handling and missing value treatment.
+#'
+#' @param data A numeric vector
+#' @param confidence_level Confidence level for intervals (default: 0.95)
+#' @param na_rm Remove NA values (default: TRUE)
+#'
+#' @return A named list with summary statistics
+#'
+#' @examples
+#' \dontrun{
+#' data <- rnorm(100)
+#' stats <- dmy_summary_stats(data)
+#' }
+#'
+#' @export
+dmy_summary_stats <- function(data, confidence_level, na_rm) {
+    .Call(`_dvesimpler_dmy_summary_stats`, data, confidence_level, na_rm)
+}
+
+#' Calculate a Summry Dataframme as a sum, by group colun
+#'
+#' Aggregate by sum value column bt group column
+#' 
+#' @param df An input dataframme
+#' @param group_col keys column name
+#' @param value_col values column name
+#'
+#' @return A two column dataframe with keys and valuue
+#'
+#' @examples
+#' \dontrun{
+#' data <- rnorm(100)
+#' stats <- dmy_summary_stats(data)
+#' }
+#'
+#' @export
+dmy_dplyr_grouped_sum <- function(df, group_col, value_col) {
+    .Call(`_dvesimpler_dmy_dplyr_grouped_sum`, df, group_col, value_col)
+}
+
+#' Efficient Group Operations
+#'
+#' Performs group-wise operations on data frames efficiently in C++.
+#'
+#' @param data Data frame
+#' @param group_col Name of the grouping column
+#' @param value_col Name of the value column
+#' @param operation Operation to perform ("mean", "sum", "count", "sd")
+#'
+#' @return Data frame with group results
+#'
+#' @export
+dmy_group_op <- function(data, group_col, value_col, operation) {
+    .Call(`_dvesimpler_dmy_group_op`, data, group_col, value_col, operation)
+}
+
+#' Package Information
+#'
+#' Returns information about the package and its dependencies.
+#'
+#' @return List with package information
+#'
+#' @export
+package_info <- function() {
+    .Call(`_dvesimpler_package_info`)
 }
 
