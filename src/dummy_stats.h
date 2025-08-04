@@ -31,25 +31,28 @@
 #include <Rcpp.h>
 #include <RcppEigen.h>
 
+// Standard library headers
+#include <string>
+
 
 // Include internal package module dependencies
 #include "dummy_mean.h"
 
 namespace dvesimpler {
 
-  Rcpp::NumericVector dmy_custom_mean(Rcpp::NumericVector data);
-  Rcpp::NumericVector dmy_custom_mean_v0(Rcpp::NumericVector data);
+Rcpp::NumericVector dmy_custom_mean(Rcpp::NumericVector data);
+Rcpp::NumericVector dmy_custom_mean_v0(Rcpp::NumericVector data);
 
-  Rcpp::DataFrame dmy_dplyr_grouped_sum(Rcpp::DataFrame df, Rcpp::String group_col, Rcpp::String value_col);
+Rcpp::DataFrame dmy_dplyr_grouped_sum(Rcpp::DataFrame df, Rcpp::String group_col, Rcpp::String value_col);
 
-  Rcpp::List dmy_summary_stats(const Rcpp::NumericVector& data,
-                         double confidence_level = 0.95,
-                               bool na_rm = true);    
+Rcpp::List dmy_summary_stats(const Rcpp::NumericVector& data,
+                             double confidence_level = 0.95,
+                             bool na_rm = true);    
   
-  Rcpp::DataFrame dmy_group_op(const Rcpp::DataFrame& data,
-                               const std::string& group_col,
-                               const std::string& value_col,
-                               const std::string& operation);
+Rcpp::DataFrame dmy_group_op(const Rcpp::DataFrame& data,
+                             const std::string& group_col,
+                             const std::string& value_col,
+                             const std::string& operation);
   
 }
 

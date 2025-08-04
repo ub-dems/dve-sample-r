@@ -35,6 +35,11 @@
 #include <Rcpp.h>
 #include <RcppEigen.h>
 
+// Standard library headers
+#include <string>
+
+
+
 namespace dvesimpler
 {
 
