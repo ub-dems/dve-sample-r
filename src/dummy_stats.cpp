@@ -15,6 +15,7 @@
  * License: GPL (>= 2)
  */
 
+// [[Rcpp::interfaces(r,cpp)]]
 // Enable C++11 support
 // [[Rcpp::plugins(cpp11)]]
 
@@ -31,7 +32,7 @@
 #include <RcppEigen.h>
 
 /*
-#include <RcppGSL.h>
+  #include <RcppGSL.h>
 */
 
 // Standard library headers
@@ -59,22 +60,25 @@
 
 // Package Public Functions
 
-#define DVESIMPLER_INTERNALS 1
-#include "dvesimpler.h"
+#include <dvesimpler.h>
 
+// Package Internal Functions
+
+#include "dummy_mean.h"
 
 // Use namespaces
 using namespace Rcpp;
 using namespace std;
 
-/*
-using namespace arma;
 
-// Type aliases for cleaner code
-using Matrix = Eigen::MatrixXd;
-using Vector = Eigen::VectorXd;
-using MapMatrix = Eigen::Map<Eigen::MatrixXd>;
-using MapVector = Eigen::Map<Eigen::VectorXd>;
+/*
+  using namespace arma;
+
+  // Type aliases for cleaner code
+  using Matrix = Eigen::MatrixXd;
+  using Vector = Eigen::VectorXd;
+  using MapMatrix = Eigen::Map<Eigen::MatrixXd>;
+  using MapVector = Eigen::Map<Eigen::VectorXd>;
 */
 
 
@@ -96,8 +100,6 @@ void validate_input(const NumericVector& data, const std::string& param_name) {
     throw std::invalid_argument(param_name + " contains infinite values");
   }
 }
-
-  
     
 // Safe mathematical operations
 double safe_sqrt(double value) {
@@ -135,7 +137,7 @@ void initialize_matrix(T& matrix, double fill_value = 0.0) {
 
 } // end anonymous namespace
 
-namespace dvesimpler {  // package namespace
+
 
 /*
  * =============================================================================
@@ -162,14 +164,14 @@ namespace dvesimpler {  // package namespace
 //' @export
 // [[Rcpp::export]]
 Rcpp::NumericVector dmy_custom_mean(Rcpp::NumericVector data) {
-  return dvesimpler::dmy_mean(data);
+  return dmy_mean(data);
 }
 
-//' Calculate Aritmetic Mean (alternate version)
+//' Print Aritmetic Mean 
 //'
-//' Compute mean directly without C or R library funcions
-//' with not exported (internal) package function
-//' See: dummy_mean.cpp
+//' Print mean calling internal package custom_mean
+//' calls inline namespace version from Rcpp::compileAttributes()
+//' See: inst/include/*.h
 //'
 //' @param data A numeric vector
 //'
@@ -178,15 +180,16 @@ Rcpp::NumericVector dmy_custom_mean(Rcpp::NumericVector data) {
 //' @examples
 //' \dontrun{
 //' data <- rnorm(100)
-//' m <- dmy_custom_mean_v0(data)
+//' m <- dmy_custom_mean(data)
 //' }
 //'
 //' @export
 // [[Rcpp::export]]
-Rcpp::NumericVector dmy_custom_mean_v0(Rcpp::NumericVector data) {
-   double result = dvesimpler::dmy_mean_v0(data);
-   return Rcpp::NumericVector::create(result); 
+void dmy_print_mean(Rcpp::NumericVector data) {
+  auto mean = dvesimpler::dmy_custom_mean(data);
+  Rcpp::Rcout << "Mean: " << mean << endl;
 }
+
 
 
 /*
@@ -360,10 +363,10 @@ DataFrame dmy_group_op(const DataFrame& data,
     
   try {
 
-/*      
-        Rcpp::Environment dplyr_ns = Rcpp::Environment::namespace_env("dplyr");
-        Rcpp::Function mutate = dplyr_ns["mutate"];
-*/    
+    /*      
+            Rcpp::Environment dplyr_ns = Rcpp::Environment::namespace_env("dplyr");
+            Rcpp::Function mutate = dplyr_ns["mutate"];
+    */    
       
     // Extract columns
     CharacterVector groups = data[group_col];
@@ -442,37 +445,4 @@ DataFrame dmy_group_op(const DataFrame& data,
  * =============================================================================
  */
 
-} // namespace: dvesimpler
 
-
-
-/*
- * =============================================================================
- * PACKAGE INITIALIZATION AND CLEANUP
- * =============================================================================
- */
-
-//' Package Information
-//'
-//' Returns information about the package and its dependencies.
-//'
-//' @return List with package information
-//'
-//' @export
-// [[Rcpp::export]]
-List package_info() {
-    return List::create(
-        Named("package") = "dvesimpler",
-        Named("rcpp_version") = "1.1.0",
-        Named("armadillo_version") = "14.6.0-1",
-        Named("eigen_version") = "3.4.0",
-        Named("cpp_standard") = "C++11",
-        Named("compiled") = __DATE__ " " __TIME__
-    );
-}
-
-/*
- * =============================================================================
- * END OF FILE
- * =============================================================================
- */

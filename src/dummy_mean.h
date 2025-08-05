@@ -6,19 +6,13 @@
 // Rcpp dependencies
 #include <Rcpp.h>
 
-namespace dvesimpler
-{
 
-  Rcpp::NumericVector dmy_mean(Rcpp::NumericVector xs);
+Rcpp::NumericVector dmy_mean(Rcpp::NumericVector xs);
 
-#ifdef DVESIMPLER_INTERNALS
-
-  double dmy_mean_v0(Rcpp::NumericVector xs);
-  double dmy_mean_v1(Rcpp::NumericVector xs);
-  double dmy_mean_v2(Rcpp::NumericVector xs);
-  double dmy_mean_v3(Rcpp::NumericVector xs);
+double dmy_mean_v0(Rcpp::NumericVector xs);
+double dmy_mean_v1(Rcpp::NumericVector xs);
+double dmy_mean_v2(Rcpp::NumericVector xs);
+double dmy_mean_v3(Rcpp::NumericVector xs);
   
-#endif  
   
-}
 

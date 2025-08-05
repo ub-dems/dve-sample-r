@@ -1,3 +1,18 @@
+# @see: ~/.R/Makevars
+
+#CFLAGS = -g -O3 -Wall -pedantic -mtune=native -D_FORTIFY_SOURCE=2 $(LTO)
+#CXXFLAGS = -g -O3 -Wall -pedantic -mtune=native -frtti  -Wno-ignored-attributes -Wno-deprecated-declarations -D_FORTIFY_SOURCE=2 $(LTO)
+#CXXFLAGS = -g -O3 -Wall -pedantic -mtune=native -frtti -D_FORTIFY_SOURCE=2 $(LTO)
+#FFLAGS= -g -O2 -mtune=native -Wall -pedantic
+#FCFLAGS=$FFLAGS
+
+
+PKG_CPPFLAGS = -I../inst/include/
+
+PKG_CXXFLAGS = $(SHLIB_OPENMP_CXXFLAGS)
+PKG_LIBS = $(SHLIB_OPENMP_CXXFLAGS) $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)
+
+
 # Settings from /etc/R/Makeconf with "non-portable flag(s):"
 # ‘-Wdate-time’ ‘-Werror=format-security’ ‘-Wformat’ replaced by -Wall -pedantic
 # and without -fdebug-prefix-map=...
@@ -6,8 +21,13 @@
 #
 # Note: -Wformat-overflow=3 is a non-portable flag, which seems to be used by CRAN check though
 #CC=gcc-7 -std=gnu99 ## -Wformat-overflow=3
-CFLAGS = -g -O3 -Wall -pedantic -mtune=native -D_FORTIFY_SOURCE=2 $(LTO)
+#CFLAGS = -g -O3 -Wall -pedantic -mtune=native -D_FORTIFY_SOURCE=2 $(LTO)
 #CXXFLAGS = -g -O3 -Wall -pedantic -mtune=native -frtti  -Wno-ignored-attributes -Wno-deprecated-declarations -D_FORTIFY_SOURCE=2 $(LTO)
-CXXFLAGS = -g -O3 -Wall -pedantic -mtune=native -frtti -D_FORTIFY_SOURCE=2 $(LTO)
-FFLAGS= -g -O2 -mtune=native -Wall -pedantic
-FCFLAGS=$FFLAGS
+#CXXFLAGS = -g -O3 -Wall -pedantic -mtune=native -frtti -D_FORTIFY_SOURCE=2 $(LTO)
+#FFLAGS= -g -O2 -mtune=native -Wall -pedantic
+#FCFLAGS=$FFLAGS
+
+# Settings from /etc/R/Makeconf with "non-portable flag(s):"
+# ‘-Wdate-time’ ‘-Werror=format-security’ ‘-Wformat’ replaced by -Wall -pedantic
+# and without -fdebug-prefix-map=... 
+

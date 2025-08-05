@@ -1,63 +1,25 @@
-/*
- * Package: dvesimpler
- * File: dvesimpler.h
- * Author: datalab
- * Description: Demo C++ source file with Rcpp
- * Seealso: ../notes/howtos/Rcpp-HOWTO.md
- * Seealso: ../notes/howtos/Rcpp-HOWTO-claude-v4.md
- * Seealso: ../src/dummy-mean.cpp
- * Seealso: ../src/dummy-stats.cpp
- * Seealso: ../src/dvesimpler.h
- * Seealso: ../exec/dummy-rcpp-mean.R
- * Seealso: ../exec/dummy-rcpp-stats.R
- * Seealso: ../src/Makevars
- * Seealso: ../R/dvesimpler-package.r
- * Seealso: ../DESCRIPTION
- * Created: 2025
- * License: GPL (>= 2)
- */
+// dvesimpler.h: dvesimpler public api
+//
+// Copyright (C)  2024 - 2024  datalab@unimib.it
+//
+// This file is part of dvesimpler.
+//
+// dvesimpler is free software: you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 2 of the License, or
+// (at your option) any later version.
+//
+// dvesimpler is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with dvesimpler.  If not, see <http://www.gnu.org/licenses/>.
 
-// Enable C++11 support
-// [[Rcpp::plugins(cpp11)]]
+#ifndef dvesimpler_dvesimpler_H
+#define dvesimpler_dvesimpler_H
 
-// Declare dependencies
-// [[Rcpp::depends(RcppArmadillo)]]
-// [[Rcpp::depends(RcppEigen)]]
+#include "dvesimpler_RcppExports.h"
 
-/*
-// {{Rcpp::depends(RcppGSL)}}
-*/
-
-#pragma once
-
-// Rcpp dependencies
-#include <RcppArmadillo.h>
-#include <Rcpp.h>
-#include <RcppEigen.h>
-
-// Standard library headers
-#include <string>
-
-
-
-namespace dvesimpler
-{
-
-  Rcpp::NumericVector dmy_mean(Rcpp::NumericVector xs);
-
-  Rcpp::NumericVector dmy_custom_mean(Rcpp::NumericVector data);
-  Rcpp::NumericVector dmy_custom_mean_v0(Rcpp::NumericVector data);
-
-  Rcpp::DataFrame dmy_dplyr_grouped_sum(Rcpp::DataFrame df, Rcpp::String group_col, Rcpp::String value_col);
-
-  Rcpp::List dmy_summary_stats(const Rcpp::NumericVector& data,
-                         double confidence_level = 0.95,
-                               bool na_rm = true);    
-  
-  Rcpp::DataFrame dmy_group_op(const Rcpp::DataFrame& data,
-                               const std::string& group_col,
-                               const std::string& value_col,
-                               const std::string& operation);
-  
-}
-
+#endif // dvesimpler_dvesimpler_H
