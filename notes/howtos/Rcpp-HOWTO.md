@@ -2624,8 +2624,9 @@ test_that("sum_cpp works for a numeric vector", {
     expect_error(sum_cpp(NULL))
 })
 ```
+---------------------------------------------------------------------------------
 
-# 1. Full Skeleton of a C++ Source
+## 1. Full Skeleton of a C++ Source
 
 ```cpp
 // Enable C++11
@@ -2650,7 +2651,7 @@ double example_function(Rcpp::NumericVector x) {
 }
 ```
 
-# 2. Roxygen2 Documentation and DESCRIPTION File Requisites
+## 2. Roxygen2 Documentation and DESCRIPTION File Requisites
 
 **Roxygen2:**
 - Add `@useDynLib , .registration = TRUE` in your main package R file.
@@ -2664,11 +2665,11 @@ SystemRequirements: GNU GSL
 Suggests: testthat
 ```
 
-# 3. GitHub and GitLab Packaging Action Pipeline
+## 3. GitHub and GitLab Packaging Action Pipeline
 
 Here is a minimal **GitHub Actions** workflow and a conceptually similar **GitLab CI** pipeline. Both run R CMD check and, if successful, upload the built package to a remote FTP server using provided environment variables.
 
-## GitHub Actions: `.github/workflows/R-CMD-check.yaml`
+### GitHub Actions: `.github/workflows/R-CMD-check.yaml`
 
 ```yaml
 name: R-CMD-check
@@ -2695,7 +2696,7 @@ jobs:
         curl -T *.tar.gz -u "${{ secrets.FTP_USER }}:${{ secrets.FTP_PASSWORD }}" "ftp://${{ secrets.FTP_HOST }}/upload/"
 ```
 
-## GitLab CI: `.gitlab-ci.yml`
+### GitLab CI: `.gitlab-ci.yml`
 
 ```yaml
 stages:
@@ -2724,7 +2725,11 @@ upload_ftp:
 
 **(Set `FTP_USER`, `FTP_PASSWORD`, `FTP_HOST` in repository secrets/variables.)**
 
-This guide presents a comprehensive set of up-to-date best practices for using Rcpp and its ecosystem with C++11, armadillo, eigen, dplyr, external libraries like GSL, and robust packaging/testing workflows that conform to CRAN standards[^13][^1][^14][^3][^5][^6][^11][^2][^7][^12].
+This guide presents a comprehensive set of up-to-date best practices
+for using Rcpp and its ecosystem with C++11, armadillo, eigen, dplyr,
+external libraries like GSL, and robust packaging/testing workflows
+that conform to CRAN
+standards[^13][^1][^14][^3][^5][^6][^11][^2][^7][^12].
 
 [^1]: https://cran.r-project.org/package=Rcpp
 [^2]: https://www.geeksforgeeks.org/r-language/rcpparmadillo-package-in-r/
@@ -2757,71 +2762,193 @@ This guide presents a comprehensive set of up-to-date best practices for using R
 You are an expert R developer, skilled in creating R packages with C++
 extensions using Rcpp. 
 
-Your task is to provide a complete template for an R package named
-'demo' that adheres to CRAN guidelines, includes documentation, tests,
+Your task is to evaluate a provided complete template for an R package named
+'demo' that adheres to CRAN guidelines, including documentation, tests,
 and build instructions, and offers a uniform R and C++ public API
 inspired by RcppGSL.
 
-</system>
-
-Following the coding advice in this article:
-
-* [Sharing the C++ Code of an Rcpp Package](https://epiverse-trace.github.io/posts/share-cpp/index.html)
-
-your task is to provide an uniform R and C++ public API to your package, inspired to RcppGSL, tha provides both interfaces.
-
-In the reply consider this scenario as a template (skeleton) for a basic package "demo":
-
-- an internal package implementation: "a_code.cpp", with a private (identity) functions a_hidden() and an internal function: 'a_sum()'  that returns the sum of a NumericVector (data), calling by other  cpp source and by R code in the same package, but not exported.
-- a public C++ implementation: 'b_code.cpp' that includes a function b_mean that takes a NumericVector 'data' and that returns the arithmetic men, but where the sum is obtained by calling the a_sum function.
-
-The function demo::b_mean() should be the only function exported in R and C++ (with 'demo' namespace).
-
-for a dependent package a calling example should be:
-
-```R
-library(demo)
-data <- ...
-mean <- demo::b_mean(data)
-```
-and
-```cpp
-#include <demo.h>
-data = ...
-mean = demo::b_mean(data);
-```
-
-Requisites are:
-
-- do not duplicate code among src and inst/include directories, but use all Rcpp attributes features
-- document templates with standard Roxugen2 comments  for R NAMESPACE and documentation
-- Rcpp.h and RcppArmadillo.h must be included in all cpp sources, in correct order 
-- the package must follow full CRAN compliance and devtools::check() must report no errors, warning and notes
-
-In relation to the last point, discuss the role of src/Makevars for CRAN check, considering fott (o3) optimization and OpeeMP support 
-- all the exported fuunctions in the package must be placed in C++ namespace "demo"
-- for direct C++ interface for package users a generic "demo.h" is provided, tha includes (in dependecy order) all other includes (a.h and b.h)
-- all exported funcions will be callable by R with syntax demo::a, demo::b
-- for inclusion in C++, usage will be: #include <demo.h> (or#include "demo.h") and the demo::a(), demo::b() (C++ namespace notation)
-
-Describe the correct sequence rigenerate stub r/c++ code, documentation and build. Alse as "clean" build for a full (not incremental) build
-Also discuss Check a packaging commands
-In the implementation include also unit tests (based on testthat) for package code
-Include also standard stuff required for a CRAM compliant (Rcpp) packaging (DESCRIPTION, RBuildignore, etc ...)
-Discuss license documentation requirements for a GPL project (also as legal disclaimer note in the public interface code)
+Your default environment is based on Linux OS, but include minimal
+consideration for MacOS and Windows OS if required by CRAN compliance.
 
 Reply in clear formatted (GFM) markdown (please be careful in codeblock delimiters ``` placed at line start).
 Provide also a clean directory structure with the content of all the files in this project template.
 
-
-
-As an example for you reply, consider the following as a possible structure for your reply:
+Never include the contents of automatic genrated code, but replace
+with a filename description followed by first line snippet, that is usually a note of the genration tool, in this way:
 
 <example>
+#### `./src/RcppExports.cpp`
 
-Here's a template for a basic R package "demo" with C++ sources under
-the `src` directory, supported by the Rcpp framework. This template
-provides a uniform R and C++ public API, inspired by RcppGSL.
+```R
+// Generated by using Rcpp::compileAttributes() -> do not edit by hand
+```
+</example>
+
+At the end, provide, as Markdown footnotes, a list of references to
+online documentation resources, linked to answer as citation where
+appropriate.
+
+Prioritize official CRAN package documentation and
+Hadley Wickham's guides.
+
+</system>
+
+The provided template follows the coding advices in this article:
+
+* [Sharing the C++ Code of an Rcpp Package](https://epiverse-trace.github.io/posts/share-cpp/index.html)
+
+Your task is to evaluate this template that provides an uniform R and
+C++ public API to the package, inspired to RcppGSL, that provides both
+interfaces to GNU gsl library.
+
+This prompt contains:
+
+- a **"specification"** section that list package requirements
+- a **"questions"** section that list some question about R/Rcpp package development
+- a **"statements"** section that list some assertions to validate and justify
+- a **"template"** section that describe a possible project structure to enhance
+
+All the sections are delimited by corrisponding XML tags.
+
+
+In the final part of the reply, produce a list of your proposed
+changes the the provided template. In reply include only the chenges,
+not the full template content.
+
+
+## Specifications
+
+Now, under the `specification` XML tag, there is a list of `demo`
+package requirements.
+
+<specification>
+
+1. the package name is `demo`
+2. the package depends on `Rcpp`, `RcpArmadillo`, `RcppEigen`, `RcppGSL`, `tidyverse`
+3. the package uses `renv` (explicit mode) for depndency management
+4. the package development environment includes `devtools`, `usethis`, `testthat`, `Roxygen2`, `knitr` as tools.
+5. the peckage is developed in RStudio
+6. the binary R distribution uses `podman` and is based on latest Rocker Project geospatial image: `rocker/geospatial:4.4.3`
+7. the public interface of the project muust support R and C++ usage in the same uniform way, with `demo` namespace for fonction qualification
+8. the C++ package implementation consist of two kind of cpp modules (cpp sources): "internal" and "exported"
+9. for "internal" modules, the functions can be "private" to the module or visible to other C++ modules or R sources, via `[[Rcpp::export]]` Rcpp attribute.
+10. for "exported" modules, the funcions can be "exported" and documented with Roxigen2 comments. They must be accesible in R via `NAMESPACE` or in C++ (indirectly) via `#include <demo.h>`, found in `inst/include`.
+11. the exported functions should be called internally using the same include `#include <demo.h>` and referred via the (inline) `demo::` prefix
+12. the code must support `OpenMP` pragmas for loop optimization
+13. the code must be compliant with CRAN publication guidelines
+14. the code must be compliant with GPL Licensing rquirements, with valid copyright and legal disclaimers.
+15. the public interface code (`inst/include`) and package code (`src`) should contain no (manual edited) code duplication 
+16. the C++ code must follow "Google C++ Style" guidelines for formatting
+17. a set of static code analysis for C++ code for `linting`, `checking`, `formatting` sould be supported
+18. if required by CRAN compliance, testing coverage using standard tools must be suported
+19. C++ compiler must use C++11 standard
+
+
+as additional specification, in this template implementation consider:
+
+- an "internal" module: `src/a_module.cpp` with a private (identity) function `a_hidden` and an (R callable) internal function: `a_sum` that returns (as double) the sum of a NumericVector (data), with `OpenMP` optimization.
+- a "public" C++ implementation: `src/b_module.cpp`, with two exported functions `b_sum`, that call `a_sum` but returning a NumricVector as result, and a `b_mean` function, tha compute the arithmetic mean of datta argument, calling `demo::b_sum` for summarization
+- a "public" C++ interface: `inst/inclue/demo.h`, with a GPL Legal preamble, that includes a (manual edited) `inst/inclue/demo_types.h` for `typedef` and templates in the API, and Rcpp generated `inst/include/demo_RcppExports.h`
+
+
+</specification>
+
+## Questions
+
+For every question, provide a brief but complete answer, with a clear
+association to the relative question.
+
+<questions>
+
+### How to use Rcpp attributes?
+
+- Generate a quick reference table of Rcpp attributes
+- for every attribute, decribe the arguments and defaults
+- provide a brief description of its usage
+
+### Which is the correct way (in CRAN way) of use of `Makevars` files
+
+- Describe serch path for `Makevars` files and intended usage (in CRAN way)
+- Descrive override priority and concatenation options
+- Which is the correct usage of "PKG" variables for package dependencie and system libraries
+- How to specify in DESCRIPTION file dependencie to OS libraries?
+- Some note on Fortran variables a C++ corrispondence
+- How to handle compiler optimization level (-O2, -O3)
+- Describe how `Makevars` influence dependency package installation (`renv::install`)
+
+### Which is the environment variables recognized in  `Makevars` files
+
+- Generate a table of recognized environments variable and the correct position (site vs project)
+- For every variable identify the relative build step (cpp preprocesso, cxx compiler, linker) 
+- How C++ version is related to variable name and hot to fix compiler version
+- For every variable identify the other variables that are concatenated in the same context (CXXFLAGS/PKG_CXXFLAGS)
+- Descrive resolution rules in case of ridefinition due to option dulication
+
+
+### Which are the default `Makevars` options for CRAN compliance
+
+- Descibe optimization options
+- Descibe warnings options
+- Descibe object generation and architectural options
+
+
+### Which is the correct way (in CRAN way) of use `OpenMP` and `BLAS` optimizations?
+
+- How to include `OpenMP` multicore parallalization with `#pragma`
+- How to specify `OpenMP` and `BLAS` `linpack` dependencies in the project
+
+
+### How to regenerate every generated source in the project?
+
+- Create a table for source code generation with this columns:
+  source-path, direct generation function, list of implicit generation
+  functions that triggrs generation
+
+
+
+</questions>
+
+
+
+## Statements
+
+For every statement, evaluate the statement with a qualitative
+response ("Fully Agree", "Partially Agree", "Partially Disagree",
+"Fully Disagee", "Don't Know"), followed by a justification of your
+reply. Consider first CRAN compliance and then pragmatic and accepted
+best practices for C++ and R developmnt.
+
+<statements>
+
+### In `src/Makevarss` it is forbidden to specify compilation options but only library references?
+
+- For CRAN compliance (zero-warnings `devtools::check`), CPP, CXX flags are illegal
+- Forcing `-O3` optimization impacts all code for dependent packages that need to be rebuilt
+
+### `RcppArmadillo` provides "out-of-the-box" arma function for fast iteration and parallel linear algbra operations.
+
+- RcppArmadillo implicitly supports `OpenMP` and `BLAS`.
+- RcppArmadillo does not requires a `LinkingTo` library because is just inline code the redefines base `Rcpp` beahviour
+
+
+
+</statements>
+
+
+
+## Project Template
+
+Here's an example for the package projct structure to be used as a template. 
+
+At the end of yor reply, after "questions" and "statements" reply,
+provide the missing implementations, identified by '{{TODO}}' marker,
+and produce a differtial structure describing only the changes to
+apply.
+
+To not fill the '{{omitted}}' parts.
+
+<template>
+
 
 ### Directory Structure
 
@@ -2830,15 +2957,16 @@ demo/
 ├── DESCRIPTION
 ├── NAMESPACE
 ├── R/
-│   └── demo.R
+│   └── demo-package.R
 ├── src/
-│   ├── a_code.cpp
-│   ├── b_code.cpp
-│   └── a.h
+│   ├── a_module.cpp
+│   ├── b_module.cpp
+│   └── a_module.h
 ├── inst/
 │   └── include/
 │       ├── demo.h
-│       └── (Rcpp generated includes)
+│       ├── demo_types.h
+│       └── demo_Rcppexports.h
 ├── tests/
 │   └── testthat/
 │       └── test-demo.R
@@ -2863,8 +2991,9 @@ License: GPL-3
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
-Imports: Rcpp
-LinkingTo: Rcpp
+Imports: Rcpp, RcppArmadillo, RcppEigen, RcppGSL, tidyverse
+Suggests: renv, devtools, usethis, testtthat, knitr
+LinkingTo: Rcpp, RcppArmadillo, RcppEigen, RcppGSL
 Suggests: testthat (>= 3.0.0)
 Config/testthat/edition: 3
 ```
@@ -2873,74 +3002,115 @@ Config/testthat/edition: 3
 
 ```
 # Generated by roxygen2
-export(b_mean)
-useDynLib(demo, .registration = TRUE)
-importFrom(Rcpp, registerPlugin)
-.onLoad <- function(libname, pkgname) {
-  # nolint start
-  if (getRversion() >= "1.1.0") {
-    tools::add_dll_directory(system.file("lib", package = pkgname, lib.loc = libname, mustWork = TRUE))
-  }
-  # nolint end
-  Rcpp::registerPlugin("demo", paste("-I\"", system.file("include", package = "demo"), "\"", sep=""))
-}
+{{omitted}}
 ```
 
-#### `R/demo.R`
+#### `R/demo-package.R`
 
 ```R
-#' @useDynLib demo, .registration = TRUE
-#' @importFrom Rcpp sourceCpp
-#' @import Rcpp
+##
+#' @docType package
+#' @name demo
+# 
+## usethis namespace: start
+# 
+#' @useDynLib dvesimpler, .registration = TRUE
+#' @importFrom Rcpp cppFunction sourceCpp
+#' @importFrom RcppArmadillo armadillo_get_number_of_omp_threads
+#' @importFrom RcppEigen fastLm
+# 
+#' @importFrom dplyr filter
+# 
+## usethis namespace: end
 NULL
 
-#' Demo Package
-#'
-#' This package demonstrates a basic Rcpp package structure with a uniform R and C++ API.
-#'
-#' @docType package
-#' @name demo-package
-NULL
 ```
 
-#### `src/a_code.cpp`
+
+#### `src/a_module.cpp`
 
 ```cpp
 #include <RcppArmadillo.h>
 
 // [[Rcpp::depends(RcppArmadillo)]]
 
-//' @title Hidden function
-//' @description This is a hidden function
-//' @param x A number
-//' @return The same number
 int a_hidden(int x) {
   return x;
 }
 
-//' @title Internal sum function
-//' @description This is an internal function that returns the sum of a NumericVector.
-//' It is not exported to the user.
-//' @param data A NumericVector
-//' @return The sum of the NumericVector
-// [[Rcpp::export(rng = false,name = 'a_sum')]]
+// [[Rcpp::export()]]
 double a_sum(Rcpp::NumericVector data) {
-  double sum = 0;
-  for (int i = 0; i < data.size(); ++i) {
-    sum += data[i];
-  }
-  return sum;
+  // with OpenMP support
+  {{TODO}}  
 }
+
 ```
 
-#### `src/b_code.cpp`
+#### `src/b_module.cpp`
 
 ```cpp
-#include <RcppArmadillo.h>
-#include <demo.h>
-#include "a.h"
+// [[Rcpp::interfaces(r,cpp)]]
+// Enable C++11 support
+// [[Rcpp::plugins(cpp11)]]
 
+// Declare dependencies
 // [[Rcpp::depends(RcppArmadillo)]]
+// [[Rcpp::depends(RcppEigen)]]
+// {{Rcpp::depends(RcppGSL)}}
+
+// Rcpp dependencies
+#include <RcppArmadillo.h>
+#include <Rcpp.h>
+#include <RcppEigen.h>
+#include <RcppGSL.h>
+
+// Standard library headers
+#include <algorithm>
+#include <cmath>
+#include <exception>
+#include <functional>
+#include <iterator>
+#include <limits>
+#include <memory>
+#include <numeric>
+#include <random>
+#include <stdexcept>
+#include <string>
+#include <vector>
+
+// GSL headers
+#include <gsl/gsl_fit.h>
+#include <gsl/gsl_multifit.h>
+#include <gsl/gsl_statistics_double.h>
+
+// Package Public Functions
+
+#include <demo.h>
+
+// Package Internal Functions
+
+#include "a_module.h"
+
+
+// Use namespaces
+using namespace Rcpp;
+using namespace std;
+
+
+
+//' @title Calculate the sum of a NumericVector
+//' @description This function calculates the sum of a NumericVector.
+//' @param data A NumericVector
+//' @return The sum of the NumericVector
+//' @examples
+//' data <- c(1, 2, 3, 4, 5)
+//' sum <- sum of data
+//' print(sum)
+// [[Rcpp::export]]
+NumericVector b_sum(NumericVector data) {
+  double result = a_sum(data);
+  return NumericVector::create(result); 
+}
 
 //' @title Calculate the mean of a NumericVector
 //' @description This function calculates the arithmetic mean of a NumericVector.
@@ -2948,42 +3118,86 @@ double a_sum(Rcpp::NumericVector data) {
 //' @return The arithmetic mean of the NumericVector
 //' @examples
 //' data <- c(1, 2, 3, 4, 5)
-//' mean <- demo::b_mean(data)
+//' sum <- sum of data
 //' print(mean)
 // [[Rcpp::export]]
-double b_mean(Rcpp::NumericVector data) {
-  double sum = a_sum(data);
-  return sum / data.size();
+NumericVector b_mean(NumericVector data) {
+  int n = data.size();
+  NumericVector sum = demo::b_sum(data);
+  double result = sum[0] / n;
+  return Rcpp::NumericVector::create(result); 
 }
-
 
 ```
 
-#### `src/demo.h`
+
+
+#### `src/a_module.h`
 
 ```cpp
+#pragma once
+
+#include <RcppArmadillo.h>
+
+
+double a_sum(Rcpp::NumericVector data);
+
+```
+
+    
+#### `inst/include/demo.h`
+
+```cpp
+// demo.h: demo public api
+//
+// Copyright (C)  2024 - 2024  Owner
+//
+// This file is part of demo.
+//
+// demo is free software: you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 2 of the License, or
+// (at your option) any later version.
+//
+// demo is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with dvesimpler.  If not, see <http://www.gnu.org/licenses/>.
+
 #ifndef DEMO_DEMO_H
 #define DEMO_DEMO_H
 
 #include <RcppArmadillo.h>
-#include ... Rcpp generated headers ...
+#include "demo_types.h"
+#include "demo_RcppExports.h"
 
-#endif
+#endif // DEMO_DEMO_H
 ```
 
-#### `inst/include/a.h`
+#### `inst/include/demo_types.h`
 
 ```cpp
-#ifndef A_H
-#define A_H
+// demo_types.h: demo public type definitions
+//
+// This file is part of demo.
+//
+#ifndef demo_DEMO_TYPES_H
+#define demo_DEMO_TYPES_H
 
-#include <RcppArmadillo.h>
+// typedefs, inlines, templates, ...
 
-// [[Rcpp::depends(RcppArmadillo)]]
+#endif // demo_DEMO_TYPES_H
+```
 
-double a_sum(Rcpp::NumericVector data);
 
-#endif
+#### `inst/include/demo_RcppExports.h`
+
+```cpp
+// Generated by using Rcpp::compileAttributes() -> do not edit by hand
+// {{omitted}}
 ```
 
 
@@ -2999,9 +3213,15 @@ test_that("b_mean works", {
   expect_equal(mean_val, 3)
 })
 
+test_that("b_sum works", {
+  data <- c(1, 2, 3, 4, 5)
+  sum_val <- demo::b_sum(data)
+  expect_equal(sum_val, 15)
+})
+
 test_that("a_sum works", {
   data <- c(1, 2, 3, 4, 5)
-  sum_val <- demo::a_sum(data)
+  sum_val <- a_sum(data)
   expect_equal(sum_val, 15)
 })
 ```
@@ -3009,19 +3229,8 @@ test_that("a_sum works", {
 #### `man/demo-package.Rd`
 
 ```R
-\name{demo-package}
-\alias{demo}
-\alias{demo-package}
-\docType{package}
-\title{
-Demo Package with Rcpp
-}
-\description{
-This package demonstrates a basic Rcpp package structure with a uniform R and C++ API.
-}
-\author{
-Your Name Your Email
-}
+% Generated by roxygen2: do not edit by hand
+% {{omitted}}
 ```
 
 #### `.Rbuildignore`
@@ -3037,10 +3246,32 @@ Your Name Your Email
 #### `src/Makevars`
 
 ```
+# {{TODO}} - add gsl and openmp support, in a CRAN compliant way
 CXX_STD = CXX11
 PKG_CPPFLAGS = -I../inst/include
+PKG_CXXFLAGS = -lgsl
+
+# CXXFLAGS arent CRAN compliant (neither += operator)
 CXXFLAGS += -O3
+
 ```
+
+</template>
+
+-----------------------------------------------------------------------
+Now the quesions sections:
+
+<questions>
+
+
+
+
+</questions>
+
+
+
+
+-----------------------------------------------------------------------
 
 ### Regeneration and Building
 
@@ -3091,17 +3322,6 @@ The `src/Makevars` file is crucial for CRAN compliance, especially regarding opt
     You might need to include a check in your code to see if OpenMP is
     supported and adjust the number of threads accordingly.
 
-### C++ Namespace
-
-All exported functions are placed in the `demo` namespace in C++. This
-ensures that the functions are properly scoped and avoids naming
-conflicts.
-
-### Direct C++ Interface
-
-The `demo.h` header file provides a generic interface for package
-users. It includes all Rcpp generated headers in the
-correct dependency order.
 
 ### Usage Examples
 
@@ -3180,577 +3400,7 @@ documented, and CRAN-compliant R package with Rcpp extensions.
 </example>
 
 # A:2 (Vertex)
-> R Package Template with Rcpp
-
-This is a comprehensive template for creating a CRAN-compliant R
-package named 'demo' with C++ extensions using Rcpp, featuring a
-uniform R and C++ public API inspired by RcppGSL.
-
-### Directory Structure
-
-```
-demo/
-├── DESCRIPTION
-├── NAMESPACE
-├── R/
-│  └── demo.R
-├── src/
-│  ├── Makevars
-│  ├── Makevars.win
-│  ├── a_code.cpp
-│  ├── b_code.cpp
-│  └── a.h
-├── inst/
-│  └── include/
-│    ├── demo.h
-│    └── demo_types.h
-├── tests/
-│  └── testthat/
-│    └── test-b_mean.R
-├── man/
-│  └── b_mean.Rd
-│  └── demo-package.Rd
-├── LICENSE
-├── .Rbuildignore
-└── configure
-```
-
-### File Contents
-
-#### `DESCRIPTION`
-
-```
-Package: demo
-Type: Package
-Title: A Demo Package with Rcpp and Uniform API
-Version: 0.1.0
-Authors@R: person("Your Name", "your.email@example.com", role = c("aut", "cre"))
-Description: This package demonstrates how to create an R package with Rcpp extensions,
-    offering a uniform C++ and R API inspired by RcppGSL. It includes internal C++
-    functions and an exported C++ function callable from both R and C++.
-License: GPL-3 | file LICENSE
-Encoding: UTF-8
-LazyData: false
-Roxygen: list(markdown = TRUE)
-Imports: Rcpp
-LinkingTo: Rcpp
-Suggests: testthat (>= 3.0.0)
-Config/testthat/edition: 3
-# For CRAN check: Specify C++ standard and potential optimization/OpenMP flags
-# CXX_STD = CXX11
-# PKG_CXXFLAGS = -O3 -fopenmp
-# PKG_LIBS = -fopenmp
-```
-
-#### `NAMESPACE`
-
-```R
-# Generated by roxygen2: do not edit by hand
-
-export(b_mean)
-useDynLib(demo, .registration = TRUE)
-importFrom(Rcpp, registerPlugin)
-
-.onLoad <- function(libname, pkgname) {
-  # Set C++ standard to C++11
-  Rcpp::RcppModules(pkgname, CXX_STD = "CXX11")
-  # Register the plugin for including headers from inst/include
-  Rcpp::registerPlugin(pkgname, paste("-I\"", system.file("include", package = pkgname), "\"", sep=""))
-}
-
-.onAttach <- function(libname, pkgname) {
-  # Check RcppArmadillo dependency for a_sum to ensure it's available if needed by a_code.cpp
-  # Although a_code.cpp doesn't directly depend on RcppArmadillo, it's good practice
-  # if it were to use Armadillo features. For this template, we'll stick to Rcpp base.
-}
-```
-
-#### `R/demo.R`
-
-```R
-#' @useDynLib demo, .registration = TRUE
-#' @importFrom Rcpp evalCpp
-#' @import Rcpp
-NULL
-
-#' A Demo Package with Rcpp and Uniform API
-#'
-#' This package demonstrates how to create an R package with Rcpp extensions,
-#' offering a uniform C++ and R API inspired by RcppGSL. It includes internal C++
-#' functions and an exported C++ function callable from both R and C++.
-#'
-#' @docType package
-#' @name demo-package
-NULL
-
-#' Calculate the mean of a numeric vector.
-#'
-#' This function calculates the arithmetic mean of a numeric vector using
-#' an Rcpp-based implementation. It serves as the main exported interface
-#' for users.
-#'
-#' @param data A numeric vector.
-#' @return The arithmetic mean of the input vector.
-#' @export
-#' @examples
-#' data_vec <- c(1.5, 2.5, 3.5, 4.5)
-#' demo::b_mean(data_vec)
-#'
-#' data_vec_empty <- numeric(0)
-#' demo::b_mean(data_vec_empty)
-b_mean <- function(data) {
-  .Call('_demo_b_mean', PACKAGE = 'demo', data)
-}
-```
-
-#### `src/a_code.cpp`
-
-```cpp
-// [[Rcpp::plugins(cpp11)]]
-// Copyright (C) [Year] [Your Name]
-// This file is part of the 'demo' R package.
-// It is distributed under the terms of the GPL-3 License.
-// See 'LICENSE' for details.
-
-#include <Rcpp.h>
-
-// This function is internal and not exported.
-// It computes the sum of a NumericVector.
-// We use Rcpp::export to make it visible to Rcpp::compileAttributes,
-// but it will be marked as internal and not exported to the R namespace.
-// The `name = 'a_sum'` attribute explicitly names it for clarity.
-// [[Rcpp::export(rng = false, name = "a_sum")]]
-double a_sum(Rcpp::NumericVector data) {
-    double sum = 0.0;
-    for (R_xlen_t i = 0; i < data.length(); ++i) {
-        sum += data[i];
-    }
-    return sum;
-}
-
-// A truly hidden C++ function that is not meant to be called even by Rcpp::export
-// It's only for internal use within the C++ code.
-// To make this truly hidden, we wouldn't expose it via any Rcpp::export or similar.
-// For demonstration, let's assume a_hidden is called by other internal C++ functions.
-int a_hidden(int x) {
-    return x;
-}
-```
-
-#### `src/b_code.cpp`
-
-```cpp
-// [[Rcpp::plugins(cpp11)]]
-// Copyright (C) [Year] [Your Name]
-// This file is part of the 'demo' R package.
-// It is distributed under the terms of the GPL-3 License.
-// See 'LICENSE' for details.
-
-#include <Rcpp.h>
-#include "demo.h" // Includes a.h and b_types.h
-
-// Define the C++ namespace for the exported function
-namespace demo {
-
-//' @title Calculate the mean of a numeric vector.
-//' @description This function calculates the arithmetic mean of a numeric vector.
-//' It uses the internal `a_sum` function.
-//' @param data A numeric vector.
-//' @return The arithmetic mean of the numeric vector.
-//' @export b_mean
-// [[Rcpp::export]]
-double b_mean(Rcpp::NumericVector data) {
-    if (data.size() == 0) {
-        return R_NaN; // Return NaN for empty vectors, consistent with R's mean()
-    }
-    // Call the internal sum function. Since a_sum is also exported with Rcpp::export
-    // and placed in the R namespace with `name = "a_sum"`, it's accessible here.
-    // However, for true C++ internal calls without R namespace involvement,
-    // we'd typically declare it in a .h file and include it.
-    // For this template, we'll use the C++ declaration from a.h and call it.
-    return demo::a_sum(data) / data.size();
-}
-
-} // namespace demo
-```
-
-#### `inst/include/a.h`
-
-```cpp
-#ifndef DEMO_A_H
-#define DEMO_A_H
-
-#include <Rcpp.h>
-
-// This header declares functions that are part of the internal C++ API.
-// Functions intended for the public C++ API should be declared in demo.h.
-
-namespace demo {
-
-/**
- * @brief Calculates the sum of a numeric vector.
- *
- * This function is intended for internal use within the package's C++ code.
- * It is exposed through Rcpp::export with a specific name to be callable
- * by other C++ functions.
- *
- * @param data A Rcpp::NumericVector.
- * @return The sum of the elements in the vector.
- */
-double a_sum(Rcpp::NumericVector data);
-
-} // namespace demo
-
-#endif // DEMO_A_H
-```
-
-#### `inst/include/demo_types.h`
-
-```cpp
-#ifndef DEMO_TYPES_H
-#define DEMO_TYPES_H
-
-// This header can be used for common type definitions or structures
-// that are shared between different C++ modules and the public interface.
-// For this example, we don't have complex types, but it's good practice.
-
-// Include Rcpp headers if needed for type definitions.
-#include <Rcpp.h>
-
-#endif // DEMO_TYPES_H
-```
-
-#### `inst/include/demo.h`
-
-```cpp
-#ifndef DEMO_DEMO_H
-#define DEMO_DEMO_H
-
-// This is the main header file for the public C++ API of the 'demo' package.
-// It includes other necessary headers and declares the functions that are
-// intended for external C++ users to call.
-
-// Include Rcpp headers, which are fundamental.
-#include <Rcpp.h>
-
-// Include internal API headers.
-// The order of inclusion might matter for complex dependencies.
-#include "a.h" // For internal functions like a_sum
-
-// Include any other necessary headers for the public API.
-// For example, if you had specific data structures or algorithms exposed.
-
-// The public API functions are defined within the 'demo' namespace.
-
-#endif // DEMO_DEMO_H
-```
-
-#### `src/Makevars`
-
-```makefile
-# Use C++11 as the standard
-CXX_STD = CXX11
-
-# Specify the include path for Rcpp headers and our custom headers in inst/include
-# PKG_CPPFLAGS = -I../inst/include
-
-# Optimization flags:
-# -O3 enables aggressive optimization. For CRAN, it's safer to start with -O2
-# or no optimization flags unless absolutely necessary and thoroughly tested.
-# CRAN generally requires packages to build and run correctly on various
-# systems without special compiler flags.
-# If OpenMP is used, add -fopenmp to CXXFLAGS and LDFLAGS.
-# Example with OpenMP:
-# CXXFLAGS += -fopenmp -O2
-# LDFLAGS += -fopenmp
-
-# For this template, we'll use C++11 and no specific optimization flags
-# to ensure broader compatibility and avoid potential CRAN issues.
-# If you decide to use optimization or OpenMP, uncomment and adjust.
-
-# PKG_CPPFLAGS = -I../inst/include
-
-# Enable C++11 standard
-CXXFLAGS += -std=c++11
-
-# Optional: Add optimization flags if needed and tested.
-# CXXFLAGS += -O2
-```
-
-#### `src/Makevars.win`
-
-```makefile
-# For Windows builds (typically MinGW or MSVC)
-# Ensure the C++ standard is set. Rtools usually provides GCC which supports C++11.
-# If using MSVC, the flags might differ (e.g., /std:c++14 or /std:c++17)
-
-# Use C++11 standard
-CXXFLAGS = -std=c++11
-
-# Optional: Add optimization flags.
-# CXXFLAGS += -O2
-
-# If OpenMP is used, ensure it's enabled (requires specific compiler support and setup)
-# CXXFLAGS += -fopenmp
-# LIBS = -fopenmp
-
-# Ensure RcppArmadillo is linked if used by any of the C++ files
-# PKG_LIBS = $(LAPACK_LIBS) $(BLAS_LIBS)
-
-# Include path for Rcpp and custom headers
-# INCLUDE_DIRS = -I../inst/include
-# CXXFLAGS += $(INCLUDE_DIRS)
-```
-
-#### `tests/testthat/test-b_mean.R`
-
-```R
-library(testthat)
-library(demo)
-
-test_that("b_mean calculates the correct mean", {
-  data_vec <- c(1.0, 2.0, 3.0, 4.0, 5.0)
-  expected_mean <- 3.0
-  actual_mean <- demo::b_mean(data_vec)
-  expect_equal(actual_mean, expected_mean, tolerance = 1e-6)
-})
-
-test_that("b_mean handles empty vectors", {
-  data_vec_empty <- numeric(0)
-  actual_mean <- demo::b_mean(data_vec_empty)
-  expect_true(is.nan(actual_mean))
-})
-
-test_that("b_mean handles single element vectors", {
-  data_vec_single <- c(42.0)
-  expected_mean <- 42.0
-  actual_mean <- demo::b_mean(data_vec_single)
-  expect_equal(actual_mean, expected_mean, tolerance = 1e-6)
-})
-
-# You could add a test that indirectly checks a_sum if it were exported,
-# but since it's internal, testing b_mean is sufficient.
-# If a_sum were exposed to R via Rcpp::export(name = "a_sum"), you'd test it like this:
-# test_that("a_sum calculates the correct sum", {
-#   data_vec <- c(1.0, 2.0, 3.0)
-#   expected_sum <- 6.0
-#   actual_sum <- demo::a_sum(data_vec)
-#   expect_equal(actual_sum, expected_sum, tolerance = 1e-6)
-# })
-```
-
-#### `man/b_mean.Rd`
-
-```r
-% Generated by roxygen2: do not edit by hand
-\name{b_mean}
-\alias{b_mean}
-\title{Calculate the mean of a numeric vector.}
-\description{
-This function calculates the arithmetic mean of a numeric vector using
-an Rcpp-based implementation. It serves as the main exported interface
-for users.
-}
-\examples{
-data_vec <- c(1.5, 2.5, 3.5, 4.5)
-demo::b_mean(data_vec)
-
-data_vec_empty <- numeric(0)
-demo::b_mean(data_vec_empty)
-}
-\param data A numeric vector.
-\value{
-The arithmetic mean of the input vector.
-}
-\keyword{internal} % Not strictly internal, but indicates implementation detail for users.
-\keyword{mean}
-\export
-```
-
-#### `man/demo-package.Rd`
-
-```r
-% Generated by roxygen2: do not edit by hand
-\docType{package}
-\name{demo-package}
-\alias{demo-package}
-\alias{demo}
-\title{A Demo Package with Rcpp and Uniform API}
-\description{
-This package demonstrates how to create an R package with Rcpp extensions,
-offering a uniform C++ and R API inspired by RcppGSL. It includes internal C++
-functions and an exported C++ function callable from both R and C++.
-}
-\details{
-The package aims to provide a clear structure for Rcpp packages, emphasizing
-code organization and a consistent interface for both R and C++ users.
-}
-\author{
-\strong{Maintainer}: Your Name <your.email@example.com> (\href{https://orcid.org/XXXX-XXXX-XXXX-XXXX}{ORCID})
-\cr
-\strong{Authors}:
-\itemize{
-  \item Your Name <your.email@example.com>
-}
-}
-\seealso{
-\code{\link[Rcpp:Rcpp]{Rcpp}}
-}
-\keyword{package}
-```
-
-#### `LICENSE`
-
-```
-Copyright (C) [Year] [Your Name]
-
-This program is free software; you can redistribute it and/or modify it
-under the terms of the GNU General Public License as published by the
-Free Software Foundation; either version 3 of the License, or (at your
-option) any later version.
-
-This program is distributed in the hope that it will be useful, but
-WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License along
-with this program. If not, see <https://www.gnu.org/licenses/>.
-```
-
-#### `.Rbuildignore`
-
-```
-# Ignore common development files and directories not needed for distribution
-^[^/]*\.Rproj$
-^\.Rhistory$
-^\.Ruserdata$
-^\.Rcheck/
-^tests/testthat/vendor/
-^vignettes/.*\.Rmd$
-^vignettes/.*\.R$
-^vignettes/.*/[^/]*\.html$
-^inst/doc/
-^inst/shiny/
-^\.DS_Store
-^\.git/
-^\.gitignore$
-^\.travis.yml$
-^appveyor.yml$
-^cran-comments.md$
-^README.md$
-^Makefile
-```
-
-#### `configure`
-
-```bash
-#!/bin/sh
-
-# Simple configure script placeholder.
-# For a more complex package, this would check for system dependencies,
-# compiler versions, etc. R package build systems often handle most of this.
-# For Rcpp packages, Rcpp::RcppModules is the primary mechanism for C++ configuration.
-
-# This file is often not strictly necessary for simple Rcpp packages
-# managed by Rcpp::compileAttributes and roxygen2.
-# It can be used for more advanced build logic.
-
-echo "Configuring demo package..."
-# Example: Check for a specific library (not needed here)
-# if [ ! -f /usr/lib/libsomefeature.so ]; then
-#   echo "Error: libsomefeature not found."
-#   exit 1
-# fi
-
-echo "Configuration complete."
-exit 0
-```
-
-### Key Concepts and How They Are Addressed
-
-1.  **Uniform R and C++ Public API (Inspired by RcppGSL):**
-    *   **C++:** The primary public C++ function is `demo::b_mean`, declared in `inst/include/demo.h` and implemented in `src/b_code.cpp` within the `demo` namespace.
-    *   **R:** The `R/demo.R` file exposes `b_mean` to R. The `.Call('_demo_b_mean', PACKAGE = 'demo', data)` line is a C-style call to the underlying C++ function `b_mean` that Rcpp generates (with a name mangled for R). The `export(b_mean)` in `NAMESPACE` makes it available.
-    *   **Internal C++:** `a_sum` is defined in `src/a_code.cpp` and declared in `inst/include/a.h`. It's not directly exported to R's namespace but is intended to be called by other C++ functions. The `[[Rcpp::export(name = "a_sum")]]` attribute makes it available via Rcpp's internal mechanisms and allows `demo::b_mean` to call it via its C++ signature.
-
-2.  **Code Organization (`src/`, `inst/include/`):**
-    *   `src/`: Contains the `.cpp` implementation files.
-    *   `inst/include/`: Houses the public C++ header files (`demo.h`, `a.h`, `demo_types.h`) which users of the C++ API would include. This directory is crucial for making the C++ API available to other C++ code that links against this package.
-
-3.  **Rcpp Attributes:**
-    *   `[[Rcpp::export]]`: Used in `src/b_code.cpp` for `b_mean` to make it callable from R. Also used in `src/a_code.cpp` for `a_sum` with a `name` attribute, making it callable from C++ (via its C++ declaration) and potentially from R if desired, though its primary purpose here is internal C++ access.
-    *   `[[Rcpp::depends(RcppArmadillo)]]`: Not strictly used in this minimal example as we aren't using Armadillo, but would be placed at the top of `.cpp` files that use Armadillo types or functions.
-    *   `[[Rcpp::plugins(cpp11)]]`: Ensures the C++ compiler uses the C++11 standard.
-
-4.  **Documentation (`roxygen2`):**
-    *   Roxygen2 comments (`#'`) are used in R files (`R/demo.R`) and C++ files (`src/b_code.cpp`, `src/a_code.cpp` for internal documentation) to generate `.Rd` files in `man/`.
-    *   `man/b_mean.Rd` and `man/demo-package.Rd` are generated documentation files.
-
-5.  **Testing (`testthat`):**
-    *   `tests/testthat/test-b_mean.R` contains unit tests for the exported `b_mean` function.
-
-6.  **CRAN Compliance:**
-    *   **`DESCRIPTION`**: Contains essential metadata. `License: GPL-3 | file LICENSE` indicates the license and that the full text is in the `LICENSE` file. `Imports: Rcpp`, `LinkingTo: Rcpp` are crucial.
-    *   **`NAMESPACE`**: Manages exports and imports. `useDynLib(demo, .registration = TRUE)` is standard for Rcpp packages. `importFrom(Rcpp, registerPlugin)` and the `.onLoad` function are key for Rcpp integration and header discovery.
-    *   **`LICENSE` File**: Contains the full text of the GPL-3 license.
-    *   **`src/Makevars` & `src/Makevars.win`**: Define compilation flags. `CXX_STD = CXX11` is set. For CRAN, it's best to avoid aggressive optimization flags like `-O3` or OpenMP unless explicitly tested and justified, as they can cause issues on diverse build environments. Starting with `-O2` or no optimization is safer.
-    *   **`.Rbuildignore`**: Excludes unnecessary files from the package build.
-    *   **`configure`**: A placeholder for more complex build configurations.
-
-7.  **C++ Namespace (`demo`):**
-    *   All public C++ functions are placed within the `namespace demo { ... }` block in `src/b_code.cpp`. This provides the `demo::b_mean` C++ API.
-
-8.  **`inst/include/demo.h`**:
-    *   This file acts as the gateway to the public C++ API. It includes necessary Rcpp headers and other internal headers (like `a.h`) that define the C++ interface.
-
-### Regeneration and Building Sequence
-
-1.  **Initial Setup:**
-    *   Create the directory structure and populate the files as shown above.
-
-2.  **Generate C++ Exports and R Wrappers:**
-    *   Run `Rcpp::compileAttributes()` from within R (e.g., in the package root directory or an R session with `setwd("demo")`). This command reads `[[Rcpp::export]]` attributes in `.cpp` files and generates:
-        *   C++ API code (in `src/RcppExports.cpp` usually, though `compileAttributes` can also manage other aspects).
-        *   `useDynLib` and `.Call` stubs in `R/RcppExports.R` (if `Rcpp::compileAttributes` is used with Roxygen integration enabled).
-        *   It also updates the `NAMESPACE` file if configured to do so.
-
-3.  **Generate Roxygen Documentation:**
-    *   Run `roxygen2::roxygenise()` from within R. This reads the Roxygen comments (`#'`) from your `.R` and `.cpp` files and generates:
-        *   `.Rd` files in the `man/` directory.
-        *   Updates the `NAMESPACE` file with `export()` directives.
-
-4.  **Assemble the Package (Build):**
-    *   Use `devtools::build()` or `R CMD build .` from the command line in the package root directory. This creates a `.tar.gz` file, which is the source package suitable for distribution and installation.
-
-5.  **Check the Package:**
-    *   Run `devtools::check()` or `R CMD check .` from the command line in the package root directory. This performs a comprehensive check for errors, warnings, and notes, simulating CRAN's environment.
-    *   **CRAN Check Specifics (`src/Makevars` role):**
-        *   **Optimization:** CRAN's build environment might use different default optimization levels. While `-O3` might be faster, `-O2` is generally safer and more compatible across various compilers. If you use `-O3`, `devtools::check()` will test against CRAN's default compiler settings, which might not use `-O3`. It's best to use flags that are broadly supported and well-tested.
-        *   **OpenMP:** CRAN builds *can* support OpenMP if the underlying system compiler supports it. However, enabling it (via `-fopenmp` in `CXXFLAGS` and `LDFLAGS`) means your package will require an OpenMP-capable compiler. `devtools::check()` will test this. If your package relies on OpenMP, it's essential to clearly document this dependency. For general CRAN submission, avoiding OpenMP unless crucial is often recommended for broader compatibility.
-        *   **C++ Standard:** `CXX_STD = CXX11` (or `CXX14`, `CXX17`) ensures a consistent C++ standard is used. C++11 is widely supported.
-        *   **`PKG_CPPFLAGS`**: This is where include paths like `-I../inst/include` are correctly passed to the compiler by the R build system.
-
-6.  **Clean Build:**
-    *   To ensure a clean build, you can remove compiled object files (`*.o`) and shared libraries (`*.so`, `*.dll`, `*.dylib`) from the `src/` directory before running `devtools::build()`. A more thorough cleanup involves removing the entire `src/.Rcpp.cache` directory if it exists, and then rerunning `Rcpp::compileAttributes()` and `roxygen2::roxygenise()` before building.
-
-### License Documentation Requirements for a GPL Project
-
-*   **`LICENSE` File:** As shown, this file contains the full text of the GPL-3 license.
-*   **Copyright Notices:** In each source file (`.R`, `.cpp`), include a copyright notice, typically at the top:
-    ```cpp
-    // Copyright (C) [Year] [Your Name]
-    // ... license text or reference ...
-    ```
-    ```R
-    # Copyright (C) [Year] [Your Name]
-    # ... license text or reference ...
-    ```
-*   **GPL in `DESCRIPTION`:** `License: GPL-3 | file LICENSE` is crucial.
-*   **Legal Disclaimer:** While not strictly a "legal disclaimer" in the sense of limiting liability (which the license already does), the copyright notice itself serves to identify the owner and the terms of use. Explicitly stating the license in comments is good practice.
-
-This template provides a robust foundation for an R package with Rcpp extensions, adhering to best practices for CRAN submission and offering a clean, unified API.
-
+> 
 # A:2 (Gemini)
 > ...
 
