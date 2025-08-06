@@ -2791,6 +2791,10 @@ appropriate.
 Prioritize official CRAN package documentation and
 Hadley Wickham's guides.
 
+Add any additional important information not explicitly required in an
+"additional notes" section
+
+
 </system>
 
 The provided template follows the coding advices in this article:
@@ -2814,6 +2818,7 @@ All the sections are delimited by corrisponding XML tags.
 In the final part of the reply, produce a list of your proposed
 changes the the provided template. In reply include only the chenges,
 not the full template content.
+
 
 
 ## Specifications
@@ -2933,8 +2938,6 @@ best practices for C++ and R developmnt.
 
 
 </statements>
-
-
 
 ## Project Template
 
@@ -3398,6 +3401,7 @@ By following these guidelines, you can create a well-structured,
 documented, and CRAN-compliant R package with Rcpp extensions.
 
 </example>
+
 
 # A:2 (Vertex)
 > 
