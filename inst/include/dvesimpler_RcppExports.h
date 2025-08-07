@@ -26,6 +26,27 @@ namespace dvesimpler {
         }
     }
 
+    inline NumericVector dmy_gsl_beta(NumericVector a, NumericVector b) {
+        typedef SEXP(*Ptr_dmy_gsl_beta)(SEXP,SEXP);
+        static Ptr_dmy_gsl_beta p_dmy_gsl_beta = NULL;
+        if (p_dmy_gsl_beta == NULL) {
+            validateSignature("NumericVector(*dmy_gsl_beta)(NumericVector,NumericVector)");
+            p_dmy_gsl_beta = (Ptr_dmy_gsl_beta)R_GetCCallable("dvesimpler", "_dvesimpler_dmy_gsl_beta");
+        }
+        RObject rcpp_result_gen;
+        {
+            RNGScope RCPP_rngScope_gen;
+            rcpp_result_gen = p_dmy_gsl_beta(Shield<SEXP>(Rcpp::wrap(a)), Shield<SEXP>(Rcpp::wrap(b)));
+        }
+        if (rcpp_result_gen.inherits("interrupted-error"))
+            throw Rcpp::internal::InterruptedException();
+        if (Rcpp::internal::isLongjumpSentinel(rcpp_result_gen))
+            throw Rcpp::LongjumpException(rcpp_result_gen);
+        if (rcpp_result_gen.inherits("try-error"))
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
+        return Rcpp::as<NumericVector >(rcpp_result_gen);
+    }
+
     inline Rcpp::NumericVector dmy_custom_mean(Rcpp::NumericVector data) {
         typedef SEXP(*Ptr_dmy_custom_mean)(SEXP);
         static Ptr_dmy_custom_mean p_dmy_custom_mean = NULL;

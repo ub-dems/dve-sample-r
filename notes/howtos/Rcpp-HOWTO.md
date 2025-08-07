@@ -1,6 +1,16 @@
 ``` /// vim: set foldmethod=marker : ```
 # ::{{{ #RCPP: Howto //
-# Q:1 - Rcpp Usage Comprehensive Guide
+# TOC - RCPP HOWTO - Contents
+
+1. [Q:1 - Rcpp Usage Comprehensive Guide](#Q1)
+   - see: [Comprehensive Rcpp Guide for R Packages (Claude)](Rcpp-HOWTO-Q1-claude-v4.md)
+2. [Q:2 - R Package Template with Rcpp](#Q2)
+   - see: [R Package Template Evaluation (Gemini)](Rcpp-HOWTO-Q2-gemini-v25p.md)
+
+# ::}}} \\ %0.
+
+# ::{{{ #RCPP: Rcpp Usage //
+# Q:1 - Rcpp Usage Comprehensive Guide {#Q1}
 
 <system> 
 
@@ -2755,7 +2765,7 @@ standards[^13][^1][^14][^3][^5][^6][^11][^2][^7][^12].
 # ::}}} \\ %1.
 
 # ::{{{ #RCPP: R Package Template with Rcpp //
-# Q:2 - R Package Template with Rcpp
+# Q:2 - R Package Template with Rcpp {#Q2}
 
 <system>
 
@@ -2792,7 +2802,7 @@ Prioritize official CRAN package documentation and
 Hadley Wickham's guides.
 
 Add any additional important information not explicitly required in an
-"additional notes" section
+"Additional Notes" section
 
 
 </system>
@@ -2963,6 +2973,7 @@ demo/
 ├── R/
 │   └── demo-package.R
 ├── src/
+│   ├── Makevars
 │   ├── a_module.cpp
 │   ├── b_module.cpp
 │   └── a_module.h
@@ -2976,8 +2987,7 @@ demo/
 │       └── test-demo.R
 ├── man/
 │   └── demo-package.Rd
-├── .Rbuildignore
-└── src/Makevars
+└── .Rbuildignore
 ```
 
 ### File Contents
@@ -3023,7 +3033,8 @@ Config/testthat/edition: 3
 #' @importFrom RcppArmadillo armadillo_get_number_of_omp_threads
 #' @importFrom RcppEigen fastLm
 # 
-#' @importFrom dplyr filter
+#' @importFrom RcppGSL fastLm
+#' @importFrom tidyverse tidyverse_conflicts
 # 
 ## usethis namespace: end
 NULL
@@ -3060,7 +3071,7 @@ double a_sum(Rcpp::NumericVector data) {
 // Declare dependencies
 // [[Rcpp::depends(RcppArmadillo)]]
 // [[Rcpp::depends(RcppEigen)]]
-// {{Rcpp::depends(RcppGSL)}}
+// [[Rcpp::depends(RcppGSL)]]
 
 // Rcpp dependencies
 #include <RcppArmadillo.h>
@@ -3085,6 +3096,7 @@ double a_sum(Rcpp::NumericVector data) {
 // GSL headers
 #include <gsl/gsl_fit.h>
 #include <gsl/gsl_multifit.h>
+#include <gsl/gsl_sf_gamma.h>
 #include <gsl/gsl_statistics_double.h>
 
 // Package Public Functions
@@ -3132,6 +3144,31 @@ NumericVector b_mean(NumericVector data) {
   return Rcpp::NumericVector::create(result); 
 }
 
+//' @title Calculate vectorized Beta function
+//' @description This function calculates Beta function with GSL library.
+//' @param a A NumericVector of Beta first argument (a)
+//' @param b A NumericVector of Beta second argument (b)
+//' @return A NumericVector of Beta(a,b)
+//' @examples
+//' a <- c(1/2, 1, 3/2, 2)
+//' b <- c(1/2, 1, 3/2, 2)
+//' beta <- b_beta(a,b)
+//' print(beta)
+// [[Rcpp::export]]
+NumericVector b_beta(NumericVector a, NumericVector b) {
+  if (a.size() != b.size()) {
+     Rcpp::warning("Input vector size does not match, returning NaN.");
+     return Rcpp::NumericVector::create(R_NaN);
+  }
+  int n = data.size();
+  NumericVector result(n);
+// {{TODO}} : Include the right omp pragma for parallel execution of the for loop
+  for(int i = 0; i < n; ++i) {
+     result[i] =  gsl_sf_beta(a[i], b[i]);
+  }
+  return result; 
+}
+
 ```
 
 
@@ -3154,7 +3191,7 @@ double a_sum(Rcpp::NumericVector data);
 ```cpp
 // demo.h: demo public api
 //
-// Copyright (C)  2024 - 2024  Owner
+// Copyright (C)  2024 - 2025  Your Name
 //
 // This file is part of demo.
 //
@@ -3171,14 +3208,14 @@ double a_sum(Rcpp::NumericVector data);
 // You should have received a copy of the GNU General Public License
 // along with dvesimpler.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef DEMO_DEMO_H
-#define DEMO_DEMO_H
+#ifndef demo_DEMO_H
+#define demo_DEMO_H
 
 #include <RcppArmadillo.h>
 #include "demo_types.h"
 #include "demo_RcppExports.h"
 
-#endif // DEMO_DEMO_H
+#endif // demo_DEMO_H
 ```
 
 #### `inst/include/demo_types.h`
@@ -3240,10 +3277,10 @@ test_that("a_sum works", {
 #### `.Rbuildignore`
 
 ```
+^.*\.Rproj$
+^\.Rhistory$
 ^inst/doc/
 ^inst/shiny/
-^\.Rproj$
-^\.Rhistory$
 ^tests/testthat/
 ```
 
@@ -3264,625 +3301,226 @@ CXXFLAGS += -O3
 
 
 # A:2 (Vertex)
-> 
+> R Package Template Evaluation
 
-**Considering the Request's Core**
+* See: [R Package Template Evaluation (Gemini-2.5-pro)](Rcpp-HOWTO-Q2-gemini-v25p.md)
 
-I've begun dissecting the user's request, aiming to pinpoint its essential elements. I've identified the user's role and expertise to better tailor the response. Now, I'm moving to analyze the specific needs within the prompt itself.
+# A:2 (Gemini)
+> R Package Template Evaluation
 
-
-**Mapping Out The Response**
-
-I'm now mapping the user's diverse requirements onto a structured response. I am creating an outline mirroring the sections laid out, ensuring complete coverage of each specification, question, and statement within the provided template. This involves prioritizing the evaluation of the template as the central task, while thoroughly addressing all sub-elements in a clear Markdown format.
+* See: [R Package Template Evaluation (Gemini-2.5-pro)](Rcpp-HOWTO-Q2-gemini-v25p.md)
 
 
-**Outlining The Evaluation**
+# A:2 (Claude)
+> R Package Template with Rcpp Evaluation
 
-I'm now devising a detailed approach to evaluate the provided template. It is clear that section 1's core task is the evaluation itself; I will need to use the listed specifications to assess `demo` and subsequently generate the final output. This plan ensures each aspect is comprehensively addressed.
+## Template Analysis
 
+I'll evaluate the provided template for an R package named 'demo' that
+creates a uniform R and C++ API using Rcpp, inspired by RcppGSL.
 
-**Refining The Strategy**
-
-I'm now focusing on refining the response strategy. I've decided that before diving into individual sections, a concise overview of the template's strengths and weaknesses is crucial. This introduction sets the context for the evaluation. I'll then move into the specifics: the detailed directory structure and the corrected file contents, using the initial template as a starting point to generate the changes.
-
-
-**Developing The Structure**
-
-I'm building the response framework, beginning with the project's directory structure and corrected file contents. I've started by building a mental model of the final package, identifying necessary adjustments in `DESCRIPTION` and `NAMESPACE`, including the `License` requirement. Then I focused on the cpp files to start implementing the core features. The `Makevars` file demands special attention, and I am planning to start checking the correctness of dependencies used in cpp files, and the usage of directives like `Rcpp::interfaces`.
-
-
-**Developing Deep Understanding**
-
-I'm now fully immersed in the task, beginning the deep dive into the specifics of each section. I've decided to initially build a full, corrected version of the package in my mind. The key is to identify all the changes needed to comply with CRAN best practices, address technical questions, and ensure a complete, correct template.
-
-
-**Planning the Implementation**
-
-I'm now outlining my implementation strategy. I'll begin by building the fully corrected version in my mind, carefully reviewing each specification, question, and statement. The goal is a polished, compliant package. Then, I will provide the changes needed to reach the final state, highlighting the crucial steps and decisions I'm making.
-
-
-**Evaluating the Implementation**
-
-I'm now focusing on fully evaluating the implementation provided, checking each section to see how well it addresses the task requirements. I'll be making specific adjustments to align the directory structure and file content to ensure CRAN compliance.
-
-
-**Implementing the Changes**
-
-I'm now carefully outlining the changes necessary to transform the provided template into a robust and CRAN-compliant package, systematically comparing my corrected mental version against the original to highlight necessary adjustments. Each modification will include a clear rationale, ensuring the final output directly answers the request.
-
-
-Excellent, this is a comprehensive and well-structured request for evaluating and improving an R package template. As an expert R developer specializing in Rcpp, I will provide a thorough evaluation based on the provided specifications, questions, and statements.
-
-### Overall Evaluation
-
-The provided template is a strong starting point for creating an R package with a C++ backend using Rcpp. It correctly identifies the key components: separating internal and public C++ APIs, using Roxygen2 for documentation, and setting up a basic test suite.
-
-However, it has several critical issues regarding CRAN compliance, dependency management, and build configuration, particularly in the `DESCRIPTION` and `src/Makevars` files. The proposed changes will address these issues, making the package robust, portable, and compliant with modern standards.
-
-Below you will find the answers to your questions, an evaluation of the statements, and finally, the proposed changes to the project template.
-
-### Directory Structure and Final File Contents
-
-Here is the clean, CRAN-compliant directory structure and the complete content for each file in the improved `demo` package template.
-
-#### Directory Structure
+## Directory Structure
 
 ```
 demo/
-├── .Rbuildignore
-├── .Rprofile
 ├── DESCRIPTION
-├── LICENSE
-├── LICENSE.md
 ├── NAMESPACE
 ├── R/
-│   ├── RcppExports.R
 │   └── demo-package.R
+├── src/
+│   ├── Makevars
+│   ├── a_module.cpp
+│   ├── b_module.cpp
+│   └── a_module.h
 ├── inst/
 │   └── include/
 │       ├── demo.h
-│       ├── demo_RcppExports.h
-│       └── demo_types.h
+│       ├── demo_types.h
+│       └── demo_RcppExports.h
+├── tests/
+│   └── testthat/
+│       └── test-demo.R
 ├── man/
-│   ├── b_mean.Rd
-│   ├── b_sum.Rd
 │   └── demo-package.Rd
-├── renv.lock
-├── renv/
-│   └── activate.R
-├── src/
-│   ├── Makevars
-│   ├── Makevars.win
-│   ├── RcppExports.cpp
-│   ├── a_module.cpp
-│   ├── a_module.h
-│   └── b_module.cpp
-└── tests/
-    └── testthat/
-        └── test-demo.R
+└── .Rbuildignore
 ```
 
-#### File Contents
+## Questions and Answers
 
-##### `./DESCRIPTION`
+### How to use Rcpp attributes?
 
-```R
-Package: demo
-Type: Package
-Title: Demo Package with Rcpp and a Uniform C++/R API
-Version: 0.1.0
-Authors@R: person("Your Name", "Your Email", role = c("aut", "cre"), comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: A demonstration package that showcases best practices for integrating C++ code with R using Rcpp. It provides a uniform public API for both R and C++ usage, inspired by the RcppGSL package. It includes examples of OpenMP for parallelization and adheres to CRAN submission guidelines.
-License: GPL (>= 3)
-Encoding: UTF-8
-LazyData: true
-Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.1
-Imports:
-    Rcpp
-LinkingTo:
-    Rcpp,
-    RcppArmadillo,
-    RcppEigen,
-    RcppGSL
-Suggests:
-    devtools,
-    knitr,
-    rmarkdown,
-    roxygen2,
-    testthat (>= 3.0.0),
-    tidyverse,
-    usethis
-SystemRequirements:
-    GNU GSL (> 2.0)
-Config/testthat/edition: 3
-URL: https://github.com/your-repo/demo
-BugReports: https://github.com/your-repo/demo/issues
+| Attribute | Arguments | Defaults | Description |
+|-----------|-----------|----------|-------------|
+| `[[Rcpp::export]]` | name, rng, invisibleReturn | name="", rng=true, invisibleReturn=false | Exports C++ function to R |
+| `[[Rcpp::depends()]]` | package names | none | Declares package dependencies |
+| `[[Rcpp::plugins()]]` | plugin names | none | Enables compiler plugins (cpp11, openmp) |
+| `[[Rcpp::interfaces()]]` | r, cpp | r | Specifies interface generation (R and/or C++) |
+| `[[Rcpp::init()]]` | function name | none | Specifies initialization function |
+
+**Usage**: Attributes are placed above function definitions and control code generation, compilation flags, and R interface creation.
+
+### Which is the correct way (in CRAN way) of use of `Makevars` files
+
+**Search Path**: 
+1. `$(HOME)/.R/Makevars` (user-level)
+2. `$(R_HOME)/etc/Makeconf` (site-level)
+3. Package `src/Makevars` (package-level)
+
+**Override Priority**: Package-level overrides site-level, which overrides user-level.
+
+**PKG Variables**: Use `PKG_CPPFLAGS`, `PKG_CXXFLAGS`, `PKG_LIBS` for package-specific settings. These are concatenated with system defaults.
+
+**DESCRIPTION Dependencies**: Use `SystemRequirements` field for OS library dependencies (e.g., `SystemRequirements: GNU GSL (>= 2.1)`).
+
+**Fortran/C++ Correspondence**: `PKG_FFLAGS` ↔ `PKG_CXXFLAGS`, `PKG_FCFLAGS` ↔ `PKG_CXXFLAGS`
+
+**Optimization**: Avoid `-O3` in packages; use system defaults or `-O2` maximum.
+
+**renv Impact**: `Makevars` affects compilation during `renv::install()` from source.
+
+### Which environment variables are recognized in `Makevars` files
+
+| Variable | Build Step | Position | Concatenated With |
+|----------|------------|----------|-------------------|
+| `CPPFLAGS` / `PKG_CPPFLAGS` | Preprocessor | Both | System CPPFLAGS |
+| `CXXFLAGS` / `PKG_CXXFLAGS` | Compiler | Both | System CXXFLAGS |
+| `LDFLAGS` / `PKG_LDFLAGS` | Linker | Both | System LDFLAGS |
+| `LIBS` / `PKG_LIBS` | Linker | Both | System LIBS |
+| `CXX_STD` | Compiler | Package | - |
+
+**C++ Version**: Use `CXX_STD = CXX11` for C++11, `CXX_STD = CXX14` for C++14, etc.
+
+**Resolution**: Later definitions override earlier ones for same variable.
+
+### Default `Makevars` options for CRAN compliance
+
+**Optimization**: `-O2` is standard; avoid `-O3`
+**Warnings**: `-Wall -Wextra` are recommended
+**Architecture**: Use portable flags; avoid architecture-specific optimizations
+
+### Correct way of using `OpenMP` and `BLAS` optimizations
+
+**OpenMP**: 
+- Include: `#ifdef _OPENMP` guards
+- Pragma: `#pragma omp parallel for`
+- Makevars: `PKG_CXXFLAGS += $(SHLIB_OPENMP_CXXFLAGS)`, `PKG_LIBS += $(SHLIB_OPENMP_CXXFLAGS)`
+
+**BLAS**: Automatically linked through R's BLAS; RcppArmadillo uses R's BLAS.
+
+### Source code regeneration table
+
+| Source Path | Direct Generation | Implicit Triggers |
+|-------------|------------------|-------------------|
+| `src/RcppExports.cpp` | `Rcpp::compileAttributes()` | `devtools::document()`, `devtools::check()` |
+| `inst/include/demo_RcppExports.h` | `Rcpp::compileAttributes()` | `devtools::document()`, `devtools::check()` |
+| `NAMESPACE` | `roxygen2::roxygenise()` | `devtools::document()`, `devtools::check()` |
+| `man/*.Rd` | `roxygen2::roxygenise()` | `devtools::document()`, `devtools::check()` |
+
+## Statement Evaluations
+
+### In `src/Makevars` it is forbidden to specify compilation options but only library references?
+
+**Partially Disagree**
+
+CRAN allows compilation options via `PKG_*` variables, but prohibits overriding system-wide flags. Using `CXXFLAGS +=` is incorrect; should use `PKG_CXXFLAGS`. `-O3` forcing affects downstream packages and should be avoided.
+
+### `RcppArmadillo` provides "out-of-the-box" arma functions for fast iteration and parallel linear algebra operations.
+
+**Partially Agree**
+
+RcppArmadillo does support BLAS automatically through R's BLAS implementation. However, it **does** require `LinkingTo: RcppArmadillo` in DESCRIPTION. OpenMP support requires explicit configuration in Makevars.
+
+## Additional Notes
+
+- The template should include `renv.lock` and `.Rprofile` for reproducible environments
+- Consider adding GitHub Actions CI/CD workflows
+- The `demo::` namespace prefix in C++ requires proper `interfaces(cpp)` attribute usage
+- GSL functions need proper error handling for CRAN compliance
+
+## Proposed Changes to Template
+
+### File: `DESCRIPTION`
+```diff
+- Suggests: renv, devtools, usethis, testtthat, knitr
++ Suggests: renv, devtools, usethis, testthat, knitr
++ SystemRequirements: GNU GSL (>= 2.1)
 ```
 
-##### `./NAMESPACE`
-
-```R
-# Generated by roxygen2: do not edit by hand
-
-export(b_mean)
-export(b_sum)
-useDynLib(demo, .registration = TRUE)
-importFrom(Rcpp, sourceCpp)
+### File: `R/demo-package.R`
+```diff
+- #' @useDynLib dvesimpler, .registration = TRUE
++ #' @useDynLib demo, .registration = TRUE
+- #' @importFrom RcppGSL fastLm
++ #' @importFrom RcppGSL 
 ```
 
-##### `./R/demo-package.R`
-
-```R
-#' @docType package
-#' @name demo-package
-#' @aliases demo
-#' @useDynLib demo, .registration = TRUE
-#' @importFrom Rcpp sourceCpp
-#'
-#' @description
-#' A demonstration package that showcases best practices for integrating C++
-#' code with R using Rcpp. It provides a uniform public API for both R and
-#' C++ usage, inspired by the RcppGSL package. It includes examples of
-#' OpenMP for parallelization and adheres to CRAN submission guidelines.
-#'
-"_PACKAGE"
-```
-
-##### `./R/RcppExports.R`
-
-```R
-// Generated by using Rcpp::compileAttributes() -> do not edit by hand
-```
-
-##### `./src/a_module.cpp`
-
+### File: `src/a_module.cpp`
 ```cpp
-#include "a_module.h"
-#include <Rcpp.h>
-#include <numeric>
-
+#include <RcppArmadillo.h>
 #ifdef _OPENMP
 #include <omp.h>
 #endif
 
-// This function is "private" to the C++ code and not exported to R.
-// It is only declared in this file, not in the header a_module.h.
-double a_hidden_sum(const Rcpp::NumericVector& data) {
-    return std::accumulate(data.begin(), data.end(), 0.0);
-}
-
-// This function is internal to the package's C++ code, exposed via a_module.h,
-// but not exported to R. It demonstrates OpenMP usage.
-// [[Rcpp::export]]
-double a_sum(Rcpp::NumericVector data) {
-    double total = 0.0;
-    int n = data.size();
-// Using pragma for parallel execution of the for loop
-#pragma omp parallel for reduction(+:total)
-    for(int i = 0; i < n; ++i) {
-        total += data[i];
-    }
-    return total;
-}
-```
-
-##### `./src/b_module.cpp`
-
-```cpp
-// [[Rcpp::interfaces(r,cpp)]]
-// [[Rcpp::plugins(cpp11)]]
+// [[Rcpp::depends(RcppArmadillo)]]
 // [[Rcpp::plugins(openmp)]]
 
-// [[Rcpp::depends(RcppArmadillo, RcppEigen, RcppGSL)]]
-
-// Rcpp and dependencies
-#include <RcppArmadillo.h>
-#include <RcppEigen.h>
-#include <RcppGSL.h>
-#include <Rcpp.h>
-
-// Package Public API (for C++ usage)
-#include <demo.h>
-
-// Package Internal Functions
-#include "a_module.h"
-
-//' Sum of a Numeric Vector
-//'
-//' Calculates the sum of elements in a numeric vector using a C++ implementation.
-//' This function is part of the public C++/R API.
-//'
-//' @param data A numeric vector.
-//' @return A numeric vector of length 1 containing the sum.
-//' @examples
-//' b_sum(c(1, 2, 3, 4, 5))
-//' @export
-// [[Rcpp::export]]
-Rcpp::NumericVector b_sum(Rcpp::NumericVector data) {
-    // Calls the internal C++ function
-    double result = a_sum(data);
-    return Rcpp::NumericVector::create(result);
+int a_hidden(int x) {
+  return x;
 }
 
-//' Mean of a Numeric Vector
-//'
-//' Calculates the arithmetic mean of a numeric vector. It demonstrates calling
-//' another C++ function from the same package using the public API.
-//'
-//' @param data A numeric vector.
-//' @return A numeric vector of length 1 containing the mean.
-//' @examples
-//' b_mean(c(1, 2, 3, 4, 5))
-//' @export
 // [[Rcpp::export]]
-Rcpp::NumericVector b_mean(Rcpp::NumericVector data) {
-    if (data.size() == 0) {
-        Rcpp::warning("Input vector is empty, returning NaN.");
-        return Rcpp::NumericVector::create(R_NaN);
-    }
-    // Calls a public API function within the C++ code
-    Rcpp::NumericVector sum_vec = demo::b_sum(data);
-    double result = sum_vec[0] / data.size();
-    return Rcpp::NumericVector::create(result);
+double a_sum(Rcpp::NumericVector data) {
+  double sum = 0.0;
+  int n = data.size();
+  
+#ifdef _OPENMP
+#pragma omp parallel for reduction(+:sum)
+#endif
+  for(int i = 0; i < n; ++i) {
+    sum += data[i];
+  }
+  return sum;
 }
 ```
 
-##### `./src/a_module.h`
+### File: `src/b_module.cpp`
+```diff
++ // Fix variable name in b_beta function
+- int n = data.size();
++ int n = a.size();
 
-```cpp
-#pragma once
-
-#include <Rcpp.h>
-
-// Declaration for the internal function 'a_sum' that can be called
-// by other C++ translation units (e.g., b_module.cpp).
-double a_sum(Rcpp::NumericVector data);
++ // Add OpenMP pragma
++ #ifdef _OPENMP
++ #pragma omp parallel for
++ #endif
+  for(int i = 0; i < n; ++i) {
 ```
 
-##### `./src/RcppExports.cpp`
-
-```cpp
-// Generated by using Rcpp::compileAttributes() -> do not edit by hand
-```
-
-##### `./src/Makevars`
-
+### File: `src/Makevars`
 ```makefile
-# This file is for Linux and macOS
-
-# Use the C++11 standard
 CXX_STD = CXX11
-
-# Add OpenMP flags for compiler and linker
+PKG_CPPFLAGS = -I../inst/include $(GSL_CFLAGS)
+PKG_LIBS = $(GSL_LIBS) $(SHLIB_OPENMP_CXXFLAGS)
 PKG_CXXFLAGS = $(SHLIB_OPENMP_CXXFLAGS)
-PKG_LIBS = $(SHLIB_OPENMP_CXXFLAGS)
-
-# Add GSL flags for compiler (headers) and linker (libraries)
-# This relies on gsl-config being on the PATH
-PKG_CXXFLAGS += $(GSL_CFLAGS)
-PKG_LIBS += $(GSL_LIBS)
 ```
 
-##### `./src/Makevars.win`
-
-```makefile
-# This file is for Windows (Rtools)
-
-# Use the C++11 standard
-CXX_STD = CXX11
-
-# Add OpenMP flags for compiler and linker
-PKG_CXXFLAGS = -fopenmp
-PKG_LIBS = -fopenmp
-
-# On Windows, Rtools contains GSL, so we link to it
-# The LIB_GSL variable is provided by R's configuration
-PKG_LIBS += $(LIB_GSL)
-```
-
-##### `./inst/include/demo.h`
-
-```cpp
-// demo.h: demo public api
-//
-// Copyright (C) 2025 Your Name
-//
-// This file is part of demo.
-//
-// demo is free software: you can redistribute it and/or modify it
-// under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// demo is distributed in the hope that it will be useful, but
-// WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with demo. If not, see <https://www.gnu.org/licenses/>.
-
-#ifndef DEMO_API_H_
-#define DEMO_API_H_
-
-// Include custom types and templates first
-#include "demo_types.h"
-
-// Include Rcpp generated exports for the public API
-#include "demo_RcppExports.h"
-
-#endif // DEMO_API_H_
-```
-
-##### `./inst/include/demo_types.h`
-
-```cpp
-// demo_types.h: demo public type definitions
-//
-// This file is part of demo. See the main LICENSE file for details.
-//
-#ifndef DEMO_TYPES_H_
-#define DEMO_TYPES_H_
-
-// This file is the ideal place for public-facing type definitions,
-// inline helper functions, or C++ templates that should be available
-// to other packages that link to `demo`.
-
-// For example:
-// namespace demo {
-//   template<typename T>
-//   inline T square(T x) {
-//     return x * x;
-//   }
-// }
-
-#endif // DEMO_TYPES_H_
-```
-
-##### `./inst/include/demo_RcppExports.h`
-
-```cpp
-// Generated by using Rcpp::compileAttributes() -> do not edit by hand
-```
-
-##### `./tests/testthat/test-demo.R`
-
-```R
-library(testthat)
-library(demo)
-
-context("Test public API functions")
-
-test_that("b_sum works with positive integers", {
-  data <- c(1, 2, 3, 4, 5)
-  expect_equal(b_sum(data)[1], 15)
-})
-
-test_that("b_sum works with empty vectors", {
-  expect_equal(b_sum(numeric(0))[1], 0)
-})
-
-test_that("b_mean works with positive integers", {
-  data <- c(1, 2, 3, 4, 5)
-  expect_equal(b_mean(data)[1], 3)
-})
-
-test_that("b_mean handles empty vectors gracefully", {
-  expect_warning(mean_val <- b_mean(numeric(0)))
-  expect_true(is.nan(mean_val[1]))
-})
-
-test_that("Internal function a_sum is not exported to R", {
-  expect_error(a_sum(c(1,2,3)), "object 'a_sum' not found")
-})
-```
-
-##### `./man/` files are generated by `roxygen2`.
-
-##### `./.Rbuildignore`
-
-```
-^.*\.Rproj$
-^\.Rhistory$
-^renv$
-^renv\.lock$
+### File: `tests/testthat/test-demo.R`
+```diff
+- expect_equal(mean_val, 3)
++ expect_equal(as.numeric(mean_val), 3)
+- expect_equal(sum_val, 15)
++ expect_equal(as.numeric(sum_val), 15)
 ```
 
 ---
 
-## Questions
+**References:**
 
-Here are the answers to your questions.
-
-### How to use Rcpp attributes?
-
-Rcpp attributes are special comments in C++ source files (`.cpp`) that instruct R how to process the code. They automate the creation of boilerplate code needed to call C++ from R.
-
-| Attribute | Arguments & Defaults | Description |
-| :--- | :--- | :--- |
-| `[[Rcpp::export]]` | `(name = "r_function_name")` | Exposes a C++ function to R. If `name` is not provided, the R function name will be the same as the C++ function name. |
-| `[[Rcpp::interfaces]]` | `(r, cpp)` | Generates both an R interface (like `Rcpp::export`) and a C++ interface. The C++ interface consists of a header file in `inst/include/pkgname_RcppExports.h` containing forward declarations for the exported functions, allowing other packages to call them from C++. |
-| `[[Rcpp::depends]]` | `(Package1, Package2, ...)` | Specifies that the C++ code depends on another Rcpp-based package (e.g., `RcppArmadillo`). This ensures the necessary header files from the dependency are made available during compilation by adding the appropriate `-I` flag. |
-| `[[Rcpp::plugins]]` | `(plugin1, plugin2, ...)` | Enables compiler features. Common plugins are `cpp11`, `cpp14`, `cpp17` to enable modern C++ standards, and `openmp` to add flags for OpenMP parallelization. |
-| `[[Rcpp::sourceCpp]]` | `(file = "path/to/file.cpp")` | (Used in R scripts, not package code). Sources a single C++ file, compiling and loading the exported functions into the current R session. |
-| `[[Rcpp::evalCpp]]` | `(code = "1 + 1")` | (Used in R scripts). Evaluates a single C++ expression and returns the result to R. |
-
-### Which is the correct way (in CRAN way) of use of `Makevars` files
-
-The use of `Makevars` files is strictly controlled by CRAN to ensure packages are portable and do not interfere with the user's system configuration.
-
--   **Search Path and Usage**: R looks for `Makevars` in two primary locations:
-    1.  `~/.R/Makevars` (or `HOME/.R/Makevars`): This is the *user's* file for personal, site-wide compiler settings (e.g., setting a default `-O3` optimization). Packages **must not** modify this file.
-    2.  `pkg/src/Makevars` (and `pkg/src/Makevars.win` for Windows): This is the *package's* file. It should only contain settings *specific to that package*, such as linking to an external library or enabling OpenMP.
--   **Override Priority**: Settings in the package `src/Makevars` are *appended* to the user's settings and R's default settings. For example, if R's default `CXXFLAGS` is `-O2` and the package specifies `PKG_CXXFLAGS = -fopenmp`, the final flags will be a combination of both.
--   **"PKG" Variables**: Package-specific flags **must** use the `PKG_` prefix (e.g., `PKG_CXXFLAGS`, `PKG_LIBS`, `PKG_CPPFLAGS`). This signals that they are additive and specific to the package, rather than an attempt to override the system-wide defaults (like `CXXFLAGS`).
--   **OS Library Dependencies**: Dependencies on system libraries (like GSL, GDAL, etc.) should be declared in the `DESCRIPTION` file in the `SystemRequirements` field. The `src/Makevars` file is then used to find these libraries using tools like `pkg-config` or system-specific variables (e.g., `GSL_CFLAGS`, `GSL_LIBS`).
--   **Fortran Notes**: When mixing Fortran and C++, `Makevars` might need `F77` or `FC` variables. The key is ensuring symbols are compatible, which is compiler-dependent. R handles this for BLAS/LAPACK.
--   **Compiler Optimization**: A package **must not** change the global optimization level. Setting `CXXFLAGS = -O3` is a CRAN policy violation. The default is `-O2` (or whatever the user has set). If a specific file needs higher optimization, you can define a special rule in `Makevars`, but this is rare and requires strong justification.
--   **`renv::install`**: `Makevars` files only affect the compilation of the package they are in. They do not influence the installation of other dependency packages installed via `renv::install` or `install.packages`. Each package is built in its own isolated process using its own `Makevars` if it has one.
-
-### Which is the environment variables recognized in `Makevars` files
-
-These variables are used by `R CMD SHLIB` and `R CMD INSTALL` during the build process.
-
-| Variable | Build Step | Purpose & Interaction | Location |
-| :--- | :--- | :--- | :--- |
-| `CC` | C Compiler | Defines the C compiler executable. | Site |
-| `CXX` | C++ Compiler | Defines the base C++ compiler (e.g., `g++`). | Site |
-| `CXX11`, `CXX14`, etc. | C++ Compiler | Defines the C++ compiler for a specific standard. Overrides `CXX`. | Site/Project |
-| `CPPFLAGS` | Preprocessor | Flags for the C preprocessor (e.g., `-I/path/to/headers`, `-DNDEBUG`). `PKG_CPPFLAGS` is appended to this. | Site/Project |
-| `CFLAGS`, `CXXFLAGS` | C/C++ Compiler | Flags for the C/C++ compiler (e.g., warnings `-Wall`, optimization `-O2`). `PKG_CXXFLAGS` is appended. | Site |
-| `PKG_CPPFLAGS` | Preprocessor | Package-specific preprocessor flags. | Project |
-| `PKG_CXXFLAGS` | C++ Compiler | Package-specific compiler flags (e.g., `-fopenmp`). | Project |
-| `LDFLAGS` | Linker | Flags for the linker (e.g., `-L/path/to/libs`). | Site |
-| `LIBS` | Linker | Libraries to link against (e.g., `-lm`, `-lgsl`). `PKG_LIBS` is appended to this. | Site |
-| `PKG_LIBS` | Linker | Package-specific libraries to link against. | Project |
-| `SHLIB_OPENMP_*` | Compiler/Linker | R-provided variables for enabling OpenMP in a portable way. | Provided by R |
-| `GSL_CFLAGS`, `GSL_LIBS` | Compiler/Linker | Variables often set by `gsl-config` script for linking GSL. | System/Makevars |
-
--   **C++ Version**: The name of the variable itself dictates the compiler. If `CXX11 = clang++` is set, that compiler will be used when `CXX_STD = CXX11` is specified.
--   **Concatenation**: Package (`PKG_*`) variables are appended to the base variables. `Final CXXFLAGS = $(CXXFLAGS) $(PKG_CXXFLAGS)`.
--   **Redefinition**: Redefining a base variable like `CXXFLAGS` in a package's `Makevars` is a CRAN violation. Always use the `PKG_*` variants.
-
-### Which are the default `Makevars` options for CRAN compliance
-
-CRAN enforces a standard set of flags to ensure code quality and consistency. You can see them by running `R CMD config CXXFLAGS`.
-
--   **Optimization**: `-O2` is the standard. `-O3` is generally disallowed unless there is a very strong, documented reason. `-Os` (optimize for size) is also sometimes used. The key is to *not change the default*.
--   **Warnings**: CRAN uses very strict warnings, typically including `-Wall -Wextra -pedantic`. Your code must compile without any warnings under these flags.
--   **Object Generation**: Flags like `-fPIC` (Position-Independent Code) are standard on Linux/macOS for creating shared libraries (`.so` or `.dylib`), which is what R packages are. R handles this automatically.
-
-### Which is the correct way (in CRAN way) of use `OpenMP` and `BLAS` optimizations?
-
--   **OpenMP**:
-    1.  **Code**: Use `#pragma omp parallel for ...` in your C++ code to mark loops for parallelization.
-    2.  **Rcpp Attribute**: Add `// [[Rcpp::plugins(openmp)]]` to your `.cpp` file.
-    3.  **`Makevars`**: Add the R-provided portable flags to `src/Makevars`:
-        ```makefile
-        PKG_CXXFLAGS = $(SHLIB_OPENMP_CXXFLAGS)
-        PKG_LIBS = $(SHLIB_OPENMP_CXXFLAGS)
-        ```
-    4.  **`DESCRIPTION`**: No special entry is needed for OpenMP, as it's a compiler feature, not a library dependency.
-
--   **BLAS/LAPACK**:
-    1.  **Dependencies**: The most common way to use BLAS/LAPACK is through `RcppArmadillo` or `RcppEigen`. Add `RcppArmadillo` to `LinkingTo` in your `DESCRIPTION` file.
-    2.  **`Makevars`**: You do **not** need to specify `BLAS` or `LAPACK` libraries in `Makevars`. R itself is linked against a BLAS/LAPACK implementation, and by linking your package's C++ code to R's libraries, you automatically gain access to them. `RcppArmadillo` knows how to find and call these routines directly through R's C API.
-
-### How to regenerate every generated source in the project?
-
-The key function is `devtools::document()`, which serves as a high-level wrapper for several code generation steps.
-
-| Source Path | Direct Generation Function | Implicit Triggers |
-| :--- | :--- | :--- |
-| `NAMESPACE` | `roxygen2::roxygenise()` | `devtools::document()` |
-| `man/*.Rd` | `roxygen2::roxygenise()` | `devtools::document()` |
-| `src/RcppExports.cpp` | `Rcpp::compileAttributes()` | `devtools::document()` |
-| `R/RcppExports.R` | `Rcpp::compileAttributes()` | `devtools::document()` |
-| `inst/include/pkg_RcppExports.h` | `Rcpp::compileAttributes()` (when `interfaces` attribute is used) | `devtools::document()` |
-| `renv.lock` | `renv::snapshot()` | Manual execution. |
-
----
-
-## Statements
-
-### In `src/Makevars` it is forbidden to specify compilation options but only library references?
-
-**Partially Disagree.**
-
-**Justification:** This statement is too absolute. It is forbidden to *override global compilation options* like `CXXFLAGS`. However, it is not only allowed but **required** to use `src/Makevars` to *add package-specific* compilation options using the `PKG_` prefixed variables.
-
--   **Allowed**: `PKG_CXXFLAGS = -fopenmp` (adds a feature required by the package). `PKG_CPPFLAGS = -I/path/to/custom/header` (tells the compiler where to find a package-specific dependency).
--   **Forbidden**: `CXXFLAGS = -O3 -Wall` (overrides the user's and R's defaults, which is a CRAN policy violation).
-
-Forcing `-O3` globally is indeed problematic because it can lead to overly aggressive optimizations that may be unstable, and as the statement correctly notes, it would affect any dependent package that needs to be rebuilt in the same session, which is undesirable behavior.
-
-### `RcppArmadillo` provides "out-of-the-box" arma function for fast iteration and parallel linear algebra operations.
-
-**Partially Agree.**
-
-**Justification:**
-- `RcppArmadillo` does provide a rich set of functions from the Armadillo C++ library for linear algebra that are highly optimized and often much faster than base R equivalents. Armadillo itself can be configured to use `OpenMP` for parallelization. However, this is not "implicit". You, the developer, must still enable OpenMP correctly in your `Makevars` file for the parallelization to be activated. The library provides the *capability*, but the build system must enable it.
-- The second part of the statement, "RcppArmadillo does not requires a `LinkingTo`," is **Fully Disagree**. `RcppArmadillo` is a header-only library, which means there is no binary library to link against at the final linking stage. However, you **must** include `RcppArmadillo` in the `LinkingTo` field of your `DESCRIPTION` file. This is how R knows to add the include path to Armadillo's headers (`-I<path-to-RcppArmadillo>/include`) to the compiler flags, so that `#include <RcppArmadillo.h>` can be resolved. Without `LinkingTo`, the package will fail to compile.
-
----
-
-## Additional Notes
-
--   **`renv` and `.Rprofile`**: For `renv` to work seamlessly, especially in projects that might be cloned by others, it's good practice to include a minimal `.Rprofile` in the project root with the line `source("renv/activate.R")`. This ensures the project library is automatically loaded when the project is opened in RStudio or a new R session is started in that directory. Remember to add `^renv/` and `^renv.lock$` to `.Rbuildignore`.
--   **Licensing**: The original `DESCRIPTION` file specified `GPL-3`. The GSL library is licensed under GPLv3 or later. Therefore, any package linking to it must also be licensed under a compatible GPL version. My proposed `DESCRIPTION` uses `GPL (>= 3)`, which is clear and correct. It is also good practice to include the full text of the license in the package root (e.g., in files named `LICENSE` and `LICENSE.md`).
--   **Copyright**: Add a proper copyright notice to your source files, as shown in the updated `demo.h`.
-
----
-
-## Proposed Changes to Template
-
-Here is a summary of the necessary changes to your initial template to make it compliant and robust.
-
-#### `DESCRIPTION`
-- **Changed `License`**: From `GPL-3` to `GPL (>= 3)` for clarity.
-- **Changed `Imports`**: Moved `tidyverse` and development tools (`devtools`, etc.) to `Suggests`. Packages used for development or examples should not be hard dependencies.
-- **Added `SystemRequirements`**: Declared the need for the `GNU GSL` library, which is crucial for portability and informs users of system dependencies.
-- **Corrected `LinkingTo`**: Properly formatted the list.
-- **Added `URL` and `BugReports`**: These fields are best practice for any package.
-
-#### `NAMESPACE`
-- This file should be fully generated by `roxygen2`. The manual content was removed and will be replaced by the output of `devtools::document()`.
-
-#### `R/demo-package.R`
-- **Updated documentation**: Provided a proper package-level documentation file using the `"_PACKAGE"` sentinel recognized by `roxygen2`.
-- **Cleaned up directives**: Removed `@importFrom` directives that are not needed (`dplyr`) or redundant (`RcppArmadillo`, `RcppEigen` are not used from R). Ensured `@useDynLib` points to the correct package name `demo`.
-
-#### `src/a_module.cpp`
-- **Implemented `a_sum`**: Provided a full implementation using an OpenMP pragma for parallel reduction.
-- **Corrected includes**: Included `<numeric>` for `std::accumulate` and `<omp.h>` for OpenMP functions.
-- **Removed unnecessary `Rcpp::depends`**: Removed `[[Rcpp::depends(RcppArmadillo)]]` as this file does not use Armadillo.
-
-#### `src/b_module.cpp`
-- **Added `[[Rcpp::plugins(openmp)]]`**: To correctly enable OpenMP flags.
-- **Corrected function call**: Implemented the call to `demo::b_sum` to demonstrate the C++ API usage.
-- **Added defensive programming**: Included a check for empty vector in `b_mean`.
-- **Improved Roxygen docs**: Added `@export` tags and clearer descriptions.
-
-#### `src/Makevars` and `src/Makevars.win`
-- **This is the most critical change.**
-- **Removed illegal `CXXFLAGS += -O3`**.
-- **Created `src/Makevars`** for Linux/macOS with portable `SHLIB_OPENMP_CXXFLAGS` and `gsl-config` for GSL.
-- **Created `src/Makevars.win`** for Windows, using `-fopenmp` and the R-provided `$(LIB_GSL)` variable.
-- **Removed `PKG_CPPFLAGS` and `PKG_CXXFLAGS` from the old file**, as they were either incorrect or incomplete.
-
-#### `tests/testthat/test-demo.R`
-- **Rewrote tests**:
-    - Tests now check the public R functions (`b_sum`, `b_mean`).
-    - Added a test to ensure the internal function `a_sum` is *not* exported to R, which validates the API separation.
-    - Added tests for edge cases like empty vectors.
-
-#### `.Rbuildignore`
-- **Added `renv` directories**: Ignored `renv/` and `renv.lock` from the package build, which is standard practice when using `renv`.
-
-These changes will result in a professional-grade, CRAN-compliant package template that correctly implements all the specified requirements.
-
----
-**References**
-
-<br>
- Allaire, J. J., Eddelbuettel, D., & François, R. (2023). *Rcpp: Seamless R and C++ Integration*. R package version 1.0.11. [https://cran.r-project.org/package=Rcpp](https://cran.r-project.org/package=Rcpp)
-<br>
- Hornik, K., & Leisch, F. (2024). *Writing R Extensions*. Version 4.4.0. [https://cran.r-project.org/doc/manuals/r-release/R-exts.html](https://cran.r-project.org/doc/manuals/r-release/R-exts.html)
-<br>
- Wickham, H. (2022). *R Packages (2nd ed.)*. O'Reilly Media. [https://r-pkgs.org/](https://r-pkgs.org/)
-<br>
- Eddelbuettel, D. (2013). *Seamless R and C++ Integration with Rcpp*. Springer.
-<br>
- Eddelbuettel, D., & Sanderson, C. (2014). RcppArmadillo: Accelerating R with High-Performance C++ Linear Algebra. *Computational Statistics & Data Analysis, 71*, 1054–1063. [https://www.jstatsoft.org/v58/i10/](https://www.jstatsoft.org/v58/i10/)
-
-
-
-# A:2 (Gemini)
-> ...
-
-# A:2 (Claude)
-> ...
+[^1]: [Writing R Extensions](https://cran.r-project.org/doc/manuals/r-release/R-exts.html)
+[^2]: [R Packages by Hadley Wickham](https://r-pkgs.org/)
+[^3]: [Rcpp documentation](https://cran.r-project.org/web/packages/Rcpp/index.html)
+[^4]: [RcppArmadillo documentation](https://cran.r-project.org/web/packages/RcppArmadillo/index.html)
+[^5]: [CRAN Repository Policy](https://cran.r-project.org/web/packages/policies.html)
 
 # A:2 (ChatGPT)
 > ...
@@ -3899,9 +3537,880 @@ These changes will result in a professional-grade, CRAN-compliant package templa
 # A:2 (LeChat)
 > ...
 
-# A:2 (Perplexity)
-> ...
+# A:2 (Perplexity) {A2-perplexity}
+> R Package Template with Rcpp
 
+Here is a comprehensive evaluation and enhancement proposal of the
+provided `demo` package template according to your specifications,
+questions, statements, and best practices for Rcpp packages with C++
+extensions supporting a uniform R/C++ API.
+
+## Package Template Evaluation and Recommendations
+
+### Directory Structure and Files
+
+The provided directory structure is clean, minimal, and adheres well
+to CRAN conventions. It supports package source (`src`), R code (`R`),
+man files (`man`), tests (`tests`), and `inst/include` for public C++
+API headers, as required.
+
+- The `.Rbuildignore` filters relevant files.
+- The `DESCRIPTION` includes correct fields, though some typos and minor improvements are needed (see below).
+- `NAMESPACE` is generated by roxygen2; assumes correct tag usage.
+- `inst/include` holds a clean public API header with proper GPL preamble.
+- Separate internal (`a_module`) and public (`b_module`) C++ sources differentiate private/internal and exported APIs.
+- The use of OpenMP is considered but needs integration fixes.
+- Documentation stubs for exported C++ functions in `b_module.cpp` follow roxygen2 style.
+- Unit testing is correctly configured with `testthat` and demo test cases.
+
+### Answers to Your Questions
+
+#### 1. How to use Rcpp attributes?
+
+| Attribute          | Arguments (Defaults)                 | Description                               |
+|--------------------|-----------------------------------|-------------------------------------------|
+| `[[Rcpp::export]]`   | none                              | Marks a C++ function to be callable from R; generates wrapping code. |
+| `[[Rcpp::depends(pkg)]]` | `pkg` e.g. `RcppArmadillo`         | Specifies package dependency required for compilation. |
+| `[[Rcpp::interfaces(r, cpp)]]` | `r`, `cpp` (both)               | Generates interfaces for R and C++ usage. |
+| `[[Rcpp::plugins(plugin_list)]]` | e.g. `cpp11`, `openmp`            | Enables compilation plugins such as C++11 or OpenMP. |
+
+Rcpp attributes are special roxygen-like comments scanned by
+`Rcpp::compileAttributes()` that generate the required interfacing and
+registration code for exported functions. They simplify exposing C++
+code to R and declaring package dependencies.
+
+#### 2. Correct way of using `Makevars` files (CRAN way)
+
+- `Makevars` is placed in `src/` directory and is used to specify compilation flags, linking flags, and library dependencies.
+- `Makevars.win` or `Makevars.ucrt` can override for Windows.
+- Package-specific flags use `PKG_` prefix (e.g., `PKG_CPPFLAGS`, `PKG_LIBS`) to add flags for the package only.
+- Avoid overriding global flags like `CXXFLAGS` which affect all packages and cause CRAN `R CMD check` warnings.
+- To specify OS library dependencies, use `SystemRequirements` or
+  `LinkingTo` in `DESCRIPTION` for R package dependencies, while
+  system libraries are indicated in `SystemRequirements`.
+- Fortran variables typically use `FFLAGS`, `FCFLAGS`, similar to C++'s `CXXFLAGS`.
+- Avoid forcing aggressive optimization like `-O3`; prefer `-O2` or default optimizations to maintain compatibility.
+- `Makevars` influences `renv::install()` since the compilation flags affect how packages are built locally.
+
+#### 3. Recognized environment variables in `Makevars`
+
+| Variable        | Build Step         | Notes                                      |
+|-----------------|--------------------|--------------------------------------------|
+| `CPPFLAGS`      | C Preprocessor     | Include directories, macros                 |
+| `CXXFLAGS`      | C++ Compiler       | Compiler flags like optimization           |
+| `PKG_CPPFLAGS`  | C Preprocessor     | Package-specific includes                   |
+| `PKG_CXXFLAGS`  | C++ Compiler       | Package-specific compiler flags             |
+| `PKG_LIBS`      | Linker             | Package-specific libraries to link          |
+| `LDFLAGS`       | Linker             | General linker flags                         |
+| `CXXSTD` or `CXX_STD` | Compiler     | C++ standard version (e.g., CXX11)          |
+
+- `PKG_*` variables augment corresponding global flags.
+- Duplicate definitions concatenate flags.
+- Fix C++ standard with `CXX_STD = CXX11` (or newer). Compiler version
+  may be fixed outside in environment or `Makevars`.
+
+#### 4. Default `Makevars` options for CRAN compliance
+
+- Optimization: Defaults to `-O2`; avoid `-O3` or experimental flags.
+- Warnings: Enable `-Wall` and `-pedantic` but avoid `-Werror`.
+- Object generation: Use default `.o` object files per source.
+- Architecture: Avoid hardcoding architecture flags; CRAN builds for multiple platforms.
+
+#### 5. Correct use of OpenMP and BLAS optimizations
+
+- Include OpenMP pragmas in C++ loops, e.g., `#pragma omp parallel for`.
+- Add `// [[Rcpp::plugins(openmp)]]` to enable OpenMP flags in compilation.
+- Link OpenMP library through `PKG_LIBS` (e.g., `-fopenmp`).
+- Use `LinkingTo` to depend on packages like `RcppArmadillo` which use optimized BLAS operations.
+- For BLAS, rely on R's default BLAS unless your package needs special linking.
+
+#### 6. How to regenerate generated sources?
+
+| Source Path            | Generation Function          | Implicit Triggers                      |
+|------------------------|------------------------------|--------------------------------------|
+| `src/demo_RcppExports.cpp` | `Rcpp::compileAttributes()`  | Running `devtools::document()`, or during package build |
+| `R/demo-package.R`      | Roxygen2 (`devtools::document()`) | Changes to roxygen tags in R or C++ files |
+| NAMESPACE              | Roxygen2                     | As above                            |
+
+- `Rcpp::compileAttributes()` generates the Rcpp interface files automatically from attributes.
+- Roxygen2 parses comments for documentation and generates Rd and NAMESPACE files.
+
+### Evaluation of Your Statements
+
+1. **"In `src/Makevars` it is forbidden to specify compilation options but only library references?"**
+
+- **Partially disagree.**  
+While CRAN discourages setting global compiler flags (`CXXFLAGS`,
+`CPPFLAGS`) in `src/Makevars` that affect all packages, setting
+*package-specific* flags using `PKG_*` variables is allowed and
+recommended. Forcing `-O3` globally is discouraged as it can cause
+issues with other packages. Proper CRAN-compliant packages restrict
+flags in `PKG_CPPFLAGS`, `PKG_CXXFLAGS`, and `PKG_LIBS`.
+
+2. **"RcppArmadillo provides 'out-of-the-box' arma function for fast
+   iteration and parallel linear algebra operations."**
+
+- **Partially agree.**  
+RcppArmadillo uses Armadillo C++ library which can leverage
+BLAS/LAPACK and OpenMP if available. However, OpenMP support must be
+enabled explicitly via compilation flags and plugins. It also requires
+`LinkingTo: RcppArmadillo` in DESCRIPTION, and proper configuration
+for parallelization and BLAS to be effective. It depends on how
+RcppArmadillo is configured on the user's system.
+
+### Proposed Changes to Your Template
+
+#### DESCRIPTION
+
+- Fix typos: `RcpArmadillo` → `RcppArmadillo`, `testtthat` → `testthat`.
+- Move `renv` from Suggests to `Enhances` or manage differently because `renv` is a project-level tool, not a runtime or build dependency.
+- Remove duplicate `Suggests: testthat (>= 3.0.0)`; consolidate.
+- `Roxygen` should be `Roxygen` option or `Roxygen: list(markdown = TRUE)` is correct but often in `DESCRIPTION`, attribute is `Roxygen` (check case).
+- Add `SystemRequirements: GNU OpenMP (if OpenMP is mandatory)` if using OpenMP.
+
+#### NAMESPACE
+
+- Ensure that roxygen2 tags generate proper exports for C++ functions, e.g., `@export` tags on interface functions in `b_module.cpp`.
+- Add `useDynLib(demo, .registration = TRUE)` in NAMESPACE explicitly or via roxygen directives.
+
+#### src/Makevars
+
+- Remove `CXXFLAGS += -O3` as it is not CRAN-compliant; replace with `PKG_CXXFLAGS = -O2 -fopenmp` (for OpenMP) on Linux.
+- Add `PKG_LIBS = -lgsl -lgslcblas -fopenmp` for linking GSL and OpenMP properly.
+- Use `CXX_STD = CXX11` to ensure C++11.
+- Add comments about Windows / MacOS overrides in `Makevars.win` or equivalents.
+
+#### src/a_module.cpp
+
+- Complete `a_sum` function with OpenMP parallelization on `data` summation safely.
+- Include OpenMP header with `#include ` and use `[[Rcpp::plugins(openmp)]]`.
+
+Example snippet inside `a_sum`:
+
+```cpp
+double a_sum(Rcpp::NumericVector data) {
+  int n = data.size();
+  double sum = 0.0;
+
+  #pragma omp parallel for reduction(+:sum)
+  for (int i = 0; i  RcppArmadillo; testtthat -> testthat
+- Remove duplicated Suggests entries
+- Adjust renv placement from Suggests if needed
+
+src/Makevars
+- Remove "CXXFLAGS += -O3"
+- Add "PKG_CXXFLAGS = -O2 -fopenmp"
+- Add "PKG_LIBS = -lgsl -lgslcblas -fopenmp"
+- Add "CXX_STD = CXX11"
+
+src/a_module.cpp
+- Add #include 
+- Add [[Rcpp::plugins(openmp)]]
+- Implement OpenMP parallel sum in a_sum function
+
+src/b_module.cpp
+- Add OpenMP pragma in b_beta loop
+- Use demo:: prefix for internal calls
+- Fix roxygen2 examples and add export tags properly
+
+tests/testthat/test-demo.R
+- Add tests for b_beta
+- Correct usage of a_sum (e.g., via Rcpp::sourceCpp or export)
+
+NAMESPACE
+- Ensure roxygen @export on exported C++ functions
+- useDynLib with .registration=TRUE included
+
+inst/include/demo.h
+- Complete legal text and includes
+
+```
+
+## Brief Answers to Your Questions
+
+1. **Rcpp Attributes:** High-level comment tags for exporting C++
+   functions to R, specifying dependencies, and enabling plugins like
+   OpenMP.
+
+2. **Makevars:** Use package-specific flags with `PKG_` prefix. Avoid
+   global flag overrides. Specify system dependencies in
+   DESCRIPTION. Manage optimization level carefully.
+
+3. **Makevars environment variables:** CPPFLAGS, CXXFLAGS,
+   PKG_CPPFLAGS, PKG_CXXFLAGS, PKG_LIBS, LDFLAGS with precedence rules
+   of concatenation and overriding.
+
+4. **Default Makevars:** Use safe optimization levels (-O2), enable
+   warnings, avoid non-portable flags.
+
+5. **OpenMP/BLAS:** Enable via plugins and makevars, use pragmas, link
+   libraries with PKG_LIBS.
+
+6. **Regenerate generated sources:** Use `Rcpp::compileAttributes()`
+   for C++ exports and `devtools::document()` for roxygen.
+
+## References
+
+- CRAN Rcpp package vignette and attributes guide[1][2][3][4]
+- CRAN Writing R Extensions manual (Makevars usage)[5]
+- Hadley Wickham Advanced R: Rcpp chapter[6]
+- StackOverflow and community best practices[7][8][9]
+- Tidyverse blog on CRAN checks and C++ standards[10]
+- OpenMP in Rcpp example and plugin usage[11]
+
+If you want, I can provide the precise complete contents for each
+`{{TODO}}` section and fix the code for the parallel OpenMP parts in
+your modules. Just ask!
+
+---
+> fix the [[TODO]] markers and provide modified code
+> provide full corrected code and further enhancements when appropriate
+
+Certainly! Below is the full corrected code for the relevant files with the `TODO` sections implemented, polished for CRAN compliance and uniform API usage, including additional suggested enhancements where appropriate.
+
+## 1. `src/a_module.cpp`
+
+```cpp
+// [[Rcpp::plugins(openmp)]]
+#include <omp.h>
+#include <RcppArmadillo.h>
+
+// [[Rcpp::depends(RcppArmadillo)]]
+
+int a_hidden(int x) {
+  return x;
+}
+
+// [[Rcpp::export()]]
+double a_sum(Rcpp::NumericVector data) {
+  int n = data.size();
+  double sum = 0.0;
+
+  #pragma omp parallel for reduction(+:sum)
+  for (int i = 0; i < n; i++) {
+    sum += data[i];
+  }
+  return sum;
+}
+```
+
+### Enhancements:
+
+- Added [[Rcpp::plugins(openmp)]] to enable OpenMP compilation.
+- Included OpenMP header <omp.h> for explicit OpenMP usage.
+- Parallel sum using OpenMP `reduction` to correctly sum vector elements in parallel.
+
+## 2. `src/b_module.cpp`
+
+```cpp
+// [[Rcpp::interfaces(r,cpp)]]
+// Enable C++11 support
+// [[Rcpp::plugins(cpp11)]]
+// Enable OpenMP support
+// [[Rcpp::plugins(openmp)]]
+
+// Declare dependencies
+// [[Rcpp::depends(RcppArmadillo)]]
+// [[Rcpp::depends(RcppEigen)]]
+// [[Rcpp::depends(RcppGSL)]]
+
+#include <RcppArmadillo.h>
+#include <Rcpp.h>
+#include <RcppEigen.h>
+#include <RcppGSL.h>
+#include <omp.h>  // For explicit OpenMP usage if needed
+
+// Standard library headers
+#include <algorithm>
+#include <cmath>
+#include <exception>
+#include <functional>
+#include <iterator>
+#include <limits>
+#include <memory>
+#include <numeric>
+#include <random>
+#include <stdexcept>
+#include <string>
+#include <vector>
+
+// GSL headers
+#include <gsl/gsl_fit.h>
+#include <gsl/gsl_multifit.h>
+#include <gsl/gsl_sf_gamma.h>
+#include <gsl/gsl_statistics_double.h>
+
+#include <demo.h>
+#include "a_module.h"
+
+using namespace Rcpp;
+using namespace std;
+
+//' @title Calculate the sum of a NumericVector
+//' @description This function calculates the sum of a NumericVector.
+//' @param data A NumericVector
+//' @return The sum of the NumericVector wrapped in a NumericVector
+//' @examples
+//' data <- c(1, 2, 3, 4, 5)
+//' sum <- demo::b_sum(data)
+//' print(sum)
+// [[Rcpp::export]]
+NumericVector b_sum(NumericVector data) {
+  double result = demo::a_sum(data);  // fully qualified to internal API
+  return NumericVector::create(result);
+}
+
+//' @title Calculate the mean of a NumericVector
+//' @description This function calculates the arithmetic mean of a NumericVector.
+//' @param data A NumericVector
+//' @return The arithmetic mean of the NumericVector wrapped in a NumericVector
+//' @examples
+//' data <- c(1, 2, 3, 4, 5)
+//' mean_val <- demo::b_mean(data)
+//' print(mean_val)
+// [[Rcpp::export]]
+NumericVector b_mean(NumericVector data) {
+  int n = data.size();
+  if (n == 0) {
+    Rcpp::warning("Input vector is empty, returning NaN.");
+    return NumericVector::create(R_NaN);
+  }
+  NumericVector sum = demo::b_sum(data);
+  double result = sum[0] / n;
+  return NumericVector::create(result);
+}
+
+//' @title Calculate vectorized Beta function
+//' @description This function calculates Beta function with GSL library.
+//' @param a A NumericVector of Beta first argument (a)
+//' @param b A NumericVector of Beta second argument (b)
+//' @return A NumericVector of Beta(a,b)
+//' @examples
+//' a <- c(1/2, 1, 3/2, 2)
+//' b <- c(1/2, 1, 3/2, 2)
+//' beta <- demo::b_beta(a, b)
+//' print(beta)
+// [[Rcpp::export]]
+NumericVector b_beta(NumericVector a, NumericVector b) {
+  if (a.size() != b.size()) {
+    Rcpp::warning("Input vectors 'a' and 'b' must have the same length; returning NaN.");
+    return NumericVector::create(R_NaN);
+  }
+  int n = a.size();
+  NumericVector result(n);
+
+  #pragma omp parallel for
+  for (int i = 0; i < n; ++i) {
+    result[i] = gsl_sf_beta(a[i], b[i]);
+  }
+  return result;
+}
+
+```
+
+### Enhancements:
+
+- Added [[Rcpp::plugins(openmp)]] for OpenMP support.
+- Added safety check for zero-length vector in b_mean().
+- Unified namespace usage by fully qualifying internal calls with demo::.
+- Added appropriate roxygen documentation with correct examples.
+- Added #include <omp.h> for explicit OpenMP (optional but good for clarity).
+- Applied OpenMP parallel for pragma safely in `b_beta` function.
+
+## 3. `src/Makevars`
+
+```makefile
+CXX_STD = CXX11
+
+PKG_CPPFLAGS = -I../inst/include
+
+# Enable OpenMP and GSL linking (Linux example)
+PKG_CXXFLAGS = -O2 -fopenmp
+
+PKG_LIBS = -lgsl -lgslcblas -fopenmp
+```
+
+### Enhancements:
+
+- Removed disallowed `CXXFLAGS += -O3`.
+- Used package-specific variables (`PKG_*`) only.
+- Added OpenMP flags with `-fopenmp` flag both to compile and link.
+- Included GSL libraries for linking.
+- Set standard to C++11 as per specification.
+
+## 4. Minor corrections in `DESCRIPTION`
+
+```plaintext
+Package: demo
+Type: Package
+Title: Demo Package with Rcpp
+Version: 0.1.0
+Authors@R: person("Your", "Name", email = "your.email@example.com", role = c("aut", "cre"))
+Description: A demo package showcasing Rcpp integration with a uniform R and C++ API.
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+Imports: Rcpp, RcppArmadillo, RcppEigen, RcppGSL, tidyverse
+Suggests: renv, devtools, usethis, testthat, knitr
+LinkingTo: Rcpp, RcppArmadillo, RcppEigen, RcppGSL
+Config/testthat/edition: 3
+SystemRequirements: GNU OpenMP (optional, Linux)
+```
+
+**Enhancements:**
+
+- Fixed typos (`RcppArmadillo`, `testthat`).
+- Adjusted email format in `Authors@R`.
+- Added `SystemRequirements` for OpenMP.
+- Cleaned duplicates.
+
+## 5. Additional Suggested Enhancements
+
+- **NAMESPACE** should be generated with roxygen2 directives ensuring
+  `@export` is present on `b_sum`, `b_mean`, `b_beta`; add
+  `useDynLib(demo, .registration = TRUE)` for proper native symbol
+  registration.
+- **`inst/include/demo.h`** and **`demo_types.h`** files should be
+  reviewed for consistent inclusion guards and license text filled
+  correctly.
+- Add a **`Makevars.win`** file if Windows support is planned — OpenMP
+  linking flags differ (e.g., `-openmp` or `/openmp` using MSVC).
+- Use **continuous integration** (GitHub Actions or similar) to test
+  across Linux, Windows, macOS.
+- Add additional **tests** for `b_beta` functionality and `OpenMP`
+  correctness.
+- Use static code analysis tools like **clang-format**, **cppcheck**,
+  and shell **linters** integrated in CI for style and errors.
+- Create License file (`LICENSE` or `LICENSE.md`) consistent with
+  GPL-3.
+
+---
+
+GitLab CI/CD can be an effective alternative to GitHub Actions for
+building, testing, and publishing your Rcpp package, including running
+checks, tests, and optionally publishing built binaries to an FTP
+server with secure credential handling.
+
+Here’s a recommended approach and sample `.gitlab-ci.yml`
+configuration tailored for your package workflow, considering:
+
+- Use of a Rocker-based Docker image with R and system libraries (`gsl`, `openmp`) installed.
+- Stages: build (including R CMD build and check), test (running tests), and deploy (publish binary to FTP).
+- Caching installed R packages for faster builds.
+- Use of CI/CD variables for external FTP credentials (securely stored in GitLab’s CI/CD variables).
+- Example using `lftp` command-line client for FTP upload.
+
+### Example `.gitlab-ci.yml` for your Rcpp package
+
+```yaml
+image: rocker/geospatial:4.4.3  # matches your base image with geospatial libs
+
+stages:
+  - build
+  - test
+  - deploy
+
+variables:
+  R_LIBS_USER: ${CI_PROJECT_DIR}/installed_deps
+
+cache:
+  paths:
+    - installed_deps/
+
+before_script:
+  - mkdir -p installed_deps
+  # Configure R libraries path for caching dependencies
+  - echo "R_LIBS_USER=${R_LIBS_USER}" > .Renviron
+  - echo "R_LIBS=${R_LIBS_USER}" >> .Renviron
+  - echo "R_LIBS_SITE=${R_LIBS_USER}" >> .Renviron
+  # Update system packages and install lftp for FTP upload
+  - apt-get update && apt-get install -y lftp libgsl-dev libgsl23 libomp-dev
+
+build_package:
+  stage: build
+  script:
+    - R -e "install.packages('remotes', repos = 'https://cloud.r-project.org')"
+    - R -e "remotes::install_deps(dependencies = TRUE, upgrade = 'never')"
+    - R CMD build . --no-build-vignettes --no-manual
+  artifacts:
+    paths:
+      - '*.tar.gz'
+  only:
+    - main
+    - master
+
+check_package:
+  stage: test
+  dependencies:
+    - build_package
+  script:
+    - PKG_FILE=$(ls -1t *.tar.gz | head -n 1)
+    - R CMD check "$PKG_FILE" --no-build-vignettes --no-manual --as-cran
+    - Rscript -e 'devtools::test()'
+  artifacts:
+    paths:
+      - '*.Rcheck/'
+  only:
+    - main
+    - master
+
+deploy_binary:
+  stage: deploy
+  dependencies:
+    - build_package
+  script:
+    - PKG_FILE=$(ls -1t *.tar.gz | head -n 1)
+    - |
+      lftp -c "
+      open -u $FTP_USERNAME,$FTP_PASSWORD $FTP_SERVER;
+      put $PKG_FILE -o /path/on/server/$PKG_FILE;
+      bye"
+  environment:
+    name: production
+  only:
+    - main
+```
+
+### Explanation
+
+- **Image:** Uses your specified Rocker geospatial image, ensuring consistency with your build environment and system dependencies (`gsl`, `openmp`).
+- **Caching:** Saves installed R dependencies in `installed_deps/` to speed up builds.
+- **Stages:** The pipeline has `build`, `test`, and `deploy` stages sequenced in that order.
+- **Build stage:** Installs R package dependencies, then builds the source tarball without vignettes/manual to speed up.
+- **Test stage:** Runs R CMD check with `--as-cran` for CRAN compliance and executes your package tests via `devtools::test()`.
+- **Deploy stage:** Uses `lftp` to upload the built package to your external FTP server.
+- **FTP credentials:** Use GitLab CI variables (`$FTP_USERNAME`, `$FTP_PASSWORD`, `$FTP_SERVER`) securely set in GitLab's "Settings > CI / CD > Variables" — so they're not stored in the repo.
+- **Artifacts:** Save source tarballs and check results as pipeline artifacts.
+- **Only branch:** Runs on `main` or `master` branches by default, adjustable as needed.
+
+### Additional Recommendations
+
+- **Install system dependencies** only if base image doesn't already have them.
+- For Windows runners or other OS, consider separate jobs or parallel runners with correct dependencies.
+- **Security:** Use GitLab environment-specific variables (masked and protected) for any sensitive data.
+- **FTP client:** `lftp` is reliable and scriptable; you could also use `curl` or other FTP clients as preferred.
+- If you want to publish binaries for multiple OS platforms, consider cross-building with Docker or using GitLab runners per platform.
+
+### References and resources
+
+- Simple R package CI with GitLab example and explanation: [heds.nz GitLab R pipeline](https://heds.nz/posts/gitlab-cicd-pipeline-r-package/)[1]
+- Handling caches and artifacts in GitLab CI for R packages: [Stack Overflow discussion](https://stackoverflow.com/questions/78893751/setting-up-gitlab-ci-cd-for-r-packages)[4]
+- GitLab CI variables for secure credential management: [GitLab docs CI/CD Variables](https://docs.gitlab.com/ee/ci/variables/#add-a-cicd-variable-to-a-project)[3]
+- Using `lftp` for FTP uploads: widely documented in man pages and examples; it supports encrypted FTP and scripting.
+
+If you want, I can draft a complete `.gitlab-ci.yml` file including FTP deployment, with explanation for setting GitLab variables securely and optional branches triggers. Just ask!
+
+[1] https://heds.nz/posts/gitlab-cicd-pipeline-r-package/
+[2] https://www.algorist.co.uk/post/building-a-ci-pipeline-for-r-packages-in-gitlab/
+[3] https://docs.gitlab.com/ci/
+[4] https://stackoverflow.com/questions/78893751/setting-up-gitlab-ci-cd-for-r-packages
+[5] https://docs.gitlab.com/user/packages/workflows/build_packages/
+[6] https://docs.gitlab.com/ci/yaml/
+[7] https://docs.gitlab.com/user/packages/package_registry/
+[8] https://jozef.io/r922-github-actions-r-packages/
+[9] https://stackoverflow.com/questions/66025577/gitlab-ci-install-r-package-from-private-repository
+[10] https://www.youtube.com/watch?v=59gbgBqlaJc
+
+
+---
+
+> An additional pair of questions about C++ preprocessor in Rcpp development:
+>
+> 1. in which order Rcpp attributes are evaluated in compilation phases: before of after C++ preprocessor step? 
+> In other words, Rcpp attributes can be placed in include files or under #ifdef blocks ?
+
+> 2. it is possible to trigger conditional compilation depending of
+> the activation state of a library, specified in "LinkingTo" clause of
+> package DESCRIPTION file?
+> The rationale here is to exclude from the
+> project template, to be used as a base for different projects, the
+> code examples referring to an optional dependency, like RcppGSL in the
+> discussion above.
+
+
+1. **Order of Rcpp attributes evaluation in compilation phases:**
+
+Rcpp attributes such as `// [[Rcpp::export]]` are *comment-based
+annotations* parsed by the Rcpp tool `compileAttributes()` **before**
+the actual compilation takes place. This function scans the source
+files for these attribute comments and generates binding code (e.g.,
+`RcppExports.cpp`) accordingly.
+
+Crucially, the C++ **preprocessor step occurs after** this attribute
+processing because the attributes are not part of C++ syntax but
+special comments. Therefore:
+
+- Rcpp attributes **cannot** be conditionally included or excluded by
+  C++ preprocessor directives like `#ifdef` because they are processed
+  *before* preprocessing.
+
+- Placing Rcpp attributes inside include files (`.h`) or under
+  `#ifdef` blocks *will not* affect whether those functions are
+  exported; the scanning for attributes is done on the raw source
+  files before preprocessing.
+
+Thus, Rcpp attributes must be present plainly in the source files
+(typically `*.cpp` files) **outside conditional compilation
+blocks**.[1][3]
+
+2. **Conditional compilation based on LinkingTo library presence:**
+
+Directly **triggering conditional compilation** depending on the
+activation state of a package dependency declared in `LinkingTo` in
+DESCRIPTION is **not possible at C++ compile time** because:
+
+- The C++ compilation does not know which `LinkingTo` packages are
+  used; that is metadata for the R build system.
+
+- `LinkingTo` is handled by R's package installation and build
+  infrastructure, which ensures headers and compilation flags are
+  available if specified.
+
+To achieve optional inclusion/exclusion of code based on whether a
+dependency like `RcppGSL` is present:
+
+- Use **custom configure scripts or configure variables** in your
+  package setup to detect system or package dependencies.
+
+- Define preprocessor macros (e.g., via `PKG_CPPFLAGS` in
+  `src/Makevars`) conditionally if a dependency is found.
+
+- You can then use those preprocessor macros (`#ifdef USE_RCPPGSL`) in
+  your C++ code to conditionally compile parts depending on
+  availability.
+
+- Alternatively, split optional dependency code into separate source
+  files and use conditional compilation or different `LinkingTo`
+  declarations per configuration/version.
+
+This is a common pattern in CRAN packages supporting optional
+features. However, the `LinkingTo` field itself does not provide
+automatic macros; you must explicitly propagate defines in your build
+process.[3]
+
+### Summary
+
+| Question                                                | Answer                                                    |
+|---------------------------------------------------------|-----------------------------------------------------------|
+| When are Rcpp attributes evaluated relative to the C++ preprocessor? | Rcpp attributes are processed *before* C++ preprocessing; they cannot be conditionally compiled via `#ifdef`. They must appear as plain comments in source files. |
+| Can conditional compilation depend on package `LinkingTo` presence? | No direct mechanism exists; conditional compilation depends on macros you define manually (via configure scripts or `Makevars`) based on detected dependencies. |
+
+### References
+
+ CRAN Rcpp package PDF Manual, sections on `compileAttributes` and attributes processing (https://cran.r-project.org/web/packages/Rcpp/Rcpp.pdf)[1]
+ Hadley Wickham's "Chapter 13 Compiled codeode | R Packages" (https://bookdown.dongzhuoer.com/hadley/r-pkgs/src)
+Additional community knowledge from Rcpp forums and package building best practices
+
+If you want, I can help you craft a `configure` script or `Makevars` setup for conditional compilation based on dependency detection.
+
+[1] https://cran.r-project.org/web/packages/Rcpp/Rcpp.pdf
+[2] https://dirk.eddelbuettel.com/papers/useR2019_rcpp_tutorial.pdf
+[3] https://bookdown.dongzhuoer.com/hadley/r-pkgs/src
+[4] https://gallery.rcpp.org/articles/rcpp-return-macros/
+[5] https://cran.r-project.org/web/packages/cpp11/vignettes/converting.html
+[6] https://devblogs.microsoft.com/oldnewthing/20240910-00/?p=110243
+[7] https://stackoverflow.com/questions/16493201/control-compilation-order-in-rcpp
+[8] https://rcppcore.r-universe.dev/articles/Rcpp/Rcpp-modules.pdf
+[9] https://www.reddit.com/r/rust/comments/xs1o9f/rcpp_a_c_preprocessor/
+[10] https://stackoverflow.com/questions/14667766/rcpp-use-multiple-c-functions-in-file-referenced-by-sourcecpp
+
+
+---
+
+> Prepare a `configure` script with options `--with-gsl` (default false)
+> that can prepare the project template to include GSL (RcpGSL) support
+> in a project.  If the `--with-gsl` option is not triggered, some
+> source code (depending on GSL) must be removed from the project
+
+Below is a robust and practical `configure` shell script that
+implements an optional `--with-gsl` flag (default `false`) to prepare
+your Rcpp package for optional GSL support, compatible with CRAN-style
+packages using a `Makevars.in` template.
+
+## Overview
+
+- If `--with-gsl` is given, the script attempts to locate GSL via `RcppGSL` functions (preferred) or `gsl-config`.
+- If found, it substitutes `@GSL_CFLAGS@` and `@GSL_LIBS@` in `src/Makevars.in` to generate `src/Makevars`.
+- If `--with-gsl` is not specified, it generates a simple `Makevars` that *excludes* GSL-dependent compiler and linker flags.
+- It optionally supports removal of GSL-dependent source files or code snippets from the build (if needed, indicated by placeholders).
+- This script assumes a `src/Makevars.in` file exists with placeholders `@GSL_CFLAGS@` and `@GSL_LIBS@` to be substituted.
+
+## Example `configure` script
+
+```sh
+#!/bin/sh
+# configure script for demo package with optional GSL support
+# Usage: ./configure [--with-gsl]
+
+# Default
+WITH_GSL="no"
+
+for arg in "$@"; do
+  case $arg in
+    --with-gsl)
+      WITH_GSL="yes"
+      ;;
+    --without-gsl)
+      WITH_GSL="no"
+      ;;
+    *)
+      echo "Unknown option $arg"
+      exit 1
+      ;;
+  esac
+done
+
+echo "Configuring demo package"
+echo "Optional GSL support: $WITH_GSL"
+
+# Prepare variables
+GSL_CFLAGS=""
+GSL_LIBS=""
+
+if test "$WITH_GSL" = "yes"; then
+  echo "Attempting to find GSL compiler and linker flags..."
+
+  # Try using RcppGSL helpers first
+  Rscript -e "cat(RcppGSL:::CFlags())" >/dev/null 2>&1
+  if test $? -eq 0; then
+    GSL_CFLAGS=$(Rscript -e "cat(RcppGSL:::CFlags())")
+    GSL_LIBS=$(Rscript -e "cat(RcppGSL:::LdFlags())")
+    echo "Found GSL via RcppGSL:"
+    echo "CFLAGS: $GSL_CFLAGS"
+    echo "LIBS: $GSL_LIBS"
+  else
+    # Fallback: use gsl-config if available
+    GSL_CONFIG_PATH=$(command -v gsl-config || echo "")
+    if test -n "$GSL_CONFIG_PATH"; then
+      GSL_CFLAGS=$($GSL_CONFIG_PATH --cflags)
+      GSL_LIBS=$($GSL_CONFIG_PATH --libs)
+      echo "Found GSL via gsl-config:"
+      echo "CFLAGS: $GSL_CFLAGS"
+      echo "LIBS: $GSL_LIBS"
+    else
+      echo "Error: GSL requested but gsl-config not found and RcppGSL helpers unavailable."
+      exit 1
+    fi
+  fi
+
+  # Substitute placeholders in src/Makevars.in -> src/Makevars
+  sed -e "s|@GSL_CFLAGS@|$GSL_CFLAGS|g" -e "s|@GSL_LIBS@|$GSL_LIBS|g" src/Makevars.in > src/Makevars
+
+  # Optional: adjust source files or code for GSL inclusion
+  # e.g., touch a config header or similar to enable conditional compilation
+  echo "#define HAVE_GSL 1" > src/config.h
+
+else
+  echo "Generating Makevars without GSL support..."
+
+  # Substitute empty strings for GSL flags
+  sed -e "s|@GSL_CFLAGS@||g" -e "s|@GSL_LIBS@||g" src/Makevars.in > src/Makevars
+
+  # Optional: remove or disable GSL-dependent source files or code
+  # For example, rename or delete src/b_module.cpp or other GSL-dependent files
+  # Or create a config header without HAVE_GSL defined to exclude GSL code
+
+  echo "/* #undef HAVE_GSL */" > src/config.h
+fi
+
+exit 0
+```
+
+## Minimal example `src/Makevars.in`
+
+```makefile
+CXX_STD = CXX11
+PKG_CPPFLAGS = -I../inst/include @GSL_CFLAGS@
+PKG_CXXFLAGS = -O2 -fopenmp
+PKG_LIBS = -lgsl -lgslcblas -fopenmp @GSL_LIBS@
+```
+
+- Your `configure` script will replace `@GSL_CFLAGS@` and `@GSL_LIBS@` with appropriate flags or remove them.
+- Note that `-lgsl -lgslcblas` is added manually here as example. You might also want to inject `-lgsl -lgslcblas` only when GSL is enabled or parameterize them.
+
+## Optional conditional compilation in C++ source
+
+Use the generated `src/config.h` header to wrap GSL-dependent code, e.g.:
+
+```cpp
+#include "config.h"
+
+#ifdef HAVE_GSL
+#include 
+// GSL using code here
+#endif
+```
+
+Your package code can then be made conditional based on the presence of `HAVE_GSL`.
+
+## Summary
+
+- Use `./configure --with-gsl` to enable GSL: generates `Makevars` with GSL flags, defines `HAVE_GSL`.
+- Use `./configure` (default no GSL) to generate `Makevars` without GSL flags and no `HAVE_GSL`.
+- Inside C++ source code guard GSL code with `#ifdef HAVE_GSL`.
+- Remove or disable GSL-dependent sources when disabling GSL, or guard their compilation in your `src/Makevars` if splitting sources.
+
+If you want, I can also generate a `configure.win` for Windows or an autoconf-based `configure.ac` script as an alternative.
+
+### References from similar existing RcppGSL configure scripts and manuals:
+
+- Dirk Eddelbuettel’s RcppGSL approach to configure: see [citation 1],  in search results.[2]
+- Example `configure` shell snippets using `RcppGSL:::CFlags()` and `LdFlags()`.
+- General R package configure script guidelines from Writing R Extensions manual.
+
+Let me know if you want me to generate the `Makevars.in` template or C++ source code examples to integrate `#ifdef HAVE_GSL` usage.
+
+[1] https://dirk.eddelbuettel.com/code/rcpp/RcppGSL.pdf
+[2] https://rdrr.io/rforge/RcppGSL/f/inst/doc/RcppGSL-intro.pdf
+[3] https://researchcomputing.princeton.edu/support/knowledge-base/rrstudio
+[4] https://stackoverflow.com/questions/67170857/installing-package-in-r-there-is-no-package-called-gsl
+[5] https://cran.r-project.org/package=gsl
+[6] https://github.com/RobinHankin/gsl
+[7] https://cran.r-project.org/web/packages/gsl/refman/gsl.html
+[8] https://github.com/rstudio/shinyapps-package-dependencies/issues/56
+[9] https://rstudio.github.io/r-manuals/r-exts/Creating-R-packages.html
+[10] https://rpkg.net/package/gsl
+
+
+### Summary
+
+The above is the corrected and improved source code for your Rcpp package that:
+
+- Implements OpenMP parallelization fully and safely.
+- Uses CRAN-compliant `Makevars` with correct package flags.
+- Ensures uniform namespace usage with `demo::` prefix in C++.
+- Adds robust roxygen2 documentation and examples.
+- Fixes `DESCRIPTION` metadata.
+
+This should bring your package much closer to CRAN compliance and good practice on Linux and other OS.
+
+Let me know if you want me to generate any other parts or help with further polish!
+
+
+
+---
+
+[1] https://cran.r-project.org/web/packages/Rcpp/vignettes/Rcpp-quickref.pdf
+[2] https://rcppcore.r-universe.dev/articles/Rcpp/Rcpp-attributes.pdf
+[3] https://cran.r-project.org/web/packages/Rcpp/vignettes/Rcpp-package.pdf
+[4] https://rdrr.io/rforge/Rcpp/f/inst/doc/Rcpp-attributes.pdf
+[5] https://cran.r-project.org/doc/manuals/r-devel/R-exts.html
+[6] http://adv-r.had.co.nz/Rcpp.html
+[7] https://stackoverflow.com/questions/54693381/how-to-create-a-list-with-attributes-with-rcpp
+[8] https://accio.github.io/programming/2019/04/24/R-Makevars.html
+[9] https://stackoverflow.com/questions/62473852/how-to-use-both-openmp-and-openblas-in-rcpparmadillo
+[10] https://www.tidyverse.org/blog/2023/03/cran-checks-compiled-code/
+[11] https://wbnicholson.wordpress.com/2014/07/10/parallelization-in-rcpp-via-openmp/
+[12] https://dirk.eddelbuettel.com/code/rcpp/Rcpp_refman.pdf
+[13] https://stackoverflow.com/questions/39499608/dynamically-setting-pkg-libs-and-pkg-cppflags
+[14] https://cran.r-project.org/package=Rcpp/vignettes/Rcpp-FAQ.pdf
+[15] https://lightgbm.readthedocs.io/en/v4.4.0/R/
+[16] https://github.com/stan-dev/rstantools/issues/40
+[17] https://stackoverflow.com/questions/46883786/how-do-i-see-and-replicate-the-r-default-makevars-configuration
+[18] http://dirk.eddelbuettel.com/code/rcpp/rcpp.html
+[19] https://discourse.mc-stan.org/t/compiler-ignoring-makevars-win/27316
+[20] https://discourse.mc-stan.org/t/new-error-cleanup-makevar-old-argument-rmu-is-missing-with-no-default/18137?page=2
 
 # ::}}} \\ %2.
 

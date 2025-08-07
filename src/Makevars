@@ -1,11 +1,11 @@
-# @see: ~/.R/Makevars
+# Package `Makevars`
 
-#CFLAGS = -g -O3 -Wall -pedantic -mtune=native -D_FORTIFY_SOURCE=2 $(LTO)
-#CXXFLAGS = -g -O3 -Wall -pedantic -mtune=native -frtti  -Wno-ignored-attributes -Wno-deprecated-declarations -D_FORTIFY_SOURCE=2 $(LTO)
-#CXXFLAGS = -g -O3 -Wall -pedantic -mtune=native -frtti -D_FORTIFY_SOURCE=2 $(LTO)
-#FFLAGS= -g -O2 -mtune=native -Wall -pedantic
-#FCFLAGS=$FFLAGS
+# Seealso: /etc/R/Makevars
+# Seealso: ~/.R/Makevars
+# Seealso: ../src/Makevars.win
 
+# Seealso: ../notes/howtos/Rcpp-HOWTO.md
+# Seealso: ../notes/howtos/Rcpp-HOWTO-Q2-*.md
 
 PKG_CPPFLAGS = -I../inst/include/
 
@@ -13,21 +13,15 @@ PKG_CXXFLAGS = $(SHLIB_OPENMP_CXXFLAGS)
 PKG_LIBS = $(SHLIB_OPENMP_CXXFLAGS) $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)
 
 
-# Settings from /etc/R/Makeconf with "non-portable flag(s):"
-# ‘-Wdate-time’ ‘-Werror=format-security’ ‘-Wformat’ replaced by -Wall -pedantic
-# and without -fdebug-prefix-map=...
-# See: https://accio.github.io/programming/2019/04/24/R-Makevars.html
-# See: https://stackoverflow.com/questions/50658198/cran-submission-r-cmd-check-warning-compilation-flags-used
+# Conditional GSL Support
 #
-# Note: -Wformat-overflow=3 is a non-portable flag, which seems to be used by CRAN check though
-#CC=gcc-7 -std=gnu99 ## -Wformat-overflow=3
-#CFLAGS = -g -O3 -Wall -pedantic -mtune=native -D_FORTIFY_SOURCE=2 $(LTO)
-#CXXFLAGS = -g -O3 -Wall -pedantic -mtune=native -frtti  -Wno-ignored-attributes -Wno-deprecated-declarations -D_FORTIFY_SOURCE=2 $(LTO)
-#CXXFLAGS = -g -O3 -Wall -pedantic -mtune=native -frtti -D_FORTIFY_SOURCE=2 $(LTO)
-#FFLAGS= -g -O2 -mtune=native -Wall -pedantic
-#FCFLAGS=$FFLAGS
+# Seealso: ../src/config.h
+# Seealso: ../src/Makevars.in
+# Seealso: ../configure
 
-# Settings from /etc/R/Makeconf with "non-portable flag(s):"
-# ‘-Wdate-time’ ‘-Werror=format-security’ ‘-Wformat’ replaced by -Wall -pedantic
-# and without -fdebug-prefix-map=... 
+#{GSL}: GSL_CONFIG_PATH=$(command -v gsl-config || echo "")
+#{GSL}: GSL_CFLAGS=$($GSL_CONFIG_PATH --cflags || "")
+#{GSL}: GSL_LIBS=$($GSL_CONFIG_PATH --libs || "")
 
+#{GSL}: PKG_CXXFLAGS += $(GSL_CFLAGS)
+#{GSL}: PKG_LIBS += $(GSL_LIBS)

@@ -1,13 +1,13 @@
 /*
  * Package: dvesimpler
  * File: dummy_stats.cpp
- * Author: datalab
+ * Author: datalab@unimib.it
  * Description: Demo C++ source file with Rcpp
  * Seealso: ../notes/howtos/Rcpp-HOWTO.md
- * Seealso: ../notes/howtos/Rcpp-HOWTO-claude-v4.md
  * Seealso: ../src/dummy-mean.cpp
- * Seealso: ../src/dvesimpler.h
+ * Seealso: ../inst/include/dvesimpler.h
  * Seealso: ../exec/dummy-rcpp.R
+ * Seealso: ../src/config.h
  * Seealso: ../src/Makevars
  * Seealso: ../R/dvesimpler-package.r
  * Seealso: ../DESCRIPTION
@@ -18,22 +18,24 @@
 // [[Rcpp::interfaces(r,cpp)]]
 // Enable C++11 support
 // [[Rcpp::plugins(cpp11)]]
+// [[Rcpp::plugins(openmp)]]
 
 // Declare dependencies
 // [[Rcpp::depends(RcppArmadillo)]]
 // [[Rcpp::depends(RcppEigen)]]
 
-/*
-// {{Rcpp::depends(RcppGSL)}}
-*/
+// static config
+#include "config.h"
+
 // Rcpp dependencies
 #include <RcppArmadillo.h>
 #include <Rcpp.h>
 #include <RcppEigen.h>
 
-/*
-  #include <RcppGSL.h>
-*/
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
 
 // Standard library headers
 #include <algorithm>
@@ -48,15 +50,6 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
-
-/*
-// GSL headers
-#include <gsl/gsl_fit.h>
-#include <gsl/gsl_multifit.h>
-#include <gsl/gsl_statistics_double.h>
-#include <gsl/gsl_rng.h>
-#include <gsl/gsl_randist.h>
-*/
 
 // Package Public Functions
 
