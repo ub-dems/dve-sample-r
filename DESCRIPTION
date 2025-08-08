@@ -20,6 +20,9 @@ Imports:
     RcppArmadillo,
     RcppEigen,
     tidyverse,
+    dplyr,
+    ggplot2,
+    readr,
     argparse,
     here,
     logging,
@@ -32,7 +35,7 @@ Imports:
     scriptName,
     targets,
     yaml
-Suggests: 
+Suggests:
     assertthat,
     cli (>= 3.3.0),
     devtools,

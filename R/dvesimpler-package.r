@@ -1,8 +1,11 @@
+##
+#' @name dvesimpler
 #' @description
 #' To learn more about dvesimpler, start with the vignettes:
 #' `browseVignettes(package = "dvesimpler")`
 #' @keywords internal
 "_PACKAGE"
+
 
 ## usethis namespace: start
 # 
@@ -30,9 +33,13 @@
 # 
 #' @importFrom tidyverse tidyverse_conflicts
 #' @importFrom grDevices pdf
+#' @importFrom ggplot2 ggplot aes geom_line xlab
+#' @importFrom readr read_csv write_csv cols col_datetime
+#' @importFrom dplyr filter
 #' @importFrom utils str capture.output head View 
 # 
 ## usethis namespace: end
+
 
 utils::globalVariables(c("Datetime","PJME_MW"))
 
