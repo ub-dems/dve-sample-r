@@ -123,6 +123,156 @@ dmy_group_op <- function(data, group_col, value_col, operation) {
     .Call(`_dvesimpler_dmy_group_op`, data, group_col, value_col, operation)
 }
 
+#' Matrix Multiplication with RcppArmadillo
+#'
+#' Performs (parallel) matrix multiplication efficiently in C++.
+#'
+#' @param A an arma::mat matrix
+#' @param B an arma::mat matrix (with rows(B) = cols(A))
+#'
+#' @return Matrix Product as arma::mat matrix
+#'
+#' @export
+dmy_matrix_multiplication_arma <- function(A, B) {
+    .Call(`_dvesimpler_dmy_matrix_multiplication_arma`, A, B)
+}
+
+#' Matrix Multiplication with RcppArmadillo
+#'
+#' Performs (parallel) eigenvalues decomposition efficiently in C++.
+#'
+#' @param X an arma::mat square matrix
+#'
+#' @return A named list with eigenvaluues and eigenvectors (as arma types)
+#'
+#' @export
+dmy_eigen_decomposition_arma <- function(X) {
+    .Call(`_dvesimpler_dmy_eigen_decomposition_arma`, X)
+}
+
+#' Matrix Multiplication with Transpose with RcppEigen
+#'
+#' Performs parallel Gram matrix \eqn{A^T * A}  computation efficiently in C++.
+#'
+#' @param A an Eigen matrix
+#'
+#' @return The prodoct of transposed matrix with itsself as Eigen Matrix
+#'
+#' @export
+dmy_gram_matrix_eigen <- function(A) {
+    .Call(`_dvesimpler_dmy_gram_matrix_eigen`, A)
+}
+
+#' Linear Regression with RcppEigen
+#'
+#' Compute (parallel) linear regression via QR decomposition efficiently in C++.
+#'
+#' @param X an Eigen matrix
+#' @param y an Eigen vector
+#'
+#' @return A Named list with linear regression coefficients and residuals
+#'
+#' @export
+dmy_linear_regression_eigen <- function(X, y) {
+    .Call(`_dvesimpler_dmy_linear_regression_eigen`, X, y)
+}
+
+#' Custom DatFrame Summarization
+#'
+#' Parallel Dataframe column summarization example in C++.
+#'
+#' @param df a Dataframe
+#' @param column the name a Dataframe
+#'
+#' @return The sum of Datframe column
+#'
+#' @examples
+#' \dontrun{
+#'
+#'  library(dplyr) 
+#'   my_data <- tibble(x = 1:10, group = rep(c("A", "B"), each = 5)) 
+#'   my_data %>% 
+#'    group_by(group) %>% 
+#'    summarise(custom_sum = dmy_df_custom_summarize(cur_data(),"x"))
+#' 
+#' }
+#'
+#' @export
+dmy_df_custom_summarize <- function(df, column) {
+    .Call(`_dvesimpler_dmy_df_custom_summarize`, df, column)
+}
+
+#' Custom DataFrame Moving Average
+#'
+#' Parallel vector moving average example in C++.
+#'
+#' @param x a numeric vector
+#' @param n moving average window size
+#'
+#' @return A vector of moving averages (moviang average window reduced at edges)
+#'
+#' @examples
+#' \dontrun{
+#'
+#' library(dplyr)
+#' library(Rcpp)
+#' 
+#' # Assume the package is loaded, making rolling_average available
+#' # sourceCpp("src/rolling_average.cpp") # for interactive testing
+#' 
+#' my_data <- tibble(
+#'   group = rep(c("a", "b"), each = 10),
+#'   value = rnorm(20)
+#' )
+#' 
+#' my_data %>%
+#'   group_by(group) %>%
+#'   mutate(rolled_avg = dmy_df_rolling_average(value, n = 3))
+#' 
+#' }
+#'
+#' @export
+dmy_df_rolling_average <- function(x, n) {
+    .Call(`_dvesimpler_dmy_df_rolling_average`, x, n)
+}
+
+#' Custom DataFrame Piped Transformation
+#'
+#' Parallel vector moving average example in C++.
+#'
+#' @param df an (implicit) dataframe with a "x" numeric columns
+#'
+#' @return A dataframe with a normalized transformed column
+#'
+#' @examples
+#' \dontrun{
+#'
+#' library(dplyr)
+#' library(Rcpp)
+#'
+#' df %>% 
+#'   dmy_df_process_data() %>%
+#'   filter(y > 0.1) %>%
+#'   mutate(z = y * 2)
+#' 
+#' }
+#'
+#' @export
+dmy_df_process_data <- function(df) {
+    .Call(`_dvesimpler_dmy_df_process_data`, df)
+}
+
+#' Dummy Example of Tidyverse Funcion linkage fron C++
+#'
+#' Empty example for namespace environment resolution
+#'
+#' @return AA NULL value
+#'
+#' @export
+dmy_df_call_dplyr_mutate <- function() {
+    .Call(`_dvesimpler_dmy_df_call_dplyr_mutate`)
+}
+
 package_info <- function() {
     .Call(`_dvesimpler_package_info`)
 }

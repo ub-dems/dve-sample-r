@@ -19,6 +19,7 @@ Imports:
     Rcpp,
     RcppArmadillo,
     RcppEigen,
+    RcppGSL,
     tidyverse,
     dplyr,
     ggplot2,

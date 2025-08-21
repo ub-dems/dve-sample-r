@@ -24,6 +24,8 @@
 // [[Rcpp::depends(RcppArmadillo)]]
 // [[Rcpp::depends(RcppEigen)]]
 
+
+
 // static config
 #include "config.h"
 
@@ -427,9 +429,109 @@ DataFrame dmy_group_op(const DataFrame& data,
 
 /*
  * =============================================================================
- * DATA STATS COMPUTATION FUNCTIONS (R LIBRARY I INTEGRATION)
+ * LINEAR ALGEBRA WITH RcppArmadillo
  * =============================================================================
  */
+
+//' Matrix Multiplication with RcppArmadillo
+//'
+//' Performs (parallel) matrix multiplication efficiently in C++.
+//'
+//' @param A an arma::mat matrix
+//' @param B an arma::mat matrix (with rows(B) = cols(A))
+//'
+//' @return Matrix Product as arma::mat matrix
+//'
+//' @export
+// [[Rcpp::export]]
+arma::mat dmy_matrix_multiplication_arma(const arma::mat& A, const arma::mat& B) {
+    // Check dimensions
+    if (A.n_cols != B.n_rows) {
+        stop("Incompatible matrix dimensions");
+    }
+    
+    // Efficient matrix multiplication
+    return A * B;
+}
+
+//' Matrix Multiplication with RcppArmadillo
+//'
+//' Performs (parallel) eigenvalues decomposition efficiently in C++.
+//'
+//' @param X an arma::mat square matrix
+//'
+//' @return A named list with eigenvaluues and eigenvectors (as arma types)
+//'
+//' @export
+// [[Rcpp::export]]
+Rcpp::List dmy_eigen_decomposition_arma(const arma::mat& X) {
+    arma::vec eigenvalues;
+    arma::mat eigenvectors;
+    
+    bool success = arma::eig_sym(eigenvalues, eigenvectors, X);
+    
+    if (!success) {
+        stop("Eigenvalue decomposition failed");
+    }
+    
+    return List::create(
+        Named("values") = eigenvalues,
+        Named("vectors") = eigenvectors
+    );
+}
+
+/*
+ * =============================================================================
+ * LINEAR ALGEBRA WITH RcppEigen
+ * =============================================================================
+ */
+
+using Eigen::Map;
+using Eigen::MatrixXd;
+using Eigen::VectorXd;
+
+
+//' Matrix Multiplication with Transpose with RcppEigen
+//'
+//' Performs parallel Gram matrix \eqn{A^T * A}  computation efficiently in C++.
+//'
+//' @param A an Eigen matrix
+//'
+//' @return The prodoct of transposed matrix with itsself as Eigen Matrix
+//'
+//' @export
+// [[Rcpp::export]]
+Eigen::MatrixXd dmy_gram_matrix_eigen(const Eigen::Map<Eigen::MatrixXd>& A) {
+    // Transpose and multiply
+    return A.transpose() * A;
+}
+
+
+//' Linear Regression with RcppEigen
+//'
+//' Compute (parallel) linear regression via QR decomposition efficiently in C++.
+//'
+//' @param X an Eigen matrix
+//' @param y an Eigen vector
+//'
+//' @return A Named list with linear regression coefficients and residuals
+//'
+//' @export
+// [[Rcpp::export]]
+List dmy_linear_regression_eigen(const Eigen::Map<Eigen::MatrixXd>& X,
+                             const Eigen::Map<Eigen::VectorXd>& y) {
+    // Solve using QR decomposition
+    Eigen::VectorXd coefficients = X.colPivHouseholderQr().solve(y);
+    
+    // Calculate residuals
+    Eigen::VectorXd residuals = y - X * coefficients;
+    
+    return List::create(
+        Named("coefficients") = coefficients,
+        Named("residuals") = residuals
+    );
+}
+
 
 
 /*
@@ -438,4 +540,144 @@ DataFrame dmy_group_op(const DataFrame& data,
  * =============================================================================
  */
 
+// {[Rcpp::depends(dplyr)]}
 
+
+//' Custom DatFrame Summarization
+//'
+//' Parallel Dataframe column summarization example in C++.
+//'
+//' @param df a Dataframe
+//' @param column the name a Dataframe
+//'
+//' @return The sum of Datframe column
+//'
+//' @examples
+//' \dontrun{
+//'
+//'  library(dplyr) 
+//'   my_data <- tibble(x = 1:10, group = rep(c("A", "B"), each = 5)) 
+//'   my_data %>% 
+//'    group_by(group) %>% 
+//'    summarise(custom_sum = dmy_df_custom_summarize(cur_data(),"x"))
+//' 
+//' }
+//'
+//' @export
+// [[Rcpp::export]]
+Rcpp::NumericVector dmy_df_custom_summarize(Rcpp::DataFrame df, Rcpp::String column) { 
+  Rcpp::NumericVector x = df[column]; 
+  double total = 0;
+  // The pragma tells the compiler to parallelize this loop.
+  // The reduction clause handles the `total` variable safely across threads.
+#ifdef _OPENMP
+#pragma omp parallel for reduction(+:total)
+#endif
+  for (R_xlen_t i = 0; i < x.size(); ++i) {
+    total += x[i];
+  }
+  return Rcpp::NumericVector::create(total); 
+} 
+
+
+//' Custom DataFrame Moving Average
+//'
+//' Parallel vector moving average example in C++.
+//'
+//' @param x a numeric vector
+//' @param n moving average window size
+//'
+//' @return A vector of moving averages (moviang average window reduced at edges)
+//'
+//' @examples
+//' \dontrun{
+//'
+//' library(dplyr)
+//' library(Rcpp)
+//' 
+//' # Assume the package is loaded, making rolling_average available
+//' # sourceCpp("src/rolling_average.cpp") # for interactive testing
+//' 
+//' my_data <- tibble(
+//'   group = rep(c("a", "b"), each = 10),
+//'   value = rnorm(20)
+//' )
+//' 
+//' my_data %>%
+//'   group_by(group) %>%
+//'   mutate(rolled_avg = dmy_df_rolling_average(value, n = 3))
+//' 
+//' }
+//'
+//' @export
+// [[Rcpp::export]]
+Rcpp::NumericVector dmy_df_rolling_average(Rcpp::NumericVector x, int n) {
+    int len = x.size();
+    Rcpp::NumericVector out(len);
+
+  // The pragma tells the compiler to parallelize this loop.
+  // The reduction clause handles the `total` variable safely across threads.
+#ifdef _OPENMP
+#pragma omp parallel for collapse(2) reduction(+:count, sum)
+#endif
+    for(int i = 0; i < len; ++i) {
+        double sum = 0;
+        int count = 0;
+        for(int j = std::max(0, i - n + 1); j <= i; ++j) {
+            sum += x[j];
+            count++;
+        }
+        out[i] = sum / count;
+    }
+    return out;
+}
+
+
+
+//' Custom DataFrame Piped Transformation
+//'
+//' Parallel vector moving average example in C++.
+//'
+//' @param df an (implicit) dataframe with a "x" numeric columns
+//'
+//' @return A dataframe with a normalized transformed column
+//'
+//' @examples
+//' \dontrun{
+//'
+//' library(dplyr)
+//' library(Rcpp)
+//'
+//' df %>% 
+//'   dmy_df_process_data() %>%
+//'   filter(y > 0.1) %>%
+//'   mutate(z = y * 2)
+//' 
+//' }
+//'
+//' @export
+// [[Rcpp::export]]
+Rcpp::DataFrame dmy_df_process_data(Rcpp::DataFrame df) {
+  NumericVector x = df["x"];
+  NumericVector y = exp(x) / sum(exp(x));
+  return DataFrame::create(_["x"] = x, _["y"] = y);
+}
+
+
+//' Dummy Example of Tidyverse Funcion linkage fron C++
+//'
+//' Empty example for namespace environment resolution
+//'
+//' @return AA NULL value
+//'
+//' @export
+// [[Rcpp::export]]
+Rcpp::RObject dmy_df_call_dplyr_mutate() {
+    Rcpp::Environment dplyr_ns = Rcpp::Environment::namespace_env("dplyr");
+    Rcpp::Function mutate = dplyr_ns["mutate"];
+
+    // Example usage (conceptual)
+    // ... create a data frame and arguments ...
+    // return mutate( ... );
+    return R_NilValue; // Placeholder
+}
