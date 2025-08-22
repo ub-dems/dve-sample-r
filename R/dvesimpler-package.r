@@ -15,7 +15,7 @@
 #' @importFrom RcppArmadillo armadillo_get_number_of_omp_threads
 #' @importFrom RcppEigen fastLm
 # 
-#' @importFrom RcppGSL fastLm
+#' @importFrom RcppGSL LdFlags CFlags
 #
 ## @importFrom keras is_keras_available
 # 

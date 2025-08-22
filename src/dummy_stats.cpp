@@ -104,6 +104,7 @@ double safe_sqrt(double value) {
   return std::sqrt(value);
 }
 
+NumericVector safe_divide(NumericVector a, NumericVector b) __attribute__((unused));
 NumericVector safe_divide(NumericVector a, NumericVector b) {
   if (a.size() != b.size()) {
     Rcpp::stop("Vectors must be same length");

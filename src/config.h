@@ -7,6 +7,16 @@
 // ..//notes/howtos/Rcpp-HOWTO.md#A2-perplexity
 
 
+// RcppEigen
+//
+// enable BLAS/LAPACK support
+//
+// @see: https://libeigen.gitlab.io/eigen/docs-nightly/TopicUsingBlasLapack.html
+
+//#define EIGEN_USE_BLAS 1
+//#define EIGEN_USE_LAPACKE 1
+
+
 
 // to enable GSL support:
 //
@@ -37,7 +47,7 @@
 
 #undef HAVE_GSL
 /* 
-#define HAVE_GSL 1  #{GSL}
+#define HAVE_GSL 1  // #{GSL}
 */
 
 

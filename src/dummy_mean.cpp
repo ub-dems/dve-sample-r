@@ -17,29 +17,42 @@
 
 // Enable C++11 support
 // [[Rcpp::plugins(cpp11)]]
+// [[Rcpp::plugins(openmp)]]
+
+// Declare dependencies
+// [[Rcpp::depends(RcppArmadillo)]]
+// [[Rcpp::depends(RcppEigen)]]
+
+
+// static config
+#include "config.h"
 
 // Rcpp dependencies
 #include <RcppArmadillo.h>
 #include <Rcpp.h>
+#include <RcppEigen.h>
+
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
+
 
 
 
 // Standard library headers
-#include <algorithm>
-#include <cmath>
-#include <exception>
-#include <functional>
-#include <iterator>
-#include <limits>
-#include <memory>
+// #include <algorithm>
+// #include <cmath>
+// #include <exception>
+// #include <functional>
+// #include <iterator>
+// #include <limits>
+// #include <memory>
 #include <numeric>
-#include <random>
-#include <stdexcept>
-#include <string>
-#include <vector>
-
-// Declare dependencies
-// [[Rcpp::depends(RcppArmadillo)]]
+// #include <random>
+// #include <stdexcept>
+// #include <string>
+// #include <vector>
 
 
 // Use namespaces
