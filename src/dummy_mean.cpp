@@ -21,7 +21,6 @@
 
 // Declare dependencies
 // [[Rcpp::depends(RcppArmadillo)]]
-// [[Rcpp::depends(RcppEigen)]]
 
 
 // static config
@@ -30,7 +29,6 @@
 // Rcpp dependencies
 #include <RcppArmadillo.h>
 #include <Rcpp.h>
-#include <RcppEigen.h>
 
 #ifdef _OPENMP
 #include <omp.h>

@@ -5,7 +5,7 @@
 #define RCPP_dvesimpler_RCPPEXPORTS_H_GEN_
 
 #include <RcppArmadillo.h>
-#include <RcppEigen.h>
+#include <RcppGSL.h>
 #include <Rcpp.h>
 
 namespace dvesimpler {
@@ -24,6 +24,48 @@ namespace dvesimpler {
                     "C++ function with signature '" + std::string(sig) + "' not found in dvesimpler");
             }
         }
+    }
+
+    inline arma::mat dmy_arma_matrix_mult(const arma::mat& A, const arma::mat& B) {
+        typedef SEXP(*Ptr_dmy_arma_matrix_mult)(SEXP,SEXP);
+        static Ptr_dmy_arma_matrix_mult p_dmy_arma_matrix_mult = NULL;
+        if (p_dmy_arma_matrix_mult == NULL) {
+            validateSignature("arma::mat(*dmy_arma_matrix_mult)(const arma::mat&,const arma::mat&)");
+            p_dmy_arma_matrix_mult = (Ptr_dmy_arma_matrix_mult)R_GetCCallable("dvesimpler", "_dvesimpler_dmy_arma_matrix_mult");
+        }
+        RObject rcpp_result_gen;
+        {
+            RNGScope RCPP_rngScope_gen;
+            rcpp_result_gen = p_dmy_arma_matrix_mult(Shield<SEXP>(Rcpp::wrap(A)), Shield<SEXP>(Rcpp::wrap(B)));
+        }
+        if (rcpp_result_gen.inherits("interrupted-error"))
+            throw Rcpp::internal::InterruptedException();
+        if (Rcpp::internal::isLongjumpSentinel(rcpp_result_gen))
+            throw Rcpp::LongjumpException(rcpp_result_gen);
+        if (rcpp_result_gen.inherits("try-error"))
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
+        return Rcpp::as<arma::mat >(rcpp_result_gen);
+    }
+
+    inline Rcpp::List dmy_arma_eigsym(const arma::mat& X) {
+        typedef SEXP(*Ptr_dmy_arma_eigsym)(SEXP);
+        static Ptr_dmy_arma_eigsym p_dmy_arma_eigsym = NULL;
+        if (p_dmy_arma_eigsym == NULL) {
+            validateSignature("Rcpp::List(*dmy_arma_eigsym)(const arma::mat&)");
+            p_dmy_arma_eigsym = (Ptr_dmy_arma_eigsym)R_GetCCallable("dvesimpler", "_dvesimpler_dmy_arma_eigsym");
+        }
+        RObject rcpp_result_gen;
+        {
+            RNGScope RCPP_rngScope_gen;
+            rcpp_result_gen = p_dmy_arma_eigsym(Shield<SEXP>(Rcpp::wrap(X)));
+        }
+        if (rcpp_result_gen.inherits("interrupted-error"))
+            throw Rcpp::internal::InterruptedException();
+        if (Rcpp::internal::isLongjumpSentinel(rcpp_result_gen))
+            throw Rcpp::LongjumpException(rcpp_result_gen);
+        if (rcpp_result_gen.inherits("try-error"))
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
+        return Rcpp::as<Rcpp::List >(rcpp_result_gen);
     }
 
     inline NumericVector dmy_gsl_beta(NumericVector a, NumericVector b) {
@@ -109,6 +151,27 @@ namespace dvesimpler {
         return Rcpp::as<List >(rcpp_result_gen);
     }
 
+    inline Rcpp::NumericVector dmy_omp_rolling_average(Rcpp::NumericVector x, int width) {
+        typedef SEXP(*Ptr_dmy_omp_rolling_average)(SEXP,SEXP);
+        static Ptr_dmy_omp_rolling_average p_dmy_omp_rolling_average = NULL;
+        if (p_dmy_omp_rolling_average == NULL) {
+            validateSignature("Rcpp::NumericVector(*dmy_omp_rolling_average)(Rcpp::NumericVector,int)");
+            p_dmy_omp_rolling_average = (Ptr_dmy_omp_rolling_average)R_GetCCallable("dvesimpler", "_dvesimpler_dmy_omp_rolling_average");
+        }
+        RObject rcpp_result_gen;
+        {
+            RNGScope RCPP_rngScope_gen;
+            rcpp_result_gen = p_dmy_omp_rolling_average(Shield<SEXP>(Rcpp::wrap(x)), Shield<SEXP>(Rcpp::wrap(width)));
+        }
+        if (rcpp_result_gen.inherits("interrupted-error"))
+            throw Rcpp::internal::InterruptedException();
+        if (Rcpp::internal::isLongjumpSentinel(rcpp_result_gen))
+            throw Rcpp::LongjumpException(rcpp_result_gen);
+        if (rcpp_result_gen.inherits("try-error"))
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
+        return Rcpp::as<Rcpp::NumericVector >(rcpp_result_gen);
+    }
+
     inline DataFrame dmy_dplyr_grouped_sum(DataFrame df, String group_col, String value_col) {
         typedef SEXP(*Ptr_dmy_dplyr_grouped_sum)(SEXP,SEXP,SEXP);
         static Ptr_dmy_dplyr_grouped_sum p_dmy_dplyr_grouped_sum = NULL;
@@ -151,90 +214,6 @@ namespace dvesimpler {
         return Rcpp::as<DataFrame >(rcpp_result_gen);
     }
 
-    inline arma::mat dmy_matrix_multiplication_arma(const arma::mat& A, const arma::mat& B) {
-        typedef SEXP(*Ptr_dmy_matrix_multiplication_arma)(SEXP,SEXP);
-        static Ptr_dmy_matrix_multiplication_arma p_dmy_matrix_multiplication_arma = NULL;
-        if (p_dmy_matrix_multiplication_arma == NULL) {
-            validateSignature("arma::mat(*dmy_matrix_multiplication_arma)(const arma::mat&,const arma::mat&)");
-            p_dmy_matrix_multiplication_arma = (Ptr_dmy_matrix_multiplication_arma)R_GetCCallable("dvesimpler", "_dvesimpler_dmy_matrix_multiplication_arma");
-        }
-        RObject rcpp_result_gen;
-        {
-            RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p_dmy_matrix_multiplication_arma(Shield<SEXP>(Rcpp::wrap(A)), Shield<SEXP>(Rcpp::wrap(B)));
-        }
-        if (rcpp_result_gen.inherits("interrupted-error"))
-            throw Rcpp::internal::InterruptedException();
-        if (Rcpp::internal::isLongjumpSentinel(rcpp_result_gen))
-            throw Rcpp::LongjumpException(rcpp_result_gen);
-        if (rcpp_result_gen.inherits("try-error"))
-            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
-        return Rcpp::as<arma::mat >(rcpp_result_gen);
-    }
-
-    inline Rcpp::List dmy_eigen_decomposition_arma(const arma::mat& X) {
-        typedef SEXP(*Ptr_dmy_eigen_decomposition_arma)(SEXP);
-        static Ptr_dmy_eigen_decomposition_arma p_dmy_eigen_decomposition_arma = NULL;
-        if (p_dmy_eigen_decomposition_arma == NULL) {
-            validateSignature("Rcpp::List(*dmy_eigen_decomposition_arma)(const arma::mat&)");
-            p_dmy_eigen_decomposition_arma = (Ptr_dmy_eigen_decomposition_arma)R_GetCCallable("dvesimpler", "_dvesimpler_dmy_eigen_decomposition_arma");
-        }
-        RObject rcpp_result_gen;
-        {
-            RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p_dmy_eigen_decomposition_arma(Shield<SEXP>(Rcpp::wrap(X)));
-        }
-        if (rcpp_result_gen.inherits("interrupted-error"))
-            throw Rcpp::internal::InterruptedException();
-        if (Rcpp::internal::isLongjumpSentinel(rcpp_result_gen))
-            throw Rcpp::LongjumpException(rcpp_result_gen);
-        if (rcpp_result_gen.inherits("try-error"))
-            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
-        return Rcpp::as<Rcpp::List >(rcpp_result_gen);
-    }
-
-    inline Eigen::MatrixXd dmy_gram_matrix_eigen(const Eigen::Map<Eigen::MatrixXd>& A) {
-        typedef SEXP(*Ptr_dmy_gram_matrix_eigen)(SEXP);
-        static Ptr_dmy_gram_matrix_eigen p_dmy_gram_matrix_eigen = NULL;
-        if (p_dmy_gram_matrix_eigen == NULL) {
-            validateSignature("Eigen::MatrixXd(*dmy_gram_matrix_eigen)(const Eigen::Map<Eigen::MatrixXd>&)");
-            p_dmy_gram_matrix_eigen = (Ptr_dmy_gram_matrix_eigen)R_GetCCallable("dvesimpler", "_dvesimpler_dmy_gram_matrix_eigen");
-        }
-        RObject rcpp_result_gen;
-        {
-            RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p_dmy_gram_matrix_eigen(Shield<SEXP>(Rcpp::wrap(A)));
-        }
-        if (rcpp_result_gen.inherits("interrupted-error"))
-            throw Rcpp::internal::InterruptedException();
-        if (Rcpp::internal::isLongjumpSentinel(rcpp_result_gen))
-            throw Rcpp::LongjumpException(rcpp_result_gen);
-        if (rcpp_result_gen.inherits("try-error"))
-            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
-        return Rcpp::as<Eigen::MatrixXd >(rcpp_result_gen);
-    }
-
-    inline List dmy_linear_regression_eigen(const Eigen::Map<Eigen::MatrixXd>& X, const Eigen::Map<Eigen::VectorXd>& y) {
-        typedef SEXP(*Ptr_dmy_linear_regression_eigen)(SEXP,SEXP);
-        static Ptr_dmy_linear_regression_eigen p_dmy_linear_regression_eigen = NULL;
-        if (p_dmy_linear_regression_eigen == NULL) {
-            validateSignature("List(*dmy_linear_regression_eigen)(const Eigen::Map<Eigen::MatrixXd>&,const Eigen::Map<Eigen::VectorXd>&)");
-            p_dmy_linear_regression_eigen = (Ptr_dmy_linear_regression_eigen)R_GetCCallable("dvesimpler", "_dvesimpler_dmy_linear_regression_eigen");
-        }
-        RObject rcpp_result_gen;
-        {
-            RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p_dmy_linear_regression_eigen(Shield<SEXP>(Rcpp::wrap(X)), Shield<SEXP>(Rcpp::wrap(y)));
-        }
-        if (rcpp_result_gen.inherits("interrupted-error"))
-            throw Rcpp::internal::InterruptedException();
-        if (Rcpp::internal::isLongjumpSentinel(rcpp_result_gen))
-            throw Rcpp::LongjumpException(rcpp_result_gen);
-        if (rcpp_result_gen.inherits("try-error"))
-            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
-        return Rcpp::as<List >(rcpp_result_gen);
-    }
-
     inline Rcpp::NumericVector dmy_df_custom_summarize(Rcpp::DataFrame df, Rcpp::String column) {
         typedef SEXP(*Ptr_dmy_df_custom_summarize)(SEXP,SEXP);
         static Ptr_dmy_df_custom_summarize p_dmy_df_custom_summarize = NULL;
@@ -256,7 +235,7 @@ namespace dvesimpler {
         return Rcpp::as<Rcpp::NumericVector >(rcpp_result_gen);
     }
 
-    inline Rcpp::NumericVector dmy_df_rolling_average(Rcpp::NumericVector x, int n) {
+    inline Rcpp::NumericVector dmy_df_rolling_average(Rcpp::NumericVector x, int width) {
         typedef SEXP(*Ptr_dmy_df_rolling_average)(SEXP,SEXP);
         static Ptr_dmy_df_rolling_average p_dmy_df_rolling_average = NULL;
         if (p_dmy_df_rolling_average == NULL) {
@@ -266,7 +245,7 @@ namespace dvesimpler {
         RObject rcpp_result_gen;
         {
             RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p_dmy_df_rolling_average(Shield<SEXP>(Rcpp::wrap(x)), Shield<SEXP>(Rcpp::wrap(n)));
+            rcpp_result_gen = p_dmy_df_rolling_average(Shield<SEXP>(Rcpp::wrap(x)), Shield<SEXP>(Rcpp::wrap(width)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();

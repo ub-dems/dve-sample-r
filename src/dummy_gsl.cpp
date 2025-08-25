@@ -4,8 +4,6 @@
  * Author: datalab@unimib.it
  * Description: Demo C++ source file with RcppGSL
  * Seealso: ../notes/howtos/Rcpp-HOWTO.md
- * Seealso: ../src/dummy-mean.cpp
- * Seealso: ../inst/include/dvesimpler.h
  * Seealso: ../exec/dummy-rcpp.R
  * Seealso: ../src/config.h
  * Seealso: ../src/Makevars
@@ -22,7 +20,6 @@
 
 // Declare dependencies
 // [[Rcpp::depends(RcppArmadillo)]]
-// [[Rcpp::depends(RcppEigen)]]
 // [[Rcpp::depends(RcppGSL)]]
 
 // static config
@@ -32,7 +29,6 @@
 // Rcpp dependencies
 #include <RcppArmadillo.h>
 #include <Rcpp.h>
-#include <RcppEigen.h>
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -111,7 +107,7 @@ NumericVector dmy_gsl_beta(NumericVector a, NumericVector b) {
   int n = a.size();
   NumericVector result(n);
 #ifdef _OPENMP
-  #pragma omp parallel for
+  #pragma omp parallel for simd
 #endif
   for(int i = 0; i < n; ++i) {
      result[i] =  lib_gsl_sf_beta(a[i], b[i]);

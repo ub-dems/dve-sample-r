@@ -19,8 +19,6 @@
 // [[Rcpp::plugins(cpp11)]]
 
 // Declare dependencies
-// [[Rcpp::depends(RcppArmadillo)]]
-// [[Rcpp::depends(RcppEigen)]]
 
 // Rcpp dependencies
 #include <RcppArmadillo.h>
@@ -56,6 +54,6 @@ Rcpp::List package_info() {
       Rcpp::Named("armadillo_version") = "14.6.0-1",
       Rcpp::Named("eigen_version") = "3.4.0",
       Rcpp::Named("cpp_standard") = "C++11",
-      Rcpp::Named("compiled") = __DATE__ " " __TIME__
+      Rcpp::Named("compiled") = "2025/08/25" " " "00:00:00 UTC"
                       );
 }

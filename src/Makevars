@@ -1,41 +1,41 @@
 # Package `Makevars`
 
-# Seealso: /etc/R/Makevars
+# Seealso: ../etc/R/Makevars
 # Seealso: ~/.R/Makevars
+# Seealso: /etc/R/Makevars
 # Seealso: ../src/Makevars.win
-
 # Seealso: ../notes/howtos/Rcpp-HOWTO.md
-# Seealso: ../notes/howtos/Rcpp-HOWTO-Q2-*.md
+# Seealso: ../notes/howtos/Rcpp-HOWTO-Q*-*.md
 
-SHLIB_OPENMP_CXXFLAGS_SIMD = -msse2 -msse3 -msse4.1 -msse4.2 -mavx -mavx2
-
-
-PKG_CPPFLAGS = -I../inst/include/ -DSTRICT_R_HEADERS
-
-PKG_CXXFLAGS = $(SHLIB_OPENMP_CXXFLAGS) $(SHLIB_OPENMP_CXXFLAGS_SIMD)
-PKG_LIBS = $(SHLIB_OPENMP_CXXFLAGS) $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)
-
-# Conditional GSL Support
-#
-# Seealso: ../src/config.h
-# Seealso: ../src/Makevars.in
-# Seealso: ../configure
-
-GSL_USE=1
-ifeq ($GSL_USE, 1)
 GSL_CONFIG_PATH=$(command -v gsl-config || echo "")
 GSL_CFLAGS=$($GSL_CONFIG_PATH --cflags || "")
 GSL_LIBS=$($GSL_CONFIG_PATH --libs || "")
 
-PKG_CXXFLAGS += $(GSL_CFLAGS)
-PKG_LIBS += $(GSL_LIBS)
-endif
+
+PKG_CPPFLAGS = -I../inst/include/ -DSTRICT_R_HEADERS
+
+PKG_CXXFLAGS = $(SHLIB_OPENMP_CXXFLAGS) $(GSL_CFLAGS)
+PKG_LIBS = $(SHLIB_OPENMP_CXXFLAGS) $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS) $(GSL_LIBS)
+
+
+# SIMD full support
+# Seealso: ../etc/R/Makevars
+# Seealso: ~/.R/Makevars
+# Seealso: /etc/R/Makevars
+# Seealso: ../notes/howtos/Rcpp-HOWTO-Q{4}-*.md
+# Seealso: ../src/config.h
+
+##SHLIB_OPENMP_CXXFLAGS_SIMD = -msse2 -msse3 -msse4.1 -msse4.2 -mavx -mavx2
+#SHLIB_OPENMP_CXXFLAGS_SIMD =  -march=native 
+#CXXFLAGS += $(SHLIB_OPENMP_CXXFLAGS_SIMD)
 
 
 # Default R build config
 #
-# Seealso: /etc/R/Makevars
+# Seealso: ${R_HOME}/etc/Makeconf
+# Seealso: ../etc/R/Makevars
 # Seealso: ~/.R/Makevars
+# Seealso: /etc/R/Makevars
 
 #{R}: R="${R_HOME}/bin/R"
 

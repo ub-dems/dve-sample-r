@@ -3,7 +3,7 @@
 
 #include "../inst/include/dvesimpler.h"
 #include <RcppArmadillo.h>
-#include <RcppEigen.h>
+#include <RcppGSL.h>
 #include <Rcpp.h>
 #include <string>
 #include <set>
@@ -15,6 +15,75 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
+// dmy_arma_matrix_mult
+arma::mat dmy_arma_matrix_mult(const arma::mat& A, const arma::mat& B);
+static SEXP _dvesimpler_dmy_arma_matrix_mult_try(SEXP ASEXP, SEXP BSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type A(ASEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type B(BSEXP);
+    rcpp_result_gen = Rcpp::wrap(dmy_arma_matrix_mult(A, B));
+    return rcpp_result_gen;
+END_RCPP_RETURN_ERROR
+}
+RcppExport SEXP _dvesimpler_dmy_arma_matrix_mult(SEXP ASEXP, SEXP BSEXP) {
+    SEXP rcpp_result_gen;
+    {
+        Rcpp::RNGScope rcpp_rngScope_gen;
+        rcpp_result_gen = PROTECT(_dvesimpler_dmy_arma_matrix_mult_try(ASEXP, BSEXP));
+    }
+    Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
+    if (rcpp_isInterrupt_gen) {
+        UNPROTECT(1);
+        Rf_onintr();
+    }
+    bool rcpp_isLongjump_gen = Rcpp::internal::isLongjumpSentinel(rcpp_result_gen);
+    if (rcpp_isLongjump_gen) {
+        Rcpp::internal::resumeJump(rcpp_result_gen);
+    }
+    Rboolean rcpp_isError_gen = Rf_inherits(rcpp_result_gen, "try-error");
+    if (rcpp_isError_gen) {
+        SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
+        UNPROTECT(1);
+        Rf_error("%s", CHAR(rcpp_msgSEXP_gen));
+    }
+    UNPROTECT(1);
+    return rcpp_result_gen;
+}
+// dmy_arma_eigsym
+Rcpp::List dmy_arma_eigsym(const arma::mat& X);
+static SEXP _dvesimpler_dmy_arma_eigsym_try(SEXP XSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type X(XSEXP);
+    rcpp_result_gen = Rcpp::wrap(dmy_arma_eigsym(X));
+    return rcpp_result_gen;
+END_RCPP_RETURN_ERROR
+}
+RcppExport SEXP _dvesimpler_dmy_arma_eigsym(SEXP XSEXP) {
+    SEXP rcpp_result_gen;
+    {
+        Rcpp::RNGScope rcpp_rngScope_gen;
+        rcpp_result_gen = PROTECT(_dvesimpler_dmy_arma_eigsym_try(XSEXP));
+    }
+    Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
+    if (rcpp_isInterrupt_gen) {
+        UNPROTECT(1);
+        Rf_onintr();
+    }
+    bool rcpp_isLongjump_gen = Rcpp::internal::isLongjumpSentinel(rcpp_result_gen);
+    if (rcpp_isLongjump_gen) {
+        Rcpp::internal::resumeJump(rcpp_result_gen);
+    }
+    Rboolean rcpp_isError_gen = Rf_inherits(rcpp_result_gen, "try-error");
+    if (rcpp_isError_gen) {
+        SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
+        UNPROTECT(1);
+        Rf_error("%s", CHAR(rcpp_msgSEXP_gen));
+    }
+    UNPROTECT(1);
+    return rcpp_result_gen;
+}
 // dmy_gsl_beta
 NumericVector dmy_gsl_beta(NumericVector a, NumericVector b);
 static SEXP _dvesimpler_dmy_gsl_beta_try(SEXP aSEXP, SEXP bSEXP) {
@@ -164,6 +233,41 @@ RcppExport SEXP _dvesimpler_dmy_summary_stats(SEXP dataSEXP, SEXP confidence_lev
     UNPROTECT(1);
     return rcpp_result_gen;
 }
+// dmy_omp_rolling_average
+Rcpp::NumericVector dmy_omp_rolling_average(Rcpp::NumericVector x, int width);
+static SEXP _dvesimpler_dmy_omp_rolling_average_try(SEXP xSEXP, SEXP widthSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type x(xSEXP);
+    Rcpp::traits::input_parameter< int >::type width(widthSEXP);
+    rcpp_result_gen = Rcpp::wrap(dmy_omp_rolling_average(x, width));
+    return rcpp_result_gen;
+END_RCPP_RETURN_ERROR
+}
+RcppExport SEXP _dvesimpler_dmy_omp_rolling_average(SEXP xSEXP, SEXP widthSEXP) {
+    SEXP rcpp_result_gen;
+    {
+        Rcpp::RNGScope rcpp_rngScope_gen;
+        rcpp_result_gen = PROTECT(_dvesimpler_dmy_omp_rolling_average_try(xSEXP, widthSEXP));
+    }
+    Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
+    if (rcpp_isInterrupt_gen) {
+        UNPROTECT(1);
+        Rf_onintr();
+    }
+    bool rcpp_isLongjump_gen = Rcpp::internal::isLongjumpSentinel(rcpp_result_gen);
+    if (rcpp_isLongjump_gen) {
+        Rcpp::internal::resumeJump(rcpp_result_gen);
+    }
+    Rboolean rcpp_isError_gen = Rf_inherits(rcpp_result_gen, "try-error");
+    if (rcpp_isError_gen) {
+        SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
+        UNPROTECT(1);
+        Rf_error("%s", CHAR(rcpp_msgSEXP_gen));
+    }
+    UNPROTECT(1);
+    return rcpp_result_gen;
+}
 // dmy_dplyr_grouped_sum
 DataFrame dmy_dplyr_grouped_sum(DataFrame df, String group_col, String value_col);
 static SEXP _dvesimpler_dmy_dplyr_grouped_sum_try(SEXP dfSEXP, SEXP group_colSEXP, SEXP value_colSEXP) {
@@ -237,144 +341,6 @@ RcppExport SEXP _dvesimpler_dmy_group_op(SEXP dataSEXP, SEXP group_colSEXP, SEXP
     UNPROTECT(1);
     return rcpp_result_gen;
 }
-// dmy_matrix_multiplication_arma
-arma::mat dmy_matrix_multiplication_arma(const arma::mat& A, const arma::mat& B);
-static SEXP _dvesimpler_dmy_matrix_multiplication_arma_try(SEXP ASEXP, SEXP BSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< const arma::mat& >::type A(ASEXP);
-    Rcpp::traits::input_parameter< const arma::mat& >::type B(BSEXP);
-    rcpp_result_gen = Rcpp::wrap(dmy_matrix_multiplication_arma(A, B));
-    return rcpp_result_gen;
-END_RCPP_RETURN_ERROR
-}
-RcppExport SEXP _dvesimpler_dmy_matrix_multiplication_arma(SEXP ASEXP, SEXP BSEXP) {
-    SEXP rcpp_result_gen;
-    {
-        Rcpp::RNGScope rcpp_rngScope_gen;
-        rcpp_result_gen = PROTECT(_dvesimpler_dmy_matrix_multiplication_arma_try(ASEXP, BSEXP));
-    }
-    Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
-    if (rcpp_isInterrupt_gen) {
-        UNPROTECT(1);
-        Rf_onintr();
-    }
-    bool rcpp_isLongjump_gen = Rcpp::internal::isLongjumpSentinel(rcpp_result_gen);
-    if (rcpp_isLongjump_gen) {
-        Rcpp::internal::resumeJump(rcpp_result_gen);
-    }
-    Rboolean rcpp_isError_gen = Rf_inherits(rcpp_result_gen, "try-error");
-    if (rcpp_isError_gen) {
-        SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
-        UNPROTECT(1);
-        Rf_error("%s", CHAR(rcpp_msgSEXP_gen));
-    }
-    UNPROTECT(1);
-    return rcpp_result_gen;
-}
-// dmy_eigen_decomposition_arma
-Rcpp::List dmy_eigen_decomposition_arma(const arma::mat& X);
-static SEXP _dvesimpler_dmy_eigen_decomposition_arma_try(SEXP XSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< const arma::mat& >::type X(XSEXP);
-    rcpp_result_gen = Rcpp::wrap(dmy_eigen_decomposition_arma(X));
-    return rcpp_result_gen;
-END_RCPP_RETURN_ERROR
-}
-RcppExport SEXP _dvesimpler_dmy_eigen_decomposition_arma(SEXP XSEXP) {
-    SEXP rcpp_result_gen;
-    {
-        Rcpp::RNGScope rcpp_rngScope_gen;
-        rcpp_result_gen = PROTECT(_dvesimpler_dmy_eigen_decomposition_arma_try(XSEXP));
-    }
-    Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
-    if (rcpp_isInterrupt_gen) {
-        UNPROTECT(1);
-        Rf_onintr();
-    }
-    bool rcpp_isLongjump_gen = Rcpp::internal::isLongjumpSentinel(rcpp_result_gen);
-    if (rcpp_isLongjump_gen) {
-        Rcpp::internal::resumeJump(rcpp_result_gen);
-    }
-    Rboolean rcpp_isError_gen = Rf_inherits(rcpp_result_gen, "try-error");
-    if (rcpp_isError_gen) {
-        SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
-        UNPROTECT(1);
-        Rf_error("%s", CHAR(rcpp_msgSEXP_gen));
-    }
-    UNPROTECT(1);
-    return rcpp_result_gen;
-}
-// dmy_gram_matrix_eigen
-Eigen::MatrixXd dmy_gram_matrix_eigen(const Eigen::Map<Eigen::MatrixXd>& A);
-static SEXP _dvesimpler_dmy_gram_matrix_eigen_try(SEXP ASEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::MatrixXd>& >::type A(ASEXP);
-    rcpp_result_gen = Rcpp::wrap(dmy_gram_matrix_eigen(A));
-    return rcpp_result_gen;
-END_RCPP_RETURN_ERROR
-}
-RcppExport SEXP _dvesimpler_dmy_gram_matrix_eigen(SEXP ASEXP) {
-    SEXP rcpp_result_gen;
-    {
-        Rcpp::RNGScope rcpp_rngScope_gen;
-        rcpp_result_gen = PROTECT(_dvesimpler_dmy_gram_matrix_eigen_try(ASEXP));
-    }
-    Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
-    if (rcpp_isInterrupt_gen) {
-        UNPROTECT(1);
-        Rf_onintr();
-    }
-    bool rcpp_isLongjump_gen = Rcpp::internal::isLongjumpSentinel(rcpp_result_gen);
-    if (rcpp_isLongjump_gen) {
-        Rcpp::internal::resumeJump(rcpp_result_gen);
-    }
-    Rboolean rcpp_isError_gen = Rf_inherits(rcpp_result_gen, "try-error");
-    if (rcpp_isError_gen) {
-        SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
-        UNPROTECT(1);
-        Rf_error("%s", CHAR(rcpp_msgSEXP_gen));
-    }
-    UNPROTECT(1);
-    return rcpp_result_gen;
-}
-// dmy_linear_regression_eigen
-List dmy_linear_regression_eigen(const Eigen::Map<Eigen::MatrixXd>& X, const Eigen::Map<Eigen::VectorXd>& y);
-static SEXP _dvesimpler_dmy_linear_regression_eigen_try(SEXP XSEXP, SEXP ySEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::MatrixXd>& >::type X(XSEXP);
-    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::VectorXd>& >::type y(ySEXP);
-    rcpp_result_gen = Rcpp::wrap(dmy_linear_regression_eigen(X, y));
-    return rcpp_result_gen;
-END_RCPP_RETURN_ERROR
-}
-RcppExport SEXP _dvesimpler_dmy_linear_regression_eigen(SEXP XSEXP, SEXP ySEXP) {
-    SEXP rcpp_result_gen;
-    {
-        Rcpp::RNGScope rcpp_rngScope_gen;
-        rcpp_result_gen = PROTECT(_dvesimpler_dmy_linear_regression_eigen_try(XSEXP, ySEXP));
-    }
-    Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
-    if (rcpp_isInterrupt_gen) {
-        UNPROTECT(1);
-        Rf_onintr();
-    }
-    bool rcpp_isLongjump_gen = Rcpp::internal::isLongjumpSentinel(rcpp_result_gen);
-    if (rcpp_isLongjump_gen) {
-        Rcpp::internal::resumeJump(rcpp_result_gen);
-    }
-    Rboolean rcpp_isError_gen = Rf_inherits(rcpp_result_gen, "try-error");
-    if (rcpp_isError_gen) {
-        SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
-        UNPROTECT(1);
-        Rf_error("%s", CHAR(rcpp_msgSEXP_gen));
-    }
-    UNPROTECT(1);
-    return rcpp_result_gen;
-}
 // dmy_df_custom_summarize
 Rcpp::NumericVector dmy_df_custom_summarize(Rcpp::DataFrame df, Rcpp::String column);
 static SEXP _dvesimpler_dmy_df_custom_summarize_try(SEXP dfSEXP, SEXP columnSEXP) {
@@ -411,21 +377,21 @@ RcppExport SEXP _dvesimpler_dmy_df_custom_summarize(SEXP dfSEXP, SEXP columnSEXP
     return rcpp_result_gen;
 }
 // dmy_df_rolling_average
-Rcpp::NumericVector dmy_df_rolling_average(Rcpp::NumericVector x, int n);
-static SEXP _dvesimpler_dmy_df_rolling_average_try(SEXP xSEXP, SEXP nSEXP) {
+Rcpp::NumericVector dmy_df_rolling_average(Rcpp::NumericVector x, int width);
+static SEXP _dvesimpler_dmy_df_rolling_average_try(SEXP xSEXP, SEXP widthSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< Rcpp::NumericVector >::type x(xSEXP);
-    Rcpp::traits::input_parameter< int >::type n(nSEXP);
-    rcpp_result_gen = Rcpp::wrap(dmy_df_rolling_average(x, n));
+    Rcpp::traits::input_parameter< int >::type width(widthSEXP);
+    rcpp_result_gen = Rcpp::wrap(dmy_df_rolling_average(x, width));
     return rcpp_result_gen;
 END_RCPP_RETURN_ERROR
 }
-RcppExport SEXP _dvesimpler_dmy_df_rolling_average(SEXP xSEXP, SEXP nSEXP) {
+RcppExport SEXP _dvesimpler_dmy_df_rolling_average(SEXP xSEXP, SEXP widthSEXP) {
     SEXP rcpp_result_gen;
     {
         Rcpp::RNGScope rcpp_rngScope_gen;
-        rcpp_result_gen = PROTECT(_dvesimpler_dmy_df_rolling_average_try(xSEXP, nSEXP));
+        rcpp_result_gen = PROTECT(_dvesimpler_dmy_df_rolling_average_try(xSEXP, widthSEXP));
     }
     Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
     if (rcpp_isInterrupt_gen) {
@@ -527,16 +493,15 @@ END_RCPP
 static int _dvesimpler_RcppExport_validate(const char* sig) { 
     static std::set<std::string> signatures;
     if (signatures.empty()) {
+        signatures.insert("arma::mat(*dmy_arma_matrix_mult)(const arma::mat&,const arma::mat&)");
+        signatures.insert("Rcpp::List(*dmy_arma_eigsym)(const arma::mat&)");
         signatures.insert("NumericVector(*dmy_gsl_beta)(NumericVector,NumericVector)");
         signatures.insert("Rcpp::NumericVector(*dmy_custom_mean)(Rcpp::NumericVector)");
         signatures.insert("void(*dmy_print_mean)(Rcpp::NumericVector)");
         signatures.insert("List(*dmy_summary_stats)(const NumericVector&,double,bool)");
+        signatures.insert("Rcpp::NumericVector(*dmy_omp_rolling_average)(Rcpp::NumericVector,int)");
         signatures.insert("DataFrame(*dmy_dplyr_grouped_sum)(DataFrame,String,String)");
         signatures.insert("DataFrame(*dmy_group_op)(const DataFrame&,const std::string&,const std::string&,const std::string&)");
-        signatures.insert("arma::mat(*dmy_matrix_multiplication_arma)(const arma::mat&,const arma::mat&)");
-        signatures.insert("Rcpp::List(*dmy_eigen_decomposition_arma)(const arma::mat&)");
-        signatures.insert("Eigen::MatrixXd(*dmy_gram_matrix_eigen)(const Eigen::Map<Eigen::MatrixXd>&)");
-        signatures.insert("List(*dmy_linear_regression_eigen)(const Eigen::Map<Eigen::MatrixXd>&,const Eigen::Map<Eigen::VectorXd>&)");
         signatures.insert("Rcpp::NumericVector(*dmy_df_custom_summarize)(Rcpp::DataFrame,Rcpp::String)");
         signatures.insert("Rcpp::NumericVector(*dmy_df_rolling_average)(Rcpp::NumericVector,int)");
         signatures.insert("Rcpp::DataFrame(*dmy_df_process_data)(Rcpp::DataFrame)");
@@ -547,16 +512,15 @@ static int _dvesimpler_RcppExport_validate(const char* sig) {
 
 // registerCCallable (register entry points for exported C++ functions)
 RcppExport SEXP _dvesimpler_RcppExport_registerCCallable() { 
+    R_RegisterCCallable("dvesimpler", "_dvesimpler_dmy_arma_matrix_mult", (DL_FUNC)_dvesimpler_dmy_arma_matrix_mult_try);
+    R_RegisterCCallable("dvesimpler", "_dvesimpler_dmy_arma_eigsym", (DL_FUNC)_dvesimpler_dmy_arma_eigsym_try);
     R_RegisterCCallable("dvesimpler", "_dvesimpler_dmy_gsl_beta", (DL_FUNC)_dvesimpler_dmy_gsl_beta_try);
     R_RegisterCCallable("dvesimpler", "_dvesimpler_dmy_custom_mean", (DL_FUNC)_dvesimpler_dmy_custom_mean_try);
     R_RegisterCCallable("dvesimpler", "_dvesimpler_dmy_print_mean", (DL_FUNC)_dvesimpler_dmy_print_mean_try);
     R_RegisterCCallable("dvesimpler", "_dvesimpler_dmy_summary_stats", (DL_FUNC)_dvesimpler_dmy_summary_stats_try);
+    R_RegisterCCallable("dvesimpler", "_dvesimpler_dmy_omp_rolling_average", (DL_FUNC)_dvesimpler_dmy_omp_rolling_average_try);
     R_RegisterCCallable("dvesimpler", "_dvesimpler_dmy_dplyr_grouped_sum", (DL_FUNC)_dvesimpler_dmy_dplyr_grouped_sum_try);
     R_RegisterCCallable("dvesimpler", "_dvesimpler_dmy_group_op", (DL_FUNC)_dvesimpler_dmy_group_op_try);
-    R_RegisterCCallable("dvesimpler", "_dvesimpler_dmy_matrix_multiplication_arma", (DL_FUNC)_dvesimpler_dmy_matrix_multiplication_arma_try);
-    R_RegisterCCallable("dvesimpler", "_dvesimpler_dmy_eigen_decomposition_arma", (DL_FUNC)_dvesimpler_dmy_eigen_decomposition_arma_try);
-    R_RegisterCCallable("dvesimpler", "_dvesimpler_dmy_gram_matrix_eigen", (DL_FUNC)_dvesimpler_dmy_gram_matrix_eigen_try);
-    R_RegisterCCallable("dvesimpler", "_dvesimpler_dmy_linear_regression_eigen", (DL_FUNC)_dvesimpler_dmy_linear_regression_eigen_try);
     R_RegisterCCallable("dvesimpler", "_dvesimpler_dmy_df_custom_summarize", (DL_FUNC)_dvesimpler_dmy_df_custom_summarize_try);
     R_RegisterCCallable("dvesimpler", "_dvesimpler_dmy_df_rolling_average", (DL_FUNC)_dvesimpler_dmy_df_rolling_average_try);
     R_RegisterCCallable("dvesimpler", "_dvesimpler_dmy_df_process_data", (DL_FUNC)_dvesimpler_dmy_df_process_data_try);
@@ -566,17 +530,16 @@ RcppExport SEXP _dvesimpler_RcppExport_registerCCallable() {
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_dvesimpler_dmy_arma_matrix_mult", (DL_FUNC) &_dvesimpler_dmy_arma_matrix_mult, 2},
+    {"_dvesimpler_dmy_arma_eigsym", (DL_FUNC) &_dvesimpler_dmy_arma_eigsym, 1},
     {"_dvesimpler_dmy_gsl_beta", (DL_FUNC) &_dvesimpler_dmy_gsl_beta, 2},
     {"_dvesimpler_dmy_mean", (DL_FUNC) &_dvesimpler_dmy_mean, 1},
     {"_dvesimpler_dmy_custom_mean", (DL_FUNC) &_dvesimpler_dmy_custom_mean, 1},
     {"_dvesimpler_dmy_print_mean", (DL_FUNC) &_dvesimpler_dmy_print_mean, 1},
     {"_dvesimpler_dmy_summary_stats", (DL_FUNC) &_dvesimpler_dmy_summary_stats, 3},
+    {"_dvesimpler_dmy_omp_rolling_average", (DL_FUNC) &_dvesimpler_dmy_omp_rolling_average, 2},
     {"_dvesimpler_dmy_dplyr_grouped_sum", (DL_FUNC) &_dvesimpler_dmy_dplyr_grouped_sum, 3},
     {"_dvesimpler_dmy_group_op", (DL_FUNC) &_dvesimpler_dmy_group_op, 4},
-    {"_dvesimpler_dmy_matrix_multiplication_arma", (DL_FUNC) &_dvesimpler_dmy_matrix_multiplication_arma, 2},
-    {"_dvesimpler_dmy_eigen_decomposition_arma", (DL_FUNC) &_dvesimpler_dmy_eigen_decomposition_arma, 1},
-    {"_dvesimpler_dmy_gram_matrix_eigen", (DL_FUNC) &_dvesimpler_dmy_gram_matrix_eigen, 1},
-    {"_dvesimpler_dmy_linear_regression_eigen", (DL_FUNC) &_dvesimpler_dmy_linear_regression_eigen, 2},
     {"_dvesimpler_dmy_df_custom_summarize", (DL_FUNC) &_dvesimpler_dmy_df_custom_summarize, 2},
     {"_dvesimpler_dmy_df_rolling_average", (DL_FUNC) &_dvesimpler_dmy_df_rolling_average, 2},
     {"_dvesimpler_dmy_df_process_data", (DL_FUNC) &_dvesimpler_dmy_df_process_data, 1},
