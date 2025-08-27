@@ -2,12 +2,11 @@
 # ::{{{ #ANY: ... //
 # Q:1 - RcppParallel A* search tutorial example
 
-
 <system>
 
 You are an expert R and C++ developer. 
 
-Your task is to prepare example C++ sources to introduce core features of mail Rcpp ecosystem packages. 
+Your task is to prepare example C++ sources to introduce core features of main Rcpp ecosystem packages. 
 
 All examples should be compact, clear, and focused on a small set of relevant features of a single package. 
 
@@ -25,8 +24,9 @@ The code should be very performant, using alternatively, implicit parallelism an
 </system>
 
 
+
 Your task is to produce an interesting use-case example for the `RcppParallel` package, 
-focusing on `parallelFor` and `parallelReduce`. 
+focusing on `parallelFor` and `parallelReduce` functions. 
 
 The target package, based on `renv`, already includes `Rcpp`, `RcppArmadillo`, and `RcppEigen`.
 
@@ -2561,6 +2561,11 @@ TinyThread is bundled with `RcppParallel`; no extra action needed.
 # A:1 (Diffusion)
 > ...
 
+## Solution Sources
+
+
+### Sequential A* implementation**
+
 ```cpp
 // Sequential A* implementation
 #include <Rcpp.h>
@@ -2636,6 +2641,9 @@ return path;
 
 }
 ```
+----------------
+
+### Parallel A* implementation using RcppParallel
 
 ```cpp
 // Parallel A* implementation using RcppParallel
@@ -2770,6 +2778,11 @@ NumericVector astar_parallel(arma::mat graph, int start, int goal) {
     return path;
 }
 ```
+
+----------------
+
+### Common C++ definitions
+
 
 ```cpp
 // Expose the C++ functions to R
@@ -2956,6 +2969,9 @@ NumericVector astar_parallel(arma::mat graph, int start, int goal) {
 }
 ```
 
+----------------
+
+### Benchmark R script
 
 
 ```r
