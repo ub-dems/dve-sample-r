@@ -215,11 +215,9 @@ renv::status()
 > ...
 
 # A:1 (Gemini)
-> A* Search with RcppParallel
+> A* Search Algorithm with `RcppParallel`
 
 Here is a complete guide to implementing a parallel A* search algorithm using `RcppParallel`, including a detailed C++ implementation, a micro-benchmarking R script, and a quick-start guide for project setup.
-
-# A* Search Algorithm with `RcppParallel`
 
 This document provides an in-depth example of accelerating a computational task in R by leveraging C++ with the `RcppParallel` package. We will implement the A* search algorithm, a popular choice for pathfinding, in both a sequential and a parallel fashion. The parallel version will demonstrate how to solve multiple pathfinding problems concurrently, a common scenario in simulations, logistics, and game development.
 
@@ -682,7 +680,8 @@ If you are using `renv` in "explicit" mode, you manage dependencies directly.
 
 I'll create a comprehensive example demonstrating the A* search algorithm implemented with RcppParallel, focusing on `parallelFor` and `parallelReduce` features. This will be an educational and practical implementation.I've created a comprehensive guide for implementing the A* search algorithm with RcppParallel. Here are the key highlights:
 
-## Key Features
+## Contents
+### Key Features
 
 1. **Complete A* Implementation**: Both sequential and parallel versions with proper heuristic-based pathfinding
 2. **RcppParallel Integration**: Uses `parallelFor` for neighbor exploration and `parallelReduce` for finding minimum cost nodes
@@ -690,13 +689,13 @@ I'll create a comprehensive example demonstrating the A* search algorithm implem
 4. **Comprehensive Benchmarking**: Full-featured R script with command-line argument parsing and visualization
 5. **Production Ready**: Follows CRAN guidelines and Google C++ style guide
 
-## Technical Implementation
+### Technical Implementation
 
 The parallel version uses two key RcppParallel patterns:
 - **NeighborExplorer Worker**: Parallelizes the exploration of neighboring nodes using `parallelFor`
 - **MinCostReducer**: Efficiently finds the minimum cost node across parallel workers using `parallelReduce`
 
-## Benchmark Script Features
+### Benchmark Script Features
 
 The benchmark script (`benchmark_astar.R`) includes:
 - Command-line argument parsing with `argparser`
@@ -706,7 +705,7 @@ The benchmark script (`benchmark_astar.R`) includes:
 - Optional data persistence in JSON format
 - Configurable graph density and sample sizes
 
-## Quick Start Guide
+### Quick Start Guide
 
 The guide includes complete configuration files for:
 - `DESCRIPTION` with proper dependencies
@@ -719,7 +718,7 @@ This implementation demonstrates real-world usage of RcppParallel's key features
 
 ---------------------------------------------------------
 
-# A* Search Algorithm with RcppParallel
+>A* Search Algorithm with RcppParallel
 
 This document demonstrates a parallel implementation of the A* search algorithm using `RcppParallel`, `RcppArmadillo`, and `RcppEigen`. We present both sequential and parallel versions with comprehensive benchmarking.
 
@@ -1737,12 +1736,7 @@ Would you like me to **extend the parallelization** further (e.g., expand from p
 
 
 # A:1 (DeepSeek)
-> Parallel A* Search Algorithm with RcppParallel
-
-
-Here's a comprehensive implementation of an A* search algorithm using RcppParallel with performance benchmarking and setup guide:
-
-# A* Search Algorithm in RcppParallel
+> A* Search Algorithm in RcppParallel
 
 This document demonstrates a parallel implementation of the A* search algorithm using `RcppParallel`[^1] for heuristic graph traversal. We leverage `RcppArmadillo` for efficient matrix operations and graph representation.
 
@@ -2173,7 +2167,6 @@ result <- run_astar_comparison(100, 0.3, 1, 100)
 # A:1 (Kimi)
 > A* Search in Parallel with RcppParallel
 
-# A* Search in Parallel with RcppParallel
 A compact, high-performance example that demonstrates how to parallelise the A* shortest–path algorithm with `RcppParallel::parallelFor` and `parallelReduce`.  
 The code is fully CRAN–compliant, compiles under `renv` and is ready to benchmark.
 
