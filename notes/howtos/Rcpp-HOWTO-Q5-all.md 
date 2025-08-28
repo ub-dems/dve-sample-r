@@ -1397,9 +1397,6 @@ For smaller graphs, the sequential version may be faster due to reduced parallel
 # A:1 (ChatGPT)
 > A* Search Algorithm in RcppParallel
 
-````markdown
-# A* Search Algorithm in RcppParallel
-
 This document demonstrates how to implement the **A\*** search algorithm in C++ with **RcppParallel**, alongside sequential and parallel implementations.  
 The parallel implementation uses `parallelFor` and `parallelReduce` from the **RcppParallel** API.  
 
@@ -2634,7 +2631,6 @@ return path;
 
 }
 ```
-----------------
 
 ### Parallel A* implementation using RcppParallel
 
@@ -2772,10 +2768,7 @@ NumericVector astar_parallel(arma::mat graph, int start, int goal) {
 }
 ```
 
-----------------
-
 ### Common C++ definitions
-
 
 ```cpp
 // Expose the C++ functions to R
@@ -2962,8 +2955,6 @@ NumericVector astar_parallel(arma::mat graph, int start, int goal) {
 }
 ```
 
-----------------
-
 ### Benchmark R script
 
 
@@ -3122,8 +3113,6 @@ cat("\nBenchmarking complete. Check the generated plots and data files if reques
 # A:1 (LeChat)
 > A* Search Algorithm in RcppParallel: Parallel vs. Sequential Implementation
 
----
-
 ## **1. Introduction**
 This document demonstrates a **parallel implementation of the A* search algorithm** using `RcppParallel`, with a focus on `parallelFor` and `parallelReduce`. The A* algorithm is a popular pathfinding and graph traversal algorithm that efficiently finds the shortest path between nodes in a graph using a heuristic function.
 
@@ -3133,7 +3122,6 @@ The example includes:
 - A **microbenchmark** R script to compare performance.
 - A **quick start guide** for integrating `RcppParallel` into an `R` package.
 
----
 
 ## **2. A* Algorithm Overview**
 A* is an informed search algorithm that uses:
@@ -3143,7 +3131,6 @@ A* is an informed search algorithm that uses:
 
 The algorithm prioritizes nodes with the lowest `f(n)` and guarantees optimality if `h(n)` is admissible.
 
----
 
 ## **3. C++ Implementation**
 
@@ -3287,7 +3274,6 @@ std::vector<int> astar_parallel(
 }
 ```
 
----
 
 ## **4. R Callable Functions**
 ```cpp
@@ -3314,8 +3300,6 @@ std::vector<int> astar_parallel_rcpp(
   return astar_parallel(graph, start, goal, heuristic);
 }
 ```
-
----
 
 ## **5. Microbenchmark Test Script**
 ```r
@@ -3411,8 +3395,6 @@ ggplot(plot_data, aes(x = size, y = time, color = method)) +
   )
 ```
 
----
-
 ## **6. RcppParallel Quick Start Guide**
 
 ### **6.1. Project Configuration**
@@ -3501,7 +3483,7 @@ The code uses:
 
 ### Sequential A* Implementation
 
-```
+```cpp
 // [[Rcpp::depends(RcppArmadillo)]]
 // [[Rcpp::depends(RcppParallel)]]
 #include <RcppArmadillo.h>
@@ -3590,7 +3572,7 @@ IntegerVector astar_sequential(const arma::mat& graph,
 
 Here, we parallelize the exploration of neighbor nodes using `parallelFor`, accelerating the relaxation step. The priority queue management remains sequential due to complexity—parallel A* is non-trivial, but this toy example demonstrates partial vectorized exploration with parallel primitives.
 
-```
+```cpp
 #include <RcppArmadillo.h>
 #include <RcppParallel.h>
 #include <queue>
@@ -3707,7 +3689,7 @@ IntegerVector astar_parallel(const arma::mat& graph, int start, int goal) {
 
 Both implementations are exposed as callable R functions from a single C++ source that can be compiled with `Rcpp::sourceCpp()`.
 
-```
+```cpp
 // [[Rcpp::depends(RcppArmadillo, RcppParallel)]]
 // Entire C++ code above here...
 
@@ -3732,7 +3714,7 @@ This script benchmarks the sequential vs parallel A* for various graph sizes and
 
 It outputs a performance plot comparing runtimes by graph size.
 
-```
+```r
 #!/usr/bin/env Rscript
 library(Rcpp)
 library(RcppArmadillo)
@@ -3839,7 +3821,7 @@ if (args$save) {
 
 ### 1. DESCRIPTION file modifications
 
-```
+```yaml
 Imports:
     Rcpp (>= 1.0.7),
     RcppParallel (>= 5.1.0),
@@ -3869,7 +3851,7 @@ For Windows, use appropriate OpenMP flags or use Rtools defaults.
 
 Add SIMD instruction flags to improve vectorization.
 
-```
+```make
 CXXFLAGS += -march=native -O3 -mtune=native
 ```
 
@@ -3884,7 +3866,7 @@ Adjust as per your CPU architecture (`-march=skylake` etc.).
 
 ### 5. renv Commands to Install and Snapshot
 
-```
+```r
 renv::init()
 renv::install(c("RcppParallel", "RcppArmadillo", "RcppEigen"))
 renv::snapshot()
