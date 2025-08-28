@@ -44,7 +44,7 @@ The argument parsing must use a standard argument parser, provided by some libra
 
 - "Sample Size"   (option: -m|--samples) - microbenchmark sample size (e.g., number of iterations)
 - "Save Data"     (option: -s|--save) - boolean value to require the dump of the randon input and tast results over an external (text or json) file for further analysys or plotting.
-- "Input Save" (positional, for many values) - for graph domains, graph size (e.g., number of nodes)
+- "Input Size" (positional, for many values) - for graph domains, graph size (e.g., number of nodes)
 
 If the A* example consider a random Graph input, (as a "shortest path find" algorithm), consider also a parameter
 
