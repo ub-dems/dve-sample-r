@@ -15,6 +15,8 @@
 
 //#define EIGEN_USE_BLAS 1
 //#define EIGEN_USE_LAPACKE 1
+#define EIGEN_PERMANENTLY_DISABLE_STUPID_WARNINGS 1
+
 
 
 
@@ -49,7 +51,6 @@
 /* 
 #define HAVE_GSL 1  // #{GSL}
 */
-
 
 
 

@@ -101,7 +101,7 @@
     },
     "RcppArmadillo": {
       "Package": "RcppArmadillo",
-      "Version": "14.6.0-1",
+      "Version": "14.6.3-1",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
@@ -111,7 +111,7 @@
         "stats",
         "utils"
       ],
-      "Hash": "1361fd84118452c8e80fe7b5201a8c03"
+      "Hash": "46b265783c8e3feb9c0c817a66bfe529"
     },
     "RcppEigen": {
       "Package": "RcppEigen",
@@ -240,12 +240,13 @@
     },
     "broom": {
       "Package": "broom",
-      "Version": "1.0.7",
+      "Version": "1.0.9",
       "Source": "Repository",
-      "Repository": "RSPM",
+      "Repository": "CRAN",
       "Requirements": [
         "R",
         "backports",
+        "cli",
         "dplyr",
         "generics",
         "glue",
@@ -256,7 +257,7 @@
         "tibble",
         "tidyr"
       ],
-      "Hash": "8fcc818f3b9887aebaf206f141437cc9"
+      "Hash": "e22a2be2b646fbc8e8c3cc8deefc01de"
     },
     "bslib": {
       "Package": "bslib",
@@ -694,9 +695,9 @@
     },
     "haven": {
       "Package": "haven",
-      "Version": "2.5.4",
+      "Version": "2.5.5",
       "Source": "Repository",
-      "Repository": "RSPM",
+      "Repository": "CRAN",
       "Requirements": [
         "R",
         "cli",
@@ -711,7 +712,7 @@
         "tidyselect",
         "vctrs"
       ],
-      "Hash": "9171f898db9d9c4c1b2c745adc2c1ef1"
+      "Hash": "437bc7804f8ffdfcfed38d0aead6a9d7"
     },
     "here": {
       "Package": "here",
@@ -1185,9 +1186,9 @@
     },
     "readxl": {
       "Package": "readxl",
-      "Version": "1.4.4",
+      "Version": "1.4.5",
       "Source": "Repository",
-      "Repository": "RSPM",
+      "Repository": "CRAN",
       "Requirements": [
         "R",
         "cellranger",
@@ -1196,7 +1197,7 @@
         "tibble",
         "utils"
       ],
-      "Hash": "2d28b72fd25d34954e962f69d5fc07a4"
+      "Hash": "18948de59f05d38a44d3e5065a76b4b6"
     },
     "rematch": {
       "Package": "rematch",
@@ -1305,13 +1306,13 @@
     },
     "rprojroot": {
       "Package": "rprojroot",
-      "Version": "2.1.0",
+      "Version": "2.1.1",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
         "R"
       ],
-      "Hash": "74c506458effb43d21f74750e8cd42f6"
+      "Hash": "b2453de2d29aa646afe4781defdc7903"
     },
     "rstudioapi": {
       "Package": "rstudioapi",

@@ -27,8 +27,6 @@
 // static config
 #include "config.h"
 
-#if 0
-
 
 // Rcpp dependencies
 #include <RcppEigen.h>
@@ -119,5 +117,3 @@ List dmy_linear_regression_eigen(const Eigen::Map<Eigen::MatrixXd>& X,
         Named("residuals") = residuals
     );
 }
-
-#endif

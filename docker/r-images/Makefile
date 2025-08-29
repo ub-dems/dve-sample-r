@@ -502,6 +502,7 @@ run/shell:
 		-v ~/work:${RUN_USER_HOME}/work:Z  \
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
 		-v ~/data:${HOME}/data:Z  \
+		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
 		-v /store/local:/store/local:Z  \
 		-v /store/share:/store/share  \
 		-v /user:/user  \
@@ -532,6 +533,7 @@ run/status:
 		-v ~/work:${RUN_USER_HOME}/work:Z  \
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
 		-v ~/data:${HOME}/data:Z  \
+		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
 		-v /store/local:/store/local:Z  \
 		-v /store/share:/store/share  \
 		-v /user:/user  \
@@ -572,6 +574,7 @@ run/setup:
 		-v ~/work:${RUN_USER_HOME}/work:Z  \
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
 		-v ~/data:${HOME}/data:Z  \
+		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
 		-v /store/local:/store/local:Z  \
 		-v /store/share:/store/share  \
 		-v /user:/user  \
@@ -602,6 +605,7 @@ run/upgrade:
 		-v ~/work:${RUN_USER_HOME}/work:Z  \
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
 		-v ~/data:${HOME}/data:Z  \
+		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
 		-v /store/local:/store/local:Z  \
 		-v /store/share:/store/share  \
 		-v /user:/user  \
@@ -632,6 +636,7 @@ run/clear:
 		-v ~/work:${RUN_USER_HOME}/work:Z  \
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
 		-v ~/data:${HOME}/data:Z  \
+		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
 		-v /store/local:/store/local:Z  \
 		-v /store/share:/store/share  \
 		-v /user:/user  \
@@ -674,6 +679,7 @@ run/r-repl:
 		-v ~/work:${RUN_USER_HOME}/work:Z  \
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
 		-v ~/data:${HOME}/data:Z  \
+		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
 		-v /store/local:/store/local:Z  \
 		-v /store/share:/store/share  \
 		-v /user:/user  \
@@ -704,6 +710,7 @@ run/rscript-cli:
 		-v ~/work:${RUN_USER_HOME}/work:Z  \
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
 		-v ~/data:${HOME}/data:Z  \
+		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
 		-v /store/local:/store/local:Z  \
 		-v /store/share:/store/share  \
 		-v /user:/user  \
@@ -734,6 +741,7 @@ run/build:
 		-v ~/work:${RUN_USER_HOME}/work:Z  \
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
 		-v ~/data:${HOME}/data:Z  \
+		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
 		-v /store/local:/store/local:Z  \
 		-v /store/share:/store/share  \
 		-v /user:/user  \
@@ -764,6 +772,7 @@ run/command:
 		-v ~/work:${RUN_USER_HOME}/work:Z  \
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
 		-v ~/data:${HOME}/data:Z  \
+		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
 		-v /store/local:/store/local:Z  \
 		-v /store/share:/store/share  \
 		-v /user:/user  \
@@ -794,6 +803,7 @@ run/code-server:
 		-v ~/work:${RUN_USER_HOME}/work:Z  \
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
 		-v ~/data:${HOME}/data:Z  \
+		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
 		-v /store/local:/store/local:Z  \
 		-v /store/share:/store/share  \
 		-v /user:/user  \
@@ -825,6 +835,7 @@ run/jupyter-lab:
 		-v ~/work:${RUN_USER_HOME}/work:Z  \
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
 		-v ~/data:${HOME}/data:Z  \
+		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
 		-v /store/local:/store/local:Z  \
 		-v /store/share:/store/share  \
 		-v /user:/user  \
@@ -855,6 +866,7 @@ run/jupyter-notebook:
 		-v ~/work:${RUN_USER_HOME}/work:Z  \
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
 		-v ~/data:${HOME}/data:Z  \
+		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
 		-v /store/local:/store/local:Z  \
 		-v /store/share:/store/share  \
 		-v /user:/user  \
@@ -898,6 +910,7 @@ run/rstudio-server:
 		-v ~/work:${RUN_USER_HOME}/work:Z  \
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
 		-v ~/data:${HOME}/data:Z  \
+		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
 		-v /store/local:/store/local:Z  \
 		-v /store/share:/store/share  \
 		-v /user:/user  \

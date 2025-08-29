@@ -1,5 +1,6 @@
 # @see: ~/.R/Makevars
-# copy $(PROJECT_ROOT)/etc/R/Makevars to ~/.R/Makevars to avoid CRAN cran warnings
+# @see: ./docker/r-image/Makefile
+# $(PROJECT_ROOT)/etc/R mounted as ~/.R (in project VCS)
 
 
 # from ${R_HOME}/etc/Makeconf
@@ -8,6 +9,9 @@
 # NOTE: Compilation used the following non-portable flag(s): ‘-Wdate-time’ ‘-Werror=format-security’ ‘-Wformat’""
 CXXFLAGS = -g -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2 -g
 
+CXXFLAGS += -Wno-ignored-attributes
+
+CXXFLAGS += -march=native -mtune=native
 
 # from ${R_HOME}/etc/Makeconf
 #CFLAGS = $(R CMD config CFLAGS)

@@ -49,7 +49,8 @@ Suggests:
     usethis,
     roxygen2 (>= 7.3.2),
     testthat (>= 2.1.0)
-LinkingTo: Rcpp, RcppArmadillo, RcppGSL
+LinkingTo: Rcpp, RcppArmadillo, RcppEigen, RcppGSL
+SystemRequirements: C++11, GNU make, GNU Scientific Library (GSL) (>= 2.0)
 VignetteBuilder: 
     knitr
 Encoding: UTF-8
