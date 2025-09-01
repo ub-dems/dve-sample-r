@@ -6,10 +6,12 @@
    - see: [Comprehensive Rcpp Guide for R Packages (Claude)](Rcpp-HOWTO-Q1-claude-v4.md)
 2. [Q:2 - R Package Template with Rcpp](#Q2)
    - see: [R Package Template Evaluation (Gemini)](Rcpp-HOWTO-Q2-gemini-v25p.md)
-2. [Q:3 - Rcpp Performance Optimization](#Q3)
-   - see: [R Package Template Evaluation (Gemini)](Rcpp-HOWTO-Q2-gemini-v25p.md)
+2. [Q:3 - R "VibeCoding" and Loop Optimization](#Q3)
+   - see: [R "VibeCoding" and Loop Optimization (ALL*)](Rcpp-HOWTO-Q3-all.md)
 2. [Q:4 - RcppEigen OpenMP and SIMD support](#Q4)
-   - see: [RcppEigen OpenMP and SIMD support](Rcpp-HOWTO-Q4-chatgpt-v5.md)
+   - see: [RcppEigen OpenMP and SIMD support (ChatGPT)](Rcpp-HOWTO-Q4-chatgpt-v5.md)
+2. [Q:5 - RcppParallel example with "A* Pathfinding"](#Q5)
+   - see: [RcppParallel example with "A* Pathfinding" (ALL*)](Rcpp-HOWTO-Q5-all-v5.md)
 
 # ::}}} \\ %0.
 
