@@ -101,7 +101,7 @@
     },
     "RcppArmadillo": {
       "Package": "RcppArmadillo",
-      "Version": "14.6.3-1",
+      "Version": "15.0.1-1",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
@@ -111,20 +111,7 @@
         "stats",
         "utils"
       ],
-      "Hash": "46b265783c8e3feb9c0c817a66bfe529"
-    },
-    "RcppEigen": {
-      "Package": "RcppEigen",
-      "Version": "0.3.4.0.2",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R",
-        "Rcpp",
-        "stats",
-        "utils"
-      ],
-      "Hash": "4ac8e423216b8b70cb9653d1b3f71eb9"
+      "Hash": "c8695d01195fab99aa5d926db6e71d5b"
     },
     "RcppGSL": {
       "Package": "RcppGSL",

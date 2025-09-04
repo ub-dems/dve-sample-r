@@ -5,7 +5,6 @@
 #define RCPP_dvesimpler_RCPPEXPORTS_H_GEN_
 
 #include <RcppArmadillo.h>
-#include <RcppEigen.h>
 #include <RcppGSL.h>
 #include <Rcpp.h>
 
@@ -69,11 +68,11 @@ namespace dvesimpler {
         return Rcpp::as<Rcpp::List >(rcpp_result_gen);
     }
 
-    inline Eigen::MatrixXd dmy_gram_matrix_eigen(const Eigen::Map<Eigen::MatrixXd>& A) {
+    inline Rcpp::NumericMatrix dmy_gram_matrix_eigen(const Rcpp::NumericMatrix& A) {
         typedef SEXP(*Ptr_dmy_gram_matrix_eigen)(SEXP);
         static Ptr_dmy_gram_matrix_eigen p_dmy_gram_matrix_eigen = NULL;
         if (p_dmy_gram_matrix_eigen == NULL) {
-            validateSignature("Eigen::MatrixXd(*dmy_gram_matrix_eigen)(const Eigen::Map<Eigen::MatrixXd>&)");
+            validateSignature("Rcpp::NumericMatrix(*dmy_gram_matrix_eigen)(const Rcpp::NumericMatrix&)");
             p_dmy_gram_matrix_eigen = (Ptr_dmy_gram_matrix_eigen)R_GetCCallable("dvesimpler", "_dvesimpler_dmy_gram_matrix_eigen");
         }
         RObject rcpp_result_gen;
@@ -87,14 +86,14 @@ namespace dvesimpler {
             throw Rcpp::LongjumpException(rcpp_result_gen);
         if (rcpp_result_gen.inherits("try-error"))
             throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
-        return Rcpp::as<Eigen::MatrixXd >(rcpp_result_gen);
+        return Rcpp::as<Rcpp::NumericMatrix >(rcpp_result_gen);
     }
 
-    inline List dmy_linear_regression_eigen(const Eigen::Map<Eigen::MatrixXd>& X, const Eigen::Map<Eigen::VectorXd>& y) {
+    inline Rcpp::List dmy_linear_regression_eigen(const Rcpp::NumericMatrix& X, const Rcpp::NumericVector& y) {
         typedef SEXP(*Ptr_dmy_linear_regression_eigen)(SEXP,SEXP);
         static Ptr_dmy_linear_regression_eigen p_dmy_linear_regression_eigen = NULL;
         if (p_dmy_linear_regression_eigen == NULL) {
-            validateSignature("List(*dmy_linear_regression_eigen)(const Eigen::Map<Eigen::MatrixXd>&,const Eigen::Map<Eigen::VectorXd>&)");
+            validateSignature("Rcpp::List(*dmy_linear_regression_eigen)(const Rcpp::NumericMatrix&,const Rcpp::NumericVector&)");
             p_dmy_linear_regression_eigen = (Ptr_dmy_linear_regression_eigen)R_GetCCallable("dvesimpler", "_dvesimpler_dmy_linear_regression_eigen");
         }
         RObject rcpp_result_gen;
@@ -108,7 +107,7 @@ namespace dvesimpler {
             throw Rcpp::LongjumpException(rcpp_result_gen);
         if (rcpp_result_gen.inherits("try-error"))
             throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
-        return Rcpp::as<List >(rcpp_result_gen);
+        return Rcpp::as<Rcpp::List >(rcpp_result_gen);
     }
 
     inline NumericVector dmy_gsl_beta(NumericVector a, NumericVector b) {

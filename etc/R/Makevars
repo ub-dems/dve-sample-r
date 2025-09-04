@@ -7,11 +7,14 @@
 #CXXFLAGS = $(R CMD config CXXFLAGS)
 #CXXFLAGS = -g -O2 -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g
 # NOTE: Compilation used the following non-portable flag(s): ‘-Wdate-time’ ‘-Werror=format-security’ ‘-Wformat’""
-CXXFLAGS = -g -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2 -g
 
-CXXFLAGS += -Wno-ignored-attributes
+CXX_STD = CXX20
 
-CXXFLAGS += -march=native -mtune=native
+CXX20FLAGS = -g -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2 -g
+
+CXX20FLAGS += -Wno-ignored-attributes
+
+CXX20FLAGS += -march=native -mtune=native
 
 # from ${R_HOME}/etc/Makeconf
 #CFLAGS = $(R CMD config CFLAGS)
@@ -41,7 +44,7 @@ CXXFLAGS += -march=native -mtune=native
 
 ##SHLIB_OPENMP_CXXFLAGS_SIMD = -msse2 -msse3 -msse4.1 -msse4.2 -mavx -mavx2
 #SHLIB_OPENMP_CXXFLAGS_SIMD = -march=native -ftree-vectorize -ffast-math
-CXXFLAGS += $(SHLIB_OPENMP_CXXFLAGS_SIMD)
+#CXXFLAGS += $(SHLIB_OPENMP_CXXFLAGS_SIMD)
 
 
 # Default R build config

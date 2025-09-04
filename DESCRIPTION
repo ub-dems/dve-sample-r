@@ -18,7 +18,6 @@ Depends:
 Imports:
     Rcpp,
     RcppArmadillo,
-    RcppEigen,
     RcppGSL,
     tidyverse,
     dplyr,
@@ -48,13 +47,14 @@ Suggests:
     rmarkdown,
     usethis,
     roxygen2 (>= 7.3.2),
-    testthat (>= 2.1.0)
-LinkingTo: Rcpp, RcppArmadillo, RcppEigen, RcppGSL
-SystemRequirements: C++11, GNU make, GNU Scientific Library (GSL) (>= 2.0)
+    testthat (>= 2.1.0),
+    RcppEigen
+LinkingTo: Rcpp, RcppArmadillo, RcppGSL
+SystemRequirements: C++20, GNU make, GNU Scientific Library (GSL) (>= 2.0)
 VignetteBuilder: 
     knitr
 Encoding: UTF-8
 LazyData: yes
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 Config/build/copy-method: link

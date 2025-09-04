@@ -4,6 +4,7 @@
  * Author: datalab@unimib.it
  * Description: Demo C++ source file with RcppEigen
  * Seealso: ../notes/howtos/Rcpp-HOWTO.md
+ * Seealso: ../notes/howtos/Rcpp-HOWTO-Q4-*.md
  * Seealso: ../exec/dummy-rcpp.R
  * Seealso: ../src/config.h
  * Seealso: ../src/Makevars
@@ -14,13 +15,13 @@
  * License: GPL (>= 2)
  */
 
-// [[Rcpp::interfaces(r,cpp)]]
-// Enable C++11 support
-// [[Rcpp::plugins(cpp11)]]
+// Enable C++20 support
+// [[Rcpp::plugins(cpp20)]]
 // [[Rcpp::plugins(openmp)]]
 
 // Declare dependencies
-// {[Rcpp::depends(RcppEigen)]}
+// NO RcppEigen dependency here
+// Seealso: ../notes/howtos/Rcpp-HOWTO-Q4-*.md#A4.2
 
 
 
@@ -30,6 +31,7 @@
 
 // Rcpp dependencies
 #include <RcppEigen.h>
+#include <Rcpp.h>
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -53,6 +55,12 @@
 // Package Public Functions
 
 //#include <dvesimpler.h>
+
+// Package Private Functions
+
+#include "dummy_eigen.h"
+
+
 
 // Use namespaces
 using namespace Rcpp;
@@ -85,12 +93,15 @@ using Eigen::VectorXd;
 //'
 //' @return The prodoct of transposed matrix with itsself as Eigen Matrix
 //'
-//' @export
-// [[Rcpp::export]]
-Eigen::MatrixXd dmy_gram_matrix_eigen(const Eigen::Map<Eigen::MatrixXd>& A) {
+Eigen::MatrixXd dmy_core_gram_matrix_eigen_impl(const Eigen::Map<Eigen::MatrixXd>& A) {
     // Transpose and multiply
     return A.transpose() * A;
 }
+Rcpp::NumericMatrix dmy_core_gram_matrix_eigen(const Rcpp::NumericMatrix& A) {
+  const Eigen::Map<Eigen::MatrixXd>& Ae = Rcpp::as<Eigen::Map<Eigen::MatrixXd>>(A);
+  return Rcpp::wrap(dmy_core_gram_matrix_eigen_impl(Ae));
+}
+
 
 
 //' Linear Regression with RcppEigen
@@ -102,9 +113,7 @@ Eigen::MatrixXd dmy_gram_matrix_eigen(const Eigen::Map<Eigen::MatrixXd>& A) {
 //'
 //' @return A Named list with linear regression coefficients and residuals
 //'
-//' @export
-// [[Rcpp::export]]
-List dmy_linear_regression_eigen(const Eigen::Map<Eigen::MatrixXd>& X,
+Rcpp::List dmy_core_linear_regression_eigen_impl(const Eigen::Map<Eigen::MatrixXd>& X,
                              const Eigen::Map<Eigen::VectorXd>& y) {
     // Solve using QR decomposition
     Eigen::VectorXd coefficients = X.colPivHouseholderQr().solve(y);
@@ -117,3 +126,10 @@ List dmy_linear_regression_eigen(const Eigen::Map<Eigen::MatrixXd>& X,
         Named("residuals") = residuals
     );
 }
+Rcpp::List dmy_core_linear_regression_eigen(const Rcpp::NumericMatrix& X,
+                             const Rcpp::NumericVector& y) {
+  const Eigen::Map<Eigen::MatrixXd>& Xe = Rcpp::as<Eigen::Map<Eigen::MatrixXd>>(X);
+  const Eigen::Map<Eigen::VectorXd>& ye = Rcpp::as<Eigen::Map<Eigen::VectorXd>>(y);
+  return dmy_core_linear_regression_eigen_impl(Xe,ye);
+}
+

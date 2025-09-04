@@ -4,14 +4,15 @@
  * Author: datalab@unimib.it
  * Description: Demo C++ source file with RcppArmadillo
  * Seealso: ../notes/howtos/Rcpp-HOWTO.md
+ * Seealso: ../notes/howtos/Rcpp-HOWTO-Q4-*.md
  * Seealso: ../exec/dummy-rcpp.R
  * Created: 2025
  * License: GPL (>= 2)
  */
 
 // [[Rcpp::interfaces(r,cpp)]]
-// Enable C++11 support
-// [[Rcpp::plugins(cpp11)]]
+// Enable C++20 support
+// [[Rcpp::plugins(cpp20)]]
 // [[Rcpp::plugins(openmp)]]
 
 // Declare dependencies
@@ -47,6 +48,10 @@
 // Package Public Functions
 
 #include <dvesimpler.h>
+
+// Package Private Functions
+
+#include "dummy_eigen.h"
 
 // Use namespaces
 using namespace Rcpp;
@@ -108,4 +113,47 @@ Rcpp::List dmy_arma_eigsym(const arma::mat& X) {
         Named("vectors") = eigenvectors
     );
 }
+
+
+/*
+ * =============================================================================
+ * LINEAR ALGEBRA WITH RcppEigen
+ * =============================================================================
+ */
+
+// RcppEigen wrappers
+// Seealso: ../notes/howtos/Rcpp-HOWTO-Q4-*.md#A4.2
+
+
+//' Matrix Multiplication with Transpose with RcppEigen
+//'
+//' Performs parallel Gram matrix \eqn{A^T * A}  computation efficiently in C++.
+//'
+//' @param A an Eigen matrix
+//'
+//' @return The prodoct of transposed matrix with itsself as Eigen Matrix
+//'
+//' @export
+// [[Rcpp::export]]
+Rcpp::NumericMatrix dmy_gram_matrix_eigen(const Rcpp::NumericMatrix& A) {
+  return dmy_core_gram_matrix_eigen(A);
+}
+
+
+//' Linear Regression with RcppEigen
+//'
+//' Compute (parallel) linear regression via QR decomposition efficiently in C++.
+//'
+//' @param X an Eigen matrix
+//' @param y an Eigen vector
+//'
+//' @return A Named list with linear regression coefficients and residuals
+//'
+//' @export
+// [[Rcpp::export]]
+Rcpp::List dmy_linear_regression_eigen(const Rcpp::NumericMatrix& X,
+                             const Rcpp::NumericVector& y) {
+  return dmy_core_linear_regression_eigen(X,y);
+}
+
 

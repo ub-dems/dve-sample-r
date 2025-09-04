@@ -3,7 +3,6 @@
 
 #include "../inst/include/dvesimpler.h"
 #include <RcppArmadillo.h>
-#include <RcppEigen.h>
 #include <RcppGSL.h>
 #include <Rcpp.h>
 #include <string>
@@ -86,11 +85,11 @@ RcppExport SEXP _dvesimpler_dmy_arma_eigsym(SEXP XSEXP) {
     return rcpp_result_gen;
 }
 // dmy_gram_matrix_eigen
-Eigen::MatrixXd dmy_gram_matrix_eigen(const Eigen::Map<Eigen::MatrixXd>& A);
+Rcpp::NumericMatrix dmy_gram_matrix_eigen(const Rcpp::NumericMatrix& A);
 static SEXP _dvesimpler_dmy_gram_matrix_eigen_try(SEXP ASEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::MatrixXd>& >::type A(ASEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericMatrix& >::type A(ASEXP);
     rcpp_result_gen = Rcpp::wrap(dmy_gram_matrix_eigen(A));
     return rcpp_result_gen;
 END_RCPP_RETURN_ERROR
@@ -120,12 +119,12 @@ RcppExport SEXP _dvesimpler_dmy_gram_matrix_eigen(SEXP ASEXP) {
     return rcpp_result_gen;
 }
 // dmy_linear_regression_eigen
-List dmy_linear_regression_eigen(const Eigen::Map<Eigen::MatrixXd>& X, const Eigen::Map<Eigen::VectorXd>& y);
+Rcpp::List dmy_linear_regression_eigen(const Rcpp::NumericMatrix& X, const Rcpp::NumericVector& y);
 static SEXP _dvesimpler_dmy_linear_regression_eigen_try(SEXP XSEXP, SEXP ySEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::MatrixXd>& >::type X(XSEXP);
-    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::VectorXd>& >::type y(ySEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericMatrix& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type y(ySEXP);
     rcpp_result_gen = Rcpp::wrap(dmy_linear_regression_eigen(X, y));
     return rcpp_result_gen;
 END_RCPP_RETURN_ERROR
@@ -565,8 +564,8 @@ static int _dvesimpler_RcppExport_validate(const char* sig) {
     if (signatures.empty()) {
         signatures.insert("arma::mat(*dmy_arma_matrix_mult)(const arma::mat&,const arma::mat&)");
         signatures.insert("Rcpp::List(*dmy_arma_eigsym)(const arma::mat&)");
-        signatures.insert("Eigen::MatrixXd(*dmy_gram_matrix_eigen)(const Eigen::Map<Eigen::MatrixXd>&)");
-        signatures.insert("List(*dmy_linear_regression_eigen)(const Eigen::Map<Eigen::MatrixXd>&,const Eigen::Map<Eigen::VectorXd>&)");
+        signatures.insert("Rcpp::NumericMatrix(*dmy_gram_matrix_eigen)(const Rcpp::NumericMatrix&)");
+        signatures.insert("Rcpp::List(*dmy_linear_regression_eigen)(const Rcpp::NumericMatrix&,const Rcpp::NumericVector&)");
         signatures.insert("NumericVector(*dmy_gsl_beta)(NumericVector,NumericVector)");
         signatures.insert("Rcpp::NumericVector(*dmy_custom_mean)(Rcpp::NumericVector)");
         signatures.insert("void(*dmy_print_mean)(Rcpp::NumericVector)");

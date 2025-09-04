@@ -14,8 +14,8 @@
  */
 
 // [[Rcpp::interfaces(r,cpp)]]
-// Enable C++11 support
-// [[Rcpp::plugins(cpp11)]]
+// Enable C++20 support
+// [[Rcpp::plugins(cpp20)]]
 // [[Rcpp::plugins(openmp)]]
 
 // Declare dependencies

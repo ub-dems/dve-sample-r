@@ -55,6 +55,27 @@ dmy_linear_regression_eigen <- function(X, y) {
     .Call(`_dvesimpler_dmy_linear_regression_eigen`, X, y)
 }
 
+#' Matrix Multiplication with Transpose with RcppEigen
+#'
+#' Performs parallel Gram matrix \eqn{A^T * A}  computation efficiently in C++.
+#'
+#' @param A an Eigen matrix
+#'
+#' @return The prodoct of transposed matrix with itsself as Eigen Matrix
+#'
+NULL
+
+#' Linear Regression with RcppEigen
+#'
+#' Compute (parallel) linear regression via QR decomposition efficiently in C++.
+#'
+#' @param X an Eigen matrix
+#' @param y an Eigen vector
+#'
+#' @return A Named list with linear regression coefficients and residuals
+#'
+NULL
+
 #' @title Calculate vectorized Beta function
 #' @description This function calculates Beta function with GSL library.
 #' @param a A NumericVector of Beta first argument (a)
