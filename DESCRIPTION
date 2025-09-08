@@ -50,7 +50,7 @@ Suggests:
     testthat (>= 2.1.0),
     RcppEigen
 LinkingTo: Rcpp, RcppArmadillo, RcppGSL
-SystemRequirements: C++20, GNU make, GNU Scientific Library (GSL) (>= 2.0)
+SystemRequirements: C++20, GNU Scientific Library (GSL) (>= 2.0)
 VignetteBuilder: 
     knitr
 Encoding: UTF-8

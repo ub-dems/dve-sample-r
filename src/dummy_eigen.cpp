@@ -85,14 +85,14 @@ using Eigen::VectorXd;
  * =============================================================================
  */
 
-//' Matrix Multiplication with Transpose with RcppEigen
-//'
-//' Performs parallel Gram matrix \eqn{A^T * A}  computation efficiently in C++.
-//'
-//' @param A an Eigen matrix
-//'
-//' @return The prodoct of transposed matrix with itsself as Eigen Matrix
-//'
+//" Matrix Multiplication with Transpose with RcppEigen
+//"
+//" Performs parallel Gram matrix \eqn{A^T * A}  computation efficiently in C++.
+//"
+//" @param A an Eigen matrix
+//"
+//" @return The prodoct of transposed matrix with itsself as Eigen Matrix
+//"
 Eigen::MatrixXd dmy_core_gram_matrix_eigen_impl(const Eigen::Map<Eigen::MatrixXd>& A) {
     // Transpose and multiply
     return A.transpose() * A;
@@ -104,15 +104,15 @@ Rcpp::NumericMatrix dmy_core_gram_matrix_eigen(const Rcpp::NumericMatrix& A) {
 
 
 
-//' Linear Regression with RcppEigen
-//'
-//' Compute (parallel) linear regression via QR decomposition efficiently in C++.
-//'
-//' @param X an Eigen matrix
-//' @param y an Eigen vector
-//'
-//' @return A Named list with linear regression coefficients and residuals
-//'
+//" Linear Regression with RcppEigen
+//"
+//" Compute (parallel) linear regression via QR decomposition efficiently in C++.
+//"
+//" @param X an Eigen matrix
+//" @param y an Eigen vector
+//"
+//" @return A Named list with linear regression coefficients and residuals
+//"
 Rcpp::List dmy_core_linear_regression_eigen_impl(const Eigen::Map<Eigen::MatrixXd>& X,
                              const Eigen::Map<Eigen::VectorXd>& y) {
     // Solve using QR decomposition
