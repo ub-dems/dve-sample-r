@@ -17,7 +17,7 @@ CXX20FLAGS += -Wno-ignored-attributes
 CXX20FLAGS += -march=native -mtune=native
 
 
-# RcppEigen implici support to avoid RcppArmdillo include clash
+# RcppEigen implicit support to avoid RcppArmdillo include clash
 # Seealso: ../notes/howtos/Rcpp-HOWTO-Q4-*.md
 EIG_CPPPATH := `$(R_HOME)/bin/Rscript -e "cat(system.file('include', package='RcppEigen'))"`
 CPPFLAGS += -I$(EIG_CPPPATH)
@@ -26,6 +26,10 @@ CPPFLAGS += -I$(EIG_CPPPATH)
 #CFLAGS = $(R CMD config CFLAGS)
 #CFLAGS = -g -O2 -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g
 
+#LDFLAGS = $(R CMD config LDFLAGS)
+#LDLAGS = -L/usr/local/lib
+# verbose linking
+LDLAGS += -v -Wl,--verbose
 
 
 # Settings from /etc/R/Makeconf with "non-portable flag(s):"

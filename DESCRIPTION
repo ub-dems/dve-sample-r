@@ -18,7 +18,6 @@ Depends:
 Imports:
     Rcpp,
     RcppArmadillo,
-    RcppGSL,
     tidyverse,
     dplyr,
     ggplot2,
@@ -48,6 +47,7 @@ Suggests:
     usethis,
     roxygen2 (>= 7.3.2),
     testthat (>= 2.1.0),
+    RcppGSL,
     RcppEigen
 LinkingTo: Rcpp, RcppArmadillo, RcppGSL
 SystemRequirements: C++20, GNU Scientific Library (GSL) (>= 2.0)

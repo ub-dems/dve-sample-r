@@ -51,6 +51,7 @@
 /* 
 #define HAVE_GSL 1  // #{GSL}
 */
+#define HAVE_GSL 1  // #{GSL}
 
 
 
