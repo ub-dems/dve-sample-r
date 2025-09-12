@@ -11,7 +11,9 @@
 2. [Q:4 - RcppEigen OpenMP and SIMD support](#Q4)
    - see: [RcppEigen OpenMP and SIMD support (ChatGPT)](Rcpp-HOWTO-Q4-chatgpt-v5.md)
 2. [Q:5 - RcppParallel example with "A* Pathfinding"](#Q5)
-   - see: [RcppParallel example with "A* Pathfinding" (ALL*)](Rcpp-HOWTO-Q5-all-v5.md)
+   - see: [RcppParallel example with "A* Pathfinding" (ALL*)](Rcpp-HOWTO-Q5-all.md)
+2. [Q:6 - C++ Compiler and Linker options for R packages](#Q6)
+   - see: [C++ Compiler and Linker options for R packages (ALL*)](Rcpp-HOWTO-Q6-all.md)
 
 # ::}}} \\ %0.
 

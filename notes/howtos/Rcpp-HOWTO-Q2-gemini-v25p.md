@@ -1,5 +1,5 @@
 ``` /// vim: set foldmethod=marker : ```
-# ::{{{ #RCPP: R Package Template with Rcpp //
+# ::{{{ #RCPP: Howto //
 # Q:2 - R Package Template with Rcpp
 
 <system>

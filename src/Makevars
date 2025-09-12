@@ -26,14 +26,12 @@ GSL_CFLAGS=-I/usr/include
 GSL_LIBS=-L/usr/lib/x86_64-linux-gnu -lgsl -lgslcblas -lm
 
 
-# g++ Linker options
-LNK_LDFLAGS=-Wl,--gc-sections,--strip-all
 
 
 PKG_CPPFLAGS = -I../inst/include/ -DSTRICT_R_HEADERS $(EIG_CPPFLAGS) $(ARMA_CPPFLAGS)
 
 PKG_CXXFLAGS = $(SHLIB_OPENMP_CXXFLAGS) $(GSL_CFLAGS)
-PKG_LIBS = $(SHLIB_OPENMP_CXXFLAGS) $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS) $(GSL_LIBS) $(LNK_LDFLAGS)
+PKG_LIBS = $(SHLIB_OPENMP_CXXFLAGS) $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS) $(GSL_LIBS)
 
 
 # SIMD full support

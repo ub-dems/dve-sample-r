@@ -1,6 +1,6 @@
 ``` /// vim: set foldmethod=marker : ```
-# ::{{{ #RCPP: R "VibeCoding" and Loop Optimization //
-# Q:3 - Rcpp Iterators Performance Optimization
+# ::{{{ #RCPP: Howto //
+# Q:3 - R "VibeCoding" and Loop Optimization
 
 <system>
 

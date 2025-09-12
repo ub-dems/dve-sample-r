@@ -12,9 +12,17 @@ CXX_STD = CXX20
 
 CXX20FLAGS = -g -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2 -g
 
-CXX20FLAGS += -Wno-ignored-attributes
+CXX20FLAGS += -fno-omit-frame-pointer
+#CXX20FLAGS += -fsanitize=address,undefined
+#CXX20FLAGS += -ffunction-sections -fdata-sections
+#CXX20FLAGS += -ftemplate-depth-256 -fmerge-all-constants
+
+CXX20FLAGS += -flto
+CXX20LINKFLAGS += -flto
 
 CXX20FLAGS += -march=native -mtune=native
+
+CXX20FLAGS += -Wno-ignored-attributes
 
 
 # RcppEigen implicit support to avoid RcppArmdillo include clash
@@ -30,6 +38,9 @@ CPPFLAGS += -I$(EIG_CPPPATH)
 #LDLAGS = -L/usr/local/lib
 # verbose linking
 LDLAGS += -v -Wl,--verbose
+
+# g++ Linker options
+LDFLAGS=-Wl,--gc-sections -Wl,--as-needed
 
 
 # Settings from /etc/R/Makeconf with "non-portable flag(s):"
