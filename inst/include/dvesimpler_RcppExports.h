@@ -68,6 +68,27 @@ namespace dvesimpler {
         return Rcpp::as<Rcpp::List >(rcpp_result_gen);
     }
 
+    inline bool dmy_eigen_is_enabled() {
+        typedef SEXP(*Ptr_dmy_eigen_is_enabled)();
+        static Ptr_dmy_eigen_is_enabled p_dmy_eigen_is_enabled = NULL;
+        if (p_dmy_eigen_is_enabled == NULL) {
+            validateSignature("bool(*dmy_eigen_is_enabled)()");
+            p_dmy_eigen_is_enabled = (Ptr_dmy_eigen_is_enabled)R_GetCCallable("dvesimpler", "_dvesimpler_dmy_eigen_is_enabled");
+        }
+        RObject rcpp_result_gen;
+        {
+            RNGScope RCPP_rngScope_gen;
+            rcpp_result_gen = p_dmy_eigen_is_enabled();
+        }
+        if (rcpp_result_gen.inherits("interrupted-error"))
+            throw Rcpp::internal::InterruptedException();
+        if (Rcpp::internal::isLongjumpSentinel(rcpp_result_gen))
+            throw Rcpp::LongjumpException(rcpp_result_gen);
+        if (rcpp_result_gen.inherits("try-error"))
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
+        return Rcpp::as<bool >(rcpp_result_gen);
+    }
+
     inline Rcpp::NumericMatrix dmy_gram_matrix_eigen(const Rcpp::NumericMatrix& A) {
         typedef SEXP(*Ptr_dmy_gram_matrix_eigen)(SEXP);
         static Ptr_dmy_gram_matrix_eigen p_dmy_gram_matrix_eigen = NULL;
@@ -108,6 +129,27 @@ namespace dvesimpler {
         if (rcpp_result_gen.inherits("try-error"))
             throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
         return Rcpp::as<Rcpp::List >(rcpp_result_gen);
+    }
+
+    inline bool dmy_gsl_is_enabled() {
+        typedef SEXP(*Ptr_dmy_gsl_is_enabled)();
+        static Ptr_dmy_gsl_is_enabled p_dmy_gsl_is_enabled = NULL;
+        if (p_dmy_gsl_is_enabled == NULL) {
+            validateSignature("bool(*dmy_gsl_is_enabled)()");
+            p_dmy_gsl_is_enabled = (Ptr_dmy_gsl_is_enabled)R_GetCCallable("dvesimpler", "_dvesimpler_dmy_gsl_is_enabled");
+        }
+        RObject rcpp_result_gen;
+        {
+            RNGScope RCPP_rngScope_gen;
+            rcpp_result_gen = p_dmy_gsl_is_enabled();
+        }
+        if (rcpp_result_gen.inherits("interrupted-error"))
+            throw Rcpp::internal::InterruptedException();
+        if (Rcpp::internal::isLongjumpSentinel(rcpp_result_gen))
+            throw Rcpp::LongjumpException(rcpp_result_gen);
+        if (rcpp_result_gen.inherits("try-error"))
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
+        return Rcpp::as<bool >(rcpp_result_gen);
     }
 
     inline NumericVector dmy_gsl_beta(NumericVector a, NumericVector b) {

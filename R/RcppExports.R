@@ -28,6 +28,17 @@ dmy_arma_eigsym <- function(X) {
     .Call(`_dvesimpler_dmy_arma_eigsym`, X)
 }
 
+#' Check GSL Build Configuration.
+#'
+#' Returns definition of HAVE_EIGEN macro from "config.h".
+#'
+#' @return EIGEN linkage support
+#'
+#' @export
+dmy_eigen_is_enabled <- function() {
+    .Call(`_dvesimpler_dmy_eigen_is_enabled`)
+}
+
 #' Matrix Multiplication with Transpose with RcppEigen
 #'
 #' Performs parallel Gram matrix \eqn{A^T * A}  computation efficiently in C++.
@@ -53,6 +64,25 @@ dmy_gram_matrix_eigen <- function(A) {
 #' @export
 dmy_linear_regression_eigen <- function(X, y) {
     .Call(`_dvesimpler_dmy_linear_regression_eigen`, X, y)
+}
+
+#' @title Check GSL Build Configuration.
+#' @description Returns definition of HAVE_GSL macro from "config.h".
+#' @return GSL linkage support
+#' @examples
+#' \dontrun{
+#' if (dmy_gsl_is_enabled()) {
+#'    a <- c(1/2, 1, 3/2, 2)
+#'    b <- c(1/2, 1, 3/2, 2)
+#'    beta <- dmy_gsl_beta(a,b)
+#'    print(beta)
+#' } else {
+#'    warning("GSL Support is not enabled")
+#' }
+#' }
+#' @export
+dmy_gsl_is_enabled <- function() {
+    .Call(`_dvesimpler_dmy_gsl_is_enabled`)
 }
 
 #' @title Calculate vectorized Beta function

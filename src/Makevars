@@ -20,10 +20,10 @@ EIG_CPPFLAGS = -DEIGEN_PERMANENTLY_DISABLE_STUPID_WARNINGS
 #GSL_CONFIG_PATH=$(command -v gsl-config || echo "")
 #GSL_CFLAGS=$($GSL_CONFIG_PATH --cflags || "")
 #GSL_LIBS=$($GSL_CONFIG_PATH --libs || "")
-#GSL_CFLAGS=`$(R_HOME)/bin/Rscript -e "RcppGSL::CFlags()" || ""`
-#GSL_LIBS=`$(R_HOME)/bin/Rscript -e "RcppGSL::LdFlags()" || ""`
-GSL_CFLAGS=-I/usr/include
-GSL_LIBS=-L/usr/lib/x86_64-linux-gnu -lgsl -lgslcblas -lm
+#GSL_CFLAGS=-I/usr/include
+#GSL_LIBS=-L/usr/lib/x86_64-linux-gnu -lgsl -lgslcblas -lm
+GSL_CFLAGS=`$(R_HOME)/bin/Rscript -e "RcppGSL::CFlags()" || ""`
+GSL_LIBS=`$(R_HOME)/bin/Rscript -e "RcppGSL::LdFlags()" || ""`
 
 
 
@@ -34,37 +34,3 @@ PKG_CXXFLAGS = $(SHLIB_OPENMP_CXXFLAGS) $(GSL_CFLAGS)
 PKG_LIBS = $(SHLIB_OPENMP_CXXFLAGS) $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS) $(GSL_LIBS)
 
 
-# SIMD full support
-# Seealso: ../etc/R/Makevars
-# Seealso: ~/.R/Makevars
-# Seealso: /etc/R/Makevars
-# Seealso: ../notes/howtos/Rcpp-HOWTO-Q{4}-*.md
-# Seealso: ../src/config.h
-
-##SHLIB_OPENMP_CXXFLAGS_SIMD = -msse2 -msse3 -msse4.1 -msse4.2 -mavx -mavx2
-#SHLIB_OPENMP_CXXFLAGS_SIMD =  -march=native 
-#CXXFLAGS += $(SHLIB_OPENMP_CXXFLAGS_SIMD)
-
-
-# Default R build config
-#
-# Seealso: ${R_HOME}/etc/Makeconf
-# Seealso: ../etc/R/Makevars
-# Seealso: ~/.R/Makevars
-# Seealso: /etc/R/Makevars
-
-#{R}: R="${R_HOME}/bin/R"
-
-#{R}: # for c
-#{R}: CC=$("$R" CMD config CC)
-#{R}: CFLAGS=$("$R" CMD config CFLAGS)
-#{R}: LDFLAGS=$("$R" CMD config LDFLAGS)
-
-#{R}: # for c++
-#{R}: CXX=$("$R" CMD config CXX)
-#{R}: CXXFLAGS=$("$R" CMD config CXXFLAGS)
-#{R}: CPPFLAGS=$("$R" CMD config CPPFLAGS)
-
-#{R}: # check for BLAS
-#{R}: FCLAGS=$("$R" CMD config FFLAGS)
-#{R}: FLIBS=$("$R" CMD config FLIBS)

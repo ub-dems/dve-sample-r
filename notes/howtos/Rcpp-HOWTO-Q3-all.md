@@ -29,7 +29,7 @@ performance in a multicore (32 HyperThreaded Intel XEON or AMD EPYC)
 Ubuntu 24.04 Linux virtual machines, running on Microsoft Azure
 platform.
 
-As a stylistic note, discuss also every alternative from for language
+As a stylistic note, discuss also every alternative from language
 idiomaic and pragmaic point of view.
 
 </system>
@@ -51,9 +51,9 @@ implementation example of different approaches in vector iteration.
 In this source will be placed two group of C++ functions "sum" and
 "outer", with the following specifications, delimited in XML
 `*-test-specification` tags, that can be testes to verify how
-different inplementation alternatives affect runtime performance,
+different implementation alternatives affect runtime performance,
 depending on the input size. In the test, also standard R library
-function should be included, as a performance reference.
+functions should be included, as a performance reference.
 
 In addition, a small group of logging support functions, R callable,
 will be used for conditional function tracing. The trace output will

@@ -29,8 +29,12 @@
 #include "config.h"
 
 
-// Rcpp dependencies
+// RcppEigen dependencies
+#ifdef HAVE_EIGEN
 #include <RcppEigen.h>
+#endif
+
+// Rcpp dependencies
 #include <Rcpp.h>
 
 #ifdef _OPENMP
@@ -68,6 +72,14 @@ using namespace std;
 
 
 /*
+ * =============================================================================
+ * RcppEigen CONDITIONAL SUPPPORT 
+ * =============================================================================
+ */
+
+#ifdef HAVE_EIGEN
+
+/*
   // Type aliases for cleaner code
   using Matrix = Eigen::MatrixXd;
   using Vector = Eigen::VectorXd;
@@ -78,6 +90,16 @@ using namespace std;
 using Eigen::Map;
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
+
+bool dmy_core_is_eigen_enabled() {
+    return true;
+}
+#else
+bool dmy_core_is_eigen_enabled() {
+    return false;
+}
+#endif
+
 
 /*
  * =============================================================================
@@ -93,6 +115,7 @@ using Eigen::VectorXd;
 //"
 //" @return The prodoct of transposed matrix with itsself as Eigen Matrix
 //"
+#ifdef HAVE_EIGEN
 Eigen::MatrixXd dmy_core_gram_matrix_eigen_impl(const Eigen::Map<Eigen::MatrixXd>& A) {
     // Transpose and multiply
     return A.transpose() * A;
@@ -101,6 +124,11 @@ Rcpp::NumericMatrix dmy_core_gram_matrix_eigen(const Rcpp::NumericMatrix& A) {
   const Eigen::Map<Eigen::MatrixXd>& Ae = Rcpp::as<Eigen::Map<Eigen::MatrixXd>>(A);
   return Rcpp::wrap(dmy_core_gram_matrix_eigen_impl(Ae));
 }
+#else
+Rcpp::NumericMatrix dmy_core_gram_matrix_eigen(const Rcpp::NumericMatrix& A) {
+  Rcpp::stop("Unsupported Operation: EIGEN support not enabled in dmy_core_gram_matrix_eigen");
+}
+#endif
 
 
 
@@ -113,6 +141,7 @@ Rcpp::NumericMatrix dmy_core_gram_matrix_eigen(const Rcpp::NumericMatrix& A) {
 //"
 //" @return A Named list with linear regression coefficients and residuals
 //"
+#ifdef HAVE_EIGEN
 Rcpp::List dmy_core_linear_regression_eigen_impl(const Eigen::Map<Eigen::MatrixXd>& X,
                              const Eigen::Map<Eigen::VectorXd>& y) {
     // Solve using QR decomposition
@@ -132,4 +161,10 @@ Rcpp::List dmy_core_linear_regression_eigen(const Rcpp::NumericMatrix& X,
   const Eigen::Map<Eigen::VectorXd>& ye = Rcpp::as<Eigen::Map<Eigen::VectorXd>>(y);
   return dmy_core_linear_regression_eigen_impl(Xe,ye);
 }
+#else
+Rcpp::List dmy_core_linear_regression_eigen(const Rcpp::NumericMatrix& X,
+                             const Rcpp::NumericVector& y) {
+  Rcpp::stop("Unsupported Operation: EIGEN support not enabled in dmy_core_linear_regression_eigen");
+}
+#endif
 

@@ -63,6 +63,31 @@ using namespace std;
  * =============================================================================
  */
 
+//' @title Check GSL Build Configuration.
+//' @description Returns definition of HAVE_GSL macro from "config.h".
+//' @return GSL linkage support
+//' @examples
+//' \dontrun{
+//' if (dmy_gsl_is_enabled()) {
+//'    a <- c(1/2, 1, 3/2, 2)
+//'    b <- c(1/2, 1, 3/2, 2)
+//'    beta <- dmy_gsl_beta(a,b)
+//'    print(beta)
+//' } else {
+//'    warning("GSL Support is not enabled")
+//' }
+//' }
+//' @export
+// [[Rcpp::export]]
+bool dmy_gsl_is_enabled() {
+#ifdef HAVE_GSL
+  return true; 
+#else
+  return false; 
+#endif
+}
+
+
 namespace {  // Anonymous namespace for internal functions
 
 #ifdef HAVE_GSL
@@ -71,12 +96,11 @@ inline double lib_gsl_sf_beta(double a, double b) {
 }
 #else
 inline double lib_gsl_sf_beta(double a, double b) {
-  Rcpp::stop("Unsupported Operation: GSL suport not enabled in dmy_gsl_beta");
+  Rcpp::stop("Unsupported Operation: GSL support not enabled in dmy_gsl_beta");
 }
 #endif
 
 } // end anonymous namespace
-
 
 
 /*

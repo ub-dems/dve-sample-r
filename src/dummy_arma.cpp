@@ -125,6 +125,19 @@ Rcpp::List dmy_arma_eigsym(const arma::mat& X) {
 // Seealso: ../notes/howtos/Rcpp-HOWTO-Q4-*.md#A4.2
 
 
+//' Check GSL Build Configuration.
+//'
+//' Returns definition of HAVE_EIGEN macro from "config.h".
+//'
+//' @return EIGEN linkage support
+//'
+//' @export
+// [[Rcpp::export]]
+bool dmy_eigen_is_enabled() {
+  return dmy_core_is_eigen_enabled();
+}
+
+
 //' Matrix Multiplication with Transpose with RcppEigen
 //'
 //' Performs parallel Gram matrix \eqn{A^T * A}  computation efficiently in C++.

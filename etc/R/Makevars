@@ -17,8 +17,8 @@ CXX20FLAGS += -fno-omit-frame-pointer
 #CXX20FLAGS += -ffunction-sections -fdata-sections
 #CXX20FLAGS += -ftemplate-depth-256 -fmerge-all-constants
 
-CXX20FLAGS += -flto
-CXX20LINKFLAGS += -flto
+CXX20FLAGS += -flto=auto
+CXX20LINKFLAGS += -flto=auto
 
 CXX20FLAGS += -march=native -mtune=native
 

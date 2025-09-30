@@ -18,6 +18,12 @@
 #define EIGEN_PERMANENTLY_DISABLE_STUPID_WARNINGS 1
 
 
+#undef HAVE_EIGEN
+/* 
+#define HAVE_EIGEN 1  // #{GSL}
+*/
+
+
 
 
 // to enable GSL support:
@@ -51,7 +57,6 @@
 /* 
 #define HAVE_GSL 1  // #{GSL}
 */
-#define HAVE_GSL 1  // #{GSL}
 
 
 
