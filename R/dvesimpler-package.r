@@ -19,6 +19,7 @@
 ## @importFrom keras is_keras_available
 # 
 #' @importFrom here here
+#' @importFrom logger log_info
 #' @importFrom logging loginfo logdebug logerror getHandler
 #' @importFrom magrittr %>%
 #' @importFrom modules module export import

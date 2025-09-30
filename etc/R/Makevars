@@ -10,7 +10,7 @@
 
 CXX_STD = CXX20
 
-CXX20FLAGS = -g -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2 -g
+CXX20FLAGS = -g -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2 -g
 
 CXX20FLAGS += -fno-omit-frame-pointer
 #CXX20FLAGS += -fsanitize=address,undefined

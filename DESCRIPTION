@@ -24,6 +24,7 @@ Imports:
     readr,
     argparse,
     here,
+    logger,
     logging,
     magrittr,
     modules,

@@ -20,21 +20,6 @@
       ],
       "Hash": "065ae649b05f1ff66bb0c793107508f5"
     },
-    "MASS": {
-      "Package": "MASS",
-      "Version": "7.3-64",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R",
-        "grDevices",
-        "graphics",
-        "methods",
-        "stats",
-        "utils"
-      ],
-      "Hash": "49d2d8090b74c1179df1aff16201caf8"
-    },
     "Matrix": {
       "Package": "Matrix",
       "Version": "1.7-2",
@@ -101,7 +86,7 @@
     },
     "RcppArmadillo": {
       "Package": "RcppArmadillo",
-      "Version": "15.0.1-1",
+      "Version": "15.0.2-2",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
@@ -111,7 +96,7 @@
         "stats",
         "utils"
       ],
-      "Hash": "c8695d01195fab99aa5d926db6e71d5b"
+      "Hash": "58f3d2b5e2b8d44756c2d21e24b719e9"
     },
     "RcppGSL": {
       "Package": "RcppGSL",
@@ -134,6 +119,17 @@
         "Rcpp"
       ],
       "Hash": "23eeca7d3c7d63fc7449108c0a66178c"
+    },
+    "S7": {
+      "Package": "S7",
+      "Version": "0.2.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R",
+        "utils"
+      ],
+      "Hash": "5deb66b3ae702137e1f4162c11861e76"
     },
     "argparse": {
       "Package": "argparse",
@@ -577,28 +573,25 @@
     },
     "ggplot2": {
       "Package": "ggplot2",
-      "Version": "3.5.2",
+      "Version": "4.0.0",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
-        "MASS",
         "R",
+        "S7",
         "cli",
-        "glue",
         "grDevices",
         "grid",
         "gtable",
         "isoband",
         "lifecycle",
-        "mgcv",
         "rlang",
         "scales",
         "stats",
-        "tibble",
         "vctrs",
         "withr"
       ],
-      "Hash": "7ad64861e028a777d7d67ff83231b548"
+      "Hash": "3b4625a157bcbd82b937fcb3acdd2d85"
     },
     "glue": {
       "Package": "glue",
@@ -703,13 +696,13 @@
     },
     "here": {
       "Package": "here",
-      "Version": "1.0.1",
+      "Version": "1.0.2",
       "Source": "Repository",
-      "Repository": "RSPM",
+      "Repository": "CRAN",
       "Requirements": [
         "rprojroot"
       ],
-      "Hash": "24b224366f9c2e7534d2344d10d59211"
+      "Hash": "e5114f2abe04168238181913a8572358"
     },
     "highr": {
       "Package": "highr",
@@ -887,6 +880,17 @@
       ],
       "Hash": "b8552d117e1b808b09a832f589b79035"
     },
+    "logger": {
+      "Package": "logger",
+      "Version": "0.4.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R",
+        "utils"
+      ],
+      "Hash": "4a982acda0c48124f0f5f2cbd7e49ce9"
+    },
     "logging": {
       "Package": "logging",
       "Version": "0.10-108",
@@ -913,13 +917,13 @@
     },
     "magrittr": {
       "Package": "magrittr",
-      "Version": "2.0.3",
+      "Version": "2.0.4",
       "Source": "Repository",
-      "Repository": "RSPM",
+      "Repository": "CRAN",
       "Requirements": [
         "R"
       ],
-      "Hash": "7ce2733a9826b3aeb1775d56fd305472"
+      "Hash": "8b3b213aa0c54a0dec254288ccb545d1"
     },
     "memoise": {
       "Package": "memoise",
@@ -931,23 +935,6 @@
         "rlang"
       ],
       "Hash": "e2817ccf4a065c5d9d7f2cfbe7c1d78c"
-    },
-    "mgcv": {
-      "Package": "mgcv",
-      "Version": "1.9-1",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "Matrix",
-        "R",
-        "graphics",
-        "methods",
-        "nlme",
-        "splines",
-        "stats",
-        "utils"
-      ],
-      "Hash": "110ee9d83b496279960e162ac97764ce"
     },
     "mime": {
       "Package": "mime",
@@ -987,20 +974,6 @@
         "utils"
       ],
       "Hash": "1485aee3373bcfdbb2dd9048995af2ae"
-    },
-    "nlme": {
-      "Package": "nlme",
-      "Version": "3.1-167",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R",
-        "graphics",
-        "lattice",
-        "stats",
-        "utils"
-      ],
-      "Hash": "abd9318b4073223646c0f9d3ed641904"
     },
     "openssl": {
       "Package": "openssl",
@@ -1270,7 +1243,7 @@
     },
     "rmarkdown": {
       "Package": "rmarkdown",
-      "Version": "2.29",
+      "Version": "2.30",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
@@ -1289,7 +1262,7 @@
         "xfun",
         "yaml"
       ],
-      "Hash": "df99277f63d01c34e95e3d2f06a79736"
+      "Hash": "efe19db0fde0fff13cea7eec6f695021"
     },
     "rprojroot": {
       "Package": "rprojroot",
@@ -1460,7 +1433,7 @@
     },
     "targets": {
       "Package": "targets",
-      "Version": "1.11.3",
+      "Version": "1.11.4",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
@@ -1485,7 +1458,7 @@
         "vctrs",
         "yaml"
       ],
-      "Hash": "19f79f73e18a4bd63c668080faae39d1"
+      "Hash": "c25e1088d3614e7a8a79410cc83bdd73"
     },
     "textshaping": {
       "Package": "textshaping",

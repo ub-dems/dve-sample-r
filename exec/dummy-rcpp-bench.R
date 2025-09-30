@@ -28,9 +28,15 @@ suppressMessages({
   library(argparse)
 })
 
+devtools::load_all(".")
+
+require(dvesimpler)
+
+
 # Global variables
 script_name <- "dummy-rcpp-bench"
-start_time <- as.integer(Sys.time())
+start_tm <- Sys.time()
+start_time <- strftime(start_tm , "%Y-%m-%dT%H%M%S")
 
 #' Initialize logging configuration  
 setup_logging <- function(log_dir, verbosity) {
@@ -395,7 +401,7 @@ main <- function() {
   args <- parse_arguments()
   
   # Set up logging directory
-  log_dir <- Sys.getenv("P_LOGS_DIR", default = "logs")
+  log_dir <- Sys.getenv("P_LOGS_DIR", unset = "logs")
   log_dir <- ensure_log_dir(log_dir)
   
   # Initialize logging
