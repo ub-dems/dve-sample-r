@@ -254,7 +254,7 @@ create_performance_plot <- function(summary_df, test_type, sample_size) {
   plot_subtitle <- paste("Sample Size:", sample_size, "| Error bars: ±1 SD")
   
   p <- ggplot(summary_df, aes(x = input_size, y = median_time, color = function_label)) +
-    geom_line(size = 1.2) +
+    geom_line(linewidth = 1.2) +
     geom_point(size = 2.5) +
     geom_errorbar(aes(ymin = median_time - sd_time, ymax = median_time + sd_time),
                   width = 0.1, alpha = 0.7) +
