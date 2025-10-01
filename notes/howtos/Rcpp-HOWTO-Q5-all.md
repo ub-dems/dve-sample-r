@@ -1,6 +1,7 @@
 ``` /// vim: set foldmethod=marker : ```
 # ::{{{ #RCPP: Howto //
-# Q:1 - RcppParallel A* search tutorial example
+# Q:5 - RcppParallel A* search tutorial example
+
 
 <system>
 
@@ -211,10 +212,10 @@ renv::status()
 
 
 
-# A:1 (Vertex)
+# A:5 (Vertex)
 > ...
 
-# A:1 (Gemini)
+# A:5 (Gemini)
 > A* Search Algorithm with `RcppParallel`
 
 Here is a complete guide to implementing a parallel A* search algorithm using `RcppParallel`, including a detailed C++ implementation, a micro-benchmarking R script, and a quick-start guide for project setup.
@@ -675,7 +676,7 @@ If you are using `renv` in "explicit" mode, you manage dependencies directly.
 
 
 
-# A:1 (Claude)
+# A:5 (Claude)
 > A* Search Algorithm with RcppParallel
 
 I'll create a comprehensive example demonstrating the A* search algorithm implemented with RcppParallel, focusing on `parallelFor` and `parallelReduce` features. This will be an educational and practical implementation.I've created a comprehensive guide for implementing the A* search algorithm with RcppParallel. Here are the key highlights:
@@ -1394,7 +1395,7 @@ For smaller graphs, the sequential version may be faster due to reduced parallel
 [^5]: [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html)
 
 
-# A:1 (ChatGPT)
+# A:5 (ChatGPT)
 > A* Search Algorithm in RcppParallel
 
 This document demonstrates how to implement the **A\*** search algorithm in C++ with **RcppParallel**, alongside sequential and parallel implementations.
@@ -1732,7 +1733,7 @@ Would you like me to **extend the parallelization** further (e.g., expand from p
 
 
 
-# A:1 (DeepSeek)
+# A:5 (DeepSeek)
 > A* Search Algorithm in RcppParallel
 
 This document demonstrates a parallel implementation of the A* search algorithm using `RcppParallel`[^1] for heuristic graph traversal. We leverage `RcppArmadillo` for efficient matrix operations and graph representation.
@@ -2161,7 +2162,7 @@ result <- run_astar_comparison(100, 0.3, 1, 100)
 
 
 
-# A:1 (Kimi)
+# A:5 (Kimi)
 > A* Search in Parallel with RcppParallel
 
 A compact, high-performance example that demonstrates how to parallelise the A* shortest–path algorithm with `RcppParallel::parallelFor` and `parallelReduce`.
@@ -2548,7 +2549,7 @@ TinyThread is bundled with `RcppParallel`; no extra action needed.
 [^3]: [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html)
 
 
-# A:1 (Diffusion)
+# A:5 (Diffusion)
 > ...
 
 ## Solution Sources
@@ -3110,7 +3111,7 @@ cat("\nBenchmarking complete. Check the generated plots and data files if reques
 ```
 
 
-# A:1 (LeChat)
+# A:5 (LeChat)
 > A* Search Algorithm in RcppParallel: Parallel vs. Sequential Implementation
 
 ## **1. Introduction**
@@ -3446,7 +3447,7 @@ renv::snapshot()
 [^3]: [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html)
 
 
-# A:1 (Perplexity)
+# A:5 (Perplexity)
 > Parallel A* Search Algorithm with RcppParallel
 
 This tutorial presents a minimal yet interesting parallelization of the **A\* search algorithm** leveraging the `RcppParallel` package. For matrix and vector operations, we integrate `RcppArmadillo` for efficient numeric computations and `RcppEigen` for alternative linear algebra utilities if desired.
@@ -3886,4 +3887,471 @@ Use `renv::restore()` to restore environment on other machines.
 [^6]: [argparse R Package](https://cran.r-project.org/package=argparse)
 [^7]: [microbenchmark R Package](https://cran.r-project.org/package=microbenchmark)
 
-# ::}}} \\ %1.
+# ::}}} \\ %5.
+
+
+# ::{{{ #RCPP: Howto //
+# Q:5.1 - RcppParallel A* search tutorial example implementation
+
+<system>
+
+You are an expert R and C++ developer.
+
+Your task is to prepare example C++ sources to introduce core features
+of main Rcpp ecosystem packages.
+
+The answer must be in well-formatted, clearly structured (GFM)
+markdown, with footnotes for links to relevant online resource
+references.
+
+The C++ code fragments must be placed in `cpp` markdown codeblocks,
+formatted following the Google C++ style guide, and moderately but
+well documented, following Roxygen2 CRAN standards, with minimal
+invocation example, under 'notrun' tags.
+
+In the implementation prefer shorter names for local variables, but
+use clear descriptive names for function names and arguments.
+
+In C++ local variable declaration, use `auto` type inference where
+appropriate. 
+
+In complex template declaration, introduce template `typedef` to
+simplify code.
+
+Tend to prefer C++/R idiomatic code, unless performance considerations
+advice better alternatives.
+
+Terse code readability for generated code is very important.
+
+Prefer richer data type structures to code complexity.
+
+The C++ reference standard is C++20.
+
+The replies must adhere to CRAN guidelines, integrated by `tidyverse`
+best practices.
+
+The code should discuss performance details in depth, with an overall
+judgement of every implementation alternative, over expected runtime
+performance in a multicore (32 HyperThreaded Intel XEON or AMD EPYC)
+Ubuntu 24.04 Linux virtual machines, running on Microsoft Azure
+platform.
+
+As a stylistic note, discuss also every alternative from language
+idiomaic and pragmaic point of view.
+
+</system>
+
+
+Your task is to produce an interesting use-case example for the
+`RcppParallel` package, focusing on `parallelFor` and `parallelReduce`
+functions.
+
+An interesting use case could be a minimal toy implementation of an A*
+heuristic search algorithm, applied to a random generated graph.
+
+The parallel code should be paired with a traditional sequential implementation.
+
+All examples must be R callable.
+
+
+## Project Environment
+
+The target package, called `dvesimpler`, is based on `renv` and
+already includes the following dependencies:
+
+ - `Imports` dependencies:
+   - `Rcpp`
+   - `RcppArmadillo`
+   - `igraph`
+   - `argparse`
+   - `logger`
+   - `tidyverse`
+   - `ggplot2`
+ - `Suggests` dependencies:
+   - `devtools`
+   - `knitr`
+   - `microbenchmark`
+   - `usethis`
+   - `roxygen2`
+   - `rmarkdown`
+   - `testthat`
+ - `LinkingTo` dependencies:
+   - `Rcpp`
+   - `RcppArmadillo`
+   - `RcppParallel`
+
+## Implementation Details
+
+As implementation detail, your task is to produce two sources to be
+included in a CRAN-compliant R package project:
+
+- a C++ source: `./exec/dummySearch/dummy_finder.cpp`
+- a R script:   `./exec/dummySearch/dummy-rcpp-finder.r`
+
+with the following specifications.
+
+## C++ "A* pathfinding" implementation with sequential and parallel alternatives: `./exec/dummySearch/dummy_finder.cpp`
+
+The C++ source: `./exec/dummySearch/dummy_finder.cpp` provides an
+implementation example of different approaches in "A* pathfinder" implementation.
+
+In this source will be placed two group of C++ functions "seq" and
+"par", with the following specifications, delimited in XML
+`*-finder-specification` tags, that can be testes to verify how
+different implementation alternatives affect runtime performance,
+depending on the input size. 
+
+Both specifications inherits a shared set of specifications, delimited
+in XML tag `common-finder-specification`.
+
+### "common" function specification
+
+<common-finder-specification>
+
+- C++-style with STL library and `Rcpp`/`RcppArmadillo` data types.
+- Same (or similar) data structures for graph representation
+- for both implementations (seq/par) provide a pair of functions:
+  - an R-callable `*_astar_finder` that receives a graph as a named
+    list of two elements:
+    - "positions" with an two columns `NumericMatrix` with (x,y) node
+      coordinates
+    - "adjacency" with an square `NumericMatrix` with symmetric weighs
+      computed by euclidean distances between pair of nodes
+    - in addition, the id of start and goal node arguments.
+    - these function unbox and converts the input arguments to
+      `arma::mat` equivalents and dispatch the call to the
+      corresponding `*_astar_finder_impl` functions.
+- The internal (not R-callable) functions `*_astar_finder_impl` perform the A* search:
+- The internal function arguments are:
+  - `const arma::mat& adjacency_matrix`: input un-directed graph as
+    adjacency matrix.
+  - `const arma::mat& positions` for nodes (x,y) planar coordinates.
+  - `int start` starting node id
+  - `int goal` target (goal) node id
+- The return value for `*_astar_finder_impl` functions:
+  - `std::vector<int> path`: the shortest path to connect start node
+    with goal node.
+- all the public function of this module must start with the name prefix `dmy_astar_`.
+- common utility functions (like `euclidean_heuristic` used to compute
+  adjacent matrix weights must be placed in an anonymous namespace.
+
+</common-finder-specification>
+
+
+
+### "seq" function group specification
+
+<seq-finder-specification>
+
+The "seq" group of function provide a "sequential" (single CPU core)
+implementation of the "A* pathfinding" algorithm.
+
+- prefer a "simple" implementation to clarify algorithm behaviour.
+
+The main function are:
+- `dmy_aster_seq_finder`, R callable
+- `dmy_aster_seq_finder_impl`, internal, with `arma::mat` types.
+
+</sum-test-specification>
+
+
+### "par" function group specification
+
+<par-finder-specification>
+
+The "par" group of function provide a "parallel" (single machine,
+multiple CPU cores) implementation of the "A* pathfinding" algorithm.
+
+- for parallelism, use facilities provided by `RcppParallel`
+- in particular, use `parallelFor` node exploration, and
+  `parallelReduce` for best node selection.
+- provide synchronisation (mutex, critical sections) to avoid
+  concurrency issues, if required.
+- comment the code about concurrency attention points.
+- Discuss concurrency handling in `RcppParallel` as a reply note.
+- Discuss data structure design topic in concurrency. 
+- Also discuss concurrency for internal C++ runtime memory allocation.
+- Include a comparison between `RcppParallel` libraries and OS facilities (`pthreads`)
+
+The main function are:
+- `dmy_aster_par_finder`, R callable
+- `dmy_aster_par_finder_impl`, internal, with `arma::mat` types.
+
+</sum-test-specification>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+A microbenchmark R test script must be provided to verify the performance advantage of the parallel version.
+This script should accepts several command-line arguments, not mandatory, with sensible defaults, as described bolow.
+The argument parsing must use a standard argument parser, provided by some library facility.
+
+<test-script-cli-arguments>
+
+- "Sample Size"   (option: -m|--samples) - microbenchmark sample size (e.g., number of iterations)
+- "Save Data"     (option: -s|--save) - boolean value to require the dump of the randon input and tast results over an external (text or json) file for further analysys or plotting.
+- "Input Size" (positional, for many values) - for graph domains, graph size (e.g., number of nodes)
+
+If the A* example consider a random Graph input, (as a "shortest path find" algorithm), consider also a parameter
+
+- "Graph Density" (option: -g|--density) - graph density (e.g., rate of links over nodes, with 1.0 means full connected, 0.0 full isolated)
+
+
+</test-script-cli-arguments>
+
+
+As a final section, prepare a "RcppParallel quick start" guide that decribes the minimal steps required to include `RcppParallel` in a R package project, based on `renv` (in "explicit" configuration mode), that already include supports for `Rcpp`, `RcppArmadillo`, and `RcppEigen`. In particular, provide code modification for `DESCRIPTION` and `./src/Makevars`. Include also a note for "SIMD" support in `~/.R/Makevars`, like adding a `-march=native` in `CXXFLAGS` variable. For package installation, discuss possible OS system library dependencies and `TinyThread` library distribution. Show basic `renv` command sequence for installation: `renv::install()` and `renv::snapshot()`.
+
+Here's a breakdown of what you need to deliver:
+
+1.  **Markdown Structure:**
+    *   Use clear headings and subheadings to organize the content.
+    *   Provide a brief introduction to the A* search algorithm.
+    *   Explain the use of `RcppParallel`, `RcppArmadillo`, and `RcppEigen` in the context of the A* implementation.
+    *   Include footnotes for references to online resources (e.g., documentation for the packages, A* algorithm explanation).
+
+2.  **C++ Code:**
+    *   Implement both a sequential and a parallel version of the A* search algorithm.
+    *   Use `parallelFor` and `parallelReduce` from `RcppParallel` to parallelize the search.
+    *   Use `RcppArmadillo` or `RcppEigen` for efficient matrix/vector operations if applicable to the A* implementation.
+    *   Follow the Google C++ Style Guide for formatting.
+    *   Provide clear and concise comments to explain the code.
+
+3.  **R Callable Functions:**
+    *   Place both the sequential and parallel C++ functions in a single C++ source, to be included via `Rcpp::sourceCpp` or similar mechanisms to make them callable from R.
+
+4.  **Microbenchmark Test Script:**
+    *   Create an R script that uses the `microbenchmark` package to compare the performance of the sequential and parallel A* implementations.
+    *   Provide an argument parsing support with library argument parsing facilities, for the script that allows the parameters specified above in `test-script-cli-arguments` XML tag
+    *   For the positional argument "Input Size", consider that the argument can be expressed as a space separated list of integers (like "100 1000 10000") and perform test iteration for every value. Provide a graphical summary of parallel vs sequential benchmark for performance evaluation as function of problem size. In the graph subtitle, reports the value of options "Sample Size" and other parameters, like "Graph Density".
+
+5.  **CRAN and Tidyverse Compliance:**
+    *   Ensure the code adheres to CRAN guidelines (e.g., no excessive memory allocation, proper error handling).
+    *   Follow tidyverse best practices where applicable (e.g., consistent naming conventions).
+
+6.  **RcppParallel Quick Start guide:**
+    *   Describe miniman package configuration required for RcppParallel dependency.
+    *   Only if required, show `apt` commands to install required OS system library dependencies.
+    *   Show `renv` commands required for installation.
+
+Example Markdown Structure:
+
+The C++ code fragments must be placed in `cpp` markdown codeblocks, formatted following the Google C++ style guide, and moderately but well documented.
+
+The replies must adhere to CRAN guidelines, integrated by `tidyverse` best practices.
+
+The code should be very performant, using alternatively, implicit parallelism and vectorization via OpenMP/SIMD intrinsics, or via library-based interfaces to multitasking and multiprocessing OS facilities.
+
+</system>
+
+
+
+Your task is to produce an interesting use-case example for the `RcppParallel` package,
+focusing on `parallelFor` and `parallelReduce` functions.
+
+The target package, based on `renv`, already includes `Rcpp`, `RcppArmadillo`, and `RcppEigen`.
+
+An interesting use case could be a minimal toy implementation of an A* heuristic search algorithm, applied to a random generated graph.
+
+The parallel code should be paired with a traditional sequential implementation.
+
+All examples must be R callable.
+
+A microbenchmark R test script must be provided to verify the performance advantage of the parallel version.
+This script should accepts several command-line arguments, not mandatory, with sensible defaults, as described bolow.
+The argument parsing must use a standard argument parser, provided by some library facility.
+
+<test-script-cli-arguments>
+
+- "Sample Size"   (option: -m|--samples) - microbenchmark sample size (e.g., number of iterations)
+- "Save Data"     (option: -s|--save) - boolean value to require the dump of the randon input and tast results over an external (text or json) file for further analysys or plotting.
+- "Input Size" (positional, for many values) - for graph domains, graph size (e.g., number of nodes)
+
+If the A* example consider a random Graph input, (as a "shortest path find" algorithm), consider also a parameter
+
+- "Graph Density" (option: -g|--density) - graph density (e.g., rate of links over nodes, with 1.0 means full connected, 0.0 full isolated)
+
+
+</test-script-cli-arguments>
+
+
+As a final section, prepare a "RcppParallel quick start" guide that decribes the minimal steps required to include `RcppParallel` in a R package project, based on `renv` (in "explicit" configuration mode), that already include supports for `Rcpp`, `RcppArmadillo`, and `RcppEigen`. In particular, provide code modification for `DESCRIPTION` and `./src/Makevars`. Include also a note for "SIMD" support in `~/.R/Makevars`, like adding a `-march=native` in `CXXFLAGS` variable. For package installation, discuss possible OS system library dependencies and `TinyThread` library distribution. Show basic `renv` command sequence for installation: `renv::install()` and `renv::snapshot()`.
+
+Here's a breakdown of what you need to deliver:
+
+1.  **Markdown Structure:**
+    *   Use clear headings and subheadings to organize the content.
+    *   Provide a brief introduction to the A* search algorithm.
+    *   Explain the use of `RcppParallel`, `RcppArmadillo`, and `RcppEigen` in the context of the A* implementation.
+    *   Include footnotes for references to online resources (e.g., documentation for the packages, A* algorithm explanation).
+
+2.  **C++ Code:**
+    *   Implement both a sequential and a parallel version of the A* search algorithm.
+    *   Use `parallelFor` and `parallelReduce` from `RcppParallel` to parallelize the search.
+    *   Use `RcppArmadillo` or `RcppEigen` for efficient matrix/vector operations if applicable to the A* implementation.
+    *   Follow the Google C++ Style Guide for formatting.
+    *   Provide clear and concise comments to explain the code.
+
+3.  **R Callable Functions:**
+    *   Place both the sequential and parallel C++ functions in a single C++ source, to be included via `Rcpp::sourceCpp` or similar mechanisms to make them callable from R.
+
+4.  **Microbenchmark Test Script:**
+    *   Create an R script that uses the `microbenchmark` package to compare the performance of the sequential and parallel A* implementations.
+    *   Provide an argument parsing support with library argument parsing facilities, for the script that allows the parameters specified above in `test-script-cli-arguments` XML tag
+    *   For the positional argument "Input Size", consider that the argument can be expressed as a space separated list of integers (like "100 1000 10000") and perform test iteration for every value. Provide a graphical summary of parallel vs sequential benchmark for performance evaluation as function of problem size. In the graph subtitle, reports the value of options "Sample Size" and other parameters, like "Graph Density".
+
+5.  **CRAN and Tidyverse Compliance:**
+    *   Ensure the code adheres to CRAN guidelines (e.g., no excessive memory allocation, proper error handling).
+    *   Follow tidyverse best practices where applicable (e.g., consistent naming conventions).
+
+6.  **RcppParallel Quick Start guide:**
+    *   Describe miniman package configuration required for RcppParallel dependency.
+    *   Only if required, show `apt` commands to install required OS system library dependencies.
+    *   Show `renv` commands required for installation.
+
+Example Markdown Structure:
+
+```markdown
+# A* Search Algorithm in RcppParallel
+
+This document demonstrates the implementation of the A* search algorithm using `RcppParallel` for parallel execution. We also leverage `RcppArmadillo` and `RcppEigen` for efficient data structures and operations.
+
+## A* Algorithm Overview
+
+[Provide a brief explanation of the A* algorithm]
+
+## C++ Implementation
+
+### Sequential Version
+
+\`\`\`cpp
+// Sequential A* implementation
+#include <Rcpp.h>
+// ... (rest of the sequential code)
+\`\`\`
+
+### Parallel Version
+
+\`\`\`cpp
+// Parallel A* implementation using RcppParallel
+#include <RcppParallel.h>
+// ... (rest of the parallel code)
+\`\`\`
+
+## R Callable Functions
+
+\`\`\`cpp
+// Expose the C++ functions to R
+#include <Rcpp.h>
+using namespace Rcpp;
+
+// [[Rcpp::export]]
+NumericVector astar_sequential(NumericMatrix graph, int start, int goal) {
+  // ...
+}
+
+// [[Rcpp::export]]
+NumericVector astar_parallel(NumericMatrix graph, int start, int goal) {
+  // ...
+}
+\`\`\`
+
+## Microbenchmark Test
+
+\`\`\`R
+# R script to benchmark the sequential and parallel versions
+library(microbenchmark)
+
+# Define the graph and start/goal nodes
+graph <- matrix(runif(100), nrow = 10)
+start <- 1
+goal <- 10
+
+# Benchmark the functions
+bench_results <- microbenchmark(
+  astar_sequential(graph, start, goal),
+  astar_parallel(graph, start, goal),
+  times = 100  # You can change this via command line
+)
+
+print(bench_results)
+\`\`\`
+
+
+## Quick Start Guide
+
+### Project Configuration
+
+#### \`DESCRIPTION\`
+
+\`\`\`yaml
+
+Depends
+   ...
+Imports
+   ...
+LinkingTo
+   ...
+SystemRequirements:
+   ...
+
+\`\`\`
+
+#### \`src/Makevars\`
+
+\`\`\`make
+RCPPP_LIBS = $(Rscript ...)
+PKG_LIBS = ... $(RCPPP_LIBS)
+\`\`\`
+
+#### \`~/.R/Makevars\`
+
+\`\`\`make
+CXXFLAGS = ... -march=native
+\`\`\`
+
+### RcppParallel Package Installation
+
+#### \`renv\`
+
+
+\`\`\`make
+renv::status()
+renv::install()
+renv::snapshot()
+renv::status()
+\`\`\`
+
+
+## References
+
+[^1]: [RcppParallel Documentation](https://cran.r-project.org/package=RcppParallel)
+[^2]: [A* Search Algorithm](https://en.wikipedia.org/wiki/A*_search_algorithm)
+[^3]: [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html)
+```
+
+# ::}}} \\ %5.1.
+
+<!--  LocalWords:  STL pathfinding namespace mutex
+ -->
