@@ -1,5 +1,5 @@
 ``` /// vim: set foldmethod=marker : ```
-# ::{{{ #RCPP: Howto //
+# ::{{{ #RCPP: TOC - RcppParallel Contents //
 # TOC - RcppParallel A* search tutorial - Contents
 
 1. [Q:5.0 - RcppParallel A* search tutorial example](#Q50)
@@ -7,7 +7,7 @@
 
 # ::}}} \\ %+.
 
-# ::{{{ #RCPP: Howto //
+# ::{{{ #RCPP: Q:5.0 - RcppParallel tutorial //
 # Q:5.0 - RcppParallel A* search tutorial example {#Q50}
 
 
@@ -3898,7 +3898,7 @@ Use `renv::restore()` to restore environment on other machines.
 # ::}}} \\ %5.
 
 
-# ::{{{ #RCPP: Howto //
+# ::{{{ #RCPP: Q:5.1 - RcppParallel code //
 # Q:5.1 - RcppParallel A* search VibeCoding implementation {#Q51}
 
 <system>
@@ -3917,7 +3917,7 @@ formatted following the Google C++ style guide, and moderately but
 well documented, following Roxygen2 CRAN standards, with minimal
 invocation example, under 'notrun' tags.
 
-All sources must contains two comment lines at top with this template expanded:
+All sources must contains two comment lines at top (after "she-bang" line, for scripts) with this template expanded:
 
 if C++,
 ```cpp
@@ -3941,6 +3941,12 @@ For this query use:
 - {{markdown-prompt-doc}} := `notes/howtos/Rcpp-HOWTO-Q5-all.md#Q51`
 
 
+In standard legal comments, assume the following field in expansion:
+
+- {{author}}: "datalab"
+- {{email}}: "datalab@unimib.it"
+- {{copyright-owner}}: "University of Milano-Bicocca"
+- {{copyright-year}}: the current date year
 
 In the implementation prefer shorter names for local variables, but
 use clear descriptive names for function names and arguments.
@@ -4000,6 +4006,7 @@ already includes the following dependencies:
    - `logger`
    - `tidyverse`
    - `ggplot2`
+   - `gggraph`
  - `Suggests` dependencies:
    - `devtools`
    - `knitr`
@@ -4044,16 +4051,18 @@ in XML tag `common-finder-specification`.
 - use of C++ STL library and `Rcpp`/`RcppArmadillo` data types.
 - same (or similar) data structures for graph representation 
 - for both implementations (seq/par) provide a pair of functions:
-  - an R-callable `*_astar_finder` that receives a graph as a named
+  - an R-callable C++ function `*_astar_finder` that receives a graph as a named
     list of two elements:
-    - `positions` with an two columns `NumericMatrix` with (x,y) node
+    - `positions` with an two columns `NumericMatrix` with (x,y) vertex
       coordinates, used in heuristic evaluation
     - `adjacency` with an square `NumericMatrix` with symmetric weighs
-      computed by euclidean distances between pair of nodes
-    - in addition, the id of start and goal node arguments.
+      computed by euclidean distances between pair of vertexes
+    - in addition, the id of start and goal vertexes arguments.
     - these function unbox and converts the input arguments to
       `arma::mat` equivalents and dispatch the call to the
       corresponding `*_astar_finder_impl` functions.
+   - the return value is a `NumericVector` with the IDs of the vertexes on the path from start vertex to goal vertexes. 
+   - If no path is found, maybe because of disconnected vertex on the graph, e zero-size vector is returned.
 - The internal (not R-callable) functions `*_astar_finder_impl` perform the A* search:
 - The internal function arguments are:
   - `const arma::mat& adjacency_matrix`: input un-directed graph as
@@ -4067,8 +4076,8 @@ in XML tag `common-finder-specification`.
 - all the public function of this module must start with the name prefix `dmy_astar_`.
 - common utility functions must be placed in an anonymous namespace.
 - a common function `euclidean_heuristic` is used to compute planar
-  distance among nodes, used in adjacent matrix weights
-  initialisation.
+  distance among vertexes, and can be used to compute an admissible
+  heuristic for search optimization.
 
 </common-finder-specification>
 
@@ -4103,10 +4112,6 @@ multiple CPU cores) implementation of the "A* pathfinding" algorithm.
 - provide synchronisation (mutex, critical sections) to avoid
   concurrency issues, if required.
 - comment the code about concurrency attention points.
-- Discuss concurrency handling in `RcppParallel` as a reply note.
-- Discuss data structure design topic in concurrency. 
-- Also discuss concurrency for internal C++ runtime memory allocation.
-- Include a comparison between `RcppParallel` libraries and OS facilities (`pthreads`)
 
 The main function are:
 - `dmy_aster_par_finder`, R callable
@@ -4116,78 +4121,78 @@ The main function are:
 
 
 
-## R script for "A* pathfinding" alternative benchmarks, with variable graph size: `./exec/dummySearch/dummy-rcpp-finder.r`
+## R script for "A* pathfinding" testing, with variable graph size: `./exec/dummySearch/dummy-rcpp-finder.r`
 
 
 A R test script must be provided to verify the performance advantage of the parallel version.
 This script should accepts several command-line arguments, not mandatory, with sensible defaults, as described bolow.
 The script specification is placed below, delimited in XML `test-script-specification` tags.
-The script must link C++ code in `./exec/dummySearch/dummy_finder.cpp` thru `Rcpp::sourceCpp` invokation.
+The script must link C++ code in `./exec/dummySearch/dummy_finder.cpp` thru `Rcpp::sourceCpp` invocation.
 
 
-### Benckmark Script Specification
+### R Test Script Specification
 
 <test-script-specification>
 
 - the script admits the command line arguments, descibed below, delimited in XML `test-script-cli-arguments` tags.
-- the argument parsing must use a standard argument parser, provided by some library facility.
-- the script output should go to stdout and logged to a file, using standard logging facilities.
-- the log directory will be used also for storing benchmark results and plots
-- the log directory will be taken from environment variable `P_LOGS_DIR` with `logs` as default.
-- the log directory should be created if absent.
-- the script execution should be logged at info level (arguments, benchmark invocation, final summary) while the "save data" section should be logged at "debug" level (verbose>=1).
-- the script should set verbose level in C++ module via `dmy_pf_log_set_level` call. Before all benchmark invocations should call `dmy_pf_log_reset` to reenable tracing.
-- all the log artifacts should contain the test type and a localtime timestamp suffix as a part of the filename.
-- during script initalization, log: 1. the script arguments, 2. the full path of the log directory, 3. the output of system command: `inxi -C`
-- the benchmark script should consider sequential and parallel implementations of the algorithm.
+- the argument parsing must use a standard argument parser, provided by `argparse` facility.
+- the script support output logging as descibed below, delimited in XML `test-script-logging-specification` tags.
 - the script should generate a random graph of `igraph` type as described below, delimited in XML `sample-graph-specification` tag.
-- the benchmark is optional, requested by "Benchmark" command-line argument. Otherwise a single direct invocation is performed.
-- the input vector should be filled by random normal values of 0 mean and 10000 variance (100 sd)
-- every script invocation should prodice a log file, a CSV file with summaries of the `microbenchmark` results 
-- if, in addition, the "Save Data" argument is specified also the
-  additional output is produced, following specification below, delimited
-  in `save-data-script-specification` XML tag.
+- the script supports different execution modes as described below, delimited in XML `test-script-execution-modes-specification` tags.
+- after execution a set of output is produced, depending on command-line arguments, as specified below, delimited in XML `save-data-script-specification` tag.
 
 </test-script-specification>
 
 
+### Script Execution Modes
+
+<test-script-execution-modes-specification>
+
+- the script support different execution modes: `all`, `par`, `seq`, `bench`, as specified by "-x|--exec" command line argument.
+  - `all` mode: this mode execute in parallel (with the `parallel` package) both `par` and `seq` execution modes, waiting for termination of both tasks.
+  - `par` mode: this mode execute once the parallel search `dmy_aster_par_finder` on the random graph, and random `<start,goal>` vertex pair.
+  - `seq` mode: this mode execute once the sequential search `dmy_aster_seq_finder` on the random graph, and random `<start,goal>` vertex pair.
+  - `bench` mode: this mode execute a benchmark, using standard `microbenchmark` facility of both versions. The "Sample Size" argument provides the number of iterations.
+- for `par` and `sec` execution modes, a log before execution and after execution will report: path length of solution or failure, elapsed time, and both number divided by graph size.
+- for `bench` execution mode, the summary of benchmark result will be logged on output.
+- for `all` mode, both solution will be compared and every difference reported at warning log level.
+- after test execution, several output will be produced, as descibed below, delimited in XML `save-data-script-specification` tags.
+
+</test-script-execution-modes-specification>
+
+
+
 ### Script Output Generation
 
 <save-data-script-specification>
 
 - all the outputs should go in the logging directory: fron environment `${P_LOGS_DIR:-'logs'}`, created if missing, as described above.
-- all the output filenames should start with this prefix: "<script-name>-<sec-timestamp>-<test-type>-" with a variable suffix.
+- all the output filenames should start with this prefix: "<script-name>-<sec-timestamp>-<exec-mode>-" with a variable suffix.
 - the "<sec-timestamp>" part is composed by script start time, formatted as localtime in "CCYYMMDD-hhmmss" format.
 - the output to generate in all runs, indipentenly fron "Save Data" option are:
    - a log file (suffix: `test.log`) generated by logging facilities, with logging level set according to verbosity option (0:INFO, >=1: DEBUG)
-- the output to generate in all runs, but only if "Benchmark" option is enabled are:
+- for `all`,`seq`,`par` modes, when the "Show Plot" option is selected the following output will be generated:
+   - a plot dump of the input graph (suffix: `plot.pdf`) as specified below, delimited in `graph-plot-script-specification` XML tag.
+   - for `all` mode, only the `par` solution will be plotted.
+- for `bench` mode, when the "Save Data" option is selected the following output will be generated:
    - a benchmark summary report (suffix: `bench.txt`), only if benchmark ws enabled.
    - a tab separated export (TSV) (suffix: `data.tsv`) with microbenchmark data export with additional columns: 'graph_type", "timestamp", "function_label", "input_size", "graph_radius",  "congestion", "path_length", "successful_result"
-- when the "Save Data" option is selected the following output will be generated:
-   - a plot dump of the input graph with only the "parallel" solution
-  following specification below, delimited in
-  `graph-plot-script-specification` XML tag.
 
 </save-data-script-specification>
 
-### Script Output Generation
+### Script Logging Specification
 
-<save-data-script-specification>
-
-- all the outputs should go in the logging directory: fron environment `${P_LOGS_DIR:-'logs'}`, created if missing, as described above.
-- all the output filenames should start with this prefix: "<script-name>-<sec-timestamp>-<test-type>-" with a variable suffix.
+<test-script-logging-specification>
+- the script output should go to stdout and logged to a file, using standard `logger` facilities.
+- the log directory will be used also for storing benchmark results and plots
+- the log directory will be taken from environment variable `P_LOGS_DIR` with `logs` as default.
+- the log directory should be created if absent.
+- the log filename should start with this prefix: "<script-name>-<sec-timestamp>" with a '.log' extension.
 - the "<sec-timestamp>" part is composed by script start time, formatted as localtime in "CCYYMMDD-hhmmss" format.
-- the output to generate in all runs, indipentenly fron "Save Data" option are:
-   - a log file (suffix: `test.log`) generated by logging facilities, with logging level set according to verbosity option (0:INFO, >=1: DEBUG)
-- the output to generate in all runs, but only if "Benchmark" option is enabled are:
-   - a benchmark summary report (suffix: `bench.txt`), only if benchmark ws enabled.
-   - a tab separated export (TSV) (suffix: `data.tsv`) with microbenchmark data export with additional columns: 'graph_type", "timestamp", "function_label", "input_size", "graph_radius",  "congestion", "path_length", "successful_result"
-- when the "Save Data" option is selected the following output will be generated:
-   - a plot dump of the input graph with only the "parallel" solution
-  following specification below, delimited in
-  `graph-plot-script-specification` XML tag.
-
-</save-data-script-specification>
+- the script execution should be logged at info level (arguments, benchmark invocation, final summary) while the "save data" section should be logged at "debug" level (verbose>=1).
+- all the log artifacts should contain the test type and a localtime timestamp suffix as a part of the filename.
+- during script initalization, log: 1. the script arguments, 2. the full path of the log directory, 3. the output of system command: `inxi -C`
+</test-script-logging-specification>
 
 ### Script Command Line Arguments
 
@@ -4195,24 +4200,33 @@ The script must link C++ code in `./exec/dummySearch/dummy_finder.cpp` thru `Rcp
 
 #### generic arguments
 
-- "Help"          (option: -h|--help) - boolean, to print script usage info and command line argument description. Execution skipped.
-- "Verbose"       (option: -v|--verbose) - integer (option count), can be repeated (-v, -vv -vvv), set the logging level (default: 0 - "info")
-- "Save Data"     (option: -s|--save) - boolean value to produce the dump of result data and system information reports as specified below.
+- "Help"             (option: -h|--help) - boolean, to print script usage info and command line argument description. Execution skipped.
+- "Verbose"          (option: -v|--verbose) - integer (option count), can be repeated (-v, -vv -vvv), set the logging level (default: 0 - "info")
+- "Save Data"        (option: -s|--save) - boolean value to produce the dump of result data and system information reports as specified below.
+
+#### execution modes
+
+- "Execution Modes"  (option: -x|--exec) - execution mode, possible values are: `all`, `par`, `seq`, `bench` (with `par` as default value)
 
 #### benchmark arguments
 
-- "Benchmark Mode" (option: -b|--benchmark) - option to enable `microbenchmark` execution. If not specified, a single direct invocation of both functions will be performed.
-- "Sample Size"    (option: -m|--samples) - microbenchmark sample size (e.g., number of iterations)
+- "Sample Size"      (option: -m|--samples) - `microbenchmark` sample size (e.g., number of iterations)
+
+#### graph plot arguments
+
+- "Show Plot"        (option: -p|--plot) - Generate a plot of the sample graph with solution path
+- "Colour Transform" (option: -f|--hue-map) - Congestion to Hue mapping transformation with values: `lin` (linear), `sqr` (square), `sqrt` (square-root), `exp` (exponential), `log` (logarithm)
+- "Image Size"       (option: -z|--image-size) - Graph Plot Resolution for PDF export, in ISO A scale (`A2`,`A3`,`A4`,`A5`,`A6`) (with `A4` as default value)
 
 #### sample graph arguments
 
-- "Test Type"        (option: -t|--test) - name of the sample graph type used for the tests: possible values are "geo" or "route" (with "route" as default value)
+- "Test Type"        (option: -t|--test) - name of the sample graph type used for the tests: possible values are `geo` or `route` (with `route` as default value)
 - "Graph Radius"     (option: -r|--radius) - vertex distance for edge generation, as in `igraph::sample_grg` "radius" argument (with default value: 0.1)
 - "Congestion Rate"  (option: -c|--congestion) - congestion weights correction parameter, as described in sample-graph-specification
-- "Colour Transform" (option: -f|--hue-map) - Congestion to Hue mapping transformation with values: 'lin' (linear), 'sqr' (square), 'sqrt' (square-root), 'exp' (exponential), 'log' (logarithm)
-- "Input Size" (positional, for many values) - to specify the dimension of the sample graph vertex count (with default "100")
+- "Input Size"       (positional, for many values) - to specify the dimension of the sample graph vertex count (with default "100")
 
 </test-script-cli-arguments>
+
 
 
 ### Sample Graph Generation
@@ -4221,44 +4235,50 @@ The script must link C++ code in `./exec/dummySearch/dummy_finder.cpp` thru `Rcp
 
 - in the R script, graph representation will use `igraph::graph` type. 
 - In C++ calls, the graph will be represented by an S3 class: `space_graph` with the attributes:
-  - `positions` with an two columns `NumericMatrix` with (x,y) node
+  - `positions` with an two columns `NumericMatrix` with (x,y) vertex
       coordinates, used in heuristic evaluation
   - `adjacency` with an square `NumericMatrix` with symmetric weighs
-      computed by euclidean distances between pair of nodes
+      computed by euclidean distances between pair of vertex, with additional "congestion" correction.
+- In R script sample generation functions, the graph object will be embedded in a wider object of S3 class: `space_test` with the attributes:
+  - `graph` the sample graph in `igraph` representation
+  - `data` the sample graph in `space_graph` representation
+  - `query` the random pair `<start,goal>` of vertex IDs to connect with a optimal path.
+  - `ath` the solution of the (`par` if `all` execution mode) execution as `NumericVector` of vertex IDs, appended after the search.
+
 - A script function: `as.space_graph.igraph` converts between `igraph::graph` and `space_graph` models.
 - A script function: `create_sample_graph` will dispatch graph creation to the typed version, based on command-line arguments.
-- For "geo" graph type:
-  - the function `create_sample_geo_graph` will return a `igraph::sample_grg`, created with "Input Size" vertex and "Radius" parameter.
+- For `geo` graph type:
+  - the function `create_sample_geo_graph` will return a `igraph::sample_grg`, created with "Input Size" vertexes and "Radius" parameter.
   - the vertex will get a pair of `x` and `y` coordinate, uniformly random chosen in [0..1]x[0..1] rectangle.
   - the edges `adjacency` matrix will be filled by weights computed as euclidean distance between vertex pairs.
-  - the edges weights will be replicated in a `distance` matrix with the same values.
-  - the edges matrix, another matrix `congestion` will be added with defined values replaced by `0.0` constant
-  - the edges matrix, another matrix `color` will be added with defined values replaced by `hsv(0.67,1,1,)` colour constant
-- For "route" graph type:
-  - the function `create_sample_route_graph` will return a modified graph of "geo" type, with a variable random `congestion` matrix.
+  - the edges attribute `distance` will also be assigned with euclidean distance between vertex (x,y) coordinate attributes.
+  - another edge attribute: `congestion` will be added with default value of `0.0` constant
+- For `route` graph type:
+  - the function `create_sample_route_graph` will return a modified graph of "geo" type, with variable random edges attribute `congestion` value.
   - the vertex pair of `x` and `y` coordinate, coming from "geo" type will be preserved.
-  - the edges `congestion` matrix will be filled by (symmetric) values taken by a random exponential distribution with "Congestion Rate" mean.
-  - the edges `adjacency` matrix will be filled by adjusted weights computed with the following formula:
+  - the edge `congestion` attribute will be filled by (symmetric) values taken by a random exponential distribution with "Congestion Rate" mean.
+  - the edges `adjacency` matrix will be filled by (symmetric) adjusted weights computed with the following formula:
     - `weight(i,j) = distance(i,j) * ( 1 + congestion(i,j) )`
   - the rationale here is that `congestion` models "traffic intensity" that is causing delay, proportional to distance, in "fastest" path search, with `distance` heuristic.
   - the sample graph are not guaranteed to be connected for every vertex pair, so optimal path search can fail, returning a zero-length result vector.
-  - the edges matrix `color` will be computed applying the "Colour Transformation" function to the `congestion` with the formula:
-    - `colour(i,j) = hsv(hue_map(mapping_funcion, 0.001+congestion(i,j)) )`
-
-
-- the edges matrix, another matrix `congestion` will be added with defined values replaced by `0.0` constant
-  
-- the output to generate in all runs, indipentenly fron "Save Data" option are:
-   - a log file (suffix: `test.log`) generated by logging facilities, with logging level set according to verbosity option (0:INFO, >=1: DEBUG)
-- the output to generate in all runs, but only if "Benchmark" option is enabled are:
-   - a benchmark summary report (suffix: `bench.txt`), only if benchmark ws enabled.
-   - a tab separated export (TSV) (suffix: `data.tsv`) with microbenchmark data export with additional columns: 'graph_type", "timestamp", "function_label", "input_size", "graph_radius",  "congestion", "path_length", "successful_result"
-- when the "Save Data" option is selected the following output will be generated:
-   - a plot dump of the input graph with only the "parallel" solution
-  following specification below, delimited in
-  `graph-plot-script-specification` XML tag.
+- A script function: `create_sample_test` will return a `space_test` with both graph representations, augmented with a random `query` pair.
 
 </save-data-script-specification>
+
+
+
+### Graph Plot Specification
+
+<graph-plot-script-specification>
+
+- from `space_test` data a graph plot will be generated using `ggraph` rendering function.
+- the graph model to draw will use the `igraph` representation.
+- the vertex (x,y) attributes will be used for ("manual") fixed graph layout.
+- the vertexes will be visualised by a small size circle, while the
+  `start` vertex will be shown as a bigger black node and the goal
+  vertex will be shown as a same-sized "blue" node
+
+</graph-plot-script-specification>
 
 
 
@@ -4533,6 +4553,8 @@ renv::status()
 # ::}}} \\ %5.1.
 
 <!--  LocalWords:  STL pathfinding namespace mutex undirected geo lin
-<!--  LocalWords:  RcppParallel Howto VibeCoding sqr sqrt
+<!--  LocalWords:  RcppParallel Howto VibeCoding sqr sqrt datalab
+<!--  LocalWords:  Bicocca
+ -->
  -->
  -->
