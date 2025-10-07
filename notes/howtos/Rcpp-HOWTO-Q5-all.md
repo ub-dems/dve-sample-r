@@ -3901,6 +3901,7 @@ Use `renv::restore()` to restore environment on other machines.
 # ::{{{ #RCPP: Q:5.1 - RcppParallel code //
 # Q:5.1 - RcppParallel A* search VibeCoding implementation {#Q51}
 
+## System Hints
 <system>
 
 You are an expert R and C++ developer.
@@ -3993,6 +3994,69 @@ The parallel code should be paired with a traditional sequential implementation.
 All examples must be R callable.
 
 
+
+## Task Overview
+
+Your task is to produce a demo tutorial example in and existing R
+package project, that illustrates parallel computation, both in C++ (via `Rcpp`)
+and R, using facilities provided by `RcppParallel` (C++) and
+`parallel` (R) packages.
+
+The tutorial example is a demo program that provides both sequential
+and parallel C++ implementations of an example "A* pathfinding"
+algorithm.
+
+
+The search functions will receive, for a graph with N vertexes: 
+- a graph representation as a (symmetric) NxN adjacency matrix with edge weights
+- a bi-dimensional Nx2 vector with (x,y) position of the vertexes
+- the ID (index) of the "start" vertex at the begin of the target path
+- the ID (index) of the "goal" vertex at the end of the target path
+
+The return value of the search is a vector that lists all the vertex
+IDs (indexes) of the "best" path.  The "best" path is the path with
+minimal cost, i.e. the sum of edge weights that links path vertexes.
+In case of search failure, caused by "start" and "goal" vertexes
+belonging in disconnected parts of the graph, a zero-length vector is
+returned.
+
+The nodes of the graph are linked by edges with a weight representing
+the "cost" of traversal. The nodes also have a position pair of
+(planar) spatial coordinates (x,y) that can be used to introduce an
+admissible heuristic, assuming verified the condition:
+
+* `distance(i,j) <= weight(i,j)`
+
+where are valid all this conditions
+
+* `distance(i,j) == distance(j,i)`  (symmetry for undirected graph)
+* `weight(i,j) == weight(j,i)`      (symmetry for undirected graph)
+* `distance(i,j) := sqrt( (v[i].x - v[j].x)^2 + (v[i].y - v[j].y)^2 )` (euclidean vertex distance)
+
+
+In addition, an R script if provided to generate random graph samples,
+inspired to geogrphical route networks, to be searched for "best" path
+between a randon pair of vertexes.
+
+The script supports the generation of different types of random graph,
+depending on command-line arguments.
+
+IMPORTANT: In any graph type variant the undirected structure of the
+graph must be ensured, i.e. the symmetry of adjacency matrix of edge
+weights must be preserved.
+
+The path search can be invoked once directly on the sequential and
+parallel C++ search functions, or, in alternative, repeted several
+time as benchmark to compare performances of both implemenation
+strategies.
+
+After performing the path search, the script, conditionally on
+execution mode, generates a plot (as pdf output file) of the graph,
+with the solution path evidenced.
+
+If additional stats are required, detailed benchmark results and graph
+statistics and full dump are produced as separated output files.
+
 ## Project Environment
 
 The target package, called `dvesimpler`, is based on `renv` and
@@ -4004,6 +4068,7 @@ already includes the following dependencies:
    - `igraph`
    - `argparse`
    - `logger`
+   - `parallel`
    - `tidyverse`
    - `ggplot2`
    - `gggraph`
@@ -4062,7 +4127,7 @@ in XML tag `common-finder-specification`.
       `arma::mat` equivalents and dispatch the call to the
       corresponding `*_astar_finder_impl` functions.
    - the return value is a `NumericVector` with the IDs of the vertexes on the path from start vertex to goal vertexes. 
-   - If no path is found, maybe because of disconnected vertex on the graph, e zero-size vector is returned.
+   - If no path is found, maybe because of disconnected vertex on the graph, a zero-size vector is returned.
 - The internal (not R-callable) functions `*_astar_finder_impl` perform the A* search:
 - The internal function arguments are:
   - `const arma::mat& adjacency_matrix`: input un-directed graph as
@@ -4071,8 +4136,8 @@ in XML tag `common-finder-specification`.
   - `int start` starting node id
   - `int goal` target (goal) node id
 - The return value for `*_astar_finder_impl` functions:
-  - `std::vector<int> path`: the shortest path to connect start node
-    with goal node.
+  - `std::vector<int> path`: the "best" path (minimal sum of edge
+    weights) to connect start node with goal node.
 - all the public function of this module must start with the name prefix `dmy_astar_`.
 - common utility functions must be placed in an anonymous namespace.
 - a common function `euclidean_heuristic` is used to compute planar
@@ -4134,67 +4199,21 @@ The script must link C++ code in `./exec/dummySearch/dummy_finder.cpp` thru `Rcp
 
 <test-script-specification>
 
-- the script admits the command line arguments, descibed below, delimited in XML `test-script-cli-arguments` tags.
-- the argument parsing must use a standard argument parser, provided by `argparse` facility.
+- the script admits the command line arguments, parsed as described below, delimited in XML `test-script-arguments-specification` tags.
 - the script support output logging as descibed below, delimited in XML `test-script-logging-specification` tags.
-- the script should generate a random graph of `igraph` type as described below, delimited in XML `sample-graph-specification` tag.
+- the script should generate a random graph, with different types and features, as described below, delimited in XML `sample-graph-specification` tag.
 - the script supports different execution modes as described below, delimited in XML `test-script-execution-modes-specification` tags.
 - after execution a set of output is produced, depending on command-line arguments, as specified below, delimited in XML `save-data-script-specification` tag.
 
 </test-script-specification>
 
 
-### Script Execution Modes
-
-<test-script-execution-modes-specification>
-
-- the script support different execution modes: `all`, `par`, `seq`, `bench`, as specified by "-x|--exec" command line argument.
-  - `all` mode: this mode execute in parallel (with the `parallel` package) both `par` and `seq` execution modes, waiting for termination of both tasks.
-  - `par` mode: this mode execute once the parallel search `dmy_aster_par_finder` on the random graph, and random `<start,goal>` vertex pair.
-  - `seq` mode: this mode execute once the sequential search `dmy_aster_seq_finder` on the random graph, and random `<start,goal>` vertex pair.
-  - `bench` mode: this mode execute a benchmark, using standard `microbenchmark` facility of both versions. The "Sample Size" argument provides the number of iterations.
-- for `par` and `sec` execution modes, a log before execution and after execution will report: path length of solution or failure, elapsed time, and both number divided by graph size.
-- for `bench` execution mode, the summary of benchmark result will be logged on output.
-- for `all` mode, both solution will be compared and every difference reported at warning log level.
-- after test execution, several output will be produced, as descibed below, delimited in XML `save-data-script-specification` tags.
-
-</test-script-execution-modes-specification>
-
-
-
-### Script Output Generation
-
-<save-data-script-specification>
-
-- all the outputs should go in the logging directory: fron environment `${P_LOGS_DIR:-'logs'}`, created if missing, as described above.
-- all the output filenames should start with this prefix: "<script-name>-<sec-timestamp>-<exec-mode>-" with a variable suffix.
-- the "<sec-timestamp>" part is composed by script start time, formatted as localtime in "CCYYMMDD-hhmmss" format.
-- the output to generate in all runs, indipentenly fron "Save Data" option are:
-   - a log file (suffix: `test.log`) generated by logging facilities, with logging level set according to verbosity option (0:INFO, >=1: DEBUG)
-- for `all`,`seq`,`par` modes, when the "Show Plot" option is selected the following output will be generated:
-   - a plot dump of the input graph (suffix: `plot.pdf`) as specified below, delimited in `graph-plot-script-specification` XML tag.
-   - for `all` mode, only the `par` solution will be plotted.
-- for `bench` mode, when the "Save Data" option is selected the following output will be generated:
-   - a benchmark summary report (suffix: `bench.txt`), only if benchmark ws enabled.
-   - a tab separated export (TSV) (suffix: `data.tsv`) with microbenchmark data export with additional columns: 'graph_type", "timestamp", "function_label", "input_size", "graph_radius",  "congestion", "path_length", "successful_result"
-
-</save-data-script-specification>
-
-### Script Logging Specification
-
-<test-script-logging-specification>
-- the script output should go to stdout and logged to a file, using standard `logger` facilities.
-- the log directory will be used also for storing benchmark results and plots
-- the log directory will be taken from environment variable `P_LOGS_DIR` with `logs` as default.
-- the log directory should be created if absent.
-- the log filename should start with this prefix: "<script-name>-<sec-timestamp>" with a '.log' extension.
-- the "<sec-timestamp>" part is composed by script start time, formatted as localtime in "CCYYMMDD-hhmmss" format.
-- the script execution should be logged at info level (arguments, benchmark invocation, final summary) while the "save data" section should be logged at "debug" level (verbose>=1).
-- all the log artifacts should contain the test type and a localtime timestamp suffix as a part of the filename.
-- during script initalization, log: 1. the script arguments, 2. the full path of the log directory, 3. the output of system command: `inxi -C`
-</test-script-logging-specification>
-
 ### Script Command Line Arguments
+
+<test-script-arguments-specification>
+- the argument parsing must use a standard argument parser, provided by `argparse` facility.
+</test-script-arguments-specification>
+
 
 <test-script-cli-arguments>
 
@@ -4226,6 +4245,20 @@ The script must link C++ code in `./exec/dummySearch/dummy_finder.cpp` thru `Rcp
 - "Input Size"       (positional, for many values) - to specify the dimension of the sample graph vertex count (with default "100")
 
 </test-script-cli-arguments>
+
+### Script Logging Specification
+
+<test-script-logging-specification>
+- the script output should go to stdout and logged to a file, using standard `logger` facilities.
+- the log directory will be used also for storing benchmark results and plots
+- the log directory will be taken from environment variable `P_LOGS_DIR` with `logs` as default.
+- the log directory should be created if absent.
+- the log filename should start with this prefix: "<script-name>-<sec-timestamp>" with a '.log' extension.
+- the "<sec-timestamp>" part is composed by script start time, formatted as localtime in "CCYYMMDD-hhmmss" format.
+- the script execution should be logged at info level (arguments, benchmark invocation, final summary) while the "save data" section should be logged at "debug" level (verbose>=1).
+- all the log artifacts should contain the test type and a localtime timestamp suffix as a part of the filename.
+- during script initalization, log: 1. the script arguments, 2. the full path of the log directory, 3. the output of system command: `inxi -C`
+</test-script-logging-specification>
 
 
 
@@ -4267,6 +4300,46 @@ The script must link C++ code in `./exec/dummySearch/dummy_finder.cpp` thru `Rcp
 
 
 
+
+
+### Script Execution Modes
+
+<test-script-execution-modes-specification>
+
+- the script support different execution modes: `all`, `par`, `seq`, `bench`, as specified by "-x|--exec" command line argument.
+  - `all` mode: this mode execute in parallel (with the `parallel` package) both `par` and `seq` execution modes, waiting for termination of both tasks.
+  - `par` mode: this mode execute once the parallel search `dmy_aster_par_finder` on the random graph, and random `<start,goal>` vertex pair.
+  - `seq` mode: this mode execute once the sequential search `dmy_aster_seq_finder` on the random graph, and random `<start,goal>` vertex pair.
+  - `bench` mode: this mode execute a benchmark, using standard `microbenchmark` facility of both versions. The "Sample Size" argument provides the number of iterations.
+- for `par` and `sec` execution modes, a log before execution and after execution will report: path length of solution or failure, elapsed time, and both number divided by graph size.
+- for `bench` execution mode, the summary of benchmark result will be logged on output.
+- for `all` mode, both solution will be compared and every difference reported at warning log level.
+- after test execution, several output will be produced, as descibed below, delimited in XML `save-data-script-specification` tags.
+
+</test-script-execution-modes-specification>
+
+
+
+### Script Output Generation
+
+<save-data-script-specification>
+
+- all the outputs should go in the logging directory: fron environment `${P_LOGS_DIR:-'logs'}`, created if missing, as described above.
+- all the output filenames should start with this prefix: "<script-name>-<sec-timestamp>-<exec-mode>-" with a variable suffix.
+- the "<sec-timestamp>" part is composed by script start time, formatted as localtime in "CCYYMMDD-hhmmss" format.
+- the output to generate in all runs, indipentenly fron "Save Data" option are:
+   - a log file (suffix: `test.log`) generated by logging facilities, with logging level set according to verbosity option (0:INFO, >=1: DEBUG)
+- for `all`,`seq`,`par` modes, when the "Show Plot" option is selected the following output will be generated:
+   - a plot dump of the input graph (suffix: `plot.pdf`) as specified below, delimited in `graph-plot-script-specification` XML tag.
+   - for `all` mode, only the `par` solution will be plotted.
+- for `bench` mode, when the "Save Data" option is selected the following output will be generated:
+   - a benchmark summary report (suffix: `bench.txt`), only if benchmark ws enabled.
+   - a tab separated export (TSV) (suffix: `data.tsv`) with microbenchmark data export with additional columns: 'graph_type", "timestamp", "function_label", "input_size", "graph_radius",  "congestion", "path_length", "successful_result"
+
+</save-data-script-specification>
+
+
+
 ### Graph Plot Specification
 
 <graph-plot-script-specification>
@@ -4280,120 +4353,7 @@ The script must link C++ code in `./exec/dummySearch/dummy_finder.cpp` thru `Rcp
 
 </graph-plot-script-specification>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-A microbenchmark R test script must be provided to verify the performance advantage of the parallel version.
-This script should accepts several command-line arguments, not mandatory, with sensible defaults, as described bolow.
-The argument parsing must use a standard argument parser, provided by some library facility.
-
-<test-script-cli-arguments>
-
-- "Sample Size"   (option: -m|--samples) - microbenchmark sample size (e.g., number of iterations)
-- "Save Data"     (option: -s|--save) - boolean value to require the dump of the randon input and tast results over an external (text or json) file for further analysys or plotting.
-- "Input Size" (positional, for many values) - for graph domains, graph size (e.g., number of nodes)
-
-If the A* example consider a random Graph input, (as a "shortest path find" algorithm), consider also a parameter
-
-- "Graph Density" (option: -g|--density) - graph density (e.g., rate of links over nodes, with 1.0 means full connected, 0.0 full isolated)
-
-
-</test-script-cli-arguments>
-
-
-As a final section, prepare a "RcppParallel quick start" guide that decribes the minimal steps required to include `RcppParallel` in a R package project, based on `renv` (in "explicit" configuration mode), that already include supports for `Rcpp`, `RcppArmadillo`, and `RcppEigen`. In particular, provide code modification for `DESCRIPTION` and `./src/Makevars`. Include also a note for "SIMD" support in `~/.R/Makevars`, like adding a `-march=native` in `CXXFLAGS` variable. For package installation, discuss possible OS system library dependencies and `TinyThread` library distribution. Show basic `renv` command sequence for installation: `renv::install()` and `renv::snapshot()`.
-
-Here's a breakdown of what you need to deliver:
-
-1.  **Markdown Structure:**
-    *   Use clear headings and subheadings to organize the content.
-    *   Provide a brief introduction to the A* search algorithm.
-    *   Explain the use of `RcppParallel`, `RcppArmadillo`, and `RcppEigen` in the context of the A* implementation.
-    *   Include footnotes for references to online resources (e.g., documentation for the packages, A* algorithm explanation).
-
-2.  **C++ Code:**
-    *   Implement both a sequential and a parallel version of the A* search algorithm.
-    *   Use `parallelFor` and `parallelReduce` from `RcppParallel` to parallelize the search.
-    *   Use `RcppArmadillo` or `RcppEigen` for efficient matrix/vector operations if applicable to the A* implementation.
-    *   Follow the Google C++ Style Guide for formatting.
-    *   Provide clear and concise comments to explain the code.
-
-3.  **R Callable Functions:**
-    *   Place both the sequential and parallel C++ functions in a single C++ source, to be included via `Rcpp::sourceCpp` or similar mechanisms to make them callable from R.
-
-4.  **Microbenchmark Test Script:**
-    *   Create an R script that uses the `microbenchmark` package to compare the performance of the sequential and parallel A* implementations.
-    *   Provide an argument parsing support with library argument parsing facilities, for the script that allows the parameters specified above in `test-script-cli-arguments` XML tag
-    *   For the positional argument "Input Size", consider that the argument can be expressed as a space separated list of integers (like "100 1000 10000") and perform test iteration for every value. Provide a graphical summary of parallel vs sequential benchmark for performance evaluation as function of problem size. In the graph subtitle, reports the value of options "Sample Size" and other parameters, like "Graph Density".
-
-5.  **CRAN and Tidyverse Compliance:**
-    *   Ensure the code adheres to CRAN guidelines (e.g., no excessive memory allocation, proper error handling).
-    *   Follow tidyverse best practices where applicable (e.g., consistent naming conventions).
-
-6.  **RcppParallel Quick Start guide:**
-    *   Describe miniman package configuration required for RcppParallel dependency.
-    *   Only if required, show `apt` commands to install required OS system library dependencies.
-    *   Show `renv` commands required for installation.
-
-Example Markdown Structure:
-
-The C++ code fragments must be placed in `cpp` markdown codeblocks, formatted following the Google C++ style guide, and moderately but well documented.
-
-The replies must adhere to CRAN guidelines, integrated by `tidyverse` best practices.
-
-The code should be very performant, using alternatively, implicit parallelism and vectorization via OpenMP/SIMD intrinsics, or via library-based interfaces to multitasking and multiprocessing OS facilities.
-
-</system>
-
-
-
-Your task is to produce an interesting use-case example for the `RcppParallel` package,
-focusing on `parallelFor` and `parallelReduce` functions.
-
-The target package, based on `renv`, already includes `Rcpp`, `RcppArmadillo`, and `RcppEigen`.
-
-An interesting use case could be a minimal toy implementation of an A* heuristic search algorithm, applied to a random generated graph.
-
-The parallel code should be paired with a traditional sequential implementation.
-
-All examples must be R callable.
-
-A microbenchmark R test script must be provided to verify the performance advantage of the parallel version.
-This script should accepts several command-line arguments, not mandatory, with sensible defaults, as described bolow.
-The argument parsing must use a standard argument parser, provided by some library facility.
-
-<test-script-cli-arguments>
-
-- "Sample Size"   (option: -m|--samples) - microbenchmark sample size (e.g., number of iterations)
-- "Save Data"     (option: -s|--save) - boolean value to require the dump of the randon input and tast results over an external (text or json) file for further analysys or plotting.
-- "Input Size" (positional, for many values) - for graph domains, graph size (e.g., number of nodes)
-
-If the A* example consider a random Graph input, (as a "shortest path find" algorithm), consider also a parameter
-
-- "Graph Density" (option: -g|--density) - graph density (e.g., rate of links over nodes, with 1.0 means full connected, 0.0 full isolated)
-
-
-</test-script-cli-arguments>
-
+------------------------------------------------------------------------
 
 As a final section, prepare a "RcppParallel quick start" guide that decribes the minimal steps required to include `RcppParallel` in a R package project, based on `renv` (in "explicit" configuration mode), that already include supports for `Rcpp`, `RcppArmadillo`, and `RcppEigen`. In particular, provide code modification for `DESCRIPTION` and `./src/Makevars`. Include also a note for "SIMD" support in `~/.R/Makevars`, like adding a `-march=native` in `CXXFLAGS` variable. For package installation, discuss possible OS system library dependencies and `TinyThread` library distribution. Show basic `renv` command sequence for installation: `renv::install()` and `renv::snapshot()`.
 
