@@ -3994,7 +3994,6 @@ The parallel code should be paired with a traditional sequential implementation.
 All examples must be R callable.
 
 
-
 ## Task Overview
 
 Your task is to produce a demo tutorial example in and existing R
@@ -4095,10 +4094,11 @@ included in a CRAN-compliant R package project:
 
 with the following specifications.
 
-## C++ "A* pathfinding" implementation with sequential and parallel alternatives: `./exec/dummySearch/dummy_finder.cpp`
+## C++ "A* pathfinding" implementation: `dummy_finder.cpp`
 
 The C++ source: `./exec/dummySearch/dummy_finder.cpp` provides an
-implementation example of different approaches in "A* pathfinder" implementation.
+implementation example of sequential and parallel alternative
+approaches in "A* pathfinder" implementation.
 
 In this source will be placed two group of C++ functions "seq" and
 "par", with the following specifications, delimited in XML
@@ -4186,13 +4186,18 @@ The main function are:
 
 
 
-## R script for "A* pathfinding" testing, with variable graph size: `./exec/dummySearch/dummy-rcpp-finder.r`
+## R script for "A* pathfinding" testing: `./exec/dummySearch/dummy-rcpp-finder.r`
 
 
-A R test script must be provided to verify the performance advantage of the parallel version.
-This script should accepts several command-line arguments, not mandatory, with sensible defaults, as described bolow.
-The script specification is placed below, delimited in XML `test-script-specification` tags.
-The script must link C++ code in `./exec/dummySearch/dummy_finder.cpp` thru `Rcpp::sourceCpp` invocation.
+The R test script `./exec/dummySearch/dummy-rcpp-finder.r` is used to
+drive the search algorithm to verify the performance advantage of the
+parallel version.  This script should accepts several command-line
+arguments, not mandatory, with sensible defaults, as described bolow.
+The script specification is placed below, delimited in XML
+`test-script-specification` tags.
+
+The script must link C++ code in `./exec/dummySearch/dummy_finder.cpp`
+thru `Rcpp::sourceCpp` invocation.
 
 
 ### R Test Script Specification
@@ -4212,6 +4217,7 @@ The script must link C++ code in `./exec/dummySearch/dummy_finder.cpp` thru `Rcp
 
 <test-script-arguments-specification>
 - the argument parsing must use a standard argument parser, provided by `argparse` facility.
+- the parsed command-line arguments must be logged, at info level, during script initialisation
 </test-script-arguments-specification>
 
 
@@ -4219,30 +4225,33 @@ The script must link C++ code in `./exec/dummySearch/dummy_finder.cpp` thru `Rcp
 
 #### generic arguments
 
-- "Help"             (option: -h|--help) - boolean, to print script usage info and command line argument description. Execution skipped.
-- "Verbose"          (option: -v|--verbose) - integer (option count), can be repeated (-v, -vv -vvv), set the logging level (default: 0 - "info")
-- "Save Data"        (option: -s|--save) - boolean value to produce the dump of result data and system information reports as specified below.
+- `help`:      (option: -h|--help, type: boolean, default:`false`) - "Help", to print script usage info and command line argument description. Execution skipped.
+- `verbose`:   (option: -v|--verbose, mode: count, type: integer, default:`0`) -  "Verbose", can be repeated (`-v`, `-vv`, `-vvv`), set the logging level (`0`:info,`1`:debug)
+- `save_data`: (option: -s|--save, type: boolean, default:`false`) - "Save Data", enable production the dump of result data and system information reports as specified below.
 
 #### execution modes
 
-- "Execution Modes"  (option: -x|--exec) - execution mode, possible values are: `all`, `par`, `seq`, `bench` (with `par` as default value)
+- `exec_mode`  (option: -x|--exec, type: string, enum: {`nil`,`seq`,`par`,`all`,`bench`}, default:`par`) - "Execution Mode", detailed below in "Script Execution Modes"
 
 #### benchmark arguments
 
-- "Sample Size"      (option: -m|--samples) - `microbenchmark` sample size (e.g., number of iterations)
+- `sample_size` (option: -m|--samples, type: integer, default:`0`) - "Sample Size", `microbenchmark` sample size (e.g., number of iterations)
 
 #### graph plot arguments
 
-- "Show Plot"        (option: -p|--plot) - Generate a plot of the sample graph with solution path
-- "Colour Transform" (option: -f|--hue-map) - Congestion to Hue mapping transformation with values: `lin` (linear), `sqr` (square), `sqrt` (square-root), `exp` (exponential), `log` (logarithm)
-- "Image Size"       (option: -z|--image-size) - Graph Plot Resolution for PDF export, in ISO A scale (`A2`,`A3`,`A4`,`A5`,`A6`) (with `A4` as default value)
+- `show_plot`    (option: -p|--plot, type: boolean, default:`false`) - "Show Plot", enable generation of a plot of the sample graph with solution path
+- `hue_map`      (option: -f|--hue-map, type: string, enum: {`lin`,`sqr`,`sqrt`,`exp`,`log`}, default:`lin`) - "Colour Transform", congestion to hue mapping transformation.
+- `image_size`   (option: -z|--image-size, type: string, enum: {`A2`,`A3`,`A4`,`A5`,`A6`}, default:`A4`) - "Image Size", graph Plot Resolution for PDF export, in ISO A scale
+- `image_orient` (option: -o|--image-orient, type: string, enum: {`P`,`L`}, default:`L`) - "Image Orientation", graph Plot Orientation for PDF export, (`P`: Portrait, `L`: Landscape)
 
 #### sample graph arguments
 
-- "Test Type"        (option: -t|--test) - name of the sample graph type used for the tests: possible values are `geo` or `route` (with `route` as default value)
-- "Graph Radius"     (option: -r|--radius) - vertex distance for edge generation, as in `igraph::sample_grg` "radius" argument (with default value: 0.1)
-- "Congestion Rate"  (option: -c|--congestion) - congestion weights correction parameter, as described in sample-graph-specification
-- "Input Size"       (positional, for many values) - to specify the dimension of the sample graph vertex count (with default "100")
+- `graph_type`   (option: -t|--graph-type, type: string, enum: {`grg`,`rad`,`geo`,`route`}, default:`route`) - "Graph Type", specify sample graph construction, , detailed below in "Sample Graph Generation"
+- `graph_radius` (option: -r|--graph-radius, type: double, default:`0.1`) - vertex distance for edge generation, as in `igraph::sample_grg` "radius" argument
+- `graph_fill`   (option: -q|--graph-fill, type: double, default:`1.0`) - in radius edge probability, used to prune edges in initial graph post-processing
+- `cong_rate`    (option: -c|--congestion-rate, type: double, default:`0.5`) - "Congestion Rate", exponentil distribution mean in edge congestion random generation
+- `cong_coeff`   (option: -k|--congestion-coeff, type: double, default:`1.0`) - "Congestion Rate", exponential distribution mean in edge congestion random generation
+- `graph_size`   (positional, for many values,type: integer, default:`100`) - "Graph Size", to specify the number of vertexes of the sample graph
 
 </test-script-cli-arguments>
 
@@ -4266,23 +4275,38 @@ The script must link C++ code in `./exec/dummySearch/dummy_finder.cpp` thru `Rcp
 
 <sample-graph-specification>
 
-- in the R script, graph representation will use `igraph::graph` type. 
-- In C++ calls, the graph will be represented by an S3 class: `space_graph` with the attributes:
+- *important* all the graph considered are intended as "undirected
+  graph", i.e. every transformation must preserve symmetry in
+  adjacency matrix of edge weights.
+- in the R script, internal graph representation will use `igraph::graph` type
+- In C++ calls, the graph will be represented by an S3 class: `space_graph_query` with the attributes:
   - `positions` with an two columns `NumericMatrix` with (x,y) vertex
       coordinates, used in heuristic evaluation
   - `adjacency` with an square `NumericMatrix` with symmetric weighs
-      computed by euclidean distances between pair of vertex, with additional "congestion" correction.
-- In R script sample generation functions, the graph object will be embedded in a wider object of S3 class: `space_test` with the attributes:
+      computed by euclidean distances between pair of vertex, with additional _"congestion"_ correction.
+  - `query` a named list with indexes of `start` and `goal` vertexes
+- In R script sample generation functions, the graph object will be embedded in a wider object of S3 class: `space_graph_test` with the attributes:
   - `graph` the sample graph in `igraph` representation
-  - `data` the sample graph in `space_graph` representation
-  - `query` the random pair `<start,goal>` of vertex IDs to connect with a optimal path.
-  - `ath` the solution of the (`par` if `all` execution mode) execution as `NumericVector` of vertex IDs, appended after the search.
+  - `query` the random pair `<start,goal>` of vertex IDs (indexes) to connect with a optimal path.
+  - `path` the solution of the (`par` if `all` execution mode)
+    execution as `NumericVector` of vertex IDs, initialised as a
+    zero-length vector and replaced by search result, after
+    invocation.
 
-- A script function: `as.space_graph.igraph` converts between `igraph::graph` and `space_graph` models.
+- A script function: `as.space_graph_query.space_graph_test` converts between `space_graph_test` and `space_graph_query` models.
 - A script function: `create_sample_graph` will dispatch graph creation to the typed version, based on command-line arguments.
+- For `grg` graph type:
+  - the function `create_sample_grg_graph` will return a `igraph::sample_grg`, created with `graph_size` vertexes and `graph_radius` parameter.
+  - in the graph creation with `coord=TRUE` the resulting vertexes will get a pair of `x` and `y` coordinate attributes, uniformly random chosen in [0..1]x[0..1] rectangle.
+  - the edges `adjacency` matrix will be filled by weights computed as euclidean distance between vertex pairs.
+  - the edges attribute `distance` will also be assigned with euclidean distance between vertex `(x,y)` coordinate attributes.
+  - another edge attribute: `congestion` will be added with default value of `0.0` constant
+- For `rad` graph type:
+  - the function `create_sample_rad_graph` will return a transformed graph obtained by modification of graph created by `create_sample_grg_graph`.
+  - the transformation randomly remove the edges from the original graph with probability `(1 - graph_fill)` preserving symmetry: `edge(i,j) removed iif edge(j,i) removed`
 - For `geo` graph type:
-  - the function `create_sample_geo_graph` will return a `igraph::sample_grg`, created with "Input Size" vertexes and "Radius" parameter.
-  - the vertex will get a pair of `x` and `y` coordinate, uniformly random chosen in [0..1]x[0..1] rectangle.
+  - the function `create_sample_geo_graph` will return a transformed graph obtained by modification of graph created by `create_sample_grg_graph`.
+  - this kind of graphs have the property that they have no disconnected graph subsets.
   - the edges `adjacency` matrix will be filled by weights computed as euclidean distance between vertex pairs.
   - the edges attribute `distance` will also be assigned with euclidean distance between vertex (x,y) coordinate attributes.
   - another edge attribute: `congestion` will be added with default value of `0.0` constant
@@ -4514,7 +4538,7 @@ renv::status()
 
 <!--  LocalWords:  STL pathfinding namespace mutex undirected geo lin
 <!--  LocalWords:  RcppParallel Howto VibeCoding sqr sqrt datalab
-<!--  LocalWords:  Bicocca
+<!--  LocalWords:  Bicocca enum coeff
  -->
  -->
  -->
