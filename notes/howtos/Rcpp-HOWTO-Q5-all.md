@@ -3904,6 +3904,8 @@ Use `renv::restore()` to restore environment on other machines.
 ## System Hints
 <system>
 
+Think Hard.
+
 You are an expert R and C++ developer.
 
 Your task is to prepare example C++ sources to introduce core features
@@ -4067,7 +4069,9 @@ already includes the following dependencies:
    - `igraph`
    - `argparse`
    - `logger`
-   - `parallel`
+   - `parallelly`
+   - `doParallel`
+   - `foreach`
    - `tidyverse`
    - `ggplot2`
    - `gggraph`
@@ -4125,17 +4129,17 @@ in XML tag `common-finder-specification`.
     - in addition, the id of start and goal vertexes arguments.
     - these function unbox and converts the input arguments to
       `arma::mat` equivalents and dispatch the call to the
-      corresponding `*_astar_finder_impl` functions.
+      corresponding `*_finder_impl` functions.
    - the return value is a `NumericVector` with the IDs of the vertexes on the path from start vertex to goal vertexes. 
    - If no path is found, maybe because of disconnected vertex on the graph, a zero-size vector is returned.
-- The internal (not R-callable) functions `*_astar_finder_impl` perform the A* search:
+- The internal (not R-callable) functions `*_finder_impl` perform the A* search:
 - The internal function arguments are:
   - `const arma::mat& adjacency_matrix`: input un-directed graph as
     adjacency matrix.
   - `const arma::mat& positions` for nodes (x,y) planar coordinates.
   - `int start` starting node id
   - `int goal` target (goal) node id
-- The return value for `*_astar_finder_impl` functions:
+- The return value for `*_finder_impl` functions:
   - `std::vector<int> path`: the "best" path (minimal sum of edge
     weights) to connect start node with goal node.
 - all the public function of this module must start with the name prefix `dmy_astar_`.
@@ -4186,8 +4190,9 @@ The main function are:
 
 
 
-## R script for "A* pathfinding" testing: `./exec/dummySearch/dummy-rcpp-finder.r`
+## R script for "A* pathfinding" testing: `dummy-rcpp-finder.r`
 
+### R Test Script Overview
 
 The R test script `./exec/dummySearch/dummy-rcpp-finder.r` is used to
 drive the search algorithm to verify the performance advantage of the
@@ -4196,19 +4201,36 @@ arguments, not mandatory, with sensible defaults, as described bolow.
 The script specification is placed below, delimited in XML
 `test-script-specification` tags.
 
-The script must link C++ code in `./exec/dummySearch/dummy_finder.cpp`
-thru `Rcpp::sourceCpp` invocation.
-
 
 ### R Test Script Specification
 
 <test-script-specification>
 
-- the script admits the command line arguments, parsed as described below, delimited in XML `test-script-arguments-specification` tags.
-- the script support output logging as descibed below, delimited in XML `test-script-logging-specification` tags.
-- the script should generate a random graph, with different types and features, as described below, delimited in XML `sample-graph-specification` tag.
-- the script supports different execution modes as described below, delimited in XML `test-script-execution-modes-specification` tags.
-- after execution a set of output is produced, depending on command-line arguments, as specified below, delimited in XML `save-data-script-specification` tag.
+- the script is composed by 4 parts, performed in sequence:
+
+#### 1. Housekeeping Phase
+
+- the command line arguments are parsed as described below, delimited in XML `test-script-arguments-specification` tags.
+- the logging facility is initialised, as descibed below, delimited in XML `test-script-logging-specification` tags.
+- the R runtime environment is configured with C++ source linking, as described below, delimited in XML `test-script-runtime-specification` tags.
+
+
+#### 2. Preparation Phase
+
+- a random graph is generated and embedded in a wider object of S3 class: `space_graph_test`, as described below, delimited in XML `sample-graph-specification` tag.
+- after generation, a set of graph summary statistics in computed, attached to the working `space_graph_test` and logged at `info` level.
+
+
+#### 3. Search Execution Phase
+
+- the search functions (`dmy_aster_seq_finder,dmy_aster_par_finder`) are called with different execution modes as described below, delimited in XML `test-script-execution-modes-specification` tags.
+- the resulting path is applied to the internal `igraph` model as vertex and edge attributes.
+
+
+#### 4. Reporting Phase
+
+- if required by `show_plot` option, a PDF plot of the graph is produced, as specified below, delimited in XML `graph-plot-script-specification` tag.
+- if required by `save_data` option, a set of output is produced, as specified below, delimited in XML `save-data-script-specification` tag.
 
 </test-script-specification>
 
@@ -4220,14 +4242,21 @@ thru `Rcpp::sourceCpp` invocation.
 - the parsed command-line arguments must be logged, at info level, during script initialisation
 </test-script-arguments-specification>
 
-
 <test-script-cli-arguments>
-
 #### generic arguments
 
 - `help`:      (option: -h|--help, type: boolean, default:`false`) - "Help", to print script usage info and command line argument description. Execution skipped.
 - `verbose`:   (option: -v|--verbose, mode: count, type: integer, default:`0`) -  "Verbose", can be repeated (`-v`, `-vv`, `-vvv`), set the logging level (`0`:info,`1`:debug)
-- `save_data`: (option: -s|--save, type: boolean, default:`false`) - "Save Data", enable production the dump of result data and system information reports as specified below.
+- `rnd_seed`:  (option: -u|--seed, type: integer, default:`0`) -  "Random Seed", deterministic random sequence initialisation.
+
+#### sample graph arguments
+
+- `graph_type`   (option: -g|--graph-type, type: string, enum: {`grg`,`rad`,`geo`,`route`}, default:`route`) - "Graph Type", specify sample graph construction, , detailed below in "Sample Graph Generation"
+- `graph_radius` (option: -r|--graph-radius, type: double, default:`0.1`) - vertex distance for edge generation, as in `igraph::sample_grg` "radius" argument
+- `graph_fill`   (option: -q|--graph-fill, type: double, default:`1.0`) - in radius edge probability, used to prune edges in initial graph post-processing
+- `cong_rate`    (option: -c|--congestion-rate, type: double, default:`0.5`) - "Congestion Rate", exponentil distribution mean in edge congestion random generation
+- `cong_coeff`   (option: -k|--congestion-coeff, type: double, default:`1.0`) - "Congestion Rate", exponential distribution mean in edge congestion random generation
+- `graph_size`   (positional, for many values,type: integer, default:`100`) - "Graph Size", to specify the number of vertexes of the sample graph
 
 #### execution modes
 
@@ -4244,14 +4273,10 @@ thru `Rcpp::sourceCpp` invocation.
 - `image_size`   (option: -z|--image-size, type: string, enum: {`A2`,`A3`,`A4`,`A5`,`A6`}, default:`A4`) - "Image Size", graph Plot Resolution for PDF export, in ISO A scale
 - `image_orient` (option: -o|--image-orient, type: string, enum: {`P`,`L`}, default:`L`) - "Image Orientation", graph Plot Orientation for PDF export, (`P`: Portrait, `L`: Landscape)
 
-#### sample graph arguments
+#### save output data arguments
 
-- `graph_type`   (option: -t|--graph-type, type: string, enum: {`grg`,`rad`,`geo`,`route`}, default:`route`) - "Graph Type", specify sample graph construction, , detailed below in "Sample Graph Generation"
-- `graph_radius` (option: -r|--graph-radius, type: double, default:`0.1`) - vertex distance for edge generation, as in `igraph::sample_grg` "radius" argument
-- `graph_fill`   (option: -q|--graph-fill, type: double, default:`1.0`) - in radius edge probability, used to prune edges in initial graph post-processing
-- `cong_rate`    (option: -c|--congestion-rate, type: double, default:`0.5`) - "Congestion Rate", exponentil distribution mean in edge congestion random generation
-- `cong_coeff`   (option: -k|--congestion-coeff, type: double, default:`1.0`) - "Congestion Rate", exponential distribution mean in edge congestion random generation
-- `graph_size`   (positional, for many values,type: integer, default:`100`) - "Graph Size", to specify the number of vertexes of the sample graph
+- `save_data`:   (option: -s|--save, type: boolean, default:`false`) - "Save Data", enable report production for result data and sample graph statistics.
+- `save_graph`:  (option: -f|--save-graph, type: boolean, default:`false`) - "Save Graph", enable dataframe export of sample graph in TSV format
 
 </test-script-cli-arguments>
 
@@ -4264,10 +4289,22 @@ thru `Rcpp::sourceCpp` invocation.
 - the log directory should be created if absent.
 - the log filename should start with this prefix: "<script-name>-<sec-timestamp>" with a '.log' extension.
 - the "<sec-timestamp>" part is composed by script start time, formatted as localtime in "CCYYMMDD-hhmmss" format.
-- the script execution should be logged at info level (arguments, benchmark invocation, final summary) while the "save data" section should be logged at "debug" level (verbose>=1).
+- the script preparation and execution phases should be logged at info level (arguments, benchmark invocation, final summary) while the final report section should be logged at "debug" level (verbose>=1).
 - all the log artifacts should contain the test type and a localtime timestamp suffix as a part of the filename.
 - during script initalization, log: 1. the script arguments, 2. the full path of the log directory, 3. the output of system command: `inxi -C`
 </test-script-logging-specification>
+
+
+### Script Runtime Specification
+
+<test-script-runtime-specification>
+- if `rnd_seed` specified, as a positive number, the random number generator is initialised with this "seed" value.
+- the C++ code in `dummy_finder.cpp` is linked thru `Rcpp::sourceCpp` invocation.
+- the path name resolution rules for C++ source file:
+  - a `dummy_finder.cpp` file in the same directory of the `dummy-rcpp-finder.r` script, if this path can be determined (not available in RStudio invocation).
+  - a `dummy_finder.cpp` file in the current working directory.
+  - a `dummy_finder.cpp` file in the `./exec/dummySearch` directory, if the script is run from project root.
+</test-script-runtime-specification>
 
 
 
@@ -4278,28 +4315,30 @@ thru `Rcpp::sourceCpp` invocation.
 - *important* all the graph considered are intended as "undirected graph", 
   i.e. every transformation must preserve symmetry in the "adjacency matrix" of edge weights.
 - In C++ calls, the graph will be represented by an S3 class: `space_graph_query` with the attributes:
-  - `positions` with an two columns `NumericMatrix` with (x,y) vertex
+  - `positions` with a two columns `NumericMatrix` with (x,y) vertex
       coordinates, used in heuristic evaluation
-  - `adjacency` with an square `NumericMatrix` with symmetric weighs
+  - `adjacency` with a square `NumericMatrix` with symmetric weighs
       computed by euclidean distances between pair of vertex, with additional _"congestion"_ correction.
   - `query` a named list with indexes of `start` and `goal` vertexes
 - in R script, internal graph representation will use `igraph::graph` type
-- in R script, in the sample generation function
-  `create_sample_graph`, the (internal) graph object will be embedded
-  in a wider object of S3 class: `space_graph_test` with the
-  attributes:
+- in R script, in the sample generation function `create_sample_graph`, the (internal) graph object will be embedded
+  in a wider object of S3 class: `space_graph_test` with the attributes:
   - `type` the graph type, corresponding to constructor function, selected by `graph_type` argument.
   - `graph` the sample graph in `igraph` representation
-  - `query` the random pair `<start,goal>` of vertex IDs (indexes) to connect with a optimal path.
-  - `path` the solution of the (`par` if `all` execution mode)
-    execution as `NumericVector` of vertex IDs, initialised as a
-    zero-length vector and replaced by search result, after
-    invocation.
+  - `query` a named list with the random pair `<start,goal>` of vertex IDs (indexes) to connect with a optimal path.
+  - `path` the solution of the (`par` if `all` execution mode) execution as `NumericVector` of vertex IDs, initialised as a
+    zero-length vector and replaced by search result, after invocation.
+  - `stats` a named list of graph statistic computed after graph generation.
 - A script function: `as.space_graph_query.space_graph_test` converts between `space_graph_test` and `space_graph_query` models.
-- A script function: `create_sample_graph` forward internal `igraph`creation to `create_graph_model` function. 
-  The result is then wrapped in a `space_graph_test` object, obtained by calling the `create_space_graph` function.
-- The `create_space_graph` takes the random `igraph` generated by `create_graph_model`, select randomly a pair of vertexes as `query`
-  attribute: a named list of `start` and `goal` vertex indexes.
+- A script function: `create_sample_graph` forward internal `igraph` creation to `create_graph_model` function. 
+  The `igraph` result is then wrapped in a `space_graph_test` object, obtained by calling the `create_space_graph` function.
+- The `create_space_graph` function takes the random `igraph` generated by `create_graph_model`, select randomly a pair of vertexes as `query`
+  attribute: a named list of `start` and `goal` vertex indexes and `stats` attribute as returned by `create_graph_stats` function.
+- The script function: `create_graph_stats` takes the sample `igraph` model and returns, as a named list, a set of summary statistics:
+   - `vertex_size`: number of vertexes
+   - `egde_size`: number of edges
+   - `egde_density`: value of `igraph::edge_density` (Graph density)
+   - `knn`: value of `igraph::knn` (Average nearest neighbor degree)
 - A script function: `create_graph_model` will dispatch graph creation to the typed version, based on `graph_type` command-line argument.
 - An utility function `setup_edge` provides a way to initialise edge attributes with default attribute values. 
   This function takes as arguments the graph, an even sized collection of vertex pairs to (symmetrically) connect, and a `congestion` value with `0.0` default.
@@ -4312,25 +4351,25 @@ thru `Rcpp::sourceCpp` invocation.
      * `weight := distance * (1+ cong_coeff * congestion)`
 - For `grg` graph type:
   - the function `create_grg_graph_model` will return a `igraph::sample_grg`, created with `graph_size` vertexes and `graph_radius` parameter.
-  - in the graph creation with `coord=TRUE` the resulting vertexes will get a pair of `x` and `y` coordinate attributes, uniformly random chosen in [0..1]x[0..1] rectangle.
+  - in the graph creation, with `coord=TRUE`, the resulting vertexes will get a pair of `x` and `y` coordinate attributes, uniformly random chosen in [0..1]x[0..1] rectangle.
   - the edges `adjacency` matrix will be filled by weights computed as euclidean distance between vertex pairs.
-  - the edges attribute `distance` will also be assigned with euclidean distance between vertex `(x,y)` coordinate attributes.
+  - the edges attribute `distance` are to be assigned with the same `weight` value, i.e. with the same euclidean distance between vertex `(x,y)` coordinate attributes.
   - another edge attribute: `congestion` will be added with default value of `0.0` constant
 - For `rad` graph type:
-  - the function `create_rad_graph_model` will return a transformed graph obtained by modification of graph created by `create_grg_graph_model`.
-  - the transformation randomly remove the edges from the original graph with probability `(1 - graph_fill)` preserving symmetry: `edge(i,j) removed iif edge(j,i) removed`
+  - the function `create_rad_graph_model` will return a transformed graph obtained by modification of the graph created by `create_grg_graph_model`.
+  - the transformation randomly removes the edges from the original graph with probability `(1 - graph_fill)` preserving symmetry: `edge(i,j) removed iif edge(j,i) removed`
 - For `geo` graph type:
-  - the function `create_geo_graph_model` will return a transformed graph obtained by modification of graph created by `create_rad_graph_model`.
+  - the function `create_geo_graph_model` will return a transformed graph obtained by modification of the graph created by `create_rad_graph_model`.
   - this kind of graphs have the property that they have no disconnected graph subsets.
-  - by analyzing the `igraph::components()` collection, starting from a disconnected component find a vertex in the graph complement with minimal euclidean dustance with some vertex in the selected component. 
+  - by analyzing the `igraph::components()` collection, starting from a disconnected component find a vertex in the graph complement with minimal euclidean distance with some vertex in the selected component. 
     For this pair of indexes: `i_int_min`, `j_ext_min` a new (symmetric) undirected edge will be added, with attributes filled by `setup_edge` function.
-  - the prevoius step is repeated until the graph is fully connected
+  - the previous step is repeated until the graph is fully connected
 - For `route` graph type:
   - the function `create_route_graph_model` will return a transformed graph obtained by modification of graph created by `create_geo_graph_model`.
   - for every edge, a value of `congestion` will be taken as a random exponential distribution sample with `cong_rate` ("Congestion Rate") mean.
-  - for every edge, the current value is retrieved by the  `distance` attribute and the edge `weight` will be recalculate by `setup_edge` utility function.
+  - for every edge, the edge `weight` will be recalculate by `setup_edge` utility function, with the new `congestion` value and existing `istance` edge attribute.
   - the rationale here is that `congestion` models "traffic intensity" that is causing delay, proportional to distance, in "fastest" path search, with `distance` heuristic.
-</save-data-script-specification>
+</sample-graph-specification>
 
 
 
@@ -4340,19 +4379,52 @@ thru `Rcpp::sourceCpp` invocation.
 
 <test-script-execution-modes-specification>
 
-- the script support different execution modes: `all`, `par`, `seq`, `bench`, as specified by "-x|--exec" command line argument.
-  - `all` mode: this mode execute in parallel (with the `parallel` package) both `par` and `seq` execution modes, waiting for termination of both tasks.
+- The script function: `run_path_search` will take a `space_graph_test` as input and return the same object modified by `apply_result_path` function.
+- The script function: `run_path_search` will dispatch the search to `run_path_search_{nil|all|par|seq|bench}` function based on `exec_mode` command-line argument. 
+- The script function: `run_path_search` will convert `space_graph_test` to `space_graph_query` via `as.space_graph_query.space_graph_test` as parameter to the dispatched functions.
+- The script function: `run_path_search` return the modified `space_graph_test`, return by `apply_result_path` function that will receive the resulting search path and execution elapsed time for the search.
+- the script support different execution modes: `nil, ``all`, `par`, `seq`, `bench`, as specified by `exec_mode` command line argument.
+  - `nil` mode: this mode does not execute the search C++ functions, but just returns an empty path. Useful to test sample graph generation.
+  - `all` mode: this mode execute in parallel (with the `forach` package) both `par` and `seq` execution modes, waiting for termination of both tasks.
   - `par` mode: this mode execute once the parallel search `dmy_aster_par_finder` on the random graph, and random `<start,goal>` vertex pair.
   - `seq` mode: this mode execute once the sequential search `dmy_aster_seq_finder` on the random graph, and random `<start,goal>` vertex pair.
-  - `bench` mode: this mode execute a benchmark, using standard `microbenchmark` facility of both versions. The "Sample Size" argument provides the number of iterations.
+  - `bench` mode: this mode execute a benchmark, using standard `microbenchmark` facility of both versions. The `sample_size` argument provides the number of iterations.
 - for `par` and `sec` execution modes, a log before execution and after execution will report: path length of solution or failure, elapsed time, and both number divided by graph size.
-- for `bench` execution mode, the summary of benchmark result will be logged on output.
-- for `all` mode, both solution will be compared and every difference reported at warning log level.
-- after test execution, several output will be produced, as descibed below, delimited in XML `save-data-script-specification` tags.
+- for `bench` execution mode, the summary of benchmark result will be logged on output. In this case, an empty path is returned as result.
+- for `all` mode, both solution will be compared and every difference reported at warning log level. Only the `par` solution will be returned as result.
+- The script function: `apply_result_path` receive the `space_graph_test` S3 object and the resulting path of the search as a list of the vertex index on the path from start to goal vrtexes.
+- The script function: `apply_result_path` return the same `space_graph_test` S3 object with path stored in the `path` attribute and with a modified `igraph` model, with this additional attributes added:
+  - `is_start_node` vertex attribute assigned to `TRUE` only for the vertex `V[obj$query$start]`, or `FALSE` otherwise.
+  - `is_goal_node` vertex attribute assigned to `TRUE` only for the vertex `V[obj$query$goal]`, or `FALSE` otherwise.
+  - `is_inner_node` vertex attribute assigned to `TRUE` only for the vertex "strictly" internal to the resulting path, or `FALSE` otherwise.
+  - `is_path` edge attribute assigned to `TRUE` only for edges in the path, i.e. `edge(i,j) where i == path[k] && j == path[k+1] for some k`, or `FALSE` otherwise.
+- The script function: `apply_result_path`, in addition will add some `path` statistics to the `stats` attribute. Path stats are:
+  - `elapsed_time`: execution time  for the search method
+  - `path_length`: length of the path
+  - `degree_sum`: sum of `igraph::degree` for all vertexes in the path
+  - `degree_avg`: average of `igraph::degree` for all vertexes in the path (or `NA` if empty path)
+  - `path_complexity`: product `path_length * degree_avg`
+  - `path_l_rate`: value of `elapsed_time / path_length` (or `NA` if empty path)
+  - `path_c_rate`: value of `elapsed_time / path_complxity` (or `NA` if empty path)
+- The script function: `apply_result_path`, after evaluation, will log at info level all the `stats` summaries
 
 </test-script-execution-modes-specification>
 
 
+
+
+### Graph Plot Specification
+
+<graph-plot-script-specification>
+
+- from `space_test` data a graph plot will be generated using `ggraph` rendering function.
+- the graph model to draw will use the `igraph` representation.
+- the vertex (x,y) attributes will be used for ("manual") fixed graph layout.
+- the vertexes will be visualised by a small size circle, while the
+  `start` vertex will be shown as a bigger black node and the goal
+  vertex will be shown as a same-sized "blue" node
+
+</graph-plot-script-specification>
 
 ### Script Output Generation
 
@@ -4374,54 +4446,27 @@ thru `Rcpp::sourceCpp` invocation.
 
 
 
-### Graph Plot Specification
-
-<graph-plot-script-specification>
-
-- from `space_test` data a graph plot will be generated using `ggraph` rendering function.
-- the graph model to draw will use the `igraph` representation.
-- the vertex (x,y) attributes will be used for ("manual") fixed graph layout.
-- the vertexes will be visualised by a small size circle, while the
-  `start` vertex will be shown as a bigger black node and the goal
-  vertex will be shown as a same-sized "blue" node
-
-</graph-plot-script-specification>
 
 ------------------------------------------------------------------------
-
-As a final section, prepare a "RcppParallel quick start" guide that decribes the minimal steps required to include `RcppParallel` in a R package project, based on `renv` (in "explicit" configuration mode), that already include supports for `Rcpp`, `RcppArmadillo`, and `RcppEigen`. In particular, provide code modification for `DESCRIPTION` and `./src/Makevars`. Include also a note for "SIMD" support in `~/.R/Makevars`, like adding a `-march=native` in `CXXFLAGS` variable. For package installation, discuss possible OS system library dependencies and `TinyThread` library distribution. Show basic `renv` command sequence for installation: `renv::install()` and `renv::snapshot()`.
+## Response Template
 
 Here's a breakdown of what you need to deliver:
 
 1.  **Markdown Structure:**
     *   Use clear headings and subheadings to organize the content.
-    *   Provide a brief introduction to the A* search algorithm.
-    *   Explain the use of `RcppParallel`, `RcppArmadillo`, and `RcppEigen` in the context of the A* implementation.
+    *   Describe briefly the following functions:
+       * `Rcpp::sourceCpp`
+       * `RcppParallel::parallelFor`
+       * `RcppParallel::parallelReduce`
+       * `igraph::sample_grg`
+       * `igraph::components`
     *   Include footnotes for references to online resources (e.g., documentation for the packages, A* algorithm explanation).
 
-2.  **C++ Code:**
-    *   Implement both a sequential and a parallel version of the A* search algorithm.
-    *   Use `parallelFor` and `parallelReduce` from `RcppParallel` to parallelize the search.
-    *   Use `RcppArmadillo` or `RcppEigen` for efficient matrix/vector operations if applicable to the A* implementation.
-    *   Follow the Google C++ Style Guide for formatting.
-    *   Provide clear and concise comments to explain the code.
-
-3.  **R Callable Functions:**
-    *   Place both the sequential and parallel C++ functions in a single C++ source, to be included via `Rcpp::sourceCpp` or similar mechanisms to make them callable from R.
-
-4.  **Microbenchmark Test Script:**
-    *   Create an R script that uses the `microbenchmark` package to compare the performance of the sequential and parallel A* implementations.
-    *   Provide an argument parsing support with library argument parsing facilities, for the script that allows the parameters specified above in `test-script-cli-arguments` XML tag
-    *   For the positional argument "Input Size", consider that the argument can be expressed as a space separated list of integers (like "100 1000 10000") and perform test iteration for every value. Provide a graphical summary of parallel vs sequential benchmark for performance evaluation as function of problem size. In the graph subtitle, reports the value of options "Sample Size" and other parameters, like "Graph Density".
-
-5.  **CRAN and Tidyverse Compliance:**
-    *   Ensure the code adheres to CRAN guidelines (e.g., no excessive memory allocation, proper error handling).
-    *   Follow tidyverse best practices where applicable (e.g., consistent naming conventions).
-
-6.  **RcppParallel Quick Start guide:**
-    *   Describe miniman package configuration required for RcppParallel dependency.
-    *   Only if required, show `apt` commands to install required OS system library dependencies.
-    *   Show `renv` commands required for installation.
+6.  ** "R parallel computation" Quick Start guide:**
+    *   Describe coordination of packages: `foreach`,`doParallel`,`parallelly`.
+    *   Describe minimal configuration required for single machine parallel processing setup.
+    *   Provide some link to simple single machine parallelism examples in R.
+    *   Describe possible evolution to multi node distributed HPC computations with tutorial references.
 
 Example Markdown Structure:
 
@@ -4547,8 +4592,10 @@ renv::status()
 # ::}}} \\ %5.1.
 
 <!--  LocalWords:  STL pathfinding namespace mutex undirected geo lin
-<!--  LocalWords:  RcppParallel Howto VibeCoding sqr sqrt datalab
-<!--  LocalWords:  Bicocca enum coeff
+<!--  LocalWords:  RcppParallel Howto VibeCoding sqr sqrt datalab TSV
+<!--  LocalWords:  Bicocca enum coeff RStudio dataframe HPC foreach
+<!--  LocalWords:  doParallel parallelly
+ -->
  -->
  -->
  -->
