@@ -4067,14 +4067,15 @@ already includes the following dependencies:
    - `Rcpp`
    - `RcppArmadillo`
    - `igraph`
+   - `tidygraph`
+   - `ggraph`
+   - `tidyverse`
+   - `ggplot2`
    - `argparse`
    - `logger`
    - `parallelly`
    - `doParallel`
    - `foreach`
-   - `tidyverse`
-   - `ggplot2`
-   - `gggraph`
  - `Suggests` dependencies:
    - `devtools`
    - `knitr`
@@ -4240,6 +4241,7 @@ The script specification is placed below, delimited in XML
 <test-script-arguments-specification>
 - the argument parsing must use a standard argument parser, provided by `argparse` facility.
 - the parsed command-line arguments must be logged, at info level, during script initialisation
+- the list of command line arguments, with type, defaults and enumeration constants are described below , delimited in XML `test-script-cli-arguments` tag.
 </test-script-arguments-specification>
 
 <test-script-cli-arguments>
@@ -4269,14 +4271,13 @@ The script specification is placed below, delimited in XML
 #### graph plot arguments
 
 - `show_plot`    (option: -p|--plot, type: boolean, default:`false`) - "Show Plot", enable generation of a plot of the sample graph with solution path
-- `hue_map`      (option: -f|--hue-map, type: string, enum: {`lin`,`sqr`,`sqrt`,`exp`,`log`}, default:`lin`) - "Colour Transform", congestion to hue mapping transformation.
-- `image_size`   (option: -z|--image-size, type: string, enum: {`A2`,`A3`,`A4`,`A5`,`A6`}, default:`A4`) - "Image Size", graph Plot Resolution for PDF export, in ISO A scale
+- `image_size`   (option: -z|--image-size, type: string, enum: {`A2`,`A3`,`A4`,`A5`,`A6`}, default:`A4`) - "Image Size", graph Plot Resolution for PDF export, in ISO-216 A scale
 - `image_orient` (option: -o|--image-orient, type: string, enum: {`P`,`L`}, default:`L`) - "Image Orientation", graph Plot Orientation for PDF export, (`P`: Portrait, `L`: Landscape)
 
 #### save output data arguments
 
 - `save_data`:   (option: -s|--save, type: boolean, default:`false`) - "Save Data", enable report production for result data and sample graph statistics.
-- `save_graph`:  (option: -f|--save-graph, type: boolean, default:`false`) - "Save Graph", enable dataframe export of sample graph in TSV format
+- `save_graph`:  (option: -f|--save-graph, type: boolean, default:`false`) - "Save Graph", enable dataframe export of sample graph internal model (`igraph`) in TSV format
 
 </test-script-cli-arguments>
 
@@ -4388,19 +4389,29 @@ The script specification is placed below, delimited in XML
   - `all` mode: this mode execute in parallel (with the `forach` package) both `par` and `seq` execution modes, waiting for termination of both tasks.
   - `par` mode: this mode execute once the parallel search `dmy_aster_par_finder` on the random graph, and random `<start,goal>` vertex pair.
   - `seq` mode: this mode execute once the sequential search `dmy_aster_seq_finder` on the random graph, and random `<start,goal>` vertex pair.
-  - `bench` mode: this mode execute a benchmark, using standard `microbenchmark` facility of both versions. The `sample_size` argument provides the number of iterations.
+  - `bench` mode: this mode execute a benchmark, using standard `microbenchmark` facility of both (`par` and `seq`) versions. The `sample_size` argument provides the number of iterations.
 - for `par` and `sec` execution modes, a log before execution and after execution will report: path length of solution or failure, elapsed time, and both number divided by graph size.
 - for `bench` execution mode, the summary of benchmark result will be logged on output. In this case, an empty path is returned as result.
 - for `all` mode, both solution will be compared and every difference reported at warning log level. Only the `par` solution will be returned as result.
 - The script function: `apply_result_path` receive the `space_graph_test` S3 object and the resulting path of the search as a list of the vertex index on the path from start to goal vrtexes.
 - The script function: `apply_result_path` return the same `space_graph_test` S3 object with path stored in the `path` attribute and with a modified `igraph` model, with this additional attributes added:
-  - `is_start_node` vertex attribute assigned to `TRUE` only for the vertex `V[obj$query$start]`, or `FALSE` otherwise.
-  - `is_goal_node` vertex attribute assigned to `TRUE` only for the vertex `V[obj$query$goal]`, or `FALSE` otherwise.
-  - `is_inner_node` vertex attribute assigned to `TRUE` only for the vertex "strictly" internal to the resulting path, or `FALSE` otherwise.
-  - `is_path` edge attribute assigned to `TRUE` only for edges in the path, i.e. `edge(i,j) where i == path[k] && j == path[k+1] for some k`, or `FALSE` otherwise.
+  - path vertex attributes:
+    - `in_path` integer value assigned with this values:
+       - `V(g)[i]$in_path <- 0`: "out-of-path", if vertex `i` is not included in the path
+       - `V(g)[i]$in_path <- 1`: "inner node", if vertex `i` is a internal vertex in the path (not first, neither last vertex)
+       - `V(g)[i]$in_path <- 2`: "goal node", if vertex `i` is the "goal" vertex in the path (last path vertex)
+       - `V(g)[i]$in_path <- 3`: "start node", if vertex `i` is the "start" vertex in the path (first path vertex)
+  - path edge attributes:
+    - `in_path` integer value assigned with this values (where `ee(g)[i,j] := E(g)[get_edge_ids(g,c(i,j))]`, applied to undirected graphs: `ee(g)[i,j] == ee(g)[j,i]`):
+       - `ee(g)[i,j]$in_path <- 0`: "out-of-path", if there is no `i,j` for which `i == path[k] && j == path[k+1] for some k`
+       - `ee(g)[i,j]$in_path <- 1`: "in-path", if there is `i,j` for which `i == path[k] && j == path[k+1] for some k`
+    - `traffic` numeric value computed by this formula for every edge, based on `congestion` attribute (`traffic` is `congestion`, mean normalised, with cut at third quartile):
+       - `traffic <- 0.0`: if `graph_type` argument is different from `route`
+       - `traffic <- min(congestion, log(4)*cong_rate) - cong_rate`: if `graph_type` argument is equal `route`
 - The script function: `apply_result_path`, in addition will add some `path` statistics to the `stats` attribute. Path stats are:
-  - `elapsed_time`: execution time  for the search method
+  - `elapsed_time`: execution time for the search method
   - `path_length`: length of the path
+  - `path_cost`: sum of edge weights for all edges in the path
   - `degree_sum`: sum of `igraph::degree` for all vertexes in the path
   - `degree_avg`: average of `igraph::degree` for all vertexes in the path (or `NA` if empty path)
   - `path_complexity`: product `path_length * degree_avg`
@@ -4417,12 +4428,45 @@ The script specification is placed below, delimited in XML
 
 <graph-plot-script-specification>
 
-- from `space_test` data a graph plot will be generated using `ggraph` rendering function.
-- the graph model to draw will use the `igraph` representation.
-- the vertex (x,y) attributes will be used for ("manual") fixed graph layout.
-- the vertexes will be visualised by a small size circle, while the
-  `start` vertex will be shown as a bigger black node and the goal
-  vertex will be shown as a same-sized "blue" node
+- in the script "Reporting Phase", after execution a plot of the graph will be generated and exported as a PDF file.
+- the plot generation is enabled only if `show_plot` command-line option is specified.
+- the exported PDF output should go in the logging directory, with the same file name prefix rules, as described above, in `test-script-logging-specification` XML tag.
+- the exported PDF output file name suffix should be `-plot.pdf`.
+- the plot is generated by the function `plot_sample_graph` that receive the `space_graph_test` returned by `run_path_search` function.
+- the image size and orientation for PDF plot export uses `image_size` (in ISO-216 constants: `A4`, ...) and `image_orient`: (`P`: Portrait, `L`: Landscape)
+- the plot uses `ggraph` facilities to generate a plot, given the internal graph representation in `igraph` format, from `graph` attribute of input object.
+- in detail, the graph rendering must consider the following requisites:
+  - the graph is undirected.
+  - title: 
+    - composed as a two lines interpolated label:
+      - first line: `"graph: ${graph_type}(${graph_size}, rad=${graph_radius}, fill=${graph_fill}, cong=${cong_rate})"`
+      - second line: `"mode: ${exec_mode} - path: len=${stats$path_length}, cost=${stats$path_cost}, deg=${stats$degree_avg}"`
+  - layers:
+    - the image background must be in a neutral solid colour, chosen with enough contrast with vertexes and edges colours.
+  - legend:
+    - colour scale for `traffic` edge colour mapping.
+  - layout:
+    - the vertexes (nodes) were generated by `igraph::sample_grg` (with `coord=TRUE`), so they already carry a couple of `x`,`y` spatial coordinates, stored as vertex attributes.
+  - vertex rendering:
+    - vertexes are rendered as small filled circles with no labels.
+    - vertexes size depends on `in_path` attribute value.
+    - vertexes fill colour (solid, bright) depends on `in_path` attribute value.
+    - vertexes border colour use `black`.
+  - edge rendering:
+    - edge are rendered as solid lines
+    - edge line width depends on `in_path` attribute value.
+    - edge colour uses `traffic` numeric attribute, mapped to a three colour gradient (`green`,`gray`,`red`) with this reference values:
+      - `c(-cong_rate, 0.0, log(4)*cong_rate)`
+      - as a `ggraph` example consider:
+      
+```r
+   p <- ggraph::plot(g, ...) +
+         ...
+         geom_edge_link(aes(colour = traffic, width=in_path)) +
+         scale_edge_width_discrete(range = c(2, 6)) +
+         scale_edge_color_gradientn(colours = c("green4", "gray90", "red3"), values=c(-cong_rate, 0.0, log(4)*cong_rate)) +
+         ...
+```
 
 </graph-plot-script-specification>
 
@@ -4594,7 +4638,7 @@ renv::status()
 <!--  LocalWords:  STL pathfinding namespace mutex undirected geo lin
 <!--  LocalWords:  RcppParallel Howto VibeCoding sqr sqrt datalab TSV
 <!--  LocalWords:  Bicocca enum coeff RStudio dataframe HPC foreach
-<!--  LocalWords:  doParallel parallelly
+<!--  LocalWords:  doParallel parallelly quartile
  -->
  -->
  -->
