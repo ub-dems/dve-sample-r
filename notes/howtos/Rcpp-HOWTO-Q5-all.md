@@ -4520,6 +4520,8 @@ The script specification is placed below, delimited in XML
 ------------------------------------------------------------------------
 ## Response Template
 
+### Response Breakdown
+
 Here's a breakdown of what you need to deliver:
 
 1.  **Markdown Structure:**
@@ -4532,63 +4534,158 @@ Here's a breakdown of what you need to deliver:
        * `igraph::components`
     *   Include footnotes for references to online resources (e.g., documentation for the packages, A* algorithm explanation).
 
-6.  ** "R parallel computation" Quick Start guide:**
+2.  ** "R parallel computation" Quick Start guide:**
     *   Describe coordination of packages: `foreach`,`doParallel`,`parallelly`.
     *   Describe minimal configuration required for single machine parallel processing setup.
     *   Provide some link to simple single machine parallelism examples in R.
     *   Describe possible evolution to multi node distributed HPC computations with tutorial references.
 
+3.  ** Generated source for solution implementation
+    *   C++ search source: `./exec/dummySearch/dummy_finder.cpp`
+    *   R script source: `./exec/dummySearch/dummy_rcpp_finder.r`
+    *   follow template examples for code generation
+    *   in code templates, comments with Python pseudocode typed function signature describes source structure
+
+### Response Template
+
 Example Markdown Structure:
 
 ```markdown
-# A* Search Algorithm in RcppParallel
+# Parallel A* Search Algorithm
 
-This document demonstrates the implementation of the A* search algorithm using `RcppParallel` for parallel execution. We also leverage `RcppArmadillo` and `RcppEigen` for efficient data structures and operations.
+## Introduction
 
-## A* Algorithm Overview
+[Provide a brief overview of this task]
 
-[Provide a brief explanation of the A* algorithm]
+## Parallel Programing in R, a primer
 
-## C++ Implementation
+[Provide a brief description of RcppParallel fuctions]
+[Provide a brief tutorial on `foreach`,`doParallel`,`parallelly` usage in a single machine context]
 
-### Sequential Version
+## C++ Search Implementation: `dummy_finder.cpp`
+
+### C++ Source: `./exec/dummySearch/dummy_finder.cpp`
 
 \`\`\`cpp
+
+// [AI Generated template comment]
+// ["see also" note to the prompt markdown file]
+// ["see also" note to the R script]
+// [Standard Copyright and Legel notice for GPL code]
+
+[C++ includes]
+
+// =======================================
+
+[common typdefs]
+
+// --------------------------------------
+
+[sequential version typdefs]
+
+// --------------------------------------
+
+[parallel version typdefs]
+
+// =======================================
+
+# anonymous namespace fon utility functions
+
+namespace {
+
+[utility functions]
+
+}
+
+
+// =======================================
+
+# common algorithm functions
+
+[heuristic computation]
+
+// =======================================
+
+# sequential algorithm functions
+
+[sequential A* pathfinding search functions]
+
+
 // Sequential A* implementation
-#include <Rcpp.h>
-// ... (rest of the sequential code)
-\`\`\`
-
-### Parallel Version
-
-\`\`\`cpp
-// Parallel A* implementation using RcppParallel
-#include <RcppParallel.h>
-// ... (rest of the parallel code)
-\`\`\`
-
-## R Callable Functions
-
-\`\`\`cpp
-// Expose the C++ functions to R
-#include <Rcpp.h>
-using namespace Rcpp;
-
-// [[Rcpp::export]]
-NumericVector astar_sequential(NumericMatrix graph, int start, int goal) {
-  // ...
+std::vector<int> dmy_aster_seq_finder_impl(const arma::mat& adjacency_matrix,
+                                      const arma::mat& positions,
+                                      int start, int goal) {
+  [main sequential A* pathfinding search function]
 }
 
+// --------------------------------------
+
+// [Roxygen2 complete documentation with simple example]
 // [[Rcpp::export]]
-NumericVector astar_parallel(NumericMatrix graph, int start, int goal) {
-  // ...
+Rcpp::IntegerVector  dmy_aster_seq_finder(Rcpp::NumericMatrix adjacency_matrix,
+                                      Rcpp::NumericMatrix  positions,
+                                      int start, int goal) {
+  [type conversion to RcppArmadillo types around internal implementation call]
 }
+
+
+// =======================================
+
+# parallel algorithm functions
+
+[parallel A* pathfinding search functions]
+
+
+// Parallel A* implementation
+std::vector<int> dmy_aster_par_finder_impl(const arma::mat& adjacency_matrix,
+                                      const arma::mat& positions,
+                                      int start, int goal) {
+  [main sequential A* pathfinding search function]
+}
+
+// --------------------------------------
+
+// [Roxygen2 complete documentation with simple example]
+// [[Rcpp::export]]
+Rcpp::IntegerVector  dmy_aster_par_finder(Rcpp::NumericMatrix adjacency_matrix,
+                                      Rcpp::NumericMatrix  positions,
+                                      int start, int goal) {
+  [type conversion to RcppArmadillo types around internal implementation call]
+}
+
 \`\`\`
 
-## Microbenchmark Test
+
+## R Search Test Script: `dummy_rcpp_finder.r`
+
+### R Source: `./exec/dummySearch/dummy_rcpp_finder.r`
 
 \`\`\`R
-# R script to benchmark the sequential and parallel versions
+#!/usr/bin/env Rscript
+# [AI Generated template comment]
+# ["see also" note to the prompt markdown file]
+# ["see also" note to C++ source]
+# [Brief Script description]
+
+# Load required libraries
+suppressPackageStartupMessages({
+  [library() silent depndency loading]
+})
+
+
+[ usage documentation string for '--help' option ]
+
+# Globals declarations
+[global variables initialization]
+
+
+# Housekeeping Phase
+[argument parsing functions]
+[logging facility control]
+[Rcpp C++ surce linking functions]
+[runtime environment setup]
+
+
 library(microbenchmark)
 
 # Define the graph and start/goal nodes
@@ -4607,50 +4704,6 @@ print(bench_results)
 \`\`\`
 
 
-## Quick Start Guide
-
-### Project Configuration
-
-#### \`DESCRIPTION\`
-
-\`\`\`yaml
-
-Depends
-   ...
-Imports
-   ...
-LinkingTo
-   ...
-SystemRequirements:
-   ...
-
-\`\`\`
-
-#### \`src/Makevars\`
-
-\`\`\`make
-RCPPP_LIBS = $(Rscript ...)
-PKG_LIBS = ... $(RCPPP_LIBS)
-\`\`\`
-
-#### \`~/.R/Makevars\`
-
-\`\`\`make
-CXXFLAGS = ... -march=native
-\`\`\`
-
-### RcppParallel Package Installation
-
-#### \`renv\`
-
-
-\`\`\`make
-renv::status()
-renv::install()
-renv::snapshot()
-renv::status()
-\`\`\`
-
 
 ## References
 
@@ -4665,7 +4718,7 @@ renv::status()
 <!--  LocalWords:  RcppParallel Howto VibeCoding sqr sqrt datalab TSV
 <!--  LocalWords:  Bicocca enum coeff RStudio dataframe HPC foreach
 <!--  LocalWords:  doParallel parallelly quartile microbenchmark YAML
-<!--  LocalWords:  dataframes
+<!--  LocalWords:  dataframes pseudocode
  -->
  -->
  -->
