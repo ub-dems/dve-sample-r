@@ -4073,6 +4073,7 @@ already includes the following dependencies:
    - `ggplot2`
    - `argparse`
    - `logger`
+   - `yaml`
    - `parallelly`
    - `doParallel`
    - `foreach`
@@ -4277,7 +4278,7 @@ The script specification is placed below, delimited in XML
 #### save output data arguments
 
 - `save_data`:   (option: -s|--save, type: boolean, default:`false`) - "Save Data", enable report production for result data and sample graph statistics.
-- `save_graph`:  (option: -f|--save-graph, type: boolean, default:`false`) - "Save Graph", enable dataframe export of sample graph internal model (`igraph`) in TSV format
+- `export_raw`:  (option: -f|--export-graph, type: boolean, default:`false`) - "Save Graph", enable dataframe export of sample graph internal model (`igraph`) in TSV format
 
 </test-script-cli-arguments>
 
@@ -4402,9 +4403,13 @@ The script specification is placed below, delimited in XML
        - `V(g)[i]$in_path <- 2`: "goal node", if vertex `i` is the "goal" vertex in the path (last path vertex)
        - `V(g)[i]$in_path <- 3`: "start node", if vertex `i` is the "start" vertex in the path (first path vertex)
   - path edge attributes:
-    - `in_path` integer value assigned with this values (where `ee(g)[i,j] := E(g)[get_edge_ids(g,c(i,j))]`, applied to undirected graphs: `ee(g)[i,j] == ee(g)[j,i]`):
+    - assume available a function `ee` for edge retrieval given the pair of vertex indexes: (`ee(g)[i,j] := E(g)[get_edge_ids(g,c(i,j))]`, applied to undirected graphs: `ee(g)[i,j] == ee(g)[j,i]`)
+    - `in_path` integer value assigned with this values:
        - `ee(g)[i,j]$in_path <- 0`: "out-of-path", if there is no `i,j` for which `i == path[k] && j == path[k+1] for some k`
        - `ee(g)[i,j]$in_path <- 1`: "in-path", if there is `i,j` for which `i == path[k] && j == path[k+1] for some k`
+    - `path_pos` integer value assigned with this values:
+       - `ee(g)[i,j]$path_pos <- k`: "in-path position", `min(k)` for which `i == path[k] && j == path[k+1]`
+       - `ee(g)[i,j]$path_pos <- -1`: "out-of-path marker", if there is no `k` for which `i == path[k] && j == path[k+1]`
     - `traffic` numeric value computed by this formula for every edge, based on `congestion` attribute (`traffic` is `congestion`, mean normalised, with cut at third quartile):
        - `traffic <- 0.0`: if `graph_type` argument is different from `route`
        - `traffic <- min(congestion, log(4)*cong_rate) - cong_rate`: if `graph_type` argument is equal `route`
@@ -4428,7 +4433,7 @@ The script specification is placed below, delimited in XML
 
 <graph-plot-script-specification>
 
-- in the script "Reporting Phase", after execution a plot of the graph will be generated and exported as a PDF file.
+- in the script "Reporting Phase", after execution, a plot of the graph will be generated and exported as a PDF file.
 - the plot generation is enabled only if `show_plot` command-line option is specified.
 - the exported PDF output should go in the logging directory, with the same file name prefix rules, as described above, in `test-script-logging-specification` XML tag.
 - the exported PDF output file name suffix should be `-plot.pdf`.
@@ -4440,7 +4445,7 @@ The script specification is placed below, delimited in XML
   - title: 
     - composed as a two lines interpolated label:
       - first line: `"graph: ${graph_type}(${graph_size}, rad=${graph_radius}, fill=${graph_fill}, cong=${cong_rate})"`
-      - second line: `"mode: ${exec_mode} - path: len=${stats$path_length}, cost=${stats$path_cost}, deg=${stats$degree_avg}"`
+      - second line: `"mode: ${exec_mode} time:{stats$elapsd_time} - path: len=${stats$path_length}, cost=${stats$path_cost}, deg=${stats$degree_avg}"`
   - layers:
     - the image background must be in a neutral solid colour, chosen with enough contrast with vertexes and edges colours.
   - legend:
@@ -4453,16 +4458,16 @@ The script specification is placed below, delimited in XML
     - vertexes fill colour (solid, bright) depends on `in_path` attribute value.
     - vertexes border colour use `black`.
   - edge rendering:
-    - edge are rendered as solid lines
-    - edge line width depends on `in_path` attribute value.
-    - edge colour uses `traffic` numeric attribute, mapped to a three colour gradient (`green`,`gray`,`red`) with this reference values:
+    - edges are rendered as solid lines
+    - edges line width depends on `in_path` attribute value.
+    - edges colour uses `traffic` numeric attribute, mapped to a three colour gradient (`green`,`gray`,`red`) with this reference values:
       - `c(-cong_rate, 0.0, log(4)*cong_rate)`
       - as a `ggraph` example consider:
       
 ```r
    p <- ggraph::plot(g, ...) +
          ...
-         geom_edge_link(aes(colour = traffic, width=in_path)) +
+         geom_edge_link(aes(colour = traffic, width = in_path)) +
          scale_edge_width_discrete(range = c(2, 6)) +
          scale_edge_color_gradientn(colours = c("green4", "gray90", "red3"), values=c(-cong_rate, 0.0, log(4)*cong_rate)) +
          ...
@@ -4474,17 +4479,38 @@ The script specification is placed below, delimited in XML
 
 <save-data-script-specification>
 
-- all the outputs should go in the logging directory: fron environment `${P_LOGS_DIR:-'logs'}`, created if missing, as described above.
+- in the script "Reporting Phase", after execution, a set of report files will be generated, depending on command-line arguments.
+- the export generation is enabled only if `save_data` command-line option is specified.
+- the exported output files should go in the logging directory, with the same file name prefix rules, as described above, in `test-script-logging-specification` XML tag.
+- the exported data is generated by the function `save_sample_data` that receive the `space_graph_test` returned by `run_path_search` function.
+- the function `save_sample_data` will dispatch output generation to several specific functions: `save_sample_info`, `save_bench_report`, `save_graph_data`.
+- the function `save_sample_info` generates a summary information file, YAML format
+- the `save_sample_info` summary information file name suffix should be `info.yaml`.
+- the `save_sample_info` summary information file must report, in a well organised hierarchical way:
+   - all the scrips arguments 
+   - script start timestamp and output file prefix for log directory outputs
+   - all the graph statistics, retrieved from `space_graph_test` input object
+   - all the path statistics, retrieved from `space_graph_test` input object
 - all the output filenames should start with this prefix: "<script-name>-<sec-timestamp>-<exec-mode>-" with a variable suffix.
 - the "<sec-timestamp>" part is composed by script start time, formatted as localtime in "CCYYMMDD-hhmmss" format.
-- the output to generate in all runs, indipentenly fron "Save Data" option are:
-   - a log file (suffix: `test.log`) generated by logging facilities, with logging level set according to verbosity option (0:INFO, >=1: DEBUG)
-- for `all`,`seq`,`par` modes, when the "Show Plot" option is selected the following output will be generated:
-   - a plot dump of the input graph (suffix: `plot.pdf`) as specified below, delimited in `graph-plot-script-specification` XML tag.
-   - for `all` mode, only the `par` solution will be plotted.
-- for `bench` mode, when the "Save Data" option is selected the following output will be generated:
+- the function `save_bench_report`, generates a pair of output files with microbenchmark performance data.
+- the function `save_bench_report` is enabled only if `exec-mode` is `bench`
+- the function `save_bench_report` outputs are:
    - a benchmark summary report (suffix: `bench.txt`), only if benchmark ws enabled.
-   - a tab separated export (TSV) (suffix: `data.tsv`) with microbenchmark data export with additional columns: 'graph_type", "timestamp", "function_label", "input_size", "graph_radius",  "congestion", "path_length", "successful_result"
+   - a dataframe export, in tab separated format (TSV), (suffix: `perf.tsv`) with microbenchmark data with additional columns: 
+      - `graph_type`
+      - `timestamp`
+      - `function_name`
+      - `graph_size`
+      - `graph_radius`
+      - `graph_fill`
+      - `path_length`
+      - `path_cost`
+- the function `save_graph_data`, generates a full export of graph data with attributes as a pair of dataframes.
+- the function `save_graph_data` is enabled only if `export_raw` is enabled
+- the function `save_graph_data` outputs are:
+   - a dataframe export, in tab separated export (TSV) (suffix: `nodes.tsv`), of all the `igraph` model vertex data with attributes included.
+   - a dataframe export, in tab separated export (TSV) (suffix: `edges.tsv`), of all the `igraph` model edge data with attributes included.
 
 </save-data-script-specification>
 
@@ -4638,7 +4664,9 @@ renv::status()
 <!--  LocalWords:  STL pathfinding namespace mutex undirected geo lin
 <!--  LocalWords:  RcppParallel Howto VibeCoding sqr sqrt datalab TSV
 <!--  LocalWords:  Bicocca enum coeff RStudio dataframe HPC foreach
-<!--  LocalWords:  doParallel parallelly quartile
+<!--  LocalWords:  doParallel parallelly quartile microbenchmark YAML
+<!--  LocalWords:  dataframes
+ -->
  -->
  -->
  -->
