@@ -98,7 +98,7 @@ In your reply, elaborate on the following points:
 -------------------------------------------------------------------------------------------
 -------------------------------------------------------------------------------------------
 -------------------------------------------------------------------------------------------
-# A:3 (Claude) {#A3-claude}
+# A:3 (Claude)
 > R Package Development with C++: Optimization Strategies for Internal Development vs CRAN Release
 
 ## 1. CRAN Compliant Linker Options
@@ -394,7 +394,7 @@ while maintaining reasonable library sizes across both scenarios.
 -------------------------------------------------------------------------------------------
 -------------------------------------------------------------------------------------------
 -------------------------------------------------------------------------------------------
-# A:3 (Gemini) {#A3-gemini}
+# A:3 (Gemini)
 > CRAN Linker Options, Debugging Pragmatics
 
 ### Executive Summary
@@ -618,7 +618,7 @@ This example illustrates CRAN-compliant documentation, safe C++ practices (`Rcpp
 -------------------------------------------------------------------------------------------
 -------------------------------------------------------------------------------------------
 -------------------------------------------------------------------------------------------
-# A:3 (ChatGPT) {#A3-chatgpt}
+# A:3 (ChatGPT)
 > CRAN linker options and development
 
 ## Summary recommendations (short)
@@ -937,7 +937,7 @@ If you want, I can:
 -------------------------------------------------------------------------------------------
 -------------------------------------------------------------------------------------------
 -------------------------------------------------------------------------------------------
-# A:3 (DeepSeek) {#A3-deepseek}
+# A:3 (DeepSeek)
 > Optimizing Rcpp Package Development: CRAN Compliance and Debugging
 
 ## CRAN Compliant Linker Options
@@ -1163,7 +1163,7 @@ development builds with full debugging capabilities.
 -------------------------------------------------------------------------------------------
 -------------------------------------------------------------------------------------------
 -------------------------------------------------------------------------------------------
-# A:3 (Kimi) {#A3-kimi}
+# A:3 (Kimi)
 > Rcpp + g++: “small .so” vs. CRAN – a field guide
 
 | Scenario            | Primary goal                     | Where the flags live       | Typical size reduction |
@@ -1319,7 +1319,7 @@ Happy hacking – and happy CRAN submissions!
 -------------------------------------------------------------------------------------------
 -------------------------------------------------------------------------------------------
 -------------------------------------------------------------------------------------------
-# A:3 (LeChat) {#A3-lechat}
+# A:3 (LeChat)
 > C/C++ compiler and linker options...
 
 ## **1. CRAN-Compliant Linker Options**
@@ -1446,7 +1446,7 @@ template class MyClass<double>;  // Explicitly instantiate for double
 -------------------------------------------------------------------------------------------
 -------------------------------------------------------------------------------------------
 -------------------------------------------------------------------------------------------
-# A:3 (Perplexity) {#A3-perplexity}
+# A:3 (Perplexity)
 > C++ Compiler and Linker Options for R packages
 
 Here is a detailed response about best practices for g++ linker
