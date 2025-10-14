@@ -13,7 +13,8 @@
 
 # ::}}} \\ %0.
 # ::{{{ #RCPP: C++ Compiler and Linker options for R packages //
-# Q:3 - C++ Compiler and Linker options for R packages {#Q3}
+<a href="Q3" />
+# Q:3 - C++ Compiler and Linker options for R packages
 
 <system>
 
