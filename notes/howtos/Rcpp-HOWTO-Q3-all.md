@@ -1,13 +1,29 @@
 ``` /// vim: set foldmethod=marker : ```
-# ::{{{ #RCPP: Howto //
-# Q:3 - R "VibeCoding" and Loop Optimization
+# ::{{{ #RCPP: C++ Compiler and Linker Options //
+# TOC - C++ Compiler and Linker options for R packages - Contents
+
+1. [Q:3 - C++ Compiler and Linker options for R packages](#Q3)
+   - see: [Package Development with C++: Optimization Strategies (Claude)](#A3-claude)
+   - see: [CRAN Linker Options, Debugging Pragmatics (Gemini)](#A3-gemini)
+   - see: [CRAN linker options and development (ChatGPT)](#A3-chatgpt)
+   - see: [Optimizing Rcpp Package Development: CRAN Compliance and Debugging (DeepSeek)](#A3-deepseek)
+   - see: [Rcpp + g++: “small .so” vs. CRAN – a field guide (Kimi)](#A3-kimi)
+   - see: [C/C++ compiler and linker options (LeChat)](#A3-lechat)
+   - see: [C++ Compiler and Linker Options for R packages (Perplexity)](#A3-perplexity)
+
+# ::}}} \\ %0.
+# ::{{{ #RCPP: C++ Compiler and Linker options for R packages //
+# Q:3 - C++ Compiler and Linker options for R packages {#Q3}
 
 <system>
 
-You are an expert R and C++ developer.
+You are an expert R and C++ developer, working on an `Rcpp` enabled R package.
 
-Your task is to prepare example C++ sources to introduce core features
-of main Rcpp ecosystem packages.
+In the replies, assume that the package name is `dvesimpler`
+
+Your task is to discuss (GNU) C/C++ compiler and linker options in the
+different scenarios of internal package development and CRAN compliant
+packaging.
 
 The answer must be in well-formatted, clearly structured (GFM)
 markdown, with footnotes for links to relevant online resource
@@ -29,5697 +45,1538 @@ performance in a multicore (32 HyperThreaded Intel XEON or AMD EPYC)
 Ubuntu 24.04 Linux virtual machines, running on Microsoft Azure
 platform.
 
-As a stylistic note, discuss also every alternative from language
+As a stylistic note, discuss also every alternative from for language
 idiomaic and pragmaic point of view.
 
 </system>
 
 
 
-Your task is to produce two source to be included in a `Rcpp` and `RcppArmadillo` enabled R package project:
+In a context of R package development, in C++ language via `Rcpp`
+support describe which are the best options for (GNU) g++ linker phase to
+get a good tradeoff between shared library size and CRAN
+compliance. In particular, consider two different scenarios:
+* internal development, with C++ debugging support
+* release build intended for CRAN publishing and validation
 
-- a C++ source: `./src/dummy_iter.cpp`
-- a R script:   `./exec/dummy-rcpp-bench.r`
+In internal development, all performance optimizations should be
+activated, via `-march=native` compiler option. 
+In this context C++ code debugging should also be enabled.
 
+In the "publishing" scenario, CRAN compliance is mandatory, verified
+by R CMD check.
 
-## C++ source loop strategy alternatives: `./src/dummy_iter.cpp`
+This can be reached by putting CRAN compliant option in
+`./src/Makevars`, while internal optimization can be reached with
+options (like -march) specified in (local) `~/.R/Makevars` file
 
-
-The C++ source: `./src/dummy_iter.cpp`, used to provide an
-implementation example of different approaches in vector iteration.
-
-In this source will be placed two group of C++ functions "sum" and
-"outer", with the following specifications, delimited in XML
-`*-test-specification` tags, that can be testes to verify how
-different implementation alternatives affect runtime performance,
-depending on the input size. In the test, also standard R library
-functions should be included, as a performance reference.
-
-In addition, a small group of logging support functions, R callable,
-will be used for conditional function tracing. The trace output will
-be activated only if test script "verbose" invocation argument is set
-to maximum level (verbosity >= 3). C++ logging support specification
-follows, delimited in XML `cpp-trace-support-specification` tag.
-
-### "sum" function group specification
-
-<sum-test-specification>
-
-The "sum" gruup of functions compute the sum of a numeric input vector.
-
-The list of implementation alternatives should consider:
-
-- C-style `for` with manual index increment.
-- C++-style `for` with STL idiomatic range iterators.
-- on OpenMP `parallel for` for parallel execution
-- on OpenMP `parallel for simd` for parallel execution with vectorization
-- some RcppArmadillo library function
-- the R `base::sum`, called from C++ code
-
-Add further examples if appropriate.
-
-All the functions must be R callable, and start with name prefix `dmy_pf_sum_` with a short, but clear, suffix name
-
-</sum-test-specification>
-
-
-### "outer" function group specification
-
-<outer-test-specification>
-
-The "outer" group of functions compute the outer product (tensor product) of a pair of input vectors.
-
-In the tests, a random vector of the specifiled input size will be passed as both arguments.
-
-The list of implementation alternatives should consider:
-
-- C-style nested `for` with manual index increment.
-- C++-style nested `for` with STL idiomatic range iterators.
-- on OpenMP nested `parallel for collapse` for parallel execution with loop linearization
-- on OpenMP `parallel for; parellel simd` for parallel execution of the outer loop mixed with vectorization of inner loop
-- some RcppArmadillo library function
-- the R `base::outer`, called from C++ code, inkoked as `base::outer(v,v,"*")`
-
-Add further examples if appropriate.
-
-All the functions must be R callable, and start with name prefix `dmy_pf_outer_` with a short, but clear, suffix name
-
-</outer-test-specification>
-
-
-All examples must be R callable.
-
-### C++ trace logging support functions
-
-<cpp-trace-support-specification>
-
-- this functions provide a way to trace messages to be output to stdout/stderr using `Rcpp::cout`, `Rcpp::cerr` channels
-- a function: `dmy_pf_log_set_level`, called by the R test
-  script to set a static integer variable for the "verbosiy level",
-  from command line invocation arguuments (see `--verbose` script
-  argument below).
-- a function: `dmy_pf_log_get_level`, that returns the static value set in `dmy_pf_log_set_level`.
-- a function: `dmy_pf_log_out`, invoked with `__FILE__`, `__LINE__`
-  macros and a string message arguments, that outputs the message,
-  using `Rcpp::cout`, if `dmy_pf_log_get_level` is >=0.
-- a function: `dmy_pf_log_trace`, invoked with `__FILE__`, `__LINE__`
-  macros and a string message arguments, that outputs the message,
-  using `Rcpp::cerr`, if `dmy_pf_log_get_level` is >=3.  The trace
-  function must log the message only once, for the same `__FILE__`,
-  `__LINE__` argument, until `dmy_pf_log_reset` is called. This is to
-  avoid floading the stderr with too many messages in case of repeted
-  inviction. Performance should be minimal.  The could be implemented
-  with a `stl::set` to check repeated invocations.
-- a function: `dmy_pf_log_reset`, that clears the repeted invocation condition, reenabling trace output.
-- a macro `V_LOG`, that takes a message string argument, that traslate
-  to a call `dmy_pf_log_out` with `__FILE__`, `__LINE__` filled.
-- a macro `V_TRACE`, that takes a message string argument, that
-  traslate to a call `dmy_pf_log_trace` with `__FILE__`, `__LINE__`
-  filled.
-- in the "sum" and "outer" funcions described above the V_TRACE calls
-  will be put around R library function invokation: `base::outer` and
-  `base::sum`. For example:
+For a good tradeoff in share library size, linker options
+`-Wl,--gc-sections,--strip-all` can reduce by 50x library size.
+But these options seem not CRAN compliant. Alter enabling the options,
+R CMD check reports the error (for a package called "dvesimpler"):
 
 ```
-V_TRACE("base::sum, ...")
-s = base::sum(v)
-V_TRACE("base::sum, done.")
+
+  File "dvesimpler/libs/dvesimpler.so":
+    Found no calls to: ‘R_registerRoutines’, ‘R_useDynamicSymbols’ 
+  
+  It is good practice to register native routines and to disable symbol
+  search.
+  
+  See ‘Writing portable packages’ in the ‘Writing R Extensions’ manual.
+  
 ```
 
-</cpp-trace-support-specification>
-
-
-
-## R script for looping alternative benchmarks, with variable input size: `./exec/dummy-rcpp-bench.r`
-
-
-A microbenchmark R test script must be provided to verify the performance advantage of the parallel version.
-This script should accepts several command-line arguments, not mandatory, with sensible defaults, as described bolow.
-The script specification is placed below, delimited in XML `test-script-specification` tags.
-Add a comment about the choice of the `./exec` directory as a CRAN compliant position where to store package support sctipts,
-able to call package R code, but also callable, via "system" call, from internal package code.
-
-### Benckmark Script Specification
-
-<test-script-specification>
-
-- the script admits the command line arguments, descibed below, delimited in XML `test-script-cli-arguments` tags.
-- the argument parsing must use a standard argument parser, provided by some library facility.
-- the script output should go to stdout and logged to a file, using standard logging facilities.
-- the log directory will be used also for storing benchmark results and plots
-- the log directory will be taken from environment variable `P_LOGS_DIR` with `logs` as default.
-- the log directory should be created if absent.
-- the script execution should be logged at info level (argumnts, benchmark invokation, final summary) while the "save data" section shold be logged at "debug" level (verbose>=1).
-- the script shoud set verbose level in C++ module via `dmy_pf_log_set_level` call. Before all benchmark invocations should call `dmy_pf_log_reset` to reenable tracing.
-- all the log artifacts should contain the test type and a timestamp suffix as a part of the filename.
-- during script initalization, log: 1. the script arguments, 2. the full path of the log directory, 3. the output of system command: `inxi -C`
-- the benchmark script should iterate the test group for the "Test Type" argument for every "Input Size" value
-- the results should be aggregated and shown in a summary multi series line plot, that shows the elapsed time, with a series for every function in the group under test, depending on input size.
-- the benchmark are made several `microbenchmark`invocation, with "Sample Size" runs to stabilize results.
-- for all the tests, every `microbenchmark` invocation uses a single random numeric vector of the varing input size.
-- the input vector should be filled by random normal values of 0 mean and 10000 variance (100 sd)
-- every script invocation should prodice a log file, a CSV file with summaries of the `microbenchmark` results and generate graphic dump of the summary plot.
-- if, in addition, the "Save Data" argument is specified also the
-  output should be generated, following specification below, delimited
-  in `save-data-script-specification` XML tag.
-
-</test-script-specification>
-
-
-### Script Output Generation
-
-<save-data-script-specification>
-
-- all the outputs should go in the logging directory: fron environment `${P_LOGS_DIR:-'logs'}`, created if missing, as described above.
-- all the output filenames should start with this prefix: "<script-name>-<sec-timestamp>-<test-type>-" with a variable suffix.
-- the output to generate in all runs, indipentenly fron "Save Data" option are:
-   - a log file (suffix: `test.log`) generated by logging facilities, with logging level set according to verbosity option (0:INFO, >=1: DEBUG)
-   - a benchmark summary plot (suffix: `bench.png`), as described above, function label as abbreviated series names, taken by function names with the common prefix stripped.
-   - a Rprof output (suffix: `rprof.out`), generated only if "Profile" option is selected.
-- when the "Save Data" option is selected the following output will be generated:
-   - a textual system info report (suffix: `info.log`) with the output of system commands: `date; whoami; inxi  -CfGMS;  lscpu; cpupower frequency-info; nvidia-smi || echo '#NOGPU'`.
-   - a tab separated export (TSV) (suffix: `data.tsv`) with microbenchmark data export with additional columns: 'test_type", "timestamp", "function_label", "input_size"
-
-</save-data-script-specification>
-
-### Script Command Line Arguments
-
-<test-script-cli-arguments>
-
-#### generic arguments
-
-- "Help"          (option: -h|--help) - boolean, to print script usage info and command line argument description. Execution skipped.
-- "Verbose"       (option: -v|--verbose) - integer (option count), can be repeated (-v, -vv -vvv), set the logging level (default: 0 - "info")
-- "Profile"       (option: -p|--profile) - boolean, enable profiling with `Rprof`.
-                  Profiling output filename should follow the same naming of other outputs, with `-rprof.out` suffix.
-
-#### benchmark arguments
-
-- "Test Type"     (option: -t|--test) - name of the test to execute: either "sum" or "outer" (with "sum" as default value)
-- "Sample Size"   (option: -m|--samples) - microbenchmark sample size (e.g., number of iterations)
-- "Save Data"     (option: -s|--save) - boolean value to produce the dump of result data and system information reports as specified below.
-- "Input Size" (positional, for many values) - to specify the dimension of the input vectors for tests (with default to the sequence "10 100 1000")
-
-</test-script-cli-arguments>
-
-As a final section, add a short guide that decribes the minimal steps
-required to configure the R package project, based on `renv` (in
-"explicit" configuration mode), that already include supports for
-`Rcpp`, `RcppArmadillo`.  In particular, a minimal example of code
-modification for `DESCRIPTION` and `./src/Makevars` for `BLAS`,
-`LAPACK`and `OPENMP`support.
-
-Include also a note for native "SIMD" support in `~/.R/Makevars`, like
-adding a `-march=native` in `CXXFLAGS` variable.
-
-
---------------------------------------
-
-Here's a breakdown of what you need to deliver:
-
-1.  **Markdown Structure:**
-    *   Use clear headings and subheadings to organize the content.
-    *   Include footnotes for references to online resources where appropriate.
-
-2  **CRAN and Tidyverse Compliance:**
-    *   Ensure the code adheres to CRAN guidelines (e.g., no excessive memory allocation, proper error handling).
-    *   Follow tidyverse best practices where applicable (e.g., consistent naming conventions).
-
-3.  **Introduction:**
-    *   Provide a brief comparization of C and C++ (STL) approach,
-        including safety and performance consideration.
-    *   Discuss the "rationale" behind "OpenMP" library. Focus on
-        "Parallelism vs Vectorization trade-off" in the HPC context.
-    *   In ralation to the intrinsic directive "#pragma omp", describe the clauses
-        *   "parallel",
-        *   "for",
-        *   "collapse",
-        *   "simd",
-        *   "private", "shared", "reduction"
-    *   Comment on OpenMP/BLAS/SIMD support provided by RcppArmadillo and RcppEigen
-    *   Comment on portability and CRAN compliance issues ralated to architectural "native" optimizaion
-
-4.  **GPU alternatives:**
-    *   Without going too deep, provide some consideration on GPU advantage in contexr of R HPC.
-    *   Give some rough estimate on GPU advantage for sone class of comuttion problem
-    *   Comment on cuBLAS and give some link to online known comparation vs OpenBLAS or Intel MKL
-    *   In a (rootless podman container environment) provide a short
-        answer if Python based CUDA distribution is a viable approach
-        for GPU enabled R package system dependencies.
-
-5.  **C++ Code:**
-    *   Implement tho group of functions "sum" and "outer", following the above specification.
-    *   Follow the Google C++ Style Guide for formatting.
-    *   add Rcpp attributes for exposing all the functions to R code
-    *   Provide clear and concise comments to explain the code.
-
-
-6.  **Microbenchmark Test Script:**
-    *   Create an R script that uses the `microbenchmark` package to
-        compare the performance of all the funcion of a sigle group
-        ("Test Type"), passed as an argument.
-    *   Provide an argument parsing support with library argument
-        parsing facilities, for the script that allows the parameters
-        specified above in `test-script-cli-arguments` XML tag
-    *   For the positional argument "Input Size", consider that the
-        argument can be expressed as a space separated list of
-        integers (like "100 1000 10000") and perform test iteration
-        for every value. Provide a graphical summary of parallel vs
-        sequential benchmark for performance evaluation as function of
-        problem size. In the graph subtitle, reports the value of
-        options "Sample Size" and other parameters, like "Test Type".
-
-7.  **Rcpp OpenMP/SIMD and BLAS/LAPACK Quick Start guide:**
-    *   Describe minimal package configuration required for OpenMP dependency.
-    *   Discuss the choice of `~/.R/Makevars`, instead of
-        `~/.R/Makevars` for architectural options, like the
-        `-march=native`compiler option.
-
-Example Markdown Structure:
-
-```markdown
-# Rcpp iterarors performance optimization
-
-[Provide a brief abstract of the contents of this subject]
-
-
-## Introduction
-### C/C++ Iteration strategies and HPC Libraries Alternatives
-
-[Provide a brief evaluation of prons and cons of different implementation patterns]
-
-### OpenMP/SIMD primer
-
-[Provide a brief description of OpenMP pourpose, focusing on parallelism, vectorization and thread syncronization]
-
-
-### GPU Notes
-
-[Provide a brief comment and pointers on CUDA beneefits for R computations]
-
-
-## C++ Implementation
-
-### Sequential Version
-
-\`\`\`cpp
-// (standard CRAN prelude with Authors Copyright, License and Displaimers)
-
-// (standard Rcpp attributes for code genetaion)
-// (standard includes: RcppArmadillo, STL. OpenMP)
-
-// (the "logging" support group of funtions: "dmy_pf_log_*" )
-
-// (the "sum" group of funtions: "dmy_pf_sum_*" )
-
-// (the "outer" group of funtions: "dmy_pf_outer_*" )
-
-\`\`\`
-
-
-## Microbenchmark Test
-
-\`\`\`R
-
-# (a roxygen compliant documentation note on script usage)
-# (include @seealso tags for C++ source, "./src/Makevars", "~/.R/Makevars")
-# (include @seealso tag for the file: "./notes/howtos/Rcpp-HOWTO-Q3-all.md")
-
-# (the standard dependency loading, in a silent way)
-
-# (the benchmark execution code for "sum" group of functions)
-
-# (the benchmark execution code for "outer" group of functions)
-
-# (the test iteration logic on several input size and result collector)
-
-# (the test result aggregation and transormation)
-
-# (the test result plotting code)
-
-# (the test result persistence stuff)
-
-# (the argument parsing)
-
-# (the script "main" entrypoint)
-
-\`\`\`
-
-
-## Quick Start Guide
-
-### Project Configuration
-
-#### \`DESCRIPTION\`
-
-\`\`\`yaml
-
-Depends
-   ...
-Imports
-   ...
-LinkingTo
-   ...
-SystemRequirements:
-   ...
-
-\`\`\`
-
-#### \`src/Makevars\`
-
-\`\`\`make
-RCPPP_LIBS = $(Rscript ...)
-PKG_LIBS = ... $(RCPPP_LIBS)
-\`\`\`
-
-#### \`~/.R/Makevars\`
-
-\`\`\`make
-CXXFLAGS = ... -march=native
-\`\`\`
-
-
-## References
-
-[^1]: [High performance functions with Rcpp](http://adv-r.had.co.nz/Rcpp.html)
-[^2]: [R Packages](https://r-pkgs.org/)
-[^3]: [RcppArmadillo on CRAN](https://cran.r-project.org/web/packages/RcppArmadillo/index.html)
-[^4]: [OpenMP Resources](https://www.openmp.org/resources/)
-[^5]: [CRAN Task View: High-Performance and Parallel Computing with R](https://cran.r-project.org/web/views/HighPerformanceComputing.html)
-[^6]: [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html)
-
-```
-
-
+In your reply, elaborate on the following points:
+
+1. provide advice on CRAN compliant linker options
+2. provide advice on development pragmatics for better debugging and error reporting
+3. discuss size impact on heavy C++ template dependency like those of RcppArmadillo and RcppEigen
+4. in RStudio UI interface, describe possible ways to obtain different build modality (internal development vs release package publication)
 
 
 -------------------------------------------------------------------------------------------
 -------------------------------------------------------------------------------------------
 -------------------------------------------------------------------------------------------
-# A:3 (Claude)
-> * [Rcpp Iterators Performance Optimization](https://claude.ai/public/artifacts/dcd049f0-762c-405e-9be3-f0c1a21a747b)
-## Rcpp Iterators Performance Optimization - Contents
+# A:3 (Claude) {#A3-claude}
+> R Package Development with C++: Optimization Strategies for Internal Development vs CRAN Release
 
-I've created a comprehensive guide for Rcpp ecosystem performance optimization that includes:
+## 1. CRAN Compliant Linker Options
 
-### Key Features Delivered:
+### The Symbol Registration Issue
 
-### 1. **Complete C++ Implementation** (`./src/dummy_iter.cpp`):
-- **Sum functions**: 6 different implementations (C-style, C++ STL, OpenMP parallel/SIMD, RcppArmadillo, R base)
-- **Outer product functions**: 6 implementations with various parallelization strategies
-- **Logging system**: Comprehensive tracing with verbosity levels and duplicate suppression
-- **OpenMP integration**: Parallel for, SIMD, and collapse directives
-- **Proper Rcpp attributes**: All functions are R-callable with Roxygen2 documentation
+The error you're encountering is due to aggressive symbol stripping
+that removes the registration symbols CRAN expects. Here are the
+**CRAN-compliant alternatives**:
 
-### 2. **Sophisticated Benchmark Script** (`./exec/dummy-rcpp-bench.r`):
-- **Command-line interface**: Full argument parsing with argparse
-- **Flexible testing**: Variable input sizes, sample sizes, test types
-- **Professional logging**: Multi-level logging to files and console
-- **Performance visualization**: Automated plot generation with error bars
-- **Data export**: TSV format with metadata for further analysis
-- **Profiling support**: Optional Rprof integration
-- **System information**: Hardware configuration reporting
+#### Recommended `./src/Makevars` for CRAN Release:
+```makefile
+# CRAN-compliant optimization flags
+PKG_CPPFLAGS = -DNDEBUG
+PKG_CXXFLAGS = -O2 -Wall -Wextra
 
-### 3. **Theoretical Foundation**:
-- **Performance analysis**: Detailed discussion of parallelism vs vectorization trade-offs
-- **OpenMP primer**: Comprehensive coverage of key directives and clauses
-- **Architecture considerations**: NUMA, memory bandwidth, cache locality
-- **GPU computing notes**: Performance estimates and container deployment strategies
+# Size optimization without breaking symbol registration
+PKG_LIBS = -Wl,--gc-sections
+# Note: Avoid --strip-all for CRAN builds
 
-### 4. **Project Configuration**:
-- **CRAN-compliant setup**: Proper DESCRIPTION, Makevars configuration
-- **OpenMP/BLAS integration**: System requirements and linking
-- **User-level optimizations**: Architecture-specific compiler flags
-- **Development workflow**: renv setup and testing procedures
+# Ensure proper symbol registration
+CXX_STD = CXX17
+```
 
-### Performance Insights:
-
-The implementation demonstrates several critical performance principles:
-
-- **Memory bandwidth limits**: For large problems, data transfer often dominates computation time
-- **Overhead vs parallelism**: OpenMP shows advantages only above certain problem sizes (typically >1K elements)
-- **SIMD effectiveness**: Vectorization provides consistent 2-4x improvements for arithmetic operations
-- **Library optimization**: RcppArmadillo leverages optimized BLAS, often outperforming hand-coded loops
-
-### Expected Results:
-
-On a 32-core Azure VM, you should see:
-- **Sum operations**: 5-20x speedup for large vectors with OpenMP
-- **Outer products**: 10-50x speedup with proper parallelization
-- **Memory-bound regions**: Performance plateau around 100K+ elements
-- **Architecture dependency**: 15-30% improvement with `-march=native`
-
-The benchmark script will generate detailed performance curves showing
-these relationships, helping you choose optimal strategies for your
-specific use cases.
-
-----------------------------------------------------------------------------------
-
-## Rcpp Iterators Performance Optimization
-
-This guide provides a comprehensive exploration of different C++
-iteration strategies within the Rcpp ecosystem, with practical
-examples demonstrating performance trade-offs between sequential,
-parallel, and vectorized approaches. The examples focus on core
-computational patterns (`sum` and `outer` product operations) that are
-fundamental building blocks in high-performance computing
-applications.
-
-## Introduction
-
-### C/C++ Iteration Strategies and HPC Libraries Alternatives
-
-Modern C++ offers multiple paradigms for vector iteration, each with
-distinct performance characteristics and safety considerations:
-
-**C-style iteration** provides maximum control and predictable
-performance but requires manual memory management and bounds
-checking. It offers the lowest overhead for simple operations but is
-prone to buffer overflows and off-by-one errors.
-
-**C++ STL iterators** balance performance with safety through
-type-safe abstractions. Range-based for loops (C++11) provide clean,
-readable code while maintaining performance comparable to manual
-indexing. STL algorithms like `std::accumulate` leverage compiler
-optimizations and can be automatically vectorized.
-
-**OpenMP parallelization** enables multi-core utilization with minimal
-code changes. The performance gain scales with core count but
-introduces synchronization overhead. Memory bandwidth often becomes
-the limiting factor on modern NUMA architectures.
-
-**SIMD vectorization** exploits CPU vector units (AVX2, AVX-512) to
-process multiple elements simultaneously. Modern compilers can
-auto-vectorize simple loops, but explicit directives ensure optimal
-utilization of vector registers.
-
-### OpenMP/SIMD Primer
-
-OpenMP provides a portable, scalable programming model for
-shared-memory parallel computing. Its directive-based approach allows
-incremental parallelization with fine-grained control over execution:
-
-**Parallelism vs Vectorization Trade-off**: On modern HPC systems (32+
-core Intel XEON/AMD EPYC), the optimal strategy depends on problem
-size and memory access patterns. Small problems benefit from
-vectorization due to lower overhead, while large problems leverage
-thread parallelism. The sweet spot often combines both approaches.
-
-**Key OpenMP Clauses**:
-- `parallel`: Creates a team of threads to execute the enclosed region
-- `for`: Distributes loop iterations across threads in the current team
-- `collapse(n)`: Combines n nested loops into a single iteration space
-- `simd`: Vectorizes the loop using SIMD instructions
-- `private(var)`: Each thread gets a private copy of the variable
-- `shared(var)`: Variable is shared among all threads (default for most variables)
-- `reduction(op:var)`: Performs reduction operation (sum, max, etc.) across threads
-
-**RcppArmadillo and RcppEigen Integration**: Both libraries provide
-optimized BLAS/LAPACK backends with automatic OpenMP threading for
-matrix operations. They leverage platform-specific optimizations
-(Intel MKL, OpenBLAS) while maintaining portability.
-
-**CRAN Compliance and Portability**: Native optimizations
-(`-march=native`) improve performance by 15-30% on modern CPUs but
-break CRAN's portability requirements. Production packages should use
-conservative compiler flags, while development can leverage
-architecture-specific optimizations through user-level configuration.
-
-### GPU Notes
-
-GPU computing offers substantial performance advantages for
-data-parallel workloads, particularly operations with high arithmetic
-intensity (compute-to-memory ratio > 1:1). Modern GPUs provide 1000+
-cores optimized for throughput over latency.
-
-**Performance Estimates**: 
-- Dense matrix operations: 5-50x speedup over CPU
-- Element-wise operations: 2-10x speedup
-- Reduction operations: 3-15x speedup
-- Small problems (<10k elements): Often slower due to transfer overhead
-
-**cuBLAS Performance**: NVIDIA's cuBLAS typically outperforms CPU BLAS
-by 5-20x for large matrices (>1000x1000), with performance scaling
-linearly with problem size. Intel MKL and OpenBLAS remain competitive
-for smaller problems and maintain lower memory requirements[^1].
-
-**Container-based CUDA**: In rootless Podman environments, NVIDIA
-Container Toolkit enables GPU access without root
-privileges. Python-based CUDA distributions (via conda-forge) provide
-a viable approach for R package system dependencies, though they
-require careful container orchestration and may complicate deployment.
-
-## C++ Implementation
-
+#### Proper Symbol Registration in C++:
 ```cpp
-// Rcpp Performance Benchmark Examples
-// Copyright (C) 2025 Author Name
-// 
-// This file is part of the Rcpp ecosystem performance optimization examples.
-// Licensed under GPL (>= 2)
-
-// [[Rcpp::plugins(cpp11)]]
-// [[Rcpp::plugins(openmp)]]
-// [[Rcpp::depends(RcppArmadillo)]]
-
-#include <RcppArmadillo.h>
-#include <set>
-#include <string>
-#include <sstream>
-
-#ifdef _OPENMP
-#include <omp.h>
-#endif
-
-using namespace Rcpp;
-using namespace arma;
-
-//==============================================================================
-// Logging Support Functions
-//==============================================================================
-
-static int log_level = 0;
-static std::set<std::string> trace_locations;
-
-//' Set logging verbosity level
-//' @param level Integer verbosity level (0=info, 3=trace)
-//' @export
-// [[Rcpp::export]]
-void dmy_pf_log_set_level(int level) {
-  log_level = level;
-}
-
-//' Get current logging level
-//' @return Current verbosity level
-//' @export
-// [[Rcpp::export]]
-int dmy_pf_log_get_level() {
-  return log_level;
-}
-
-//' Reset trace location tracking
-//' @export
-// [[Rcpp::export]]
-void dmy_pf_log_reset() {
-  trace_locations.clear();
-}
-
-//' Output log message if verbosity >= 0
-//' @param file Source file name
-//' @param line Line number  
-//' @param message Log message
-//' @export
-// [[Rcpp::export]]
-void dmy_pf_log_out(const std::string& file, int line, 
-                    const std::string& message) {
-  if (log_level >= 0) {
-    Rcpp::Rcout << "[LOG] " << file << ":" << line << " " << message << std::endl;
-  }
-}
-
-//' Output trace message if verbosity >= 3 (once per location)
-//' @param file Source file name
-//' @param line Line number
-//' @param message Trace message  
-//' @export
-// [[Rcpp::export]]
-void dmy_pf_log_trace(const std::string& file, int line,
-                      const std::string& message) {
-  if (log_level >= 3) {
-    std::stringstream ss;
-    ss << file << ":" << line;
-    std::string location = ss.str();
-    
-    if (trace_locations.find(location) == trace_locations.end()) {
-      trace_locations.insert(location);
-      Rcpp::Rcerr << "[TRACE] " << location << " " << message << std::endl;
-    }
-  }
-}
-
-#define V_LOG(msg) dmy_pf_log_out(__FILE__, __LINE__, msg)
-#define V_TRACE(msg) dmy_pf_log_trace(__FILE__, __LINE__, msg)
-
-//==============================================================================
-// Sum Function Group - Various Implementation Strategies  
-//==============================================================================
-
-//' Sum using C-style for loop with manual indexing
-//' @param x Numeric vector to sum
-//' @return Sum of vector elements
-//' @examples
-//' \dontrun{
-//' x <- rnorm(1000)
-//' result <- dmy_pf_sum_c_style(x)
-//' }
-//' @export
-// [[Rcpp::export]]
-double dmy_pf_sum_c_style(const NumericVector& x) {
-  V_TRACE("C-style sum starting");
-  double sum = 0.0;
-  int n = x.size();
-  
-  for (int i = 0; i < n; ++i) {
-    sum += x[i];
-  }
-  
-  V_TRACE("C-style sum completed");
-  return sum;
-}
-
-//' Sum using C++11 range-based for loop
-//' @param x Numeric vector to sum  
-//' @return Sum of vector elements
-//' @examples
-//' \dontrun{
-//' x <- rnorm(1000)
-//' result <- dmy_pf_sum_cpp_range(x)
-//' }
-//' @export
-// [[Rcpp::export]]
-double dmy_pf_sum_cpp_range(const NumericVector& x) {
-  V_TRACE("C++ range-based sum starting");
-  double sum = 0.0;
-  
-  for (const double& val : x) {
-    sum += val;
-  }
-  
-  V_TRACE("C++ range-based sum completed");
-  return sum;
-}
-
-//' Sum using STL iterators
-//' @param x Numeric vector to sum
-//' @return Sum of vector elements  
-//' @examples
-//' \dontrun{
-//' x <- rnorm(1000)
-//' result <- dmy_pf_sum_stl_iter(x)
-//' }
-//' @export
-// [[Rcpp::export]]
-double dmy_pf_sum_stl_iter(const NumericVector& x) {
-  V_TRACE("STL iterator sum starting");
-  double sum = std::accumulate(x.begin(), x.end(), 0.0);
-  V_TRACE("STL iterator sum completed");
-  return sum;
-}
-
-#ifdef _OPENMP
-//' Sum using OpenMP parallel reduction
-//' @param x Numeric vector to sum
-//' @return Sum of vector elements
-//' @examples  
-//' \dontrun{
-//' x <- rnorm(10000)
-//' result <- dmy_pf_sum_omp_parallel(x)
-//' }
-//' @export
-// [[Rcpp::export]]
-double dmy_pf_sum_omp_parallel(const NumericVector& x) {
-  V_TRACE("OpenMP parallel sum starting");
-  double sum = 0.0;
-  int n = x.size();
-  
-  #pragma omp parallel for reduction(+:sum)
-  for (int i = 0; i < n; ++i) {
-    sum += x[i];
-  }
-  
-  V_TRACE("OpenMP parallel sum completed");
-  return sum;
-}
-
-//' Sum using OpenMP parallel for with SIMD vectorization
-//' @param x Numeric vector to sum
-//' @return Sum of vector elements
-//' @examples
-//' \dontrun{
-//' x <- rnorm(10000)  
-//' result <- dmy_pf_sum_omp_simd(x)
-//' }
-//' @export
-// [[Rcpp::export]]
-double dmy_pf_sum_omp_simd(const NumericVector& x) {
-  V_TRACE("OpenMP SIMD sum starting");
-  double sum = 0.0;
-  int n = x.size();
-  
-  #pragma omp parallel for simd reduction(+:sum)
-  for (int i = 0; i < n; ++i) {
-    sum += x[i];
-  }
-  
-  V_TRACE("OpenMP SIMD sum completed");
-  return sum;
-}
-#endif
-
-//' Sum using RcppArmadillo
-//' @param x Numeric vector to sum
-//' @return Sum of vector elements
-//' @examples
-//' \dontrun{
-//' x <- rnorm(1000)
-//' result <- dmy_pf_sum_armadillo(x)  
-//' }
-//' @export
-// [[Rcpp::export]]
-double dmy_pf_sum_armadillo(const NumericVector& x) {
-  V_TRACE("Armadillo sum starting");
-  arma::vec av = as<arma::vec>(x);
-  double result = arma::accu(av);
-  V_TRACE("Armadillo sum completed");
-  return result;
-}
-
-//' Sum using R base::sum function called from C++
-//' @param x Numeric vector to sum
-//' @return Sum of vector elements
-//' @examples
-//' \dontrun{
-//' x <- rnorm(1000)
-//' result <- dmy_pf_sum_r_base(x)
-//' }
-//' @export  
-// [[Rcpp::export]]
-double dmy_pf_sum_r_base(const NumericVector& x) {
-  V_TRACE("base::sum starting");
-  Function sum("sum");
-  NumericVector result = sum(x);
-  V_TRACE("base::sum completed");
-  return result[0];
-}
-
-//==============================================================================
-// Outer Product Function Group - Matrix Operations
-//==============================================================================
-
-//' Outer product using C-style nested loops
-//' @param x First input vector
-//' @param y Second input vector  
-//' @return Matrix representing outer product
-//' @examples
-//' \dontrun{
-//' x <- rnorm(100)
-//' y <- rnorm(100)
-//' result <- dmy_pf_outer_c_style(x, y)
-//' }
-//' @export
-// [[Rcpp::export]]
-NumericMatrix dmy_pf_outer_c_style(const NumericVector& x, 
-                                   const NumericVector& y) {
-  V_TRACE("C-style outer product starting");
-  int nx = x.size();
-  int ny = y.size();
-  NumericMatrix result(nx, ny);
-  
-  for (int i = 0; i < nx; ++i) {
-    for (int j = 0; j < ny; ++j) {
-      result(i, j) = x[i] * y[j];
-    }
-  }
-  
-  V_TRACE("C-style outer product completed");
-  return result;
-}
-
-//' Outer product using C++ STL iterators
-//' @param x First input vector
-//' @param y Second input vector
-//' @return Matrix representing outer product  
-//' @examples
-//' \dontrun{
-//' x <- rnorm(100)
-//' y <- rnorm(100)
-//' result <- dmy_pf_outer_cpp_iter(x, y)
-//' }
-//' @export
-// [[Rcpp::export]]
-NumericMatrix dmy_pf_outer_cpp_iter(const NumericVector& x,
-                                    const NumericVector& y) {
-  V_TRACE("C++ iterator outer product starting");
-  int nx = x.size();
-  int ny = y.size(); 
-  NumericMatrix result(nx, ny);
-  
-  int i = 0;
-  for (auto it_x = x.begin(); it_x != x.end(); ++it_x, ++i) {
-    int j = 0;
-    for (auto it_y = y.begin(); it_y != y.end(); ++it_y, ++j) {
-      result(i, j) = (*it_x) * (*it_y);
-    }
-  }
-  
-  V_TRACE("C++ iterator outer product completed");
-  return result;
-}
-
-#ifdef _OPENMP  
-//' Outer product using OpenMP collapsed parallel loops
-//' @param x First input vector
-//' @param y Second input vector
-//' @return Matrix representing outer product
-//' @examples
-//' \dontrun{
-//' x <- rnorm(500)
-//' y <- rnorm(500)  
-//' result <- dmy_pf_outer_omp_collapse(x, y)
-//' }
-//' @export
-// [[Rcpp::export]]
-NumericMatrix dmy_pf_outer_omp_collapse(const NumericVector& x,
-                                        const NumericVector& y) {
-  V_TRACE("OpenMP collapsed outer product starting");
-  int nx = x.size();
-  int ny = y.size();
-  NumericMatrix result(nx, ny);
-  
-  #pragma omp parallel for collapse(2)
-  for (int i = 0; i < nx; ++i) {
-    for (int j = 0; j < ny; ++j) {
-      result(i, j) = x[i] * y[j];
-    }
-  }
-  
-  V_TRACE("OpenMP collapsed outer product completed");
-  return result;
-}
-
-//' Outer product using OpenMP parallel outer loop with SIMD inner loop
-//' @param x First input vector  
-//' @param y Second input vector
-//' @return Matrix representing outer product
-//' @examples
-//' \dontrun{
-//' x <- rnorm(500)
-//' y <- rnorm(500)
-//' result <- dmy_pf_outer_omp_simd(x, y)
-//' }
-//' @export
-// [[Rcpp::export]]
-NumericMatrix dmy_pf_outer_omp_simd(const NumericVector& x,
-                                    const NumericVector& y) {
-  V_TRACE("OpenMP SIMD outer product starting");
-  int nx = x.size();
-  int ny = y.size();
-  NumericMatrix result(nx, ny);
-  
-  #pragma omp parallel for
-  for (int i = 0; i < nx; ++i) {
-    #pragma omp simd
-    for (int j = 0; j < ny; ++j) {
-      result(i, j) = x[i] * y[j];
-    }
-  }
-  
-  V_TRACE("OpenMP SIMD outer product completed");
-  return result;
-}
-#endif
-
-//' Outer product using RcppArmadillo
-//' @param x First input vector
-//' @param y Second input vector
-//' @return Matrix representing outer product
-//' @examples
-//' \dontrun{
-//' x <- rnorm(100)
-//' y <- rnorm(100)
-//' result <- dmy_pf_outer_armadillo(x, y)
-//' }
-//' @export
-// [[Rcpp::export]]
-NumericMatrix dmy_pf_outer_armadillo(const NumericVector& x,
-                                     const NumericVector& y) {
-  V_TRACE("Armadillo outer product starting");
-  arma::vec ax = as<arma::vec>(x);
-  arma::vec ay = as<arma::vec>(y);
-  arma::mat result = ax * ay.t();
-  V_TRACE("Armadillo outer product completed");
-  return wrap(result);
-}
-
-//' Outer product using R base::outer function called from C++
-//' @param x First input vector
-//' @param y Second input vector  
-//' @return Matrix representing outer product
-//' @examples
-//' \dontrun{
-//' x <- rnorm(100)
-//' y <- rnorm(100)
-//' result <- dmy_pf_outer_r_base(x, y)
-//' }
-//' @export
-// [[Rcpp::export]]
-NumericMatrix dmy_pf_outer_r_base(const NumericVector& x,
-                                  const NumericVector& y) {
-  V_TRACE("base::outer starting");
-  Function outer("outer");
-  NumericMatrix result = outer(x, y, "*");
-  V_TRACE("base::outer completed");
-  return result;
-}
-```
-
-## Microbenchmark Test Script
-
-```r
-#!/usr/bin/env Rscript
-
-#' Rcpp Performance Benchmark Script
-#' 
-#' This script benchmarks various C++ iteration strategies for sum and outer 
-#' product operations across different input sizes. It supports command-line
-#' arguments for flexible testing and generates comprehensive performance reports.
-#' 
-#' @details
-#' The ./exec directory is chosen as a CRAN-compliant location for storing 
-#' package support scripts. This directory can contain executable scripts that
-#' call package R code and can also be invoked via system() calls from internal
-#' package code, providing flexibility for both interactive and programmatic use.
-#'
-#' @seealso 
-#' - C++ source: \code{./src/dummy_iter.cpp}
-#' - Build configuration: \code{./src/Makevars}  
-#' - User configuration: \code{~/.R/Makevars}
-#' - Documentation: \code{./notes/howtos/Rcpp-HOWTO-Q3-all.md}
-
-# Suppress package startup messages
-suppressMessages({
-  library(microbenchmark)
-  library(ggplot2)
-  library(dplyr)
-  library(readr)
-  library(logger)
-  library(argparse)
-})
-
-# Global variables
-script_name <- "dummy-rcpp-bench"
-start_time <- as.integer(Sys.time())
-
-#' Initialize logging configuration  
-setup_logging <- function(log_dir, verbosity) {
-  log_threshold <- switch(as.character(verbosity),
-    "0" = INFO,
-    "1" = DEBUG,  
-    DEBUG  # verbosity >= 2
-  )
-  
-  log_file <- file.path(log_dir, paste0(script_name, "-", start_time, "-test.log"))
-  log_layout(layout_glue_generator(format = 
-    '{time} [{level}] {msg}'))
-  log_appender(appender_tee(log_file))
-  log_threshold(log_threshold)
-}
-
-#' Create output directory if it doesn't exist
-ensure_log_dir <- function(log_dir) {
-  if (!dir.exists(log_dir)) {
-    dir.create(log_dir, recursive = TRUE)
-    log_info("Created log directory: {log_dir}")
-  }
-  return(normalizePath(log_dir))
-}
-
-#' Get system information for benchmarking context
-get_system_info <- function() {
-  info <- list(
-    timestamp = Sys.time(),
-    user = Sys.getenv("USER"),
-    r_version = R.version.string,
-    platform = R.version$platform
-  )
-  
-  # Try to get CPU info (Linux-specific)  
-  if (Sys.which("inxi") != "") {
-    info$cpu_info <- system("inxi -C", intern = TRUE)
-  }
-  
-  return(info)
-}
-
-#' Generate comprehensive system information report
-generate_system_report <- function(log_dir, test_type) {
-  info_file <- file.path(log_dir, 
-    paste0(script_name, "-", start_time, "-", test_type, "-info.log"))
-  
-  system_cmd <- paste(
-    "date;", 
-    "whoami;",
-    "inxi -CfGMS 2>/dev/null || echo '#NO_INXI';",
-    "lscpu 2>/dev/null || echo '#NO_LSCPU';", 
-    "cpupower frequency-info 2>/dev/null || echo '#NO_CPUPOWER';",
-    "nvidia-smi 2>/dev/null || echo '#NOGPU'"
-  )
-  
-  system(paste("(", system_cmd, ") >", info_file))
-  log_debug("System information saved to: {info_file}")
-}
-
-#' Get all sum-related functions from the package
-get_sum_functions <- function() {
-  funcs <- c(
-    "dmy_pf_sum_c_style",
-    "dmy_pf_sum_cpp_range", 
-    "dmy_pf_sum_stl_iter",
-    "dmy_pf_sum_armadillo",
-    "dmy_pf_sum_r_base"
-  )
-  
-  # Add OpenMP functions if available
-  if (exists("dmy_pf_sum_omp_parallel")) {
-    funcs <- c(funcs, "dmy_pf_sum_omp_parallel", "dmy_pf_sum_omp_simd")
-  }
-  
-  return(funcs)
-}
-
-#' Get all outer product functions from the package  
-get_outer_functions <- function() {
-  funcs <- c(
-    "dmy_pf_outer_c_style",
-    "dmy_pf_outer_cpp_iter",
-    "dmy_pf_outer_armadillo", 
-    "dmy_pf_outer_r_base"
-  )
-  
-  # Add OpenMP functions if available
-  if (exists("dmy_pf_outer_omp_collapse")) {
-    funcs <- c(funcs, "dmy_pf_outer_omp_collapse", "dmy_pf_outer_omp_simd")
-  }
-  
-  return(funcs)
-}
-
-#' Create function label by removing common prefix
-create_function_labels <- function(func_names) {
-  # Remove common prefixes for cleaner labels
-  labels <- gsub("^dmy_pf_(sum|outer)_", "", func_names)
-  return(labels)
-}
-
-#' Run benchmarks for sum functions
-benchmark_sum_functions <- function(input_sizes, sample_size, log_dir, test_type) {
-  functions <- get_sum_functions()
-  all_results <- list()
-  
-  log_info("Starting sum function benchmarks")
-  log_info("Functions: {paste(functions, collapse = ', ')}")
-  
-  # Reset C++ tracing before benchmarks
-  dmy_pf_log_reset()
-  
-  for (size in input_sizes) {
-    log_info("Benchmarking sum functions with input size: {size}")
-    
-    # Generate test data once per size
-    set.seed(42)  # For reproducibility
-    test_data <- rnorm(size, mean = 0, sd = 100)
-    
-    # Create benchmark expressions
-    expr_list <- list()
-    for (func in functions) {
-      expr_list[[func]] <- substitute(do.call(f, list(test_data)), 
-                                      list(f = as.name(func)))
-    }
-    
-    # Run microbenchmark
-    mb_result <- microbenchmark(
-      list = expr_list,
-      times = sample_size,
-      unit = "ms"
-    )
-    
-    # Add metadata
-    mb_result$input_size <- size
-    mb_result$test_type <- test_type
-    mb_result$timestamp <- start_time
-    
-    all_results[[as.character(size)]] <- mb_result
-  }
-  
-  return(all_results)
-}
-
-#' Run benchmarks for outer product functions
-benchmark_outer_functions <- function(input_sizes, sample_size, log_dir, test_type) {
-  functions <- get_outer_functions()
-  all_results <- list()
-  
-  log_info("Starting outer product function benchmarks")
-  log_info("Functions: {paste(functions, collapse = ', ')}")
-  
-  # Reset C++ tracing before benchmarks  
-  dmy_pf_log_reset()
-  
-  for (size in input_sizes) {
-    log_info("Benchmarking outer functions with input size: {size}")
-    
-    # Generate test data once per size (same vector used for both arguments)
-    set.seed(42)  # For reproducibility
-    test_data <- rnorm(size, mean = 0, sd = 100)
-    
-    # Create benchmark expressions
-    expr_list <- list()
-    for (func in functions) {
-      expr_list[[func]] <- substitute(do.call(f, list(test_data, test_data)),
-                                      list(f = as.name(func)))
-    }
-    
-    # Run microbenchmark
-    mb_result <- microbenchmark(
-      list = expr_list,
-      times = sample_size,
-      unit = "ms"
-    )
-    
-    # Add metadata
-    mb_result$input_size <- size
-    mb_result$test_type <- test_type  
-    mb_result$timestamp <- start_time
-    
-    all_results[[as.character(size)]] <- mb_result
-  }
-  
-  return(all_results)
-}
-
-#' Combine and process benchmark results
-process_results <- function(benchmark_results, test_type) {
-  # Combine all results
-  combined_df <- do.call(rbind, lapply(benchmark_results, as.data.frame))
-  
-  # Add function labels
-  combined_df$function_label <- create_function_labels(combined_df$expr)
-  
-  # Calculate summary statistics
-  summary_df <- combined_df %>%
-    group_by(input_size, function_label, test_type) %>%
-    summarise(
-      mean_time = mean(time / 1e6),  # Convert to milliseconds
-      median_time = median(time / 1e6),
-      min_time = min(time / 1e6),
-      max_time = max(time / 1e6),
-      sd_time = sd(time / 1e6),
-      .groups = 'drop'
-    )
-  
-  return(list(raw = combined_df, summary = summary_df))
-}
-
-#' Create performance visualization
-create_performance_plot <- function(summary_df, test_type, sample_size) {
-  plot_title <- paste("Performance Comparison:", toupper(test_type), "Functions")
-  plot_subtitle <- paste("Sample Size:", sample_size, "| Error bars: ±1 SD")
-  
-  p <- ggplot(summary_df, aes(x = input_size, y = median_time, color = function_label)) +
-    geom_line(size = 1.2) +
-    geom_point(size = 2.5) +
-    geom_errorbar(aes(ymin = median_time - sd_time, ymax = median_time + sd_time),
-                  width = 0.1, alpha = 0.7) +
-    scale_x_log10(labels = scales::comma) +
-    scale_y_log10(labels = scales::comma) +
-    labs(
-      title = plot_title,
-      subtitle = plot_subtitle, 
-      x = "Input Size (log scale)",
-      y = "Median Execution Time (ms, log scale)",
-      color = "Implementation"
-    ) +
-    theme_minimal() +
-    theme(
-      plot.title = element_text(size = 14, face = "bold"),
-      plot.subtitle = element_text(size = 10),
-      legend.position = "bottom",
-      legend.title = element_text(face = "bold")
-    )
-  
-  return(p)
-}
-
-#' Save results and generate outputs  
-save_results <- function(results, test_type, log_dir, sample_size, save_data) {
-  file_prefix <- paste0(script_name, "-", start_time, "-", test_type, "-")
-  
-  # Always generate: benchmark plot
-  plot_file <- file.path(log_dir, paste0(file_prefix, "bench.png"))
-  plot <- create_performance_plot(results$summary, test_type, sample_size)
-  ggsave(plot_file, plot, width = 12, height = 8, dpi = 300)
-  log_info("Benchmark plot saved: {plot_file}")
-  
-  # Generate additional outputs if save_data is TRUE
-  if (save_data) {
-    # System information report
-    generate_system_report(log_dir, test_type)
-    
-    # TSV data export
-    tsv_file <- file.path(log_dir, paste0(file_prefix, "data.tsv"))
-    write_tsv(results$raw, tsv_file)
-    log_debug("Benchmark data exported: {tsv_file}")
-  }
-}
-
-#' Parse command line arguments
-parse_arguments <- function() {
-  parser <- ArgumentParser(description = 
-    'Benchmark Rcpp iteration strategies for sum and outer product operations')
-  
-  # Generic arguments
-  parser$add_argument("-v", "--verbose", action = "count", default = 0,
-                      help = "Increase verbosity (can be repeated: -v, -vv, -vvv)")
-  parser$add_argument("-p", "--profile", action = "store_true", default = FALSE,
-                      help = "Enable profiling with Rprof")
-  
-  # Benchmark arguments  
-  parser$add_argument("-t", "--test", default = "sum", 
-                      choices = c("sum", "outer"),
-                      help = "Test type to execute: 'sum' or 'outer' (default: sum)")
-  parser$add_argument("-m", "--samples", type = "integer", default = 10,
-                      help = "Microbenchmark sample size (default: 10)")
-  parser$add_argument("-s", "--save", action = "store_true", default = FALSE,
-                      help = "Save detailed data and system information")
-  
-  # Positional arguments for input sizes
-  parser$add_argument("input_sizes", nargs = "*", default = c("10", "100", "1000"),
-                      help = "Input vector sizes for testing (default: 10 100 1000)")
-  
-  return(parser$parse_args())
-}
-
-#' Main benchmark execution function
-run_benchmark <- function(test_type, input_sizes, sample_size, log_dir, 
-                         verbosity, profile, save_data) {
-  
-  # Set up C++ logging level
-  dmy_pf_log_set_level(verbosity)
-  
-  # Convert input_sizes to integers
-  input_sizes <- as.integer(input_sizes)
-  
-  log_info("=== Benchmark Configuration ===")
-  log_info("Test Type: {test_type}")
-  log_info("Input Sizes: {paste(input_sizes, collapse = ', ')}")
-  log_info("Sample Size: {sample_size}")
-  log_info("Verbosity: {verbosity}")
-  log_info("Profile: {profile}")
-  log_info("Save Data: {save_data}")
-  log_info("Log Directory: {log_dir}")
-  
-  # System information logging
-  sys_info <- get_system_info()
-  log_info("System: {sys_info$platform}")
-  log_info("R Version: {sys_info$r_version}")
-  if (!is.null(sys_info$cpu_info)) {
-    log_info("CPU Info: {paste(sys_info$cpu_info, collapse = ' | ')}")
-  }
-  
-  # Start profiling if requested
-  if (profile) {
-    prof_file <- file.path(log_dir, 
-      paste0(script_name, "-", start_time, "-", test_type, "-rprof.out"))
-    Rprof(prof_file)
-    log_info("Profiling started: {prof_file}")
-  }
-  
-  # Run appropriate benchmark
-  benchmark_results <- switch(test_type,
-    "sum" = benchmark_sum_functions(input_sizes, sample_size, log_dir, test_type),
-    "outer" = benchmark_outer_functions(input_sizes, sample_size, log_dir, test_type),
-    stop("Unknown test type: ", test_type)
-  )
-  
-  # Stop profiling if it was started
-  if (profile) {
-    Rprof(NULL)
-    log_info("Profiling completed")
-  }
-  
-  # Process and save results
-  processed_results <- process_results(benchmark_results, test_type)
-  save_results(processed_results, test_type, log_dir, sample_size, save_data)
-  
-  # Final summary
-  log_info("=== Benchmark Summary ===")
-  summary_stats <- processed_results$summary %>%
-    group_by(function_label) %>%
-    summarise(
-      avg_median_time = mean(median_time),
-      .groups = 'drop'
-    ) %>%
-    arrange(avg_median_time)
-  
-  log_info("Average performance ranking (fastest to slowest):")
-  for (i in seq_len(nrow(summary_stats))) {
-    log_info("{i}. {summary_stats$function_label[i]}: {round(summary_stats$avg_median_time[i], 3)} ms")
-  }
-}
-
-#' Script main entry point
-main <- function() {
-  # Parse command line arguments
-  args <- parse_arguments()
-  
-  # Set up logging directory
-  log_dir <- Sys.getenv("P_LOGS_DIR", default = "logs")
-  log_dir <- ensure_log_dir(log_dir)
-  
-  # Initialize logging
-  setup_logging(log_dir, args$verbose)
-  
-  log_info("=== Rcpp Performance Benchmark Started ===")
-  log_info("Script: {script_name}")
-  log_info("Arguments: {paste(deparse(args), collapse = ' ')}")
-  
-  # Load the package (assuming it's already installed/loaded)
-  # In a real package, you might need: library(YourPackageName)
-  
-  # Run the benchmark
-  tryCatch({
-    run_benchmark(
-      test_type = args$test,
-      input_sizes = args$input_sizes,
-      sample_size = args$samples,
-      log_dir = log_dir,
-      verbosity = args$verbose,
-      profile = args$profile,
-      save_data = args$save
-    )
-    log_info("=== Benchmark Completed Successfully ===")
-  }, error = function(e) {
-    log_error("Benchmark failed: {e$message}")
-    quit(status = 1)
-  })
-}
-
-# Execute main function if script is run directly
-if (sys.nframe() == 0) {
-  main()
-}
-```
-
-## Quick Start Guide
-
-### Project Configuration
-
-To set up an R package with Rcpp, RcppArmadillo, and OpenMP support, you'll need to configure several files:
-
-#### `DESCRIPTION`
-
-```yaml
-Package: YourPackageName
-Type: Package
-Title: High-Performance Computing with Rcpp
-Version: 1.0.0
-Depends: 
-    R (>= 3.5.0)
-Imports:
-    Rcpp (>= 1.0.0),
-    microbenchmark,
-    ggplot2,
-    dplyr
-LinkingTo: 
-    Rcpp,
-    RcppArmadillo
-SystemRequirements: 
-    GNU make,
-    OpenMP,
-    BLAS,
-    LAPACK
-```
-
-#### `src/Makevars`
-
-```make
-# Compiler and linker flags for OpenMP and optimized BLAS/LAPACK
-CXX_STD = CXX11
-PKG_CXXFLAGS = $(SHLIB_OPENMP_CXXFLAGS) -DARMA_64BIT_WORD=1
-PKG_LIBS = $(SHLIB_OPENMP_CXXFLAGS) $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)
-
-# RcppArmadillo configuration
-RCPP_LIBS = `$(R_HOME)/bin/Rscript -e "Rcpp:::LdFlags()"`
-RCPPARMA_LIBS = `$(R_HOME)/bin/Rscript -e "RcppArmadillo:::LdFlags()"`
-
-# Combine all libraries
-PKG_LIBS += $(RCPP_LIBS) $(RCPPARMA_LIBS)
-```
-
-#### `src/Makevars.win` (Windows-specific)
-
-```make
-CXX_STD = CXX11
-PKG_CXXFLAGS = $(SHLIB_OPENMP_CXXFLAGS) -DARMA_64BIT_WORD=1
-PKG_LIBS = $(SHLIB_OPENMP_CXXFLAGS) $(LAPACK_LIBS) $(BLAS_LIBS)
-```
-
-#### `~/.R/Makevars` (User-level optimizations)
-
-```make
-# Architecture-specific optimizations (not for CRAN submission)
-CXXFLAGS = -O3 -march=native -mtune=native -ffast-math
-CFLAGS = -O3 -march=native -mtune=native -ffast-math
-
-# OpenMP support
-SHLIB_OPENMP_CXXFLAGS = -fopenmp
-SHLIB_OPENMP_CFLAGS = -fopenmp
-
-# Compiler selection (optional)
-CC = gcc-11
-CXX = g++-11
-CXX11 = g++-11
-CXX14 = g++-11
-```
-
-### Performance Considerations
-
-**Architecture-Specific Optimization**: The `-march=native` flag
-enables CPU-specific optimizations including AVX/AVX2 instructions,
-providing 15-30% performance improvements for vectorizable
-operations. However, this breaks binary portability and should only be
-used in `~/.R/Makevars`, never in package-level `src/Makevars`.
-
-**Memory Layout**: RcppArmadillo uses column-major storage
-(Fortran-style) which aligns with R's internal representation and
-optimized BLAS libraries. This provides better cache locality for
-matrix operations compared to row-major C++ approaches.
-
-**NUMA Awareness**: On multi-socket systems (common in Azure/AWS HPC
-instances), consider thread affinity and memory placement. OpenMP's
-`OMP_PROC_BIND=true` and `OMP_PLACES=cores` can significantly improve
-performance for memory-intensive operations.
-
-### Development Workflow
-
-1. **Initialize renv** (explicit mode for reproducible dependencies):
-   ```r
-   renv::init()
-   renv::settings$snapshot.type("explicit")
-   ```
-
-2. **Install dependencies**:
-   ```r
-   install.packages(c("Rcpp", "RcppArmadillo", "microbenchmark", 
-                      "ggplot2", "dplyr", "logger", "argparse"))
-   ```
-
-3. **Compile and test**:
-   ```r
-   Rcpp::sourceCpp("src/dummy_iter.cpp")
-   system("Rscript exec/dummy-rcpp-bench.r --help")
-   ```
-
-4. **Run benchmarks**:
-   ```bash
-   Rscript exec/dummy-rcpp-bench.r -t sum -m 50 -s -vvv 100 1000 10000
-   Rscript exec/dummy-rcpp-bench.r -t outer -m 20 -s -vv 50 100 500
-   ```
-
-### Expected Performance Characteristics
-
-On a 32-core Intel XEON system (Azure Standard_D32s_v3):
-
-**Sum Operations**:
-- **Small vectors** (<1K): STL accumulate ≈ C-style > OpenMP (overhead dominates)
-- **Medium vectors** (1K-100K): OpenMP parallel > STL > C-style 
-- **Large vectors** (>100K): OpenMP SIMD > OpenMP parallel > others
-- **RcppArmadillo**: Competitive across all sizes due to optimized BLAS
-
-**Outer Product Operations**:
-- **Small matrices** (<100×100): C-style ≈ STL iterator > OpenMP
-- **Medium matrices** (100×1000): OpenMP collapse > OpenMP SIMD > sequential
-- **Large matrices** (>1000×1000): Memory bandwidth becomes limiting factor
-- **RcppArmadillo**: Optimal for all sizes, leverages BLAS3 operations
-
-The performance crossover points depend on system architecture, memory
-bandwidth, and compiler optimizations. The benchmark script helps
-identify optimal strategies for your specific use case.
-
-## References
-
-[^1]: [High performance functions with Rcpp](http://adv-r.had.co.nz/Rcpp.html) - Advanced R programming with Rcpp integration
-[^2]: [R Packages](https://r-pkgs.org/) - Comprehensive guide to R package development
-[^3]: [RcppArmadillo on CRAN](https://cran.r-project.org/web/packages/RcppArmadillo/index.html) - Official RcppArmadillo documentation
-[^4]: [OpenMP Resources](https://www.openmp.org/resources/) - OpenMP specification and tutorials
-[^5]: [CRAN Task View: High-Performance and Parallel Computing with R](https://cran.r-project.org/web/views/HighPerformanceComputing.html) - Comprehensive HPC packages overview
-[^6]: [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html) - C++ coding standards and best practices
-[^7]: [Intel MKL vs OpenBLAS Performance](https://markus-beuckelmann.de/blog/boosting-numpy-blas.html) - BLAS library performance comparison
-[^8]: [NVIDIA cuBLAS Documentation](https://docs.nvidia.com/cuda/cublas/) - GPU-accelerated BLAS operations
-
-
-
-
--------------------------------------------------------------------------------------------
--------------------------------------------------------------------------------------------
--------------------------------------------------------------------------------------------
-# A:3 (Gemini)
-> * [# Rcpp Iterators Performance Optimization](https://aistudio.google.com/app/prompts?state=%7B%22ids%22:%5B%221z5JbP25SdVLeFFSgX3OqlZUsJuGu9ao2%22%5D,%22action%22:%22open%22,%22userId%22:%22101040866152128307883%22,%22resourceKeys%22:%7B%7D%7D&usp=sharing)
-
-This document provides a comprehensive guide to optimizing vector and
-matrix operations in R by leveraging the Rcpp ecosystem. We will
-explore various iteration strategies in C++, from traditional C-style
-loops to modern C++ iterators and high-performance parallel computing
-with OpenMP and RcppArmadillo. The goal is to demonstrate how to write
-efficient C++ code that can be seamlessly integrated into R packages,
-with a focus on performance, clarity, and CRAN compliance.
-
-We will provide two key source files: a C++ source
-(`./src/dummy_iter.cpp`) containing different implementations of "sum"
-and "outer product" operations, and an R script
-(`./exec/dummy-rcpp-bench.r`) to benchmark these implementations
-across various input sizes.
-
-## Introduction
-
-### C/C++ Iteration Strategies and HPC Libraries Alternatives
-
-When moving computations from R to C++, developers are faced with
-several choices for implementing loops and data manipulation.
-
-*   **C-style loops:** The classic `for (int i = 0; i < n; ++i)` loop
-    is familiar, straightforward, and often highly optimizable by
-    compilers. However, it can be prone to off-by-one errors and
-    requires manual index management, which can sometimes obscure the
-    intent of the code.
-
-*   **C++ STL-style iteration:** The C++ Standard Template Library
-    (STL) introduced iterators, which provide a more abstract and
-    safer way to traverse containers. With C++11 and later,
-    range-based `for` loops (`for (auto& element : container)`) offer
-    an even more concise and readable syntax, reducing boilerplate and
-    the risk of indexing errors. Idiomatically, these are preferred in
-    modern C++ for their clarity and safety. Performance is generally
-    on par with C-style loops, as modern compilers can often optimize
-    them to equivalent machine code.
-
-*   **Library-based approaches (`RcppArmadillo`, `RcppEigen`):** For
-    numerical computing, especially linear algebra, manual looping is
-    often suboptimal. Libraries like Armadillo and Eigen are highly
-    optimized, mature C++ template libraries that provide a rich,
-    high-level syntax for mathematical operations. They internally
-    leverage highly tuned implementations, often linking to underlying
-    BLAS (Basic Linear Algebra Subprograms) and LAPACK (Linear Algebra
-    PACKage) libraries like OpenBLAS or Intel MKL. These libraries are
-    the cornerstone of high-performance computing in compiled
-    languages and can significantly outperform manual loops by using
-    optimized algorithms, cache-friendly memory access patterns, and
-    SIMD (Single Instruction, Multiple Data) instructions.
-
-### OpenMP/SIMD primer
-
-OpenMP (Open Multi-Processing) is an API that supports multi-platform
-shared-memory parallel programming in C, C++, and Fortran. It
-simplifies the process of writing multi-threaded code by using a set
-of compiler directives (`#pragma omp ...`).
-
-The rationale behind OpenMP is to allow developers to parallelize
-computationally intensive sections of their code—typically
-loops—incrementally, without drastically restructuring the entire
-application.
-
-**Parallelism vs. Vectorization:**
-
-*   **Parallelism** refers to distributing tasks across multiple
-    processor cores to be executed simultaneously. This is
-    coarse-grained parallelism. On a 32-core machine, you could
-    theoretically achieve a 32x speedup by dividing a task among all
-    cores.
-*   **Vectorization (SIMD)** refers to a processor's ability to
-    perform the same operation on multiple data points simultaneously
-    within a single core. Modern CPUs have vector registers (e.g.,
-    256-bit AVX2, 512-bit AVX-512) that can hold multiple
-    floating-point numbers. This is fine-grained parallelism. For
-    example, an AVX2 register can process four double-precision
-    numbers at once, offering a potential 4x speedup on that core.
-
-The ideal performance is achieved by combining both: running parallel
-threads on all cores, where each thread's computation is vectorized.
-
-**Key OpenMP Clauses:**
-
-*   `#pragma omp parallel`: Creates a team of threads. The code block
-    following the pragma is executed by every thread.
-*   `#pragma omp for`: Divides the iterations of a `for` loop among
-    the threads in the team. Must be placed within a `parallel`
-    region. A common shorthand is `#pragma omp parallel for`.
-*   `#pragma omp simd`: Instructs the compiler to vectorize the
-    following loop using SIMD instructions. This can be more explicit
-    than relying on auto-vectorization.
-*   `collapse(n)`: Used with a `for` directive, it linearizes `n`
-    nested loops into a single iteration space, which is then
-    parallelized. This is highly effective for distributing work in
-    matrix operations.
-*   `private(var)`, `shared(var)`: Control how variables are shared
-    among threads. `private` gives each thread its own copy, while
-    `shared` means all threads access the same memory location.
-*   `reduction(operator:variable)`: Used for operations like summation
-    where each thread computes a partial result, and all partial
-    results are combined (e.g., summed) at the end. This avoids race
-    conditions safely and efficiently.
-
-**Portability and CRAN Compliance:** While OpenMP is widely supported,
-using architecture-specific optimizations like `-march=native` can
-create binaries that are not portable. CRAN policies generally require
-packages to be buildable on a wide range of systems, so such flags are
-discouraged within the package's `src/Makevars` file. They are,
-however, perfectly acceptable for user-side configuration in
-`~/.R/Makevars` for maximum performance on a specific machine.
-
-### GPU Notes
-
-For massively parallelizable problems, Graphics Processing Units
-(GPUs) offer a significant performance advantage over CPUs. While CPUs
-have a few dozen powerful cores, GPUs have thousands of simpler cores,
-making them ideal for tasks like large matrix multiplications, deep
-learning, and simulations. The performance gain can be dramatic, often
-ranging from 10x to 100x for suitable workloads.
-
-Libraries like NVIDIA's cuBLAS provide GPU-accelerated implementations
-of BLAS routines. Comparisons between cuBLAS and CPU-based libraries
-like OpenBLAS or Intel MKL consistently show a substantial advantage
-for the GPU on large-scale problems, provided the data transfer
-overhead between CPU and GPU memory is managed effectively.
-
-In a containerized environment (e.g., rootless podman), using
-Python-based CUDA distributions (like those from Conda/pip) is a
-viable and increasingly popular approach. It simplifies dependency
-management, as the CUDA toolkit can be encapsulated within the
-environment without requiring system-wide installation. R can
-interface with these Python libraries via the `reticulate` package,
-allowing R packages to leverage GPU acceleration in a portable and
-self-contained manner.
-
-## C++ Implementation: `./src/dummy_iter.cpp`
-
-This file contains the C++ implementations for the "sum" and "outer"
-function groups, along with the logging support utilities.
-
-```cpp
-// Copyright 2025, Google LLC
-// License: MIT
-//
-// This source demonstrates various iteration strategies in C++ for use with R.
-
-#include <RcppArmadillo.h>
-#include <omp.h>
-
-#include <set>
-#include <string>
-#include <utility>
-
-// [[Rcpp::depends(RcppArmadillo)]]
-// [[Rcpp::plugins(cpp11)]]
-// [[Rcpp::plugins(openmp)]]
-
-// Global verbosity level for logging.
-static int verbosity_level = 0;
-// Set to track trace messages and ensure they are printed only once.
-static std::set<std::pair<std::string, int>> trace_locations;
-
-// --- Logging Support ---
-
-//' @name dummy_logging
-//' @title C++ Logging Support Functions
-//' @description
-//' A group of functions to provide conditional logging and tracing from C++.
-//' These functions are exported to R for control from the main script.
-//' @param level An integer verbosity level.
-//' @param file The source file name (usually from `__FILE__`).
-//' @param line The source line number (usually from `__LINE__`).
-//' @param msg The message string to log.
-//' @rdname dummy_logging
-//' @export
-// [[Rcpp::export]]
-void dmy_pf_log_set_level(int level) { verbosity_level = level; }
-
-//' @rdname dummy_logging
-//' @export
-// [[Rcpp::export]]
-int dmy_pf_log_get_level() { return verbosity_level; }
-
-//' @rdname dummy_logging
-//' @export
-// [[Rcpp::export]]
-void dmy_pf_log_reset() { trace_locations.clear(); }
-
-// Internal log function for general messages.
-void dmy_pf_log_out(const std::string& file, int line,
-                    const std::string& msg) {
-  if (verbosity_level >= 0) {
-    Rcpp::Rcout << "[" << file << ":" << line << "] " << msg << std::endl;
-  }
-}
-
-// Internal trace function for detailed, single-occurrence messages.
-void dmy_pf_log_trace(const std::string& file, int line,
-                      const std::string& msg) {
-  if (verbosity_level >= 3) {
-    if (trace_locations.insert({file, line}).second) {
-      Rcpp::Rcerr << "[TRACE " << file << ":" << line << "] " << msg
-                  << std::endl;
-    }
-  }
-}
-
-// C++ macros for convenient logging.
-#define V_LOG(msg) dmy_pf_log_out(__FILE__, __LINE__, msg)
-#define V_TRACE(msg) dmy_pf_log_trace(__FILE__, __LINE__, msg)
-
-// --- "sum" Function Group ---
-
-//' @name dummy_sum
-//' @title Vector Summation Alternatives
-//' @description
-//' A group of functions to compute the sum of a numeric vector using different
-//' C++ iteration strategies.
-//' @param v A numeric vector.
-//' @return The sum of the vector elements.
-//' @details
-//' Suffixes denote the implementation strategy:
-//' - `cstyle`: C-style for loop with an index.
-//' - `stl`: C++11 range-based for loop.
-//' - `omp_for`: OpenMP parallelized for loop.
-//' - `omp_simd`: OpenMP parallelized and vectorized for loop.
-//' - `arma`: RcppArmadillo's `accu()` function.
-//' - `base`: Calls R's `base::sum()` from C++.
-//' @examples
-//' \dontrun{
-//'   x <- rnorm(1000)
-//'   dmy_pf_sum_cstyle(x)
-//' }
-//' @rdname dummy_sum
-//' @export
-// [[Rcpp::export]]
-double dmy_pf_sum_cstyle(Rcpp::NumericVector v) {
-  double total = 0.0;
-  for (int i = 0; i < v.size(); ++i) {
-    total += v[i];
-  }
-  return total;
-}
-
-//' @rdname dummy_sum
-//' @export
-// [[Rcpp::export]]
-double dmy_pf_sum_stl(Rcpp::NumericVector v) {
-  double total = 0.0;
-  for (double x : v) {
-    total += x;
-  }
-  return total;
-}
-
-//' @rdname dummy_sum
-//' @export
-// [[Rcpp::export]]
-double dmy_pf_sum_omp_for(Rcpp::NumericVector v) {
-  double total = 0.0;
-#pragma omp parallel for reduction(+ : total)
-  for (int i = 0; i < v.size(); ++i) {
-    total += v[i];
-  }
-  return total;
-}
-
-//' @rdname dummy_sum
-//' @export
-// [[Rcpp::export]]
-double dmy_pf_sum_omp_simd(Rcpp::NumericVector v) {
-  double total = 0.0;
-#pragma omp parallel for simd reduction(+ : total)
-  for (int i = 0; i < v.size(); ++i) {
-    total += v[i];
-  }
-  return total;
-}
-
-//' @rdname dummy_sum
-//' @export
-// [[Rcpp::export]]
-double dmy_pf_sum_arma(Rcpp::NumericVector v) {
-  arma::vec av(v.begin(), v.size(), false);  // Use existing memory
-  return arma::accu(av);
-}
-
-//' @rdname dummy_sum
-//' @export
-// [[Rcpp::export]]
-double dmy_pf_sum_base(Rcpp::NumericVector v) {
-  V_TRACE("Calling base::sum from C++...");
-  Rcpp::Function base_sum("sum");
-  Rcpp::NumericVector result = base_sum(v);
-  V_TRACE("...base::sum call done.");
-  return Rcpp::as<double>(result);
-}
-
-// --- "outer" Function Group ---
-
-//' @name dummy_outer
-//' @title Vector Outer Product Alternatives
-//' @description
-//' A group of functions to compute the outer product of two numeric vectors
-//' using different C++ iteration strategies.
-//' @param v1 A numeric vector.
-//' @param v2 A numeric vector.
-//' @return The outer product matrix.
-//' @details
-//' Suffixes denote the implementation strategy:
-//' - `cstyle`: Nested C-style for loops.
-//' - `omp_collapse`: OpenMP parallelized nested loops with `collapse`.
-//' - `omp_nested`: OpenMP with parallel outer loop and SIMD inner loop.
-//' - `arma`: RcppArmadillo's matrix multiplication.
-//' - `base`: Calls R's `base::outer()` from C++.
-//' @examples
-//' \dontrun{
-//'   x <- rnorm(100)
-//'   dmy_pf_outer_cstyle(x, x)
-//' }
-//' @rdname dummy_outer
-//' @export
-// [[Rcpp::export]]
-Rcpp::NumericMatrix dmy_pf_outer_cstyle(Rcpp::NumericVector v1,
-                                        Rcpp::NumericVector v2) {
-  int n1 = v1.size();
-  int n2 = v2.size();
-  Rcpp::NumericMatrix out(n1, n2);
-  for (int i = 0; i < n1; ++i) {
-    for (int j = 0; j < n2; ++j) {
-      out(i, j) = v1[i] * v2[j];
-    }
-  }
-  return out;
-}
-
-//' @rdname dummy_outer
-//' @export
-// [[Rcpp::export]]
-Rcpp::NumericMatrix dmy_pf_outer_omp_collapse(Rcpp::NumericVector v1,
-                                              Rcpp::NumericVector v2) {
-  int n1 = v1.size();
-  int n2 = v2.size();
-  Rcpp::NumericMatrix out(n1, n2);
-#pragma omp parallel for collapse(2)
-  for (int i = 0; i < n1; ++i) {
-    for (int j = 0; j < n2; ++j) {
-      out(i, j) = v1[i] * v2[j];
-    }
-  }
-  return out;
-}
-
-//' @rdname dummy_outer
-//' @export
-// [[Rcpp::export]]
-Rcpp::NumericMatrix dmy_pf_outer_omp_nested(Rcpp::NumericVector v1,
-                                            Rcpp::NumericVector v2) {
-  int n1 = v1.size();
-  int n2 = v2.size();
-  Rcpp::NumericMatrix out(n1, n2);
-#pragma omp parallel for
-  for (int i = 0; i < n1; ++i) {
-#pragma omp simd
-    for (int j = 0; j < n2; ++j) {
-      out(i, j) = v1[i] * v2[j];
-    }
-  }
-  return out;
-}
-
-//' @rdname dummy_outer
-//' @export
-// [[Rcpp::export]]
-Rcpp::NumericMatrix dmy_pf_outer_arma(Rcpp::NumericVector v1,
-                                      Rcpp::NumericVector v2) {
-  arma::vec av1(v1.begin(), v1.size(), false);
-  arma::vec av2(v2.begin(), v2.size(), false);
-  return Rcpp::wrap(av1 * av2.t());
-}
-
-//' @rdname dummy_outer
-//' @export
-// [[Rcpp::export]]
-Rcpp::NumericMatrix dmy_pf_outer_base(Rcpp::NumericVector v1,
-                                      Rcpp::NumericVector v2) {
-  V_TRACE("Calling base::outer from C++...");
-  Rcpp::Function base_outer("outer");
-  Rcpp::NumericMatrix result = base_outer(v1, v2, "*");
-  V_TRACE("...base::outer call done.");
-  return result;
-}
-```
-
-### Performance and Idiomatic Analysis
-
-*   **`dmy_pf_sum_*` functions:**
-    *   `cstyle` vs. `stl`: On any modern compiler, these two will
-        almost certainly produce identical machine code. The `stl`
-        version is idiomatically preferred in modern C++ for its
-        improved readability and safety. Performance will be excellent
-        and memory-bound.
-    *   `omp_for` & `omp_simd`: For small vectors, the overhead of
-        thread creation will make these slower. As vector size
-        increases into the millions, the parallel versions will
-        drastically outperform sequential ones on a multi-core
-        machine. The `reduction` clause is crucial for correctness and
-        performance. The `simd` clause makes the compiler's
-        vectorization intent explicit and can yield a further
-        performance boost on each core. On a 32-core Xeon/EPYC
-        machine, expect near-linear speedups for very large inputs.
-    *   `arma`: `arma::accu` is highly optimized. It often uses loop
-        unrolling, SIMD, and may even be multi-threaded internally
-        depending on the linked BLAS library's configuration. Its
-        performance is expected to be competitive with or superior to
-        the manual OpenMP implementations, especially because
-        Armadillo can make intelligent choices about the best
-        strategy. This is often the most pragmatic and
-        high-performance choice.
-    *   `base`: This will be the slowest C++-callable function due to
-        the overhead of calling back into the R interpreter. It serves
-        as a useful baseline.
-
-*   **`dmy_pf_outer_*` functions:**
-    *   `cstyle`: A simple, clear implementation. Its performance will
-        be bound by memory access speed and the CPU's ability to
-        auto-vectorize the inner loop.
-    *   `omp_collapse`: This is the canonical OpenMP approach for
-        parallelizing nested loops. By collapsing the loops into a
-        single, larger iteration space, it ensures excellent load
-        balancing across all available threads. This should provide
-        significant speedups for medium to large matrices on the
-        target Azure VM.
-    *   `omp_nested`: This pattern parallelizes the outer loop and
-        vectorizes the inner loop. It can also be very effective. Its
-        performance relative to `collapse` can depend on the problem
-        size and architecture, but both are strong parallelization
-        strategies.
-    *   `arma`: The expression `av1 * av2.t()` is recognized by
-        Armadillo as an outer product (a rank-1 update), which is a
-        Level 2 BLAS operation (`DGER`). The linked BLAS library
-        (e.g., OpenBLAS) will have a highly optimized, cache-aware,
-        and potentially multi-threaded implementation for this. This
-        is almost guaranteed to be the fastest method, as it delegates
-        the work to a specialized, low-level library. It is also the
-        most idiomatic and readable solution from a linear algebra
-        perspective.
-    *   `base`: Again, this serves as a performance baseline and will
-        be the slowest due to R interpreter overhead.
-
-## Microbenchmark Test Script: `./exec/dummy-rcpp-bench.r`
-
-This R script benchmarks the performance of the C++ functions. It
-should be placed in the `./exec` directory of the package. This
-location is a conventional, CRAN-compliant choice for utility scripts
-that are part of the package source but not installed as user-callable
-executables. They can be located and run using `system.file("exec",
-"dummy-rcpp-bench.r", package = "YourPackageName")`.
-
-```R
-#!/usr/bin/env Rscript
-
-# A roxygen-style documentation block for the script.
-#' @title Benchmark Rcpp Iteration Strategies
-#' @description
-#' This script runs microbenchmarks on different C++ functions to compare
-#' the performance of various looping and computation strategies.
-#' It accepts command-line arguments to control the test type, input sizes,
-#' and output generation.
-#'
-#' @usage
-#' ./dummy-rcpp-bench.r [options] [input_size_1 input_size_2 ...]
-#'
-#' @seealso
-#' The C++ source code: `../src/dummy_iter.cpp`
-#' Project Makevars for compilation flags: `../src/Makevars`
-#' User-specific Makevars for native optimization: `~/.R/Makevars`
-#'
-
-# --- 1. Dependencies ---
-# Suppress package startup messages for cleaner logs
-suppressPackageStartupMessages({
-  library(optparse)
-  library(microbenchmark)
-  library(ggplot2)
-  library(logger)
-  library(data.table)
-})
-
-# --- 2. Argument Parsing ---
-option_list <- list(
-  make_option(c("-h", "--help"),
-    action = "store_true", default = FALSE,
-    help = "Show this help message and exit"
-  ),
-  make_option(c("-v", "--verbose"),
-    action = "count", default = 0,
-    help = "Increase verbosity level (-v, -vv, -vvv)"
-  ),
-  make_option(c("-p", "--profile"),
-    action = "store_true", default = FALSE,
-    help = "Enable profiling with Rprof"
-  ),
-  make_option(c("-t", "--test"),
-    type = "character", default = "sum",
-    help = "Test type to execute: 'sum' or 'outer' [default: %default]"
-  ),
-  make_option(c("-m", "--samples"),
-    type = "integer", default = 100,
-    help = "Number of microbenchmark samples (iterations) [default: %default]"
-  ),
-  make_option(c("-s", "--save"),
-    action = "store_true", default = FALSE,
-    help = "Save benchmark data and system info reports"
-  )
-)
-
-parser <- OptionParser(
-  usage = "%prog [options] [input_size_1 input_size_2 ...]",
-  option_list = option_list,
-  description = "A script to benchmark Rcpp loop performance."
-)
-
-# `parse_args` with positional_arguments = TRUE returns a list with `options`
-# and `args`
-args_out <- parse_args(parser, positional_arguments = TRUE)
-opts <- args_out$options
-input_sizes_char <- args_out$args
-
-if (opts$help) {
-  print_help(parser)
-  quit(status = 0)
-}
-
-# Default input sizes if none are provided
-if (length(input_sizes_char) == 0) {
-  input_sizes_char <- c("10", "100", "1000")
-}
-input_sizes <- as.integer(input_sizes_char)
-
-
-# --- 3. Setup Logging and Output Directory ---
-log_dir <- Sys.getenv("P_LOGS_DIR", unset = "logs")
-if (!dir.exists(log_dir)) {
-  dir.create(log_dir, recursive = TRUE)
-}
-
-timestamp <- as.integer(Sys.time())
-script_name <- "dummy-rcpp-bench"
-file_prefix <- file.path(
-  log_dir,
-  paste(script_name, timestamp, opts$test, sep = "-")
-)
-
-# Configure logger to write to both console and file
-log_appender(appender_tee(paste0(file_prefix, "-test.log")))
-
-# Set logging level based on verbosity
-log_level <- switch(min(opts$verbose, 2),
-  `0` = INFO,
-  `1` = DEBUG,
-  `2` = TRACE
-)
-log_threshold(log_level)
-
-
-# --- 4. Main Script Logic ---
-
-main <- function() {
-  log_info("Starting benchmark script...")
-  log_info("Arguments: %s", paste(commandArgs(trailingOnly = FALSE), collapse = " "))
-  log_info("Parsed Options: test='%s', samples=%d, save=%s, verbose=%d",
-           opts$test, opts$samples, opts$save, opts$verbose)
-  log_info("Input Sizes: %s", paste(input_sizes, collapse = ", "))
-  log_info("Log directory: %s", normalizePath(log_dir))
-
-  # It's assumed the package is loaded, e.g., via `devtools::load_all()`
-  # or is installed. We need to call the C++ functions.
-  # For this example, let's assume they are in the global environment.
-  # In a real package, you'd call `mypackage::dmy_pf_sum_cstyle`.
-  dmy_pf_log_set_level(opts$verbose)
-
-  log_info("System CPU Info:")
-  try({
-    cpu_info <- system("inxi -C", intern = TRUE)
-    for (line in cpu_info) log_info(line)
-  }, silent = TRUE)
-
-  if (opts$profile) {
-    prof_file <- paste0(file_prefix, "-rprof.out")
-    log_info("Profiling enabled. Output to: %s", prof_file)
-    Rprof(prof_file)
-  }
-
-  all_results <- list()
-
-  # Define function groups
-  sum_functions <- list(
-    cstyle = function(v) dmy_pf_sum_cstyle(v),
-    stl = function(v) dmy_pf_sum_stl(v),
-    omp_for = function(v) dmy_pf_sum_omp_for(v),
-    omp_simd = function(v) dmy_pf_sum_omp_simd(v),
-    arma = function(v) dmy_pf_sum_arma(v),
-    base = function(v) dmy_pf_sum_base(v)
-  )
-
-  outer_functions <- list(
-    cstyle = function(v) dmy_pf_outer_cstyle(v, v),
-    omp_collapse = function(v) dmy_pf_outer_omp_collapse(v, v),
-    omp_nested = function(v) dmy_pf_outer_omp_nested(v, v),
-    arma = function(v) dmy_pf_outer_arma(v, v),
-    base = function(v) dmy_pf_outer_base(v, v)
-  )
-
-  test_suite <- if (opts$test == "outer") outer_functions else sum_functions
-
-  for (size in input_sizes) {
-    log_info("Running benchmark for input size: %d", size)
-    v <- rnorm(size, mean = 0, sd = 100)
-    
-    # Reset C++ trace log for each benchmark run
-    dmy_pf_log_reset()
-
-    mb_result <- microbenchmark(
-      list = test_suite,
-      times = opts$samples,
-      unit = "ms", # milliseconds are often a good unit for comparison
-      v = v
-    )
-
-    log_info("Benchmark for size %d complete. Summary:", size)
-    print(mb_result)
-
-    # Store results
-    mb_df <- as.data.table(mb_result)
-    mb_df[, input_size := size]
-    all_results[[as.character(size)]] <- mb_df
-  }
-
-  if (opts$profile) {
-    Rprof(NULL)
-  }
-
-  # --- 5. Process and Save Results ---
-  log_info("Aggregating and saving results...")
-  benchmark_data <- rbindlist(all_results)
-  setnames(benchmark_data, "expr", "function_label")
-
-  # Summarize for plotting
-  summary_stats <- benchmark_data[, .(
-    mean_time_ms = mean(time) / 1e6, # time is in nanoseconds
-    median_time_ms = median(time) / 1e6
-  ), by = .(function_label, input_size)]
-
-  # Generate plot
-  plot_title <- sprintf("Performance of '%s' Implementations", opts$test)
-  plot_subtitle <- sprintf(
-    "Samples per test: %d | Machine: %s",
-    opts$samples,
-    try(system("hostname", intern = TRUE), silent = TRUE)
-  )
-  p <- ggplot(summary_stats, aes(
-    x = input_size, y = mean_time_ms,
-    color = function_label, group = function_label
-  )) +
-    geom_line() +
-    geom_point() +
-    scale_x_log10() +
-    scale_y_log10() +
-    labs(
-      title = plot_title,
-      subtitle = plot_subtitle,
-      x = "Input Vector Size (log scale)",
-      y = "Mean Execution Time (ms, log scale)",
-      color = "Implementation"
-    ) +
-    theme_minimal() +
-    theme(legend.position = "bottom")
-
-  plot_file <- paste0(file_prefix, "-bench.png")
-  ggsave(plot_file, p, width = 10, height = 6)
-  log_info("Benchmark plot saved to: %s", plot_file)
-
-  if (opts$save) {
-    log_debug("Save Data option is enabled. Writing additional files.")
-    # Save full data
-    tsv_file <- paste0(file_prefix, "-data.tsv")
-    full_data <- copy(benchmark_data)
-    full_data[, test_type := opts$test]
-    full_data[, timestamp := timestamp]
-    fwrite(full_data, tsv_file, sep = "\t")
-    log_info("Full benchmark data saved to: %s", tsv_file)
-
-    # Save system info
-    info_file <- paste0(file_prefix, "-info.log")
-    info_cmds <- "date; whoami; inxi -CfGMS; lscpu; cpupower frequency-info; nvidia-smi || echo '#NOGPU'"
-    system(paste(info_cmds, ">", info_file, "2>&1"))
-    log_info("System info report saved to: %s", info_file)
-  }
-
-  log_info("Script finished successfully.")
-}
-
-# Run the main function
-main()
-```
-
-## Quick Start Guide
-
-To build and run this code within an R package, you need to configure
-the project to correctly link against Rcpp, RcppArmadillo, and enable
-OpenMP. This typically involves modifications to `DESCRIPTION` and
-creating a `src/Makevars` file.
-
-### Project Configuration
-
-#### `DESCRIPTION`
-
-Your `DESCRIPTION` file must declare the dependencies. `LinkingTo` is
-crucial for the compiler to find the header files for `Rcpp` and
-`RcppArmadillo`. `SystemRequirements` informs users and systems about
-the need for an OpenMP-capable compiler.
-
-```yaml
-Package: myrcppproject
-Type: Package
-Title: Example Rcpp Performance Package
-Version: 0.1.0
-Author: Your Name
-Maintainer: Your Name <your.email@example.com>
-Description: Demonstrates high-performance iteration with Rcpp.
-License: MIT
-Encoding: UTF-8
-RoxygenNote: 7.2.3
-Imports:
-    Rcpp
-LinkingTo:
-    Rcpp,
-    RcppArmadillo
-SystemRequirements:
-    GNU make, C++11 compiler with OpenMP support
-```
-
-#### `src/Makevars`
-
-This file controls the compilation process. To enable OpenMP, you must
-add the appropriate flags (`-fopenmp` for GCC/Clang). To link against
-the system's BLAS and LAPACK libraries (which RcppArmadillo uses), you
-need to include them in `PKG_LIBS`.
-
-```make
-# Get compiler flags for OpenMP from R's configuration
-OMP_FLAG = $(shell $(R_HOME)/bin/R CMD CONFIG CXX11FLAGS | grep -o -- '-fopenmp')
-
-# Add OpenMP flags to C++ compiler
-PKG_CXXFLAGS = -std=c++11 $(OMP_FLAG)
-
-# Add OpenMP flags and system BLAS/LAPACK to the linker
-PKG_LIBS = $(OMP_FLAG) $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)
-```
-*Note: This setup relies on R's configuration to find the correct BLAS/LAPACK libraries.*
-
-#### `~/.R/Makevars`
-
-For personal, non-portable, maximum-performance builds, you can add
-machine-specific flags to your personal `Makevars` file located at
-`~/.R/Makevars`. The `-march=native` flag instructs the compiler to
-generate code optimized for the specific CPU architecture of the
-machine you are compiling on. This can unlock additional performance
-from features like AVX2 or AVX-512 but creates a binary that may not
-run on older CPUs.
-
-**This file should NOT be part of your R package source.** It is for
-user-side configuration only.
-
-```make
-# Example ~/.R/Makevars for a modern Intel/AMD CPU
-CXX11FLAGS += -O3 -march=native -mtune=native
-```
-
-## References
-
-[^1]: [High performance functions with Rcpp](http://adv-r.had.co.nz/Rcpp.html)
-[^2]: [R Packages (2e)](https://r-pkgs.org/)
-[^3]: [RcppArmadillo on CRAN](https://cran.r-project.org/web/packages/RcppArmadillo/index.html)
-[^4]: [OpenMP Resources](https://www.openmp.org/resources/)
-[^5]: [CRAN Task View: High-Performance and Parallel Computing with R](https://cran.r-project.org/web/views/HighPerformanceComputing.html)
-[^6]: [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html)
-
-
-
--------------------------------------------------------------------------------------------
--------------------------------------------------------------------------------------------
--------------------------------------------------------------------------------------------
-# A:3 (ChatGPT)
-> * [Rcpp iterators performance optimization — `dummy_iter` example](https://chatgpt.com/share/68b5c7df-61c4-8012-80bd-f5dceaafba00)
-
-**Abstract.**
-
-This document provides a compact, CRAN-friendly example showing
-several iteration strategies in C++/Rcpp and RcppArmadillo for the
-simple `sum` and `outer` (tensor-product) operations. It includes
-OpenMP variants (parallel and vectorized), an Armadillo-backed
-variant, and calls into R's `base` implementations from C++ to provide
-realistic baselines. 
-
-A companion R script (`./exec/dummy-rcpp-bench.r`) runs reproducible
-microbenchmarks across several input sizes, logging and exporting
-results.
-
-> Notes:
->
-> * The C++ code targets **C++11** and follows Google C++ style where
->   practical for C++ sources.
->
-> * The examples use `Rcpp` and `RcppArmadillo`. Make sure your
->   package `DESCRIPTION` contains `LinkingTo: Rcpp, RcppArmadillo`
->   and appropriate `Imports`/`Depends` entries. A "Quick Start"
->   section at the end shows minimal `DESCRIPTION` and `Makevars`
->   changes.
->
-> * OpenMP sections are guarded so builds still work without OpenMP if
->   the compiler/distribution lacks it.
->
-> * Logging functions are lightweight and intended only for controlled
->   tracing during benchmarking. Tracing is disabled by default.
->
-
----
-
-## Introduction
-
-### C vs C++ (STL) iteration strategies — rationale
-
-* **C-style indexed `for`** (`for (i=0; i<n; ++i)`) is explicit,
-  minimal overhead, and often straightforwardly optimized by
-  compilers. It exposes index arithmetic and is easy to convert to
-  pointer arithmetic (slight micro-optimization).
-* **C++-style iterators / range-based `for`** (`for (auto x : vec)`)
-  is safer and more idiomatic in modern C++. It hides indices and
-  prevents off-by-one bugs. In most cases compilers produce code
-  comparable to C-style loops; differences are usually negligible for
-  numeric loops but can vary depending on optimization and iterator
-  abstraction cost.
-* **OpenMP `#pragma omp parallel for`** splits loop iterations across
-  threads. It's effective when each iteration is independent and work
-  per iteration is large enough to amortize threading overhead. OpenMP
-  `reduction` handles accumulators safely.
-* **Vectorization (`#pragma omp simd` or relying on compiler
-  autovectorization)** instructs the compiler to generate SIMD (Single
-  Instruction Multiple Data) instructions
-  (AVX/AVX2/AVX-512). Vectorization improves throughput for floating
-  point operations if memory access aligns and there are no
-  dependencies.
-* **Trade-off:** Parallelism (OpenMP) reduces wall-clock time by using
-  multiple cores, but thread spawn/synchronization overhead and memory
-  bandwidth contention limit speedups. Vectorization (SIMD) improves
-  per-core throughput but requires contiguous memory access and often
-  smaller code changes. Combining the two (`parallel for simd`) can be
-  beneficial but requires care (e.g., use `reduction` and guarantee
-  independence).
-* **RcppArmadillo / BLAS:** For large linear algebra problems, highly
-  tuned BLAS (OpenBLAS, Intel MKL) outperform hand-coded
-  loops. However, for simple elementwise reductions and small outer
-  products, custom loops or Armadillo operations may be competitive.
-
-### OpenMP primer — directives used in examples
-
-* `parallel` — create a team of threads. Usually used as `#pragma omp
-  parallel` or implicitly via `parallel for`.
-* `for` — distribute loop iterations among threads: `#pragma omp
-  parallel for`.
-* `collapse(n)` — combine `n` nested loops into a single iteration
-  space; useful for nested loops when you want more fine-grained work
-  distribution.
-* `simd` — instruct compiler to vectorize the loop, e.g., `#pragma omp
-  simd` or `#pragma omp parallel for simd`.
-* `private(var)` / `shared(var)` — specify variable sharing across
-  threads.
-* `reduction(op: var)` — defines a reduction across threads (e.g.,
-  sum).
-
-> **Note on portability & CRAN:** 
->
-> Using `-march=native` or architecture-specific intrinsics may
-> produce binaries that are not portable across CRAN builders and
-> users' machines. Avoid `-march=native` in package builds intended
-> for CRAN; instead document optional local tuning for
-> developers. OpenMP usage is allowed, but you must carefully document
-> `SystemRequirements` and provide fallbacks (our code compiles and
-> runs without OpenMP).
-
-### OpenMP / BLAS / SIMD in RcppArmadillo and RcppEigen
-
-* **RcppArmadillo** relies on Armadillo which uses BLAS/LAPACK for
-  many operations. It will benefit from tuned BLAS (OpenBLAS,
-  MKL). Armadillo itself can use OpenMP for some operations depending
-  on build flags/config.
-* **RcppEigen** similarly benefits from optimized BLAS (when using
-  Eigen's plugin for BLAS) and can use vectorization (Eigen is heavily
-  optimized).
-* For elementwise operations and small tensors, the overhead of BLAS
-  calls may be non-negligible; a hand-optimized OpenMP loop might be
-  better.
-
-### GPU alternatives (brief)
-
-* For massive matrix multiplications and large linear algebra
-  workloads, GPUs (cuBLAS, cuDNN) provide very large speedups
-  (10×–100×) if data transfer overhead is small relative to
-  compute. For small/medium sized problems or many small kernels, GPUs
-  may be less beneficial.
-* Tools: `tensorflow`, `torch`, or CUDA bindings for R (e.g., `gpuR`)
-  — but packaging GPU-enabled R packages for CRAN is difficult.
-* **cuBLAS vs OpenBLAS/MKL:** cuBLAS on a suitable GPU usually
-  outperforms CPU BLAS for large matrices; for small problems
-  OpenBLAS/MKL on many-core CPUs can still be better or comparable.
-* **Containerized/python CUDA distribution**: In rootless podman
-  environments, installing CUDA-based toolchains can be complex but
-  feasible. Using Python-based CUDA (e.g., `cupy`) is viable for
-  prototyping; for R packaging you must ensure system-level
-  drivers/libraries are available — not trivial for CRAN.
-
----
-
-## C++ Implementation — `./src/dummy_iter.cpp`
-
-Below is a single C++ source that implements:
-
-* Logging/tracing support functions and macros.
-* `dmy_pf_sum_*` variants:
-  * `dmy_pf_sum_c_for` — C-style indexed loop.
-  * `dmy_pf_sum_cpp_range` — C++ range-based loop.
-  * `dmy_pf_sum_openmp_for` — OpenMP `parallel for` with `reduction`.
-  * `dmy_pf_sum_openmp_for_simd` — OpenMP `parallel for simd` with `reduction`.
-  * `dmy_pf_sum_armadillo` — uses `arma::sum`.
-  * `dmy_pf_sum_base` — calls `base::sum` (via R).
-* `dmy_pf_outer_*` variants:
-  * `dmy_pf_outer_c_for` — nested C-style loops.
-  * `dmy_pf_outer_cpp_range` — nested iterators (range-based).
-  * `dmy_pf_outer_openmp_collapse` — `parallel for collapse(2)`.
-  * `dmy_pf_outer_openmp_for_simd` — outer parallel, inner simd.
-  * `dmy_pf_outer_armadillo` — `arma::vec * arma::vec.t()`.
-  * `dmy_pf_outer_base` — call `base::outer(x, x, "*")`.
-
-> **File:** `./src/dummy_iter.cpp`
-> The file is a single translation unit and should be compiled by the package build.
-
-```cpp
-// Copyright: (C) 2025 - Example
-// License: GPL-3 (example)
-// -*- mode: C++; c-basic-offset: 2; indent-tabs-mode: nil -*-
-
-//' @title Dummy iterator performance examples (C++/Rcpp and RcppArmadillo)
-//' @description A set of R-callable functions to benchmark iteration strategies.
-//' @details This file exposes several variants for `sum` and `outer` operations:
-//'  - C-style loops
-//'  - C++ range-based loops
-//'  - OpenMP parallel (with reduction) and parallel+simd variants
-//'  - RcppArmadillo-backed variants
-//'  - Calls to R `base::sum` / `base::outer` from C++
-//'
-//' Minimal invocation examples (R):
-//' \dontrun{
-//'   library(yourpkg) # replace with your package name
-//'   v <- rnorm(1e6, 0, 100)
-//'   dmy_pf_log_set_level(3)  # enable verbose tracing
-//'   s1 <- dmy_pf_sum_c_for(v)
-//'   s2 <- dmy_pf_sum_openmp_for(v)
-//'   m  <- dmy_pf_outer_armadillo(v[1:1000])
-//' }
-// [[Rcpp::depends(RcppArmadillo)]]
-
-#include <RcppArmadillo.h>
+// src/init.cpp - Required for CRAN compliance
+#include <R.h>
+#include <Rinternals.h>
+#include <R_ext/Rdynload.h>
 #include <Rcpp.h>
-#include <set>
-#include <string>
-#include <mutex>
 
-#ifdef _OPENMP
-#include <omp.h>
-#endif
-
-using Rcpp::NumericVector;
-using Rcpp::NumericMatrix;
-using Rcpp::CharacterVector;
-using Rcpp::Environment;
-using Rcpp::Function;
-using Rcpp::wrap;
-using Rcpp::as;
-
-namespace dmy_pf_internal {
-
-// Logging/tracing static state
-static int g_log_level = 0;
-static std::set<std::string> g_trace_once_set;
-static std::mutex g_trace_mutex;
-
-// Helpers
-inline std::string join_file_line(const char* file, int line) {
-  return std::string(file) + ":" + std::to_string(line);
+// Forward declarations of your exported functions
+extern "C" {
+    SEXP your_function_wrapper(SEXP x);
+    // Add other function declarations here
 }
 
-}  // namespace dmy_pf_internal
+// Registration table
+static const R_CallMethodDef CallEntries[] = {
+    {"your_function_wrapper", (DL_FUNC) &your_function_wrapper, 1},
+    // Add other functions here
+    {NULL, NULL, 0}
+};
 
-//' @rdname dmy_log
-//' @export
-// [[Rcpp::export]]
-void dmy_pf_log_set_level(int level) {
-  dmy_pf_internal::g_log_level = level;
+// Package initialization
+extern "C" void R_init_your_package_name(DllInfo *dll) {
+    R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
+    R_useDynamicSymbols(dll, FALSE);
+    R_forceSymbols(dll, TRUE);
 }
-
-//' @rdname dmy_log
-//' @export
-// [[Rcpp::export]]
-int dmy_pf_log_get_level() {
-  return dmy_pf_internal::g_log_level;
-}
-
-//' @rdname dmy_log
-//' @export
-// [[Rcpp::export]]
-void dmy_pf_log_reset() {
-  std::lock_guard<std::mutex> guard(dmy_pf_internal::g_trace_mutex);
-  dmy_pf_internal::g_trace_once_set.clear();
-}
-
-//' @rdname dmy_log
-//' @export
-// [[Rcpp::export]]
-void dmy_pf_log_out(const char* file, int line, const std::string& msg) {
-  if (dmy_pf_internal::g_log_level >= 0) {
-    Rcpp::Rcout << "[" << join_file_line(file, line) << "] " << msg << std::endl;
-  }
-}
-
-//' @rdname dmy_log
-//' @export
-// [[Rcpp::export]]
-void dmy_pf_log_trace(const char* file, int line, const std::string& msg) {
-  if (dmy_pf_internal::g_log_level < 3) {
-    return;
-  }
-  std::string key = join_file_line(file, line);
-  {
-    std::lock_guard<std::mutex> guard(dmy_pf_internal::g_trace_mutex);
-    if (dmy_pf_internal::g_trace_once_set.find(key) != dmy_pf_internal::g_trace_once_set.end()) {
-      return;  // already logged once
-    }
-    dmy_pf_internal::g_trace_once_set.insert(key);
-  }
-  Rcpp::Rcerr << "[" << key << "] " << msg << std::endl;
-}
-
-// Convenience macros for file/line reporting
-#define V_LOG(MSG) dmy_pf_log_out(__FILE__, __LINE__, (MSG))
-#define V_TRACE(MSG) dmy_pf_log_trace(__FILE__, __LINE__, (MSG))
-
-// ----------------------
-// SUM group
-// ----------------------
-
-//' @rdname dmy_sum
-//' @export
-// [[Rcpp::export]]
-double dmy_pf_sum_c_for(const NumericVector& v) {
-  double s = 0.0;
-  R_xlen_t n = v.size();
-  for (R_xlen_t i = 0; i < n; ++i) {
-    s += v[i];
-  }
-  return s;
-}
-
-//' @rdname dmy_sum
-//' @export
-// [[Rcpp::export]]
-double dmy_pf_sum_cpp_range(const NumericVector& v) {
-  double s = 0.0;
-  for (auto x : v) {
-    s += x;
-  }
-  return s;
-}
-
-//' @rdname dmy_sum
-//' @export
-// [[Rcpp::export]]
-double dmy_pf_sum_openmp_for(const NumericVector& v) {
-#ifdef _OPENMP
-  double s = 0.0;
-  R_xlen_t n = v.size();
-  #pragma omp parallel for reduction(+:s) schedule(static)
-  for (R_xlen_t i = 0; i < n; ++i) {
-    s += v[i];
-  }
-  return s;
-#else
-  V_LOG("OpenMP not available — falling back to sequential");
-  return dmy_pf_sum_c_for(v);
-#endif
-}
-
-//' @rdname dmy_sum
-//' @export
-// [[Rcpp::export]]
-double dmy_pf_sum_openmp_for_simd(const NumericVector& v) {
-#ifdef _OPENMP
-  double s = 0.0;
-  R_xlen_t n = v.size();
-  #pragma omp parallel for reduction(+:s) schedule(static)
-  for (R_xlen_t i = 0; i < n; ++i) {
-    double tmp = 0.0;
-    // inner loop trivially is scalar here; use simd for a tiny chunk (example)
-    #pragma omp simd reduction(+:tmp)
-    for (int j = 0; j < 1; ++j) { (void)j; tmp += v[i]; }
-    s += tmp;
-  }
-  return s;
-#else
-  V_LOG("OpenMP not available — falling back to sequential");
-  return dmy_pf_sum_c_for(v);
-#endif
-}
-
-//' @rdname dmy_sum
-//' @export
-// [[Rcpp::export]]
-double dmy_pf_sum_armadillo(const NumericVector& v) {
-  arma::vec a = as<arma::vec>(v);
-  return arma::accu(a);  // equivalent to sum
-}
-
-//' @rdname dmy_sum
-//' @export
-// [[Rcpp::export]]
-double dmy_pf_sum_base(const NumericVector& v) {
-  V_TRACE("base::sum — calling base::sum");
-  Environment base = Environment::base_env();
-  Function base_sum = base["sum"];
-  SEXP res = base_sum(v);  // returns numeric(1)
-  V_TRACE("base::sum — done");
-  return as<double>(res);
-}
-
-// ----------------------
-// OUTER group
-// ----------------------
-
-//' @rdname dmy_outer
-//' @export
-// [[Rcpp::export]]
-NumericMatrix dmy_pf_outer_c_for(const NumericVector& x) {
-  R_xlen_t n = x.size();
-  NumericMatrix out(n, n);
-  for (R_xlen_t i = 0; i < n; ++i) {
-    for (R_xlen_t j = 0; j < n; ++j) {
-      out(i, j) = x[i] * x[j];
-    }
-  }
-  return out;
-}
-
-//' @rdname dmy_outer
-//' @export
-// [[Rcpp::export]]
-NumericMatrix dmy_pf_outer_cpp_range(const NumericVector& x) {
-  R_xlen_t n = x.size();
-  NumericMatrix out(n, n);
-  R_xlen_t i = 0;
-  for (auto xi : x) {
-    R_xlen_t j = 0;
-    for (auto xj : x) {
-      out(i, j) = xi * xj;
-      ++j;
-    }
-    ++i;
-  }
-  return out;
-}
-
-//' @rdname dmy_outer
-//' @export
-// [[Rcpp::export]]
-NumericMatrix dmy_pf_outer_openmp_collapse(const NumericVector& x) {
-#ifdef _OPENMP
-  R_xlen_t n = x.size();
-  NumericMatrix out(n, n);
-  #pragma omp parallel for collapse(2) schedule(static)
-  for (R_xlen_t i = 0; i < n; ++i) {
-    for (R_xlen_t j = 0; j < n; ++j) {
-      out(i, j) = x[i] * x[j];
-    }
-  }
-  return out;
-#else
-  V_LOG("OpenMP not available — falling back to sequential");
-  return dmy_pf_outer_c_for(x);
-#endif
-}
-
-//' @rdname dmy_outer
-//' @export
-// [[Rcpp::export]]
-NumericMatrix dmy_pf_outer_openmp_for_simd(const NumericVector& x) {
-#ifdef _OPENMP
-  R_xlen_t n = x.size();
-  NumericMatrix out(n, n);
-  #pragma omp parallel for schedule(static)
-  for (R_xlen_t i = 0; i < n; ++i) {
-    // inner loop vectorized
-    #pragma omp simd
-    for (R_xlen_t j = 0; j < n; ++j) {
-      out(i, j) = x[i] * x[j];
-    }
-  }
-  return out;
-#else
-  V_LOG("OpenMP not available — falling back to sequential");
-  return dmy_pf_outer_c_for(x);
-#endif
-}
-
-//' @rdname dmy_outer
-//' @export
-// [[Rcpp::export]]
-NumericMatrix dmy_pf_outer_armadillo(const NumericVector& x) {
-  arma::vec a = as<arma::vec>(x);
-  arma::mat m = a * a.t();  // outer product
-  return wrap(m);
-}
-
-//' @rdname dmy_outer
-//' @export
-// [[Rcpp::export]]
-NumericMatrix dmy_pf_outer_base(const NumericVector& x) {
-  V_TRACE("base::outer — calling base::outer");
-  Environment base = Environment::base_env();
-  Function base_outer = base["outer"];
-  // base::outer(x, x, "*") returns matrix
-  SEXP res = base_outer(x, x, std::string("*"));
-  V_TRACE("base::outer — done");
-  return as<NumericMatrix>(res);
-}
-
 ```
 
-**Implementation notes (C++):**
+### CRAN-Safe Size Reduction Options:
 
-* All exported functions are annotated with `// [[Rcpp::export]]`.
-* OpenMP guard macros allow building without OpenMP. When your build
-  toolchain supports OpenMP, set `PKG_CXXFLAGS` and `PKG_LIBS`
-  accordingly (see Quick Start below).
-* `V_TRACE` logs to `Rcerr` and is guarded so it only prints when log
-  level >= 3, and only once per file\:line until `dmy_pf_log_reset()`
-  is called. This prevents excessive repeated trace output when the
-  functions are iterated millions of times in benchmarks.
+```makefile
+# ./src/Makevars - CRAN release version
+PKG_CPPFLAGS = -DNDEBUG -ffunction-sections -fdata-sections
+PKG_CXXFLAGS = -O2 -Wall -Wextra
+PKG_LIBS = -Wl,--gc-sections
 
----
+# Additional size optimizations (CRAN-safe)
+PKG_CXXFLAGS += -fno-rtti -fno-exceptions
+PKG_CPPFLAGS += -DRCPP_NO_RTTI -DRCPP_NO_SUGAR
+```
 
-## Microbenchmark script — `./exec/dummy-rcpp-bench.r`
+## 2. Development Pragmatics for Better Debugging
 
-This script is intended to live in the package `exec/`
-directory. Files in `exec/` are allowed by CRAN and can be used as
-helper scripts (they are not installed as R functions but are
-available for package developers and can be invoked after installing
-the package). In typical development workflows the script can be
-invoked from the package root.
+### Internal Development `~/.R/Makevars`:
+```makefile
+# High-performance development build
+CXXFLAGS = -march=native -O3 -g3 -ggdb3 -Wall -Wextra -Wpedantic
+CPPFLAGS = -DDEBUG -DRCPP_ARMADILLO_DEBUG_LEVEL=2
 
-**Behavior:**
+# Enhanced debugging symbols
+CXXFLAGS += -fno-omit-frame-pointer -fno-optimize-sibling-calls
+CXXFLAGS += -fsanitize=address -fsanitize=undefined
 
-* CLI parsing via `optparse`.
-* Logging with `futile.logger` (simple, CRAN-friendly).
-* Benchmarks via `microbenchmark`.
-* Plots via `ggplot2`.
-* Tries to `library()` the package by name; if that fails and `devtools` is available it attempts `devtools::load_all('.')`.
-* Writes outputs into `${P_LOGS_DIR:-logs}`; creates directory if missing.
-* Produces: a log file, a PNG plot (`bench.png`) and CSV summary. Optional profiling and raw tsv exports when `--save` is passed.
+# Template debugging support
+CXXFLAGS += -ftemplate-backtrace-limit=0
+CXXFLAGS += -fdiagnostics-show-template-tree
 
-> Replace `yourpkgname` default with your actual package name or pass `--pkg YOURPKG`.
+# Linker flags for development
+LDFLAGS = -fsanitize=address -fsanitize=undefined
+```
 
+### Debugging Helper Functions:
+```cpp
+// src/debug_utils.hpp
+#ifndef DEBUG_UTILS_HPP
+#define DEBUG_UTILS_HPP
+
+#ifdef DEBUG
+    #define DBG_PRINT(x) Rcpp::Rcout << "[DEBUG] " << x << std::endl
+    #define DBG_MATRIX(m) \
+        Rcpp::Rcout << "[DEBUG] Matrix " << #m << ":\n" << m << std::endl
+#else
+    #define DBG_PRINT(x)
+    #define DBG_MATRIX(m)
+#endif
+
+// Template instantiation tracker
+template<typename T>
+void debug_type_info(const T& obj, const std::string& name) {
+#ifdef DEBUG
+    Rcpp::Rcout << "[TYPE] " << name << ": " 
+                << typeid(T).name() << std::endl;
+#endif
+}
+
+#endif // DEBUG_UTILS_HPP
+```
+
+### Conditional Compilation Strategy:
+```cpp
+// src/conditional_compile.hpp
+#ifndef CONDITIONAL_COMPILE_HPP
+#define CONDITIONAL_COMPILE_HPP
+
+#ifdef DEBUG
+    // Development: Enable all checks and debugging
+    #define ARMA_EXTRA_DEBUG
+    #define EIGEN_INITIALIZE_MATRICES_BY_NAN
+    #define RCPP_ARMADILLO_DEBUG_LEVEL 2
+#else
+    // Release: Maximum performance
+    #define ARMA_NO_DEBUG
+    #define EIGEN_NO_DEBUG
+    #define NDEBUG
+#endif
+
+#endif // CONDITIONAL_COMPILE_HPP
+```
+
+## 3. Size Impact on Heavy Template Dependencies
+
+### RcppArmadillo Optimization:
+
+```makefile
+# ./src/Makevars for Armadillo-heavy packages
+PKG_CPPFLAGS = -DNDEBUG -DARMA_NO_DEBUG -DARMA_DONT_USE_WRAPPER
+
+# Selective feature disabling
+PKG_CPPFLAGS += -DARMA_DONT_USE_OPENMP -DARMA_DONT_USE_FORTRAN_HIDDEN_ARGS
+
+# Template instantiation control
+PKG_CXXFLAGS = -O2 -ftemplate-depth=128
+```
+
+### RcppEigen Size Control:
+
+```makefile
+# Eigen-specific optimizations
+PKG_CPPFLAGS += -DEIGEN_NO_DEBUG -DEIGEN_DONT_VECTORIZE
+PKG_CPPFLAGS += -DEIGEN_DISABLE_UNALIGNED_ARRAY_ASSERT
+
+# Reduce template instantiation bloat
+PKG_CXXFLAGS += -fno-implicit-templates
+```
+
+### Template Specialization Strategy:
+```cpp
+// src/template_control.hpp
+#ifndef TEMPLATE_CONTROL_HPP
+#define TEMPLATE_CONTROL_HPP
+
+// Explicit instantiation to control bloat
+extern template class arma::Mat<double>;
+extern template class arma::Mat<int>;
+
+// Limit Eigen template instantiations
+namespace Eigen {
+    extern template class Matrix<double, Dynamic, Dynamic>;
+    extern template class Matrix<double, Dynamic, 1>;
+}
+
+// Template alias for common types
+using MatrixXd = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>;
+using VectorXd = Eigen::Matrix<double, Eigen::Dynamic, 1>;
+using ArmaMat = arma::Mat<double>;
+using ArmaVec = arma::Col<double>;
+
+#endif // TEMPLATE_CONTROL_HPP
+```
+
+### Expected Size Reductions:
+
+| Library Combination  | Debug Build | Release Build | CRAN-Compliant Release |
+|----------------------|-------------|---------------|------------------------|
+| Base Rcpp            | 2-5 MB      | 0.8-1.2 MB    | 1.0-1.5 MB             |
+| Rcpp + RcppArmadillo | 15-25 MB    | 3-8 MB        | 4-10 MB                |
+| Rcpp + RcppEigen     | 20-35 MB    | 4-12 MB       | 5-15 MB                |
+| All Three            | 40-60 MB    | 8-20 MB       | 10-25 MB               |
+
+## 4. RStudio Build Configuration
+
+### Method 1: Environment Variable Switching
+
+Create build scripts in your package root:
+
+```bash
+#!/bin/bash
+# scripts/build_dev.sh
+export R_MAKEVARS_USER="$HOME/.R/Makevars.dev"
+R CMD INSTALL --preclean --no-multiarch .
+```
+
+```bash
+#!/bin/bash
+# scripts/build_cran.sh
+export R_MAKEVARS_USER="$HOME/.R/Makevars.cran"
+R CMD build .
+R CMD check --as-cran *.tar.gz
+```
+
+### Method 2: RStudio Project Configuration
+
+Create `.Rprofile` in your project root:
 ```r
-#!/usr/bin/env Rscript
-#' @title Benchmark Rcpp iterator variants
-#' @description Command-line script to benchmark `dmy_pf_sum_*` and `dmy_pf_outer_*` variants.
-#' @examples
-#' \dontrun{
-#'   Rscript ./exec/dummy-rcpp-bench.r -t sum -m 50 --pkg yourpkgname 100 1000 10000
-#' }
-#' @seealso ./src/dummy_iter.cpp
-suppressPackageStartupMessages({
-  require(optparse)
-  require(microbenchmark)
-  require(ggplot2)
-  require(futile.logger)
-})
-
-option_list <- list(
-  make_option(c("-v", "--verbose"), action="count", default=0,
-              help="Verbose level, repeatable (-v, -vv, -vvv)"),
-  make_option(c("-p", "--profile"), action="store_true", default=FALSE,
-              help="Enable Rprof profiling"),
-  make_option(c("-t", "--test"), type="character", default="sum",
-              help="Test type: 'sum' or 'outer' [default %default]"),
-  make_option(c("-m", "--samples"), type="integer", default=100L,
-              help="microbenchmark sample size [default %default]"),
-  make_option(c("-s", "--save"), action="store_true", default=FALSE,
-              help="Save detailed data (tsv, system info)"),
-  make_option(c("--pkg"), type="character", default=Sys.getenv("PKG_NAME", "yourpkgname"),
-              help="Package name to load [default from PKG_NAME env or 'yourpkgname']")
-)
-
-parser <- OptionParser(usage = "%prog [options] [input_sizes]",
-                       option_list = option_list)
-args <- parse_args(parser, positional_arguments = TRUE)
-opts <- args$options
-pos <- args$args
-
-# Verbosity and logging
-log_level <- if (opts$verbose >= 1) futile.logger::DEBUG else futile.logger::INFO
-flog.threshold(log_level)
-flog.info("Arguments: %s", paste(commandArgs(TRUE), collapse = " "))
-
-# Input sizes
-if (length(pos) == 0) {
-  input_sizes <- c(10L, 100L, 1000L)
-} else {
-  input_sizes <- as.integer(pos)
-}
-flog.info("Input sizes: %s", paste(input_sizes, collapse = ", "))
-
-# Logs dir
-logs_dir <- Sys.getenv("P_LOGS_DIR", "logs")
-if (!dir.exists(logs_dir)) dir.create(logs_dir, recursive = TRUE)
-ts <- as.integer(Sys.time())
-prefix <- sprintf("dummy-rcpp-bench-%d-%s-", ts, opts$test)
-logfile <- file.path(logs_dir, paste0(prefix, "test.log"))
-flog.appender(appender.tee(logfile))
-flog.info("Logging to: %s", logfile)
-
-# System info snapshot
-sysinfo_file <- file.path(logs_dir, paste0(prefix, "info.log"))
-flog.info("Saving system info to %s (when --save enabled)", sysinfo_file)
-# Probe cpu info (best-effort)
-inxi_cmd <- "inxi -C"
-inxi_out <- tryCatch(system(inxi_cmd, intern = TRUE, ignore.stderr = TRUE),
-                     error = function(e) paste("#inxi-not-available", e$message))
-flog.info("inxi output: %s", paste(head(inxi_out, 10), collapse = "\n"))
-
-# Load package
-pkgname <- opts$pkg
-loaded <- FALSE
-flog.info("Trying to load package: %s", pkgname)
-try({
-  library(pkgname, character.only = TRUE)
-  loaded <- TRUE
-}, silent = TRUE)
-if (!loaded && requireNamespace("devtools", quietly = TRUE)) {
-  flog.info("Attempting devtools::load_all('.') to load package from current dir")
-  tryCatch({
-    devtools::load_all(".")
-    loaded <- TRUE
-  }, error = function(e) {
-    flog.warn("devtools::load_all() failed: %s", e$message)
-  })
-}
-if (!loaded) {
-  flog.warn("Package %s could not be loaded; ensure it is installed or run this from package root", pkgname)
-}
-
-# Determine function list in selected test
-prefix <- if (opts$test == "sum") "dmy_pf_sum_" else "dmy_pf_outer_"
-ns <- tryCatch(asNamespace(pkgname), error = function(e) NULL)
-if (is.null(ns)) {
-  # try global env
-  fns_all <- ls(envir = .GlobalEnv)
-} else {
-  fns_all <- ls(envir = ns, all.names = TRUE)
-}
-candidates <- sort(grep(paste0("^", prefix), fns_all, value = TRUE))
-if (length(candidates) == 0) {
-  flog.error("No functions found with prefix '%s'. Available: %s", prefix, paste(head(fns_all, 20), collapse = ", "))
-  stop("No candidate functions found.")
-}
-flog.info("Found candidate functions: %s", paste(candidates, collapse = ", "))
-
-# Helper to build microbenchmark expressions safely using namespace-qualified calls
-build_expr <- function(pkg, funname) {
-  call_obj <- call("::", as.name(pkg), as.name(funname))
-  # produce expression call_obj(vec)
-  expr <- as.call(list(call_obj, as.name("vec")))
-  return(expr)
-}
-
-all_results <- list()
-for (n in input_sizes) {
-  flog.info("Running tests for input size: %d", n)
-  set.seed(1234)
-  vec <- rnorm(n, mean = 0, sd = 100)  # variance 10000 => sd=100
-  # Compose expressions for microbenchmark
-  exprs <- lapply(candidates, function(fn) build_expr(pkgname, fn))
-  names(exprs) <- sub(prefix, "", candidates)
+# .Rprofile
+local({
+  build_mode <- Sys.getenv("PKG_BUILD_MODE", "dev")
   
-  # Prepare args for microbenchmark::microbenchmark
-  mb_args <- c(list(times = opts$samples), exprs)
-  
-  # Optionally profile
-  if (opts$profile) {
-    prof_file <- file.path(logs_dir, paste0(prefix, sprintf("%d-rprof.out", n)))
-    Rprof(prof_file)
-    flog.info("Rprof started: %s", prof_file)
-    mb <- do.call(microbenchmark::microbenchmark, mb_args)
-    Rprof(NULL)
-    flog.info("Rprof saved: %s", prof_file)
+  if (build_mode == "cran") {
+    # CRAN build configuration
+    Sys.setenv(R_MAKEVARS_USER = file.path(Sys.getenv("HOME"), 
+                                          ".R", "Makevars.cran"))
+    message("Using CRAN build configuration")
   } else {
-    mb <- do.call(microbenchmark::microbenchmark, mb_args)
+    # Development build configuration  
+    Sys.setenv(R_MAKEVARS_USER = file.path(Sys.getenv("HOME"), 
+                                          ".R", "Makevars.dev"))
+    message("Using development build configuration")
   }
-  s <- summary(mb)
-  s$input_size <- n
-  s$test_type <- opts$test
-  all_results[[as.character(n)]] <- list(micro = mb, summary = s)
-  # save intermediate CSV
-  csv_file <- file.path(logs_dir, paste0(prefix, sprintf("%d-summary.csv", n)))
-  write.csv(s, file = csv_file, row.names = FALSE)
-  flog.info("Saved summary CSV: %s", csv_file)
+})
+```
+
+### Method 3: Custom RStudio Build Tools
+
+In RStudio, go to **Tools > Project Options > Build Tools** and set:
+
+**Development Build:**
+```bash
+# Custom build command
+export PKG_BUILD_MODE=dev && R CMD INSTALL --preclean .
+```
+
+**CRAN Build:**
+```bash
+# Custom check command  
+export PKG_BUILD_MODE=cran && R CMD build . && R CMD check --as-cran *.tar.gz
+```
+
+### Method 4: Makefile Integration
+
+Create a `Makefile` in your project root:
+```makefile
+# Makefile
+.PHONY: dev-build cran-build cran-check clean
+
+dev-build:
+	@echo "Building development version..."
+	@export R_MAKEVARS_USER="$(HOME)/.R/Makevars.dev" && \
+	R CMD INSTALL --preclean --no-multiarch .
+
+cran-build:
+	@echo "Building CRAN version..."  
+	@export R_MAKEVARS_USER="$(HOME)/.R/Makevars.cran" && \
+	R CMD build .
+
+cran-check: cran-build
+	@echo "Checking CRAN compliance..."
+	@R CMD check --as-cran *.tar.gz
+
+clean:
+	@rm -f *.tar.gz
+	@rm -rf *.Rcheck/
+	@rm -rf src/*.o src/*.so
+```
+
+### RStudio UI Integration:
+
+1. **Build Panel**: Use the gear icon to configure custom build commands
+2. **Terminal Tab**: Run make commands (`make dev-build`, `make cran-check`)
+3. **Environment Pane**: Set `PKG_BUILD_MODE` variable  
+4. **Git Pane**: Create separate branches for development vs release configurations
+
+This approach provides a clean separation between aggressive
+optimization for internal development and CRAN-compliant releases,
+while maintaining reasonable library sizes across both scenarios.
+
+
+-------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------
+# A:3 (Gemini) {#A3-gemini}
+> CRAN Linker Options, Debugging Pragmatics
+
+### Executive Summary
+
+Managing C/C++ compiler and linker options in an R package involves balancing performance, debuggability, binary size, and portability. The standard and most effective method is to separate configurations:
+
+1.  **CRAN Release (`./src/Makevars`):** This file is part of your package source. It should contain portable, CRAN-compliant flags that prioritize compatibility and adherence to standards. Here, we use Link-Time Optimization (`-flto`) as the primary tool for size reduction and performance enhancement.
+2.  **Internal Development (`~/.R/Makevars`):** This file resides in your home directory and is not part of the package. It allows you to specify local, non-portable flags for debugging (`-g -O0`) and maximum native performance (`-march=native`). These flags override the package-level settings for local builds.
+
+The `R CMD check` error you encountered with `-Wl,--strip-all` is because this flag aggressively removes all symbols, including the ones R needs to find and register your package's native C++ functions. The solution is to use less aggressive, CRAN-compliant methods for size reduction.
+
+---
+
+### 1. CRAN Compliant Compiler & Linker Options
+
+For a release build intended for CRAN, the goals are portability, correctness, and a reasonable package size. Non-portable flags like `-march=native` are forbidden. Aggressive linker flags that interfere with package inspection are also disallowed.
+
+The `NOTE` from `R CMD check` is crucial. Since R 3.4, it is best practice for packages to explicitly register their compiled functions rather than relying on a dynamic symbol search. `Rcpp` automates this by generating a registration function (e.g., `R_init_dvesimpler`). `R CMD check` verifies this by inspecting the shared library's symbol table for calls to `R_registerRoutines`. The linker option `-Wl,--strip-all` removes this entire table, making the check impossible and thus failing compliance.
+
+Here is a recommended, CRAN-compliant `./src/Makevars` for `dvesimpler`:
+
+**File: `dvesimpler/src/Makevars`**
+
+```makefile
+# CRAN-compliant Release Build Configuration for dvesimpler
+
+# Set the C++ standard. C++17 is a modern, safe choice.
+# R >= 4.3.0 defaults to C++17. This ensures consistency.
+CXX_STD = CXX17
+
+# Compiler flags for C++ code.
+# -O2 is the standard CRAN optimization level. It's a safe balance of speed and compilation time.
+# -flto enables Link-Time Optimization, which is the most effective CRAN-compliant
+# method for reducing binary size and improving performance, especially with templates.
+# -Wall enables all standard warnings, which is good practice.
+PKG_CXXFLAGS = -O2 -Wall -flto
+
+# Linker flags.
+# -flto is also required at the linking stage to perform the cross-file analysis.
+# We also add it to SHLIB_LDFLAGS, which is used when creating the shared library.
+PKG_LIBS = $(SHLIB_LDFLAGS) $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)
+SHLIB_LDFLAGS += -flto
+```
+
+#### Analysis of CRAN-Compliant Options:
+
+*   **`CXX_STD = CXX17`**: Explicitly sets the C++ standard. While R has defaults, being explicit improves clarity and robustness against changes in future R versions.
+*   **`-O2`**: The standard optimization level for CRAN. `-O3` can sometimes be more aggressive but may increase binary size and, in rare cases, generate incorrect code. `-O2` is the reliable choice.
+*   **`-flto`**: This is the key to managing binary size without violating CRAN policies. Link-Time Optimization defers the final code generation to the link stage. The linker can then see all object files at once, enabling it to:
+    *   **Eliminate Dead Code:** Remove unused functions and data across the entire package.
+    *   **Merge Redundant Code:** Identify and merge identical template instantiations, directly solving the bloat from libraries like `RcppArmadillo`.
+    *   **Perform Inter-procedural Optimizations:** Inline functions across different source files.
+*   **`-Wl,-s` vs. `-Wl,--strip-all`**: If you still need to strip symbols, `-Wl,-s` is a safer alternative. It removes debugging symbols and the symbol table but preserves symbols needed for dynamic linking and registration. However, with `-flto`, manual stripping is often unnecessary. It's best to omit stripping flags entirely and let the default R configuration handle it.
+
+By using `-flto`, you achieve significant size reduction and performance gains in a fully portable and CRAN-compliant manner, rendering the problematic `--gc-sections` and `--strip-all` flags unnecessary.
+
+### 2. Pragmatics for Development and Debugging
+
+For internal development, the priorities shift to maximizing performance on your specific machine and enabling robust debugging. These settings should be placed in your personal `~/.R/Makevars` file.
+
+**File: `~/.R/Makevars`**
+```makefile
+# Local Development/Debug Configuration (for GNU G++)
+
+# Set the C++ standard to match the package.
+CXX17 = g++
+
+# Compiler flags for debugging and performance.
+# -g3: Include maximal debugging information, including macros. Essential for gdb.
+# -O0: Disable all optimizations. This ensures code execution follows the source
+#      code exactly, making step-through debugging predictable.
+# -march=native: Generate code optimized for your specific CPU. This is highly
+#                non-portable but yields the best performance for local testing.
+# -Wall -Wextra -pedantic: Enable a comprehensive set of warnings to catch potential bugs.
+# -fsanitize=address,undefined: Enable runtime checks for memory errors (e.g.,
+#                               out-of-bounds access) and undefined behavior.
+#                               This has a performance cost but is invaluable for debugging.
+CXX17FLAGS = -g3 -O0 -march=native -Wall -Wextra -pedantic -fsanitize=address,undefined
+
+# Linker flags must also include sanitizers to link the required runtime library.
+LDFLAGS += -fsanitize=address,undefined
+```
+
+#### Debugging Workflow:
+
+1.  **Setup**: With the `~/.R/Makevars` file above in place, reinstall your package using `devtools::install()` or the RStudio "Install and Restart" button. The debug flags will be automatically applied.
+2.  **Launch**: Start R from a terminal inside a debugger. `gdb` is the standard on Linux.
+    ```bash
+    R -d gdb
+    ```
+3.  **Run R**: Inside the `gdb` prompt, type `run` to start the R session.
+    ```gdb
+    (gdb) run
+    ```
+4.  **Set Breakpoint**: Load your package and set a breakpoint at the desired C++ function.
+    ```r
+    # Inside the R session launched by gdb
+    library(dvesimpler)
+    ```
+    ```gdb
+    # Switch back to gdb (Ctrl+C might be needed if R is running)
+    # or set breakpoint before running R code
+    (gdb) break dvesimpler::some_exported_function(double)
+    ```
+5.  **Trigger**: Call the R function that wraps your C++ code. `gdb` will halt execution at the breakpoint.
+6.  **Debug**: You can now inspect variables (`print var_name`), step through code (`next`, `step`), and examine the call stack (`bt`).
+
+### 3. Size Impact of Heavy C++ Template Libraries
+
+`RcppArmadillo` and `RcppEigen` are powerful but can significantly increase the size of your shared library (`.so` file). This is because they are "header-only" template libraries.
+
+*   **Template Instantiation**: When you use a template function like `arma::mat`, the compiler generates a specific version of that code for the types you use (e.g., `double`). This code is duplicated in every object file (`.o`) that includes the headers and uses it.
+*   **Size Bloat**: A package with many `.cpp` files all using `Armadillo` can contain dozens of copies of the same underlying machine code, leading to a large final shared library.
+
+#### Performance and Size on Azure VMs:
+
+On a 32-core Azure VM, compilation speed is excellent, but memory and cache performance are still critical. A large `.so` file increases the time R takes to load the package (`library(dvesimpler)`), consumes more RAM, and can lead to CPU cache misses if the code working set is large. This can degrade runtime performance even on powerful hardware.
+
+#### Recommended Solution:
+
+As discussed in Section 1, **Link-Time Optimization (`-flto`) is the ideal solution**.
+
+*   **Without `-flto`**: The linker sees each `.o` file as a black box and naively combines them, preserving all the duplicated template code.
+*   **With `-flto`**: The linker performs a whole-program analysis. It can identify that the `arma::mat::mat(int, int)` constructor code in `file1.o` is identical to the one in `file2.o` and will merge them into a single copy in the final `.so` file. It will also discard any template code that was instantiated but ultimately unused.
+
+This approach provides the best trade-off, dramatically reducing the size impact of template libraries in a CRAN-compliant way, which in turn improves load times and runtime cache efficiency.
+
+### 4. Managing Build Modalities in RStudio
+
+The R build system's hierarchical `Makevars` design is the key to switching between development and release builds. RStudio's "Build" pane seamlessly integrates with this system.
+
+#### The Standard Workflow:
+
+1.  **Release Configuration (in `src/Makevars`)**: This is your baseline, checked into version control. It should always be CRAN-compliant.
+2.  **Development Configuration (in `~/.R/Makevars`)**: This is your local override. It is ignored by `R CMD build` when creating a source tarball for CRAN, ensuring it doesn't affect your release.
+
+#### How to Switch in RStudio:
+
+*   **To use the Development build**: Ensure your `~/.R/Makevars` file exists and contains your debug/performance flags. Click "Install and Restart" in the Build pane. RStudio will invoke `R CMD INSTALL`, which will pick up these flags.
+*   **To simulate a CRAN/Release build**:
+    1.  Temporarily rename or comment out the contents of your `~/.R/Makevars` file. For example:
+        ```bash
+        # In your terminal
+        mv ~/.R/Makevars ~/.R/Makevars.bak
+        ```
+    2.  In RStudio, click "Install and Restart" or "Check". The build will now use only the release flags from `./src/Makevars`.
+    3.  When you are done, rename the file back to resume development:
+        ```bash
+        # In your terminal
+        mv ~/.R/Makevars.bak ~/.R/Makevars
+        ```
+
+This manual but explicit process is the most common and reliable way to manage build configurations. It gives you full confidence that your local CRAN check is running with the exact same settings that CRAN's servers will use.
+
+---
+
+### Example C++ Code Fragment
+
+Here is a minimal, well-documented C++ function for your `dvesimpler` package, following the specified style guides.
+
+**File: `dvesimpler/src/example_func.cpp`**
+
+```cpp
+#include <Rcpp.h>
+
+//' @title A Simple Example Function
+//' @description This function demonstrates the basic structure of an Rcpp
+//'   function. It takes a numeric vector and returns its element-wise square.
+//' @param x A numeric vector from R.
+//' @return A numeric vector where each element is the square of the
+//'   corresponding element in `x`.
+//' @author Your Name
+//' @examples
+//' \dontrun{
+//'   # Basic usage
+//'   vec <- 1:5
+//'   squared_vec <- vector_square(vec)
+//'   print(squared_vec)
+//' }
+//' @export
+// [[Rcpp::export]]
+Rcpp::NumericVector vector_square(Rcpp::NumericVector x) {
+  // Rcpp::clone is used to ensure the input vector 'x' is not modified
+  // in place, which is good practice.
+  Rcpp::NumericVector x_squared = Rcpp::clone(x);
+  int n = x_squared.size();
+
+  // A simple loop to square each element. For performance-critical code,
+  // Rcpp sugar (e.g., x * x) or RcppArmadillo would be more idiomatic and
+  // potentially faster as they can leverage vectorization.
+  for (int i = 0; i < n; ++i) {
+    x_squared[i] = x_squared[i] * x_squared[i];
+  }
+
+  // The '#if !defined(NDEBUG)' block is a common C++ idiom. Code inside
+  // this block will only be compiled in debug builds where the NDEBUG
+  // (No Debug) macro is not defined. R typically defines NDEBUG for
+  // release builds (e.g., with -O2).
+#if !defined(NDEBUG)
+  Rcpp::Rcout << "Debug mode: vector_square processed a vector of size "
+              << n << std::endl;
+#endif
+
+  return x_squared;
+}
+```
+
+This example illustrates CRAN-compliant documentation, safe C++ practices (`Rcpp::clone`), and conditional compilation for debug-only code.
+
+---
+**Footnotes**
+
+[^1]: R Core Team, "Writing R Extensions," [https://cran.r-project.org/doc/manuals/r-release/R-exts.html](https://cran.r-project.org/doc/manuals/r-release/R-exts.html).
+[^2]: Dirk Eddelbuettel, "Rcpp: Seamless R and C++ Integration," [https://www.rcpp.org/](https://www.rcpp.org/).
+[^3]: Hadley Wickham, "R Packages (2e)," [https://r-pkgs.org/](https://r-pkgs.org/).
+[^4]: GNU GCC Documentation, "Optimize Options," [https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html](https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html).
+[^5]: R Core Team, "R Installation and Administration," [https://cran.r-project.org/doc/manuals/r-release/R-admin.html](https://cran.r-project.org/doc/manuals/r-release/R-admin.html).
+
+
+
+-------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------
+# A:3 (ChatGPT) {#A3-chatgpt}
+> CRAN linker options and development
+
+## Summary recommendations (short)
+
+* **For CRAN / release builds**: do **not** use `--strip-all` or other aggressive global stripping/linker tricks that remove symbol information used for registration. Instead:
+
+  * Register native routines (`R_registerRoutines`) and set `R_useDynamicSymbols(dll, FALSE)`.
+  * Reduce exports with `-fvisibility=hidden` at compile time and export only registered symbols (safe and effective).
+  * Avoid linker `--strip-all` and version scripts on CRAN.
+* **For local / internal builds**: you may enable aggressive size and performance flags (`-march=native`, `-flto`, `-Wl,--gc-sections,--strip-all`) in `~/.R/Makevars` for faster/smaller local shared objects — but keep the package `src/Makevars` CRAN-clean.
+* **Debugging**: for local dev compile with `-g` plus optimizations you want; prefer `-O2 -g -fno-omit-frame-pointer` (gives good performance and usable backtraces); use sanitizers for hard memory bugs only in local builds.
+* **Templates (RcppArmadillo / RcppEigen)**: templates bloat code. Use `-fvisibility=hidden`, `-ffunction-sections -fdata-sections` and (locally) `--gc-sections` or `-flto` to reduce final size; but do these locally only and test thoroughly.
+
+---
+
+## 1) Why `R CMD check` complained
+
+`R CMD check` reported:
+
+```
+Found no calls to: ‘R_registerRoutines’, ‘R_useDynamicSymbols’
+```
+
+This happens when the shared object does not expose the symbols R uses to find your registration function (for example because the binary was aggressively stripped or because you never created the registration code). CRAN expects packages to register native routines and disable dynamic symbol searching (so R won’t randomly resolve symbols at runtime). If you strip *all* symbols or otherwise hide the registration entry point, `R CMD check` cannot detect proper registration.
+
+**Fix**: Add explicit registration (see section below) *and* avoid shipping an .so where the registration symbols are missing.
+
+---
+
+## 2) CRAN-compliant linker / compile flag advice
+
+**What to avoid in the package `src/Makevars` shipped to CRAN**
+
+* `-Wl,--strip-all` (or `--strip-unneeded`) — removes all dynamic symbol info and may hide registration hooks.
+* Complex linker scripts or vendor-specific flags that change symbol lookup semantics.
+* Anything that prevents R from seeing the registration symbols.
+
+**What is safe and recommended for CRAN builds**
+
+* Declare routine registration and use `useDynLib(pkg, .registration = TRUE)` in `NAMESPACE`.
+* Compile with `-fvisibility=hidden` (compiler flag) and *explicitly* export only the symbols you register; this reduces exported symbols while keeping the registration functions visible. This is generally accepted by CRAN.
+* Use `-ffunction-sections -fdata-sections` during compilation. These are simple object-level placements that make it easy (locally) for a linker to discard unused sections — but **do not** pair them in the package `src/Makevars` with `--gc-sections` unless you are certain CRAN accepts it for your toolchain (safer to leave `--gc-sections` to local `~/.R/Makevars`).
+* Keep optimization flags conservative: `-O2` is fine for CRAN; avoid `-march=native` in the package `src/Makevars` (use `~/.R/Makevars` for local). `-O2 -pipe -fvisibility=hidden -ffunction-sections -fdata-sections -g` is a good baseline.
+
+**Example (safe-ish) `src/Makevars` for CRAN**
+
+```makefile
+## src/Makevars  (what you put *in the package*)
+PKG_CXXFLAGS = -O2 -pipe -fvisibility=hidden -ffunction-sections -fdata-sections -g
+PKG_LIBS =
+```
+
+* Keep linker flags empty (or minimal) here. Do *not* add `-Wl,--strip-all` in the package `Makevars`.
+
+**Local overrides in `~/.R/Makevars`**
+Put more aggressive flags for your machine here — CRAN does not see this file:
+
+```makefile
+## ~/.R/Makevars  (developer local only)
+CXX14FLAGS = -O3 -march=native -flto -g -fno-omit-frame-pointer -ffunction-sections -fdata-sections
+LDFLAGS = -Wl,--gc-sections -Wl,--strip-debug
+```
+
+* Note: `-Wl,--strip-debug` preserves dynamic symbol table needed by registration but removes debug info. Be careful with `--strip-all`. Prefer `--strip-debug` locally to remove DWARF while keeping dynamic symbols.
+
+---
+
+## 3) How to register native routines (the exact fix for the `dvesimpler` error)
+
+Add the registration function and set dynamic symbol usage to `FALSE`. Rcpp usually generates `RcppExports.cpp` and a `R_init_pkgname` for you — ensure it is present in the built .so and not stripped. If you need to write it manually, here is the minimal **C++** example (Google C++ style):
+
+```cpp
+// src/init.cpp
+// Google C++ style, minimal R init function showing registration.
+// This example assumes you have a CallEntries array generated by Rcpp.
+#include <R.h>
+#include <Rinternals.h>
+#include <R_ext/Rdynload.h>
+
+// Forward declaration of Rcpp generated array (generated by compileAttributes)
+extern "C" {
+extern R_CallMethodDef CallEntries[];
 }
 
-# Aggregate summaries
-summaries <- do.call(rbind, lapply(all_results, function(x) x$summary))
-# Normalize function label
-summaries$function_label <- as.character(summaries$expr)
+// NOLINTNEXTLINE(readability-identifier-naming)
+extern "C" void R_init_dvesimpler(DllInfo* dll) {
+  // Register native routines (calls from R to C/C++)
+  R_registerRoutines(dll, nullptr, CallEntries, nullptr, nullptr);
 
-# Plotting
-plot_file <- file.path(logs_dir, paste0(prefix, "bench.png"))
-p <- ggplot(summaries, aes(x = input_size, y = median / 1e6, group = function_label, color = function_label)) +
-  geom_line() + geom_point() +
-  labs(x = "Input size (n)", y = "Median time (ms)",
-       title = sprintf("Benchmark: %s (sample=%d)", opts$test, opts$samples),
-       subtitle = paste("Functions:", paste(names(exprs), collapse = ", "))) +
-  theme_minimal()
-ggsave(plot_file, p, width = 10, height = 6)
-flog.info("Saved benchmark plot: %s", plot_file)
+  // Disable dynamic symbol lookup: safer and recommended on CRAN
+  R_useDynamicSymbols(dll, FALSE);
+}
+```
 
-# Save aggregated CSV
-agg_csv <- file.path(logs_dir, paste0(prefix, "aggregated-summary.csv"))
-write.csv(summaries, agg_csv, row.names = FALSE)
-flog.info("Saved aggregated summary CSV: %s", agg_csv)
+* Make sure `useDynLib(dvesimpler, .registration = TRUE)` is in your `NAMESPACE`.
+* If you rely on `Rcpp::compileAttributes()` it will generate `RcppExports.cpp` with `R_CallMethodDef` and usually the `R_init_pkg` stub — ensure it is compiled and present.
 
-# Save raw microbenchmark data if --save
-if (opts$save) {
-  # Export all microbenchmark raw data into tsv
-  library(dplyr)
-  raw_rows <- do.call(rbind, lapply(names(all_results), function(nm) {
-    mb <- all_results[[nm]]$micro
-    df <- as.data.frame(mb)
-    df$input_size <- as.integer(nm)
-    df$function_label <- as.character(df$expr)
-    df$test_type <- opts$test
-    df
-  }))
-  tsv_file <- file.path(logs_dir, paste0(prefix, "data.tsv"))
-  write.table(raw_rows, file = tsv_file, sep = "\t", row.names = FALSE)
-  flog.debug("Saved raw microbenchmark data: %s", tsv_file)
+---
 
-  # System information save
-  info_file <- file.path(logs_dir, paste0(prefix, "info.log"))
-  cat("date:\n"); system("date", intern = FALSE)
-  sink(info_file)
-  cat("date:\n"); system("date")
-  cat("\nwhoami:\n"); system("whoami")
-  cat("\nCPU summary (inxi -CfGMS):\n"); system("inxi -CfGMS")
-  cat("\nlsCPU:\n"); system("lscpu")
-  cat("\ncpupower:\n"); system("cpupower frequency-info", ignore.stderr = TRUE)
-  cat("\nNVIDIA status:\n"); system("nvidia-smi || echo '#NOGPU'")
-  sink()
-  flog.debug("Saved extended system info to %s", info_file)
+## 4) Development pragmatics — how to get both fast local builds and good debug info
+
+**Local development goals**
+
+* Fast, optimized code (e.g. `-march=native`) and possibly smaller final binaries.
+* Useful debugging: backtraces, sanitizers when needed.
+
+**Recommended local flags**
+
+* For performance + stack traces: `-O2 -g -fno-omit-frame-pointer -march=native`.
+
+  * `-g` keeps debug symbols (you can still use addr2line/backtrace).
+  * `-fno-omit-frame-pointer` makes backtraces more reliable with optimizations.
+* For deeper debugging: build with `-O0 -g` or `-Og` for clearer source-level stepping.
+* For memory / UB bugs: locally enable sanitizers:
+
+  * `-fsanitize=address,undefined -fno-omit-frame-pointer` (only in local builds; sanitizers are not appropriate for CRAN),
+  * Add `-fsanitize-blacklist` if needed.
+
+**Example local `~/.R/Makevars` snippet**
+
+```makefile
+CXX14FLAGS = -O2 -g -fno-omit-frame-pointer -march=native -ffunction-sections -fdata-sections
+LDFLAGS = -Wl,--gc-sections
+```
+
+* Keep `-g` so you can `gdb`/`addr2line` from crash logs.
+* If you want smaller local `.so` for e.g. packaging a private binary, you can after build run `strip --strip-unneeded` — never in package `src/Makevars`.
+
+**How to get good error reports from users (or CRAN) even with optimized builds**
+
+* Keep symbol table for dynamic linking (i.e. avoid `--strip-all` in release package).
+* Register routines (so stack traces map properly).
+* Ship source packages to CRAN (they prefer source packages) — maintainers can reproduce builds.
+* Use `backtrace` packages in R (e.g., `withr::with_options(list(error = quote(traceback())))`) to capture R-level traces.
+
+---
+
+## 5) Size impact for template-heavy libraries (RcppArmadillo, RcppEigen)
+
+**Why templates bloat**
+
+* Templates instantiate code for every type / instantiation used; that can duplicate functions across translation units.
+* In heavy uses (matrix operations, inlined numerics) the generated object code increases significantly.
+
+**Practical ways to reduce size**
+
+1. **Visibility control**
+
+   * Use `-fvisibility=hidden` to avoid exporting many template instantiations as dynamic symbols. Then export only the registration symbols and any explicitly required API. This avoids exposing many internal symbols to the dynamic symbol table and reduces binary size.
+2. **Sectioning + linker GC** (local only)
+
+   * Compile with `-ffunction-sections -fdata-sections` and link with `--gc-sections`. This removes unused functions/data. Works great to cut template bloat if many instantiations are not actually referenced at link time.
+3. **LTO** (local only)
+
+   * `-flto` can significantly reduce size and improve inlining decisions — but it changes build behavior and may not be portable across toolchains used by CRAN checkers.
+4. **Explicit instantiation**
+
+   * Move heavy templated code into a single translation unit and explicitly instantiate only the types you need. This prevents multiple TU duplicates.
+5. **Avoid header-only where possible**
+
+   * For user code, prefer putting algorithmic code in `.cpp` and exposing a thin header — reduces code duplication across TUs.
+
+**Tradeoffs**
+
+* Using `-fvisibility=hidden` + registration is CRAN friendly when done correctly.
+* `--gc-sections`, `--strip-all`, `-flto` are powerful but can cause portability problems; keep them local and test on multiple toolchains.
+
+---
+
+## 6) RStudio: workflows to obtain different build modalities
+
+You want two modes:
+
+* **Internal development** (fast, optimized, debug symbols)
+* **Release for CRAN** (compliant, conservative flags)
+
+**Mechanisms to switch modes**
+
+1. **`~/.R/Makevars` for local overrides (recommended)**
+
+   * Put your aggressive flags (e.g. `-march=native`, `-flto`, `-Wl,--gc-sections`) in `~/.R/Makevars`.
+   * Keep `src/Makevars` in the package CRAN-clean (no `-march=native`, no `--strip-all`).
+   * RStudio will pick up `~/.R/Makevars` automatically for local builds. Packagers and CRAN will not see it.
+
+2. **Environment variables for a single session**
+
+   * In RStudio, you can set environment variables in **Build pane → More → Configure Build Tools → "Additional Build Tools"** or set `R_MAKEVARS_USER` during the session to a specific file (pointing to a development Makevars).
+   * Alternatively in RStudio's terminal:
+
+     ```bash
+     R CMD INSTALL --preclean --configure-args='...' .
+     ```
+
+     or set `PKG_CXXFLAGS` in the shell for a one-off.
+
+3. **Use devtools / remotes / pkgbuild for local builds**
+
+   * `devtools::load_all()` for development (no install, fast iter).
+   * `devtools::document()` + `devtools::build()` + `devtools::check()` for a near-release test.
+   * To simulate CRAN checks: `devtools::check(cran = TRUE)` or `rcmdcheck::rcmdcheck(args = c("--as-cran"))`.
+
+4. **Two Makevars files approach**
+
+   * Keep `src/Makevars` minimal (what CRAN sees).
+   * Maintain `src/Makevars.dev` (or `Makevars.local`) in your repository, and have a small top-level script that copies `Makevars.dev` → `src/Makevars` for local builds, and restores the CRAN one for release. (Be careful to not ship `Makevars.dev` as the package `src/Makevars` on CRAN; use `.Rbuildignore` to avoid packaging it.)
+
+5. **RStudio Build configurations**
+
+   * In RStudio, set different **Build → Configure Build Tools** options per project if you want persistent different flags for that project only.
+   * Or use project-local `R_PROFILE` or `.Rprofile` to set `Sys.setenv(R_MAKEVARS_USER="path/to/local/Makevars")` for development sessions only.
+
+**Suggested practical flow**
+
+* Keep `src/Makevars` CRAN-clean.
+* Put your aggressive flags in `~/.R/Makevars`.
+* For CI (e.g., GitHub Actions) set compiler flags to conservative settings that mirror CRAN, so CI demonstrates compliance.
+* Before submitting to CRAN, run: `R CMD build .` then `R CMD check --as-cran pkg_x.y.z.tar.gz` locally or via `rhub::check_for_cran()`.
+
+---
+
+## 7) Concrete example: minimal safe package `src/Makevars` + local overrides
+
+`src/Makevars` (shipped in package — CRAN safe):
+
+```makefile
+PKG_CXXFLAGS = -O2 -pipe -fvisibility=hidden -ffunction-sections -fdata-sections -g
+PKG_LIBS =
+```
+
+`~/.R/Makevars` (developer local only):
+
+```makefile
+CXX14FLAGS = -O3 -march=native -flto -g -fno-omit-frame-pointer -ffunction-sections -fdata-sections
+LDFLAGS = -Wl,--gc-sections -Wl,--strip-debug
+```
+
+* Leave `LDFLAGS` in `src/Makevars` blank. If you test `--gc-sections` locally, add it to `~/.R/Makevars` only.
+
+---
+
+## 8) Checklist before CRAN submission
+
+1. `NAMESPACE`: include `useDynLib(dvesimpler, .registration = TRUE)`.
+2. Confirm `R_init_<pkgname>` registration function exists and is compiled.
+3. Do **not** include `-march=native`, `--strip-all`, or `--gc-sections` in the package `src/Makevars`.
+4. Ensure your package builds and `R CMD check --as-cran` passes on a clean environment (or use `rhub`).
+5. If you used `-fvisibility=hidden`, test that all intended .Call/.External functions are discoverable by R (they will be if registered).
+
+---
+
+## 9) Extra tips & debugging utilities
+
+* Use `nm -D path/to/libs/pkg.so` to inspect dynamic symbols exported. Ensure `R_init_pkgname` or the symbols referenced by registration are present.
+* Use `readelf -Ws` to inspect symbol visibility and presence.
+* For crashes, keep `-g` and use `gdb` on the child process or obtain core dumps; `addr2line -e pkg.so <hexaddress>` maps addresses to lines (requires debug symbols).
+* To reduce bloat while remaining portable, prefer **visibility control** and **single TU explicit instantiation** over linker stripping.
+
+---
+
+## 10) Final concrete C++ example (Google C++ Style) — registration + exported function
+
+```cpp
+// src/foo.cpp
+#include <Rcpp.h>
+
+// Example exported function called from R
+// [[Rcpp::export]]
+Rcpp::NumericVector ComputeSomething(const Rcpp::NumericVector& x) {
+  Rcpp::NumericVector out = x;
+  for (int i = 0; i < static_cast<int>(x.size()); ++i) {
+    out[i] = x[i] * 2.0;
+  }
+  return out;
+}
+```
+
+```cpp
+// src/init.cpp
+#include <R.h>
+#include <Rinternals.h>
+#include <R_ext/Rdynload.h>
+
+// Forward declarations that Rcpp::compileAttributes() generates.
+// If you use Rcpp, compileAttributes() will create RcppExports.cpp with these.
+extern "C" {
+  extern R_CallMethodDef CallEntries[];
 }
 
-flog.info("Benchmark finished. Results in %s", logs_dir)
-invisible(list(summaries = summaries, raw = all_results))
+// NOLINTNEXTLINE(readability-identifier-naming)
+extern "C" void R_init_dvesimpler(DllInfo* dll) {
+  R_registerRoutines(dll, nullptr, CallEntries, nullptr, nullptr);
+  R_useDynamicSymbols(dll, FALSE);
+}
 ```
 
-**Script notes:**
-
-* The script builds expressions for namespace-qualified function calls
-  (`pkg::fn(vec)`) so it can be run while the package is installed.
-* When running from package source, use `devtools::load_all('.')` by
-  passing `--pkg` appropriately or ensure the package is installed
-  first.
-* The plotting uses median microbenchmark times and plots across input
-  sizes; adjust to plot mean/other quantiles if needed.
+* After `Rcpp::compileAttributes()` you typically get `RcppExports.cpp` that contains `CallEntries`. Do not remove or strip these symbols.
 
 ---
 
-## Quick Start — package configuration (OpenMP / BLAS / LAPACK)
+## Bottom line
 
-### Minimal `DESCRIPTION` entries
-
-Add the following fields to `DESCRIPTION` (replace `yourpkgname` and maintain proper formatting):
-
-```yaml
-Package: yourpkgname
-Title: Example Rcpp Iterator Benchmarks
-Version: 0.1.0
-Authors@R: person("Given", "Family", email = "you@example.com", role = c("aut", "cre"))
-Description: Examples comparing iteration strategies using Rcpp and RcppArmadillo.
-License: GPL-3
-Encoding: UTF-8
-LazyData: true
-LinkingTo: Rcpp, RcppArmadillo
-Imports: methods
-SystemRequirements: BLAS, LAPACK
-```
-
-If your package relies on OpenMP, add it to `SystemRequirements` and
-document optional compilation flags. CRAN expects portability; don't
-assume `-march=native` for CRAN builds.
-
-### `src/Makevars` (package local) — an example for GNU toolchain with OpenMP
-
-```make
-# src/Makevars
-# Replace -fopenmp with appropriate flags for non-GNU toolchains if necessary.
-## Detect OpenMP; allow empty default for platforms without it.
-ifeq ($(SHLIB_OPENMP_CXXFLAGS),)
-SHLIB_OPENMP_CXXFLAGS = -fopenmp
-endif
-
-PKG_CXXFLAGS += $(SHLIB_OPENMP_CXXFLAGS)
-PKG_LIBS += $(SHLIB_OPENMP_CXXFLAGS)
-```
-
-For linking to BLAS/LAPACK nothing special is needed typically because
-R provides `$(BLAS_LIBS)` etc. If you want to use a specific BLAS
-during development, configure your R installation accordingly.
-
-### `~/.R/Makevars` (developer/local tuning — **not** CRAN)
-
-> **Important:** Do **not** place `-march=native` in package-local
-> `Makevars` for code destined for CRAN. `~/.R/Makevars` is intended
-> for your *local* machine and is an appropriate place for
-> `-march=native` or other architecture-specific tuning.
-
-Example `~/.R/Makevars` snippet for a developer machine (optional):
-
-```make
-CXX11 = g++ -std=gnu++11
-CXX11FLAGS = -O3 -march=native -mtune=native -fopenmp
-CXX11STD = -std=gnu++11
-```
-
-This speeds up local builds but remember that binaries produced with these flags may not run on other machines.
-
----
-
-## Performance considerations & recommendations
-
-* For **sum**: For very large vectors, OpenMP reduction commonly gives
-  good speedups up to the number of physical cores, limited by memory
-  bandwidth. SIMD helps if the CPU has vector registers and memory
-  alignment is good. For small vectors, single-threaded and
-  low-overhead loops often win.
-* For **outer**: The outer product is `O(n^2)` memory and compute. For
-  large `n`, memory capacity and cache behaviour dominate. If `n`
-  grows beyond L2/L3 cache sizes, performance will be
-  memory-bound. Use BLAS/GPU alternatives when outer product is a part
-  of larger linear algebra workflow (matrix-matrix ops).
-* **Armadillo**: Use for dense linear algebra. For `outer`,
-  `arma::vec * vec.t()` is a concise, BLAS-friendly operation. When
-  linked to a tuned BLAS, it may be significantly faster than naïve
-  loops for large `n`.
-* **Threading + Vectorization**: Combining `parallel for` with `simd`
-  is often best for nested loops if the inner loop is heavy enough and
-  independent. Use `collapse(2)` when nested iteration has imbalanced
-  workload distribution.
-* **CRAN compliance**: Avoid hard-coded architecture-specific flags in
-  package sources; provide documentation for optional local tuning and
-  ensure safe fallbacks whenever OpenMP is not available.
-
----
-
-## GPU note (short)
-
-* GPU acceleration can be huge for very large linear algebra
-  kernels. But packaging GPU code for CRAN is practically infeasible
-  due to hardware/driver dependencies. Use GPU in local workflows or
-  in containers for heavy workloads; for packages, provide CPU
-  fallbacks and document GPU experiments separately.
-
----
-
-## References
-
-[^1]: Hadley Wickham. *Advanced R — Rcpp chapter*.
-
-[^2]: CRAN packages and task views: *High-Performance and Parallel Computing with R*.
-
-[^3]: RcppArmadillo CRAN page.
-
-[^4]: OpenMP official resources.
-
-[^5]: Google C++ Style Guide.
-
-(Links referencing the above are intentionally in-footnote form — include live links in your package notes or README as needed.)
+* **Don’t** ship `--strip-all` or `--gc-sections` in package `src/Makevars` — they can hide registration symbols and cause `R CMD check` failures.
+* **Do** register native routines and use `useDynLib(..., .registration = TRUE)`.
+* **Do** reduce exported symbols via `-fvisibility=hidden` and explicit registration — this gives most of the size benefit while staying CRAN-friendly.
+* **Do** keep aggressive architecture-specific and linker stripping flags in `~/.R/Makevars` (local only) or in special developer build steps, and always run `R CMD check --as-cran` before submission.
 
 ---
 
 If you want, I can:
 
-* adapt the code for a specific package name and prepare `src/Makevars` tuned for your build environment (Intel/AMD/MKL/OpenBLAS), or
-* produce a small automated `renv` snippet and an example `DESCRIPTION` and `NAMESPACE` ready to paste into your package.
-
-Which would you prefer next?
-
+* produce a **small script** that verifies the presence of registration symbols with `nm`/`readelf` after a build, or
+* generate a ready-to-drop `src/Makevars` + `~/.R/Makevars` template tuned to your toolchain (gcc/clang; Linux/macOS) — tell me which toolchain and I’ll emit the exact files.
 
 
 
 -------------------------------------------------------------------------------------------
 -------------------------------------------------------------------------------------------
 -------------------------------------------------------------------------------------------
-# A:3 (DeepSeek)
-> * [Rcpp Iterators Performance Optimization](https://chat.deepseek.com/a/chat/s/597e4d30-da32-4796-877f-d4e708524a0d)
+# A:3 (DeepSeek) {#A3-deepseek}
+> Optimizing Rcpp Package Development: CRAN Compliance and Debugging
 
-## Introduction
+## CRAN Compliant Linker Options
 
-This document provides example implementations of vector operations
-using different iteration strategies in C++ via Rcpp, with performance
-comparisons. We focus on `sum` and `outer` product operations,
-comparing:
+CRAN has strict requirements for portable packages. The error you encountered indicates missing routine registration, not directly caused by your linker flags but rather by how symbols are handled.
 
-1. **C-style loops**: Manual index management
-2. **STL iterators**: Modern C++ approach
-3. **OpenMP parallelization**: Multi-core execution
-4. **OpenMP with SIMD**: Vectorization support
-5. **RcppArmadillo**: High-level linear algebra
-6. **Base R functions**: Called from C++ for reference
+### Recommended CRAN-compliant options for `src/Makevars`:
 
-### C/C++ Iteration Strategies
+```makefile
+# ~/src/Makevars (package-specific)
+PKG_CPPFLAGS = -I../inst/include
+PKG_CXXFLAGS = -Wall -pedantic -O2
+PKG_LIBS = $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)
 
-C-style loops offer explicit control but are prone to off-by-one
-errors. STL iterators provide safer, more expressive syntax but may
-incur slight overhead. OpenMP enables parallel execution with minimal
-code changes, while SIMD directives exploit CPU vector
-units. RcppArmadillo offers concise mathematical expressions but may
-introduce temporary objects.
+# For symbol registration (CRAN requirement)
+PKG_CFLAGS = -Wall -pedantic
+PKG_FFLAGS = -Wall -pedantic
+```
 
-### OpenMP/SIMD Primer
+### Essential CRAN requirements:
 
-OpenMP provides pragma-based directives for parallel programming[^4]:
-- `parallel`: Creates thread team
-- `for`: Distributes loop iterations
-- `collapse`: Combines nested loops
-- `simd`: Enables vectorization
-- `private`, `shared`, `reduction`: Control variable sharing
-
-### GPU Notes
-
-GPUs can accelerate linear algebra operations by 10-100x for large
-datasets[^5]. cuBLAS typically outperforms OpenBLAS by 5-15x for
-matrix operations. However, CUDA support requires careful dependency
-management and isn't CRAN-compliant without conditional compilation.
-
-## C++ Implementation
-
-### `src/dummy_iter.cpp`
+1. **Symbol Registration**: Must include in your package:
 
 ```cpp
-// Copyright 2023 Rcpp HPC Team
-// Licensed under GPL-3
+#include <R_ext/Rdynload.h>
 
-#include <Rcpp.h>
-#include <set>
-#include <string>
-#ifdef _OPENMP
-#include <omp.h>
+// Register native routines
+void R_init_dvesimpler(DllInfo* dll) {
+  R_registerRoutines(dll, NULL, NULL, NULL, NULL);
+  R_useDynamicSymbols(dll, FALSE);
+  R_forceSymbols(dll, TRUE);
+}
+```
+
+2. **Avoid aggressive stripping**: Use `--strip-debug` instead of `--strip-all`
+3. **Portable optimization flags**: Avoid `-march=native` in CRAN builds
+
+## Development Pragmatics for Debugging
+
+### Internal development configuration (`~/.R/Makevars`):
+
+```makefile
+# Development build with debugging support
+CXX14 = g++ -std=c++14
+CXX14FLAGS = -O3 -march=native -g -Wall -pedantic
+CXX14PICFLAGS = -fPIC
+
+# Keep debugging symbols but remove unnecessary sections
+CXX14LINKFLAGS = -Wl,--gc-sections,--strip-debug
+```
+
+### Enhanced debugging techniques:
+
+```cpp
+// Use Rcpp exception handling for better error reporting
+// [[Rcpp::export]]
+Rcpp::NumericVector compute_values(Rcpp::NumericVector x) {
+  try {
+    // Your computation here
+    if (x.size() == 0) {
+      Rcpp::stop("Input vector cannot be empty");
+    }
+    return x * 2.0;
+  } catch(const std::exception& e) {
+    Rcpp::stop("Error in compute_values: %s", e.what());
+  }
+}
+
+// Use Rcpp::checkUserInterrupt() in long-running functions
+// [[Rcpp::export]]
+void long_computation() {
+  for (int i = 0; i < 1000000; ++i) {
+    if (i % 1000 == 0) {
+      Rcpp::checkUserInterrupt();
+    }
+    // Computation
+  }
+}
+```
+
+### Debug macro for development:
+
+```cpp
+#ifdef DEBUG
+#define RCPP_DEBUG(msg) Rcpp::Rcout << "DEBUG: " << msg << std::endl
+#else
+#define RCPP_DEBUG(msg)
 #endif
-// [[Rcpp::depends(RcppArmadillo)]]
-#include <RcppArmadillo.h>
 
-using namespace Rcpp;
-
-static int log_level = 0;
-static std::set<std::string> traced_locations;
-
+// Usage
 // [[Rcpp::export]]
-void dmy_pf_log_set_level(int level) {
-  log_level = level;
-}
-
-// [[Rcpp::export]]
-int dmy_pf_log_get_level() {
-  return log_level;
-}
-
-// [[Rcpp::export]]
-void dmy_pf_log_out(const char* file, int line, const std::string& msg) {
-  if (log_level >= 0) {
-    Rcpp::Rcout << "[" << file << ":" << line << "] " << msg << std::endl;
-  }
-}
-
-// [[Rcpp::export]]
-void dmy_pf_log_trace(const char* file, int line, const std::string& msg) {
-  if (log_level >= 3) {
-    std::string location = std::string(file) + ":" + std::to_string(line);
-    if (traced_locations.find(location) == traced_locations.end()) {
-      traced_locations.insert(location);
-      Rcpp::Rcerr << "TRACE [" << location << "] " << msg << std::endl;
-    }
-  }
-}
-
-// [[Rcpp::export]]
-void dmy_pf_log_reset() {
-  traced_locations.clear();
-}
-
-#define V_LOG(msg) dmy_pf_log_out(__FILE__, __LINE__, msg)
-#define V_TRACE(msg) dmy_pf_log_trace(__FILE__, __LINE__, msg)
-
-// Sum functions
-// [[Rcpp::export]]
-double dmy_pf_sum_cstyle(NumericVector v) {
-  double sum = 0.0;
-  for (int i = 0; i < v.size(); ++i) {
-    sum += v[i];
-  }
-  return sum;
-}
-
-// [[Rcpp::export]]
-double dmy_pf_sum_stl(NumericVector v) {
-  double sum = 0.0;
-  for (auto it = v.begin(); it != v.end(); ++it) {
-    sum += *it;
-  }
-  return sum;
-}
-
-// [[Rcpp::export]]
-double dmy_pf_sum_omp(NumericVector v) {
-  double sum = 0.0;
-  #pragma omp parallel for reduction(+:sum)
-  for (int i = 0; i < v.size(); ++i) {
-    sum += v[i];
-  }
-  return sum;
-}
-
-// [[Rcpp::export]]
-double dmy_pf_sum_omp_simd(NumericVector v) {
-  double sum = 0.0;
-  #pragma omp parallel for simd reduction(+:sum)
-  for (int i = 0; i < v.size(); ++i) {
-    sum += v[i];
-  }
-  return sum;
-}
-
-// [[Rcpp::export]]
-double dmy_pf_sum_arma(arma::vec v) {
-  return arma::sum(v);
-}
-
-// [[Rcpp::export]]
-double dmy_pf_sum_r(NumericVector v) {
-  V_TRACE("Calling base::sum");
-  Function r_sum("sum");
-  return as<double>(r_sum(v));
-}
-
-// Outer product functions
-// [[Rcpp::export]]
-NumericMatrix dmy_pf_outer_cstyle(NumericVector x, NumericVector y) {
-  int n = x.size(), m = y.size();
-  NumericMatrix res(n, m);
-  for (int i = 0; i < n; ++i) {
-    for (int j = 0; j < m; ++j) {
-      res(i, j) = x[i] * y[j];
-    }
-  }
-  return res;
-}
-
-// [[Rcpp::export]]
-NumericMatrix dmy_pf_outer_stl(NumericVector x, NumericVector y) {
-  int n = x.size(), m = y.size();
-  NumericMatrix res(n, m);
-  auto xit = x.begin();
-  for (int i = 0; i < n; ++i, ++xit) {
-    auto yit = y.begin();
-    for (int j = 0; j < m; ++j, ++yit) {
-      res(i, j) = *xit * *yit;
-    }
-  }
-  return res;
-}
-
-// [[Rcpp::export]]
-NumericMatrix dmy_pf_outer_omp(NumericVector x, NumericVector y) {
-  int n = x.size(), m = y.size();
-  NumericMatrix res(n, m);
-  #pragma omp parallel for collapse(2)
-  for (int i = 0; i < n; ++i) {
-    for (int j = 0; j < m; ++j) {
-      res(i, j) = x[i] * y[j];
-    }
-  }
-  return res;
-}
-
-// [[Rcpp::export]]
-NumericMatrix dmy_pf_outer_omp_simd(NumericVector x, NumericVector y) {
-  int n = x.size(), m = y.size();
-  NumericMatrix res(n, m);
-  #pragma omp parallel for
-  for (int i = 0; i < n; ++i) {
-    #pragma omp simd
-    for (int j = 0; j < m; ++j) {
-      res(i, j) = x[i] * y[j];
-    }
-  }
-  return res;
-}
-
-// [[Rcpp::export]]
-arma::mat dmy_pf_outer_arma(arma::vec x, arma::vec y) {
-  return x * y.t();
-}
-
-// [[Rcpp::export]]
-NumericMatrix dmy_pf_outer_r(NumericVector x, NumericVector y) {
-  V_TRACE("Calling base::outer");
-  Function r_outer("outer");
-  return as<NumericMatrix>(r_outer(x, y, "*"));
+void debug_function() {
+  RCPP_DEBUG("Entering function");
+  // ... code ...
+  RCPP_DEBUG("Exiting function");
 }
 ```
 
-## Microbenchmark Test
+## Size Impact with Template Libraries
 
-### `exec/dummy-rcpp-bench.r`
+RcppArmadillo and RcppEigen can significantly increase binary size due to template instantiation. Strategies to mitigate:
 
-```r
-#!/usr/bin/env Rscript
-#'
-#' @title Rcpp Iteration Strategies Microbenchmark
-#' @seealso \code{./src/dummy_iter.cpp}, \code{./src/Makevars}, \code{~/.R/Makevars}
-#' @seealso \code{./notes/howtos/Rcpp-HOWTO-Q3-all.md}
-
-suppressPackageStartupMessages({
-  library(microbenchmark)
-  library(ggplot2)
-  library(Rcpp)
-  library(argparse)
-})
-
-sourceCpp("src/dummy_iter.cpp")
-
-create_log_dir <- function() {
-  log_dir <- Sys.getenv("P_LOGS_DIR", "logs")
-  if (!dir.exists(log_dir)) dir.create(log_dir, recursive = TRUE)
-  return(log_dir)
-}
-
-parse_args <- function() {
-  parser <- ArgumentParser()
-  parser$add_argument("-v", "--verbose", action="count", default=0)
-  parser$add_argument("-p", "--profile", action="store_true")
-  parser$add_argument("-t", "--test", default="sum")
-  parser$add_argument("-m", "--samples", type="integer", default=100)
-  parser$add_argument("-s", "--save", action="store_true")
-  parser$add_argument("input_size", nargs="*", type="integer",
-                     default=c(10, 100, 1000))
-  args <- parser$parse_args()
-  return(args)
-}
-
-run_benchmark <- function(test_type, size, samples) {
-  x <- rnorm(size, sd = 100)
-  
-  if (test_type == "sum") {
-    bench <- microbenchmark(
-      cstyle = dmy_pf_sum_cstyle(x),
-      stl = dmy_pf_sum_stl(x),
-      omp = dmy_pf_sum_omp(x),
-      omp_simd = dmy_pf_sum_omp_simd(x),
-      arma = dmy_pf_sum_arma(x),
-      r = dmy_pf_sum_r(x),
-      times = samples
-    )
-  } else {
-    bench <- microbenchmark(
-      cstyle = dmy_pf_outer_cstyle(x, x),
-      stl = dmy_pf_outer_stl(x, x),
-      omp = dmy_pf_outer_omp(x, x),
-      omp_simd = dmy_pf_outer_omp_simd(x, x),
-      arma = dmy_pf_outer_arma(x, x),
-      r = dmy_pf_outer_r(x, x),
-      times = samples
-    )
-  }
-  return(bench)
-}
-
-main <- function() {
-  args <- parse_args()
-  log_dir <- create_log_dir()
-  timestamp <- format(Sys.time(), "%Y%m%d_%H%M%S")
-  
-  dmy_pf_log_set_level(args$verbose)
-  
-  results <- list()
-  for (size in args$input_size) {
-    dmy_pf_log_reset()
-    results[[as.character(size)]] <- run_benchmark(
-      args$test, size, args$samples
-    )
-  }
-  
-  # Plot and save results
-  # ... plotting code would go here ...
-}
-
-if (!interactive()) main()
-```
-
-## Quick Start Guide
-
-### Project Configuration
-
-#### `DESCRIPTION`
-
-```yaml
-Depends: R (>= 3.5.0)
-Imports: Rcpp (>= 1.0.7), RcppArmadillo (>= 0.10.0)
-LinkingTo: Rcpp, RcppArmadillo
-SystemRequirements: GNU make, OpenMP
-```
-
-#### `src/Makevars`
-
-```make
-PKG_CXXFLAGS = $(SHLIB_OPENMP_CXXFLAGS)
-PKG_LIBS = $(SHLIB_OPENMP_CXXFLAGS) $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)
-```
-
-#### `~/.R/Makevars`
-
-```make
-CXXFLAGS = -O3 -march=native
-CXX11FLAGS = -O3 -march=native
-```
-
-## Performance Notes
-
-On a 32-core HyperThreaded system:
-- OpenMP parallelization shows near-linear scaling for large vectors (>10k elements)
-- SIMD provides 2-4x improvement for arithmetic-intensive operations
-- Armadillo operations outperform base R but may be slower than optimized OpenMP
-- Base R calls from C++ incur significant overhead
-
-## References
-
-[^1]: [Rcpp for High Performance Functions](https://adv-r.had.co.nz/Rcpp.html)
-[^2]: [R Packages Book](https://r-pkgs.org/)
-[^3]: [RcppArmadillo CRAN Page](https://cran.r-project.org/web/packages/RcppArmadillo)
-[^4]: [OpenMP Specification](https://www.openmp.org/specifications/)
-[^5]: [CRAN HPC Task View](https://cran.r-project.org/web/views/HighPerformanceComputing.html)
-[^6]: [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html)
-
-
-
--------------------------------------------------------------------------------------------
--------------------------------------------------------------------------------------------
--------------------------------------------------------------------------------------------
-# A:3 (Kimi)
-> * [Rcpp iterators performance optimization](https://www.kimi.com/chat/d2qrugsqdqet5adm8nu0)
-
-This document provides a comprehensive guide to implementing and
-benchmarking high-performance C++ functions using Rcpp and
-RcppArmadillo, focusing on vector iteration patterns and their
-performance characteristics on modern multicore systems.
-
-## Introduction
-
-### C/C++ Iteration strategies and HPC Libraries Alternatives
-
-When transitioning from R to C++, developers face fundamental choices
-in iteration patterns. C-style `for` loops offer direct control over
-memory access patterns and minimal overhead, but lack safety
-guarantees. C++ STL iterators provide type safety and abstraction at
-the cost of potential performance overhead from bounds checking and
-iterator invalidation.
-
-The performance trade-offs become critical in HPC contexts. C-style
-loops allow manual optimization of memory access patterns and explicit
-vectorization hints, while STL algorithms provide opportunities for
-compiler optimization through higher-level abstractions. Modern
-compilers often generate equivalent assembly for both patterns when
-optimization flags are properly configured.
-
-### OpenMP/SIMD primer
-
-OpenMP serves as the de-facto standard for shared-memory parallel
-programming in C/C++. The `#pragma omp` directive family enables
-incremental parallelization with minimal code changes:
-
-- **parallel**: Creates a team of threads
-- **for**: Distributes loop iterations across threads
-- **collapse**: Flattens nested loops for better load balancing
-- **simd**: Enables Single Instruction Multiple Data vectorization
-- **private**: Specifies thread-local variables
-- **shared**: Specifies variables shared across threads
-- **reduction**: Performs thread-safe reductions
-
-The critical insight for HPC applications lies in understanding the
-parallelism vs vectorization trade-off. While parallelization exploits
-multiple cores, vectorization utilizes SIMD units within each
-core. The optimal approach often involves OpenMP's `parallel for simd`
-construct, which enables both simultaneously.
-
-### GPU Notes
-
-GPUs excel at data-parallel operations with high arithmetic
-intensity. For vector operations like sum and outer product, GPUs can
-achieve 10-100x speedups over CPU implementations when:
-- Problem size exceeds ~10^5 elements
-- Arithmetic intensity > 1 FLOP/byte
-- Memory access patterns are coalesced
-
-cuBLAS provides optimized BLAS operations on NVIDIA GPUs. Benchmarks
-show cuBLAS outperforming OpenBLAS by 5-20x for large matrix
-operations[^7]. However, GPU acceleration requires careful
-consideration of:
-- PCIe transfer overhead (5-10 GB/s)
-- Kernel launch latency (~10 μs)
-- Memory capacity limitations (typically 8-48 GB)
-
-In rootless Podman environments, CUDA-enabled Python distributions
-(like those from NVIDIA NGC) provide a viable path for GPU-accelerated
-R packages through reticulate bridges, though this introduces
-additional complexity in dependency management.
-
-## C++ Implementation
-
-### Sequential Version
+### 1. Explicit instantiation reduction:
 
 ```cpp
-// Copyright (C) 2024 Rcpp Performance Examples
-// Distributed under GPL-3.0 license
-
-#include <RcppArmadillo.h>
-#include <omp.h>
-#include <set>
-#include <string>
-#include <mutex>
-
-// [[Rcpp::depends(RcppArmadillo)]]
-// [[Rcpp::plugins(openmp)]]
-
-// Logging support implementation
-namespace {
-
-static int g_verbose_level = 0;
-static std::set<std::string> g_traced_locations;
-static std::mutex g_trace_mutex;
-
-}  // namespace
-
-//' Set logging verbosity level
-//'
-//' @param level Integer verbosity level (0=off, >=3=trace)
-//' @export
+// Instead of templated functions throughout, use explicit interfaces
 // [[Rcpp::export]]
-void dmy_pf_log_set_level(int level) {
-  g_verbose_level = level;
-}
-
-//' Get current logging verbosity level
-//'
-//' @return Integer verbosity level
-//' @export
-// [[Rcpp::export]]
-int dmy_pf_log_get_level() {
-  return g_verbose_level;
-}
-
-//' Reset trace logging state
-//'
-//' @export
-// [[Rcpp::export]]
-void dmy_pf_log_reset() {
-  std::lock_guard<std::mutex> lock(g_trace_mutex);
-  g_traced_locations.clear();
-}
-
-// Internal logging functions
-void dmy_pf_log_out(const char* file, int line, const std::string& msg) {
-  if (g_verbose_level >= 0) {
-    Rcpp::Rcout << "[INFO] " << file << ":" << line << " - " << msg << "\n";
-  }
-}
-
-void dmy_pf_log_trace(const char* file, int line, const std::string& msg) {
-  if (g_verbose_level >= 3) {
-    std::string location = std::string(file) + ":" + std::to_string(line);
-    std::lock_guard<std::mutex> lock(g_trace_mutex);
-    if (g_traced_locations.find(location) == g_traced_locations.end()) {
-      g_traced_locations.insert(location);
-      Rcpp::Rcerr << "[TRACE] " << location << " - " << msg << "\n";
-    }
-  }
-}
-
-// Macro definitions
-#define V_LOG(msg) dmy_pf_log_out(__FILE__, __LINE__, msg)
-#define V_TRACE(msg) dmy_pf_log_trace(__FILE__, __LINE__, msg)
-
-// Sum function implementations
-//' Sum a numeric vector using C-style for loop
-//'
-//' @param x Numeric vector
-//' @return Sum of elements
-//' @export
-// [[Rcpp::export]]
-double dmy_pf_sum_cstyle(const Rcpp::NumericVector& x) {
-  V_TRACE("Starting C-style sum");
-  double sum = 0.0;
-  int n = x.size();
-  for (int i = 0; i < n; ++i) {
-    sum += x[i];
-  }
-  V_TRACE("Completed C-style sum");
-  return sum;
-}
-
-//' Sum a numeric vector using STL iterators
-//'
-//' @param x Numeric vector
-//' @return Sum of elements
-//' @export
-// [[Rcpp::export]]
-double dmy_pf_sum_stl(const Rcpp::NumericVector& x) {
-  V_TRACE("Starting STL sum");
-  double sum = std::accumulate(x.begin(), x.end(), 0.0);
-  V_TRACE("Completed STL sum");
-  return sum;
-}
-
-//' Sum a numeric vector using OpenMP parallel for
-//'
-//' @param x Numeric vector
-//' @return Sum of elements
-//' @export
-// [[Rcpp::export]]
-double dmy_pf_sum_omp_parallel(const Rcpp::NumericVector& x) {
-  V_TRACE("Starting OpenMP parallel sum");
-  double sum = 0.0;
-  int n = x.size();
-  
-  #pragma omp parallel for reduction(+:sum) schedule(static)
-  for (int i = 0; i < n; ++i) {
-    sum += x[i];
-  }
-  
-  V_TRACE("Completed OpenMP parallel sum");
-  return sum;
-}
-
-//' Sum a numeric vector using OpenMP parallel for SIMD
-//'
-//' @param x Numeric vector
-//' @return Sum of elements
-//' @export
-// [[Rcpp::export]]
-double dmy_pf_sum_omp_simd(const Rcpp::NumericVector& x) {
-  V_TRACE("Starting OpenMP SIMD sum");
-  double sum = 0.0;
-  int n = x.size();
-  
-  #pragma omp parallel for simd reduction(+:sum) schedule(static)
-  for (int i = 0; i < n; ++i) {
-    sum += x[i];
-  }
-  
-  V_TRACE("Completed OpenMP SIMD sum");
-  return sum;
-}
-
-//' Sum a numeric vector using RcppArmadillo
-//'
-//' @param x Numeric vector
-//' @return Sum of elements
-//' @export
-// [[Rcpp::export]]
-double dmy_pf_sum_arma(const Rcpp::NumericVector& x) {
-  V_TRACE("Starting Armadillo sum");
-  arma::vec v = Rcpp::as<arma::vec>(x);
-  double result = arma::sum(v);
-  V_TRACE("Completed Armadillo sum");
-  return result;
-}
-
-//' Sum a numeric vector using base R sum
-//'
-//' @param x Numeric vector
-//' @return Sum of elements
-//' @export
-// [[Rcpp::export]]
-double dmy_pf_sum_base(const Rcpp::NumericVector& x) {
-  V_TRACE("Starting base::sum");
-  double result = Rcpp::sum(x);
-  V_TRACE("Completed base::sum");
-  return result;
-}
-
-// Outer product implementations
-//' Compute outer product using C-style nested loops
-//'
-//' @param x Numeric vector
-//' @return Outer product matrix
-//' @export
-// [[Rcpp::export]]
-Rcpp::NumericMatrix dmy_pf_outer_cstyle(const Rcpp::NumericVector& x) {
-  V_TRACE("Starting C-style outer product");
-  int n = x.size();
-  Rcpp::NumericMatrix result(n, n);
-  
-  for (int i = 0; i < n; ++i) {
-    for (int j = 0; j < n; ++j) {
-      result(i, j) = x[i] * x[j];
-    }
-  }
-  
-  V_TRACE("Completed C-style outer product");
-  return result;
-}
-
-//' Compute outer product using STL iterators
-//'
-//' @param x Numeric vector
-//' @return Outer product matrix
-//' @export
-// [[Rcpp::export]]
-Rcpp::NumericMatrix dmy_pf_outer_stl(const Rcpp::NumericVector& x) {
-  V_TRACE("Starting STL outer product");
-  int n = x.size();
-  Rcpp::NumericMatrix result(n, n);
-  
-  auto it_i = x.begin();
-  for (int i = 0; i < n; ++i, ++it_i) {
-    auto it_j = x.begin();
-    for (int j = 0; j < n; ++j, ++it_j) {
-      result(i, j) = (*it_i) * (*it_j);
-    }
-  }
-  
-  V_TRACE("Completed STL outer product");
-  return result;
-}
-
-//' Compute outer product using OpenMP collapse
-//'
-//' @param x Numeric vector
-//' @return Outer product matrix
-//' @export
-// [[Rcpp::export]]
-Rcpp::NumericMatrix dmy_pf_outer_omp_collapse(const Rcpp::NumericVector& x) {
-  V_TRACE("Starting OpenMP collapse outer product");
-  int n = x.size();
-  Rcpp::NumericMatrix result(n, n);
-  
-  #pragma omp parallel for collapse(2) schedule(static)
-  for (int i = 0; i < n; ++i) {
-    for (int j = 0; j < n; ++j) {
-      result(i, j) = x[i] * x[j];
-    }
-  }
-  
-  V_TRACE("Completed OpenMP collapse outer product");
-  return result;
-}
-
-//' Compute outer product using OpenMP parallel/simd hybrid
-//'
-//' @param x Numeric vector
-//' @return Outer product matrix
-//' @export
-// [[Rcpp::export]]
-Rcpp::NumericMatrix dmy_pf_outer_omp_hybrid(const Rcpp::NumericVector& x) {
-  V_TRACE("Starting OpenMP hybrid outer product");
-  int n = x.size();
-  Rcpp::NumericMatrix result(n, n);
-  
-  #pragma omp parallel for schedule(static)
-  for (int i = 0; i < n; ++i) {
-    #pragma omp simd
-    for (int j = 0; j < n; ++j) {
-      result(i, j) = x[i] * x[j];
-    }
-  }
-  
-  V_TRACE("Completed OpenMP hybrid outer product");
-  return result;
-}
-
-//' Compute outer product using RcppArmadillo
-//'
-//' @param x Numeric vector
-//' @return Outer product matrix
-//' @export
-// [[Rcpp::export]]
-Rcpp::NumericMatrix dmy_pf_outer_arma(const Rcpp::NumericVector& x) {
-  V_TRACE("Starting Armadillo outer product");
-  arma::vec v = Rcpp::as<arma::vec>(x);
-  arma::mat result = v * v.t();
-  V_TRACE("Completed Armadillo outer product");
+Rcpp::NumericMatrix compute_covariance(Rcpp::NumericMatrix X) {
+  arma::mat A = Rcpp::as<arma::mat>(X);
+  arma::mat result = A.t() * A;
   return Rcpp::wrap(result);
 }
-
-//' Compute outer product using base R outer
-//'
-//' @param x Numeric vector
-//' @return Outer product matrix
-//' @export
-// [[Rcpp::export]]
-Rcpp::NumericMatrix dmy_pf_outer_base(const Rcpp::NumericVector& x) {
-  V_TRACE("Starting base::outer");
-  Rcpp::NumericMatrix result = Rcpp::outer(x, x, "*");
-  V_TRACE("Completed base::outer");
-  return result;
-}
 ```
 
-## Microbenchmark Test
+### 2. Compiler flags for template-heavy code:
 
+```makefile
+# Reduce template bloat
+CXX14FLAGS = -O3 -ftemplate-depth-256 -fmerge-all-constants
+```
+
+### 3. Link Time Optimization (LTO):
+
+```makefile
+# Add to development Makevars
+CXX14FLAGS += -flto
+CXX14LINKFLAGS += -flto
+```
+
+Size reduction typically shows:
+- **Without optimization**: 5-10MB for template-heavy packages
+- **With GC sections and LTO**: 500KB-2MB (5-10x reduction)
+- **Debug build**: 10-20MB (with full symbols)
+
+## RStudio Build Configuration
+
+### 1. Development vs Release profiles:
+
+Create two RStudio project configurations:
+
+**`.Rprofile` for development:**
 ```r
-#!/usr/bin/env Rscript
-# Performance comparison script for Rcpp iteration strategies
-#
-#' @title Benchmark Rcpp iteration strategies
-#' @description Compare performance of different C++ iteration patterns
-#' @seealso \code{./src/dummy_iter.cpp} for C++ implementations
-#' @seealso \code{./src/Makevars} for build configuration
-#' @seealso \code{./notes/howtos/Rcpp-HOWTO-Q3-all.md} for setup guide
-#' @examples
-#' \dontrun{
-#' # Run basic sum benchmark
-#' ./exec/dummy-rcpp-bench.r -t sum 100 1000 10000
-#'
-#' # Run with profiling and data saving
-#' ./exec/dummy-rcpp-bench.r -t outer -s -p -m 50 100 1000 5000
-#' }
-
-suppressPackageStartupMessages({
-  library(Rcpp)
-  library(microbenchmark)
-  library(ggplot2)
-  library(data.table)
-  library(optparse)
-  library(logger)
-})
-
-# Note: The ./exec directory is CRAN-compliant for package support scripts
-# that can be called from package code but also executed directly.
-# This follows the pattern established by many CRAN packages for benchmarking.
-
-# Argument parsing
-parse_args <- function() {
-  option_list <- list(
-    make_option(c("-h", "--help"), action = "store_true",
-                help = "Show this help message and exit"),
-    make_option(c("-v", "--verbose"), action = "count", default = 0,
-                help = "Increase verbosity level [-v, -vv, -vvv]"),
-    make_option(c("-p", "--profile"), action = "store_true", default = FALSE,
-                help = "Enable Rprof profiling"),
-    make_option(c("-t", "--test"), default = "sum", type = "character",
-                help = "Test type: 'sum' or 'outer' [default=sum]"),
-    make_option(c("-m", "--samples"), default = 100, type = "integer",
-                help = "Microbenchmark sample size [default=100]"),
-    make_option(c("-s", "--save"), action = "store_true", default = FALSE,
-                help = "Save detailed results and system info")
+# Set development flags
+if (interactive()) {
+  Sys.setenv(
+    "PKG_CXXFLAGS" = "-O3 -march=native -g",
+    "PKG_LIBS" = "-Wl,--gc-sections,--strip-debug"
   )
-  
-  args <- parse_args(OptionParser(option_list = option_list), 
-                     positional_arguments = TRUE)
-  
-  # Set default input sizes if none provided
-  if (length(args$args) == 0) {
-    args$args <- c(10, 100, 1000)
-  } else {
-    args$args <- as.integer(args$args)
-  }
-  
-  return(args)
-}
-
-# Setup logging
-setup_logging <- function(args, log_dir) {
-  log_threshold <- switch(args$options$verbose + 1, 
-                         "INFO", "DEBUG", "TRACE", "TRACE")
-  log_appender(appender_file(file.path(log_dir, sprintf("dummy-rcpp-bench-%d-%s-test.log", 
-                                                       as.integer(Sys.time()), 
-                                                       args$options$test))))
-  log_threshold(log_threshold)
-  
-  # Log initial info
-  log_info("Script arguments: %s", paste(capture.output(str(args)), collapse = "\n"))
-  log_info("Log directory: %s", normalizePath(log_dir))
-  
-  # Log system info
-  cpu_info <- system("inxi -C", intern = TRUE)
-  log_info("CPU Info: %s", paste(cpu_info, collapse = "; "))
-}
-
-# Main benchmark function
-run_benchmark <- function(args, log_dir) {
-  # Set C++ logging level
-  dmy_pf_log_set_level(args$options$verbose)
-  
-  # Get appropriate function list
-  test_type <- args$options$test
-  if (test_type == "sum") {
-    funcs <- list(
-      "C-style" = dmy_pf_sum_cstyle,
-      "STL" = dmy_pf_sum_stl,
-      "OpenMP-parallel" = dmy_pf_sum_omp_parallel,
-      "OpenMP-simd" = dmy_pf_sum_omp_simd,
-      "Armadillo" = dmy_pf_sum_arma,
-      "base" = dmy_pf_sum_base
-    )
-  } else if (test_type == "outer") {
-    funcs <- list(
-      "C-style" = dmy_pf_outer_cstyle,
-      "STL" = dmy_pf_outer_stl,
-      "OpenMP-collapse" = dmy_pf_outer_omp_collapse,
-      "OpenMP-hybrid" = dmy_pf_outer_omp_hybrid,
-      "Armadillo" = dmy_pf_outer_arma,
-      "base" = dmy_pf_outer_base
-    )
-  } else {
-    stop("Invalid test type: ", test_type)
-  }
-  
-  # Initialize results
-  all_results <- data.table()
-  timestamp <- Sys.time()
-  
-  # Run benchmarks for each input size
-  for (n in args$args) {
-    log_info("Running benchmark for n=%d", n)
-    
-    # Generate test data
-    x <- rnorm(n, mean = 0, sd = 100)
-    
-    # Reset C++ trace
-    dmy_pf_log_reset()
-    
-    # Run microbenchmark
-    if (args$options$profile) {
-      Rprof(file.path(log_dir, sprintf("dummy-rcpp-bench-%d-%s-rprof.out", 
-                                      as.integer(timestamp), test_type)))
-    }
-    
-    mb_result <- microbenchmark(
-      list = funcs,
-      times = args$options$samples
-    )
-    
-    if (args$options$profile) {
-      Rprof(NULL)
-    }
-    
-    # Process results
-    mb_dt <- as.data.table(mb_result)
-    mb_dt[, `:=`(
-      test_type = test_type,
-      timestamp = timestamp,
-      input_size = n,
-      function_label = sub("dmy_pf_.+?_([^_]+)$", "\\1", expr)
-    )]
-    
-    all_results <- rbind(all_results, mb_dt)
-  }
-  
-  return(all_results)
-}
-
-# Generate summary plot
-create_plot <- function(results, args, log_dir) {
-  p <- ggplot(results, aes(x = input_size, y = time/1e6, color = expr)) +
-    geom_line(size = 1) +
-    geom_point(size = 2) +
-    scale_x_log10() +
-    scale_y_log10() +
-    labs(
-      title = sprintf("Rcpp Performance Comparison: %s", args$options$test),
-      subtitle = sprintf("Sample size: %d", args$options$samples),
-      x = "Input Size (log scale)",
-      y = "Time (ms, log scale)",
-      color = "Method"
-    ) +
-    theme_minimal() +
-    theme(legend.position = "bottom")
-  
-  ggsave(file.path(log_dir, sprintf("dummy-rcpp-bench-%d-%s-bench.png", 
-                                   as.integer(Sys.time()), 
-                                   args$options$test)),
-         p, width = 10, height = 6)
-  
-  return(p)
-}
-
-# Save detailed data if requested
-save_detailed_data <- function(results, args, log_dir) {
-  if (args$options$save) {
-    timestamp <- as.integer(Sys.time())
-    
-    # System info
-    sys_info <- system(paste(
-      "date; whoami; inxi -CfGMS; lscpu; cpupower frequency-info; nvidia-smi || echo '#NOGPU'"
-    ), intern = TRUE)
-    
-    writeLines(sys_info, file.path(log_dir, 
-                                  sprintf("dummy-rcpp-bench-%d-%s-info.log", 
-                                         timestamp, args$options$test)))
-    
-    # TSV export
-    fwrite(results, file.path(log_dir, 
-                             sprintf("dummy-rcpp-bench-%d-%s-data.tsv", 
-                                    timestamp, args$options$test)),
-           sep = "\t")
-    
-    log_debug("Detailed data saved to %s", log_dir)
-  }
-}
-
-# Main execution
-main <- function() {
-  args <- parse_args()
-  
-  if (args$options$help || is.null(args)) {
-    cat("Usage: dummy-rcpp-bench.r [options] <input_sizes...>\n")
-    cat("Options:\n")
-    cat("  -h, --help\t\tShow this help\n")
-    cat("  -v, --verbose\t\tIncrease verbosity\n")
-    cat("  -p, --profile\t\tEnable profiling\n")
-    cat("  -t, --test\t\tTest type: 'sum' or 'outer'\n")
-    cat("  -m, --samples\t\tSample size\n")
-    cat("  -s, --save\t\tSave detailed results\n")
-    return(invisible(NULL))
-  }
-  
-  # Setup log directory
-  log_dir <- Sys.getenv("P_LOGS_DIR", "logs")
-  if (!dir.exists(log_dir)) {
-    dir.create(log_dir, recursive = TRUE)
-  }
-  
-  setup_logging(args, log_dir)
-  
-  # Run benchmark
-  results <- run_benchmark(args, log_dir)
-  
-  # Create and display plot
-  p <- create_plot(results, args, log_dir)
-  print(p)
-  
-  # Save detailed data
-  save_detailed_data(results, args, log_dir)
-  
-  log_info("Benchmark completed successfully")
-}
-
-# Execute if run as script
-if (sys.nframe() == 0) {
-  main()
 }
 ```
 
-## Quick Start Guide
-
-### Project Configuration
-
-#### `DESCRIPTION`
-```yaml
-Package: rcpp-performance-examples
-Type: Package
-Title: High-Performance Rcpp Examples
-Version: 0.1.0
-Author: Your Name
-Maintainer: Your Name <your.email@example.com>
-Description: Demonstrates various C++ iteration patterns and their performance
-  characteristics using Rcpp and RcppArmadillo.
-License: GPL-3
-Encoding: UTF-8
-LazyData: true
-Depends:
-    R (>= 3.5.0)
-Imports:
-    Rcpp (>= 1.0.0),
-    microbenchmark,
-    ggplot2,
-    data.table,
-    logger,
-    optparse
-LinkingTo:
-    Rcpp,
-    RcppArmadillo
-SystemRequirements:
-    C++11,
-    GNU make,
-    OpenMP (optional, for parallel versions)
-```
-
-#### `src/Makevars`
-```make
-# OpenMP support
-PKG_CXXFLAGS = $(SHLIB_OPENMP_CXXFLAGS)
-PKG_LIBS = $(SHLIB_OPENMP_CXXFLAGS) $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)
-
-# Use Armadillo's BLAS/LAPACK wrappers
-CXX_STD = CXX11
-```
-
-#### `~/.R/Makevars`
-```make
-# Native architecture optimization
-CXXFLAGS += -march=native -mtune=native -O3
-
-# Note: ~/.R/Makevars is preferred over ~/.R/Makevars for system-specific
-# optimizations as it's automatically ignored by R CMD check, ensuring
-# CRAN compliance
-```
-
-### renv Configuration
-
-Create `.Rprofile` in project root:
-```r
-# Enable renv with explicit mode
-if (!requireNamespace("renv", quietly = TRUE)) {
-  install.packages("renv")
-}
-renv::init(settings = list(snapshot.type = "explicit"))
-```
-
-Create `renv.lock` with required packages or run:
-```r
-renv::snapshot(type = "explicit")
-```
-
-## References
-
-[^1]: [High performance functions with Rcpp](http://adv-r.had.co.nz/Rcpp.html)
-[^2]: [R Packages](https://r-pkgs.org/)
-[^3]: [RcppArmadillo on CRAN](https://cran.r-project.org/web/packages/RcppArmadillo/index.html)
-[^4]: [OpenMP Resources](https://www.openmp.org/resources/)
-[^5]: [CRAN Task View: High-Performance and Parallel Computing with R](https://cran.r-project.org/web/views/HighPerformanceComputing.html)
-[^6]: [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html)
-[^7]: [cuBLAS vs OpenBLAS Performance Comparison](https://developer.nvidia.com/blog/cublas-performance-improvements/)
-
--------------------------------------------------------------------------------------------
--------------------------------------------------------------------------------------------
--------------------------------------------------------------------------------------------
-# A:3 (Diffusion)
-> Rcpp iterarors performance optimization
-
-This document provides example C++ sources and an R script for benchmarking different iteration strategies within the Rcpp ecosystem. It focuses on comparing C-style loops, C++-style iterators, OpenMP parallelization, and RcppArmadillo functions for vector summation and outer product operations. The goal is to illustrate performance trade-offs and provide best practices for Rcpp package development, including CRAN considerations.
-
-## Introduction
-
-### C/C++ Iteration strategies and HPC Libraries Alternatives
-
-C++'s Standard Template Library (STL) offers various ways to iterate
-over containers like vectors.
-
-*   **C-style `for` loop:** Uses manual indexing (e.g., `for (int i =
-    0; i < n; ++i)`). This provides explicit control and can be very
-    efficient, especially for simple operations. However, it can be
-    prone to errors (e.g., off-by-one errors) and might be less easily
-    optimized by modern compilers compared to STL iterators.
-*   **C++-style `for` loop with iterators:** Uses range-based `for`
-    loops or explicit iterators (e.g., `for (const auto& element :
-    vec)` or `for (auto it = vec.begin(); it != vec.end();
-    ++it)`). This is generally more idiomatic C++, safer (less prone
-    to index errors), and often allows for better optimization,
-    especially with vectorization (SIMD).
-
-In High-Performance Computing (HPC) contexts, libraries like BLAS
-(Basic Linear Algebra Subprograms) and LAPACK (Linear Algebra Package)
-provide highly optimized routines for linear algebra
-operations. RcppArmadillo and RcppEigen offer interfaces to these
-libraries, allowing users to leverage their optimized implementations
-within C++ code, often benefiting from parallelization and SIMD
-instructions.
-
-Furthermore, libraries like OpenMP provide a way to parallelize C++
-code by distributing computations across multiple cores on a single
-machine. This can lead to significant speedups for tasks that can be
-parallelized.
-
-### OpenMP/SIMD primer
-
-OpenMP (Open Multi-Processing) is an API for shared-memory parallel
-programming in C, C++, and Fortran. It allows programmers to
-parallelize sections of code using compiler directives, pragmas and
-library routines.
-
-*   **`#pragma omp parallel`:** Introduces a parallel region where a
-    team of threads is created to execute the code block.
-*   **`#pragma omp for`:** Used within a parallel region, it
-    distributes the iterations of a `for` loop among the threads.
-*   **`#pragma omp parallel for collapse(n)`:** Parallelizes nested
-    `for` loops by treating the `n` loops as a single, linearized
-    loop. This can be more efficient than parallelizing each loop
-    individually.
-*   **`#pragma omp simd`:** Suggests to the compiler that a loop
-    should be vectorized using Single Instruction, Multiple Data
-    (SIMD) instructions. This allows the same operation to be
-    performed on multiple data elements simultaneously within a single
-    thread.
-*   **`private`, `shared`, `reduction`:** These clauses specify how
-    variables are handled by threads in a parallel region. `private`
-    means each thread gets its own copy; `shared` means all threads
-    access the same variable; `reduction` creates a private copy for
-    each thread and combines the results after the parallel region
-    completes (e.g., for summation).
-
-**Parallelism vs Vectorization trade-off:**
-
-*   **Parallelism (e.g., `omp parallel for`)**: Achieves speedup by
-    distributing the work across multiple cores. Effective for tasks
-    that can be broken down into independent sub-problems.
-*   **Vectorization (e.g., `omp simd`)**: Achieves speedup by
-    performing the same operation on multiple data elements
-    simultaneously within a single core using SIMD
-    instructions. Effective for tasks where the same operation is
-    applied to large vectors or matrices.
-
-Combining both (e.g., `omp parallel for simd`) can often yield the
-best performance for computationally intensive tasks on multi-core
-machines.
-
-RcppArmadillo and RcppEigen often leverage OpenMP and SIMD
-instructions internally, especially when using optimized BLAS/LAPACK
-implementations (like OpenBLAS or MKL) that support them.
-
-### GPU Notes
-
-GPUs (Graphics Processing Units) offer thousands of simple cores,
-making them highly suitable for massively parallelizable computations,
-such as matrix operations and simulations common in machine learning
-and scientific computing. NVIDIA's CUDA (Compute Unified Device
-Architecture) is the dominant platform for GPU computing. R packages
-like TensorFlow/PyTorch (often via Python) allow R users to leverage
-GPUs.
-
-*   **GPU Advantage:** For simple vector sums or outer products, the
-    overhead of transferring data between the CPU and GPU might
-    outweigh the benefits. The advantage depends heavily on the size
-    of the data and the complexity of the computation. For very large
-    matrices or complex algorithms, GPUs can provide significant
-    speedups.
-*   **cuBLAS:** NVIDIA's CUDA-accelerated linear algebra subprograms
-    (BLAS) library. It provides highly optimized implementations of
-    common linear algebra operations on GPUs.
-*   **Comparison:** Performance comparisons between cuBLAS and
-    CPU-based libraries like OpenBLAS or Intel MKL (Math Kernel
-    Library) can vary depending on the hardware and workload. cuBLAS
-    is part of the CUDA toolkit and requires an NVIDIA GPU. OpenBLAS
-    and MKL are generally available on various CPU architectures.
-*   **Python CUDA:** Using Python-based CUDA distributions (e.g., via
-    PyTorch or TensorFlow) as a system dependency for a GPU-enabled R
-    package within a rootless Podman container environment can be
-    complex due to managing dependencies and environment
-    isolation. It's often more straightforward to use R packages
-    specifically designed for GPU computing via R if available, or
-    rely on commercial solutions. However, the landscape for GPU
-    computing in R is evolving.
-
-## R Script Implementation
+**Build configuration via `devtools`:**
 
 ```r
-#!/usr/bin/env Rscript
+# Development build
+devtools::load_all()          # Fast development reload
+devtools::test()             # Run tests
+devtools::document()         # Update documentation
 
-# ----------------------------------------------------------------------------
-# File: dummy-rcpp-bench.r
-# Description: Benchmarks Rcpp functions for vector sum and outer product.
-# Author: [Your Name]
-# Date: [Current Date]
-# License: MIT License
-# ----------------------------------------------------------------------------
-
-# Load required libraries
-library(microbenchmark)
-library(optparse)
-library(ggplot2)
-library(dplyr)
-library(stringr)
-
-# ----------------------------------------------------------------------------
-# Command Line Argument Parsing
-# ----------------------------------------------------------------------------
-
-option_list <- list(
-    option_list(c("-h", "--help"), action = "store_true", default = FALSE,
-                help = "Print this help message."),
-    option_list(c("-v", "--verbose"), action = "count", default = 0,
-                help = "Set logging level (0: INFO, >=1: DEBUG). Repeat for higher levels."),
-    option_list(c("-p", "--profile"), action = "store_true", default = FALSE,
-                help = "Enable profiling with Rprof."),
-    option_list(c("-t", "--test"), type = "character", default = "sum",
-                help = "Name of the test to execute ('sum' or 'outer'). Default: sum."),
-    option_list(c("-m", "--samples"), type = "integer", default = 100,
-                help = "Microbenchmark sample size. Default: 100."),
-    option_list(c("-s", "--save"), action = "store_true", default = FALSE,
-                help = "Save benchmark data and system info reports.")
+# CRAN release build
+devtools::check(             # CRAN check
+  args = "--as-cran",
+  env_vars = c(
+    PKG_CXXFLAGS = "-O2 -Wall -pedantic",
+    PKG_LIBS = ""
+  )
 )
 
-opt_parser <- OptionParser(option_list = option_list)
-opt <- parse_args(opt_parser, positional_arguments = TRUE)
-
-# Handle help option
-if (opt$help) {
-    print_help(opt_parser)
-    stop()
-}
-
-# Get input sizes from positional arguments
-if (length(opt$args) == 0) {
-    input_sizes <- c(10, 100, 1000)
-} else {
-    input_sizes <- as.integer(opt$args)
-}
-
-if (any(is.na(input_sizes)) || any(input_sizes <= 0)) {
-    stop("Input sizes must be positive integers.")
-}
-
-# ----------------------------------------------------------------------------
-# Logging Setup
-# ----------------------------------------------------------------------------
-
-log_dir <- Sys.getenv("P_LOGS_DIR", unset = "logs")
-if (!dir.exists(log_dir)) {
-    dir.create(log_dir, recursive = TRUE)
-}
-
-timestamp <- format(Sys.time(), "%Y%m%d_%H%M%S")
-script_name <- "dummy-rcpp-bench"
-log_prefix <- paste0(script_name, "-", timestamp, "-", opt$test, "-")
-
-log_file <- file.path(log_dir, paste0(log_prefix, "test.log"))
-plot_file <- file.path(log_dir, paste0(log_prefix, "bench.png"))
-rprof_file <- file.path(log_dir, paste0(log_prefix, "rprof.out"))
-info_file <- file.path(log_dir, paste0(log_prefix, "info.log"))
-data_file <- file.path(log_dir, paste0(log_prefix, "data.tsv"))
-
-# Redirect stdout and stderr to log file
-log_con <- file(log_file, open = "a")
-sink(log_con, type = "output", append = TRUE)
-sink(log_con, type = "message", append = TRUE)
-
-cat("Script Arguments:\n")
-print(opt)
-cat("Log Directory:", log_dir, "\n")
-cat("System Info (inxi -C):\n")
-system("inxi -C", intern = TRUE)
-cat("\n")
-
-# Set C++ logging level
-Rcpp::dmy_pf_log_set_level(opt$verbose)
-
-# ----------------------------------------------------------------------------
-# Load Rcpp Library
-# ----------------------------------------------------------------------------
-
-cat("Loading Rcpp library...\n")
-library(Rcpp)
-library(RcppArmadillo)
-
-# Load the compiled Rcpp functions (assuming the package is installed)
-# Path might need adjustment depending on package structure
-Rcpp::sourceCpp("src/dummy_iter.cpp")
-
-# ----------------------------------------------------------------------------
-# Benchmark Execution Logic
-# ----------------------------------------------------------------------------
-
-benchmark_results <- list()
-
-if (opt$test == "sum") {
-    functions_to_test <- list(
-        c_for = dmy_pf_sum_c_for,
-        cpp_for = dmy_pf_sum_cpp_for,
-        omp_for = dmy_pf_sum_omp_for,
-        omp_for_simd = dmy_pf_sum_omp_for_simd,
-        arma = dmy_pf_sum_arma,
-        base_r = dmy_pf_sum_base_r
-    )
-    plot_title <- "Vector Sum Benchmark"
-} else if (opt$test == "outer") {
-    functions_to_test <- list(
-        c_for = dmy_pf_outer_c_for,
-        cpp_for = dmy_pf_outer_cpp_for,
-        omp_for_collapse = dmy_pf_outer_omp_for_collapse,
-        omp_for_simd = dmy_pf_outer_omp_for_simd,
-        arma = dmy_pf_outer_arma,
-        base_r = dmy_pf_outer_base_r
-    )
-    plot_title <- "Outer Product Benchmark"
-} else {
-    stop("Invalid test type. Choose 'sum' or 'outer'.")
-}
-
-cat("Starting benchmark for test type:", opt$test, "\n")
-
-for (size in input_sizes) {
-    cat("Benchmarking with input size:", size, "\n")
-
-    # Generate random input vector
-    set.seed(123) # for reproducibility
-    v <- rnorm(size, mean = 0, sd = 10000)
-
-    # Reset logging traces before each benchmark run
-    Rcpp::dmy_pf_log_reset()
-
-    # Run microbenchmark
-    if (opt$profile) {
-        Rprof(rprof_file)
-    }
-
-    mb_results <- microbenchmark(
-        lapply(functions_to_test, function(f) f(v)),
-        times = opt$samples
-    )
-
-    if (opt$profile) {
-        Rprof(NULL)
-        cat("Profiling data saved to:", rprof_file, "\n")
-    }
-
-    # Process results
-    mb_summary <- summary(mb_results) %>%
-        mutate(
-            input_size = size,
-            test_type = opt$test,
-            function_label = str_remove(expr, paste0("dmy_pf_", opt$test, "_"))
-        ) %>%
-        select(test_type, input_size, function_label, mean, iterations)
-
-    benchmark_results[[as.character(size)]] <- mb_summary
-
-    cat("Benchmark summary for size", size, ":\n")
-    print(mb_summary)
-}
-
-# Combine results from all input sizes
-all_results <- bind_rows(benchmark_results)
-
-# ----------------------------------------------------------------------------
-# Plotting Results
-# ----------------------------------------------------------------------------
-
-cat("Generating benchmark plot...\n")
-
-# Create the plot
-p <- ggplot(all_results, aes(x = as.factor(input_size), y = mean, color = function_label, group = function_label)) +
-    geom_line() +
-    geom_point() +
-    labs(
-        title = plot_title,
-        subtitle = paste("Sample Size:", opt$samples, ", Test Type:", opt$test),
-        x = "Input Size",
-        y = "Mean Elapsed Time (seconds)",
-        color = "Function"
-    ) +
-    theme_minimal() +
-    theme(axis.text.x = element_text(angle = 45, hjust = 1))
-
-# Save the plot
-ggsave(plot_file, p, width = 10, height = 6)
-cat("Benchmark plot saved to:", plot_file, "\n")
-
-# ----------------------------------------------------------------------------
-# Save Data (Optional)
-# ----------------------------------------------------------------------------
-
-if (opt$save) {
-    cat("Saving benchmark data and system info...\n")
-
-    # Save system info
-    info_con <- file(info_file, open = "w")
-    cat("Date:", Sys.time(), "\n", file = info_con)
-    cat("User:", system("whoami", intern = TRUE), "\n", file = info_con)
-    cat("inxi -CfGMS:\n", file = info_con)
-    cat(system("inxi -CfGMS", intern = TRUE), "\n", file = info_con)
-    cat("\nlscpu:\n", file = info_con)
-    cat(system("lscpu", intern = TRUE), "\n", file = info_con)
-    cat("\ncpupower frequency-info:\n", file = info_con)
-    cat(system("cpupower frequency-info", intern = TRUE), "\n", file = info_con)
-    cat("\nnvidia-smi (or '#NOGPU'):\n", file = info_con)
-    cat(system("nvidia-smi || echo '#NOGPU'", intern = TRUE), "\n", file = info_con)
-    close(info_con)
-    cat("System info saved to:", info_file, "\n")
-
-    # Save benchmark data to TSV
-    all_results_tsv <- all_results %>%
-        mutate(timestamp = Sys.time()) %>%
-        select(test_type, timestamp, function_label, input_size, mean, iterations)
-
-    write.table(all_results_tsv, data_file, sep = "\t", row.names = FALSE, quote = FALSE)
-    cat("Benchmark data saved to:", data_file, "\n")
-}
-
-# ----------------------------------------------------------------------------
-# Cleanup
-# ----------------------------------------------------------------------------
-
-sink()
-close(log_con)
-
-cat("Benchmark finished.\n")
+devtools::build()            # Create release tarball
 ```
 
+### 2. RStudio Project Options:
+
+1. **Tools → Project Options → Build Tools**
+2. Configure different build types:
+   - **Development**: Custom Makevars with debugging
+   - **Release**: Clean build with CRAN flags
+
+### 3. Conditional compilation:
+
+```makefile
+# In src/Makevars
+ifeq ($(DEBUG),1)
+PKG_CXXFLAGS = -O0 -g -Wall -pedantic
+PKG_LIBS = -Wl,--gc-sections
+else
+PKG_CXXFLAGS = -O2 -Wall -pedantic
+PKG_LIBS = 
+endif
+```
+
+Trigger with:
+```r
+# Debug build
+system("DEBUG=1 R CMD INSTALL .")
+
+# Release build  
+system("R CMD INSTALL .")
+```
+
+## Final Recommendations
+
+1. **CRAN Compliance First**: Always test with `R CMD check --as-cran`
+2. **Two configurations**: Maintain separate development and release setups
+3. **Symbol Registration**: Essential for CRAN compliance
+4. **Moderate stripping**: Use `--strip-debug` instead of `--strip-all`
+5. **Template management**: Use explicit interfaces to reduce bloat
+6. **Automated testing**: Implement CI that tests both development and CRAN configurations
+
+Example final `src/Makevars` for CRAN:
+
+```makefile
+PKG_CPPFLAGS = -I../inst/include
+PKG_CXXFLAGS = -Wall -pedantic -O2
+PKG_LIBS = $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)
+CXX_STD = CXX14
+```
+
+This approach ensures CRAN compliance while allowing optimized
+development builds with full debugging capabilities.
+
 
 -------------------------------------------------------------------------------------------
 -------------------------------------------------------------------------------------------
 -------------------------------------------------------------------------------------------
-# A:3 (LeChat)
-> * [Rcpp Iterators Performance Optimization: A Comparative Study](https://chat.mistral.ai/chat/e36afa9f-8a10-4d97-b567-6f1712315ea1)
+# A:3 (Kimi) {#A3-kimi}
+> Rcpp + g++: “small .so” vs. CRAN – a field guide
 
-This document provides a comparative analysis of different iteration
-and parallelization strategies in C++ for R package development, using
-**Rcpp** and **RcppArmadillo**. The focus is on performance, idiomatic
-C++, and compliance with CRAN and tidyverse best practices. The
-document includes C++ implementations, a microbenchmarking R script,
-and a quick-start guide for package configuration.
+| Scenario            | Primary goal                     | Where the flags live       | Typical size reduction |
+|---------------------|----------------------------------|----------------------------|------------------------|
+| **Internal dev**    | Debug symbols + `-march=native`  | `~/.R/Makevars`            | 1 × (no strip)         |
+| **CRAN release**    | Compliance + smallest legal .so  | `./src/Makevars`           | 30-50 ×                |
 
----
+The sections below explain how to reach both targets without ever touching the sources twice.
 
-## Introduction
+--------------------------------------------------------------------
+## 1.CRAN-compliant linker flags
+--------------------------------------------------------------------
+CRAN does **not** forbid stripping **per-se** – it forbids
+* removing the **registration information** that `tools::package_native_routine_registration_skeleton()` creates, and  
+* shipping a `.so` that contains **no reference** to `R_registerRoutines` / `R_useDynamicSymbols`.
 
-### C/C++ Iteration Strategies and HPC Libraries Alternatives
+Therefore the safe subset of “size” flags is
 
-- **C-style loops** are fast and predictable, but verbose and
-  error-prone.
-- **C++ STL iterators** are safer and more expressive, but may
-  introduce minor overhead.
-- **OpenMP** enables multi-core parallelism and SIMD vectorization,
-  but requires careful tuning and is not always portable.
-- **RcppArmadillo** provides high-level abstractions for linear
-  algebra, leveraging BLAS/LAPACK for performance.
-- **R library calls** (e.g., `base::sum`, `base::outer`) are
-  convenient but may incur R-C++ transition overhead.
+```make
+# ./src/Makevars – 100 % CRAN safe
+PKG_CXXFLAGS = -O2 -Wall -pedantic
+PKG_LIBS     = -Wl,-S         # *only* strip debug sections, keep symtab
+```
 
-**Trade-offs:**
-- **Safety vs. Performance:** STL iterators and RcppArmadillo are
-  safer but may not always match the raw speed of C-style loops or
-  OpenMP.
-- **Portability vs. Optimization:** OpenMP and SIMD (`-march=native`)
-  improve performance but reduce portability.
-- **Parallelism vs. Vectorization:** OpenMP `parallel for` scales with
-  cores, while `simd` exploits CPU vector units. The best choice
-  depends on the problem size and hardware.
+| Flag          | Effect on size | CRAN problem ? | Remarks |
+|---------------|----------------|----------------|---------|
+| `-Wl,-S`      | ≈ -30 %        | NO             | Strips **debug** sections but leaves the symbol table and the registration code untouched. |
+| `-Wl,--gc-sections` | ≈ -15 % | NO | Safe **if** you also export the registration symbols (see below). |
+| `-Wl,--strip-all`   | ≈ -50 % | **YES** | Removes the **whole** symbol table → `R CMD check` complains. |
 
-### OpenMP/SIMD Primer
+If you really want `--strip-all`, do it **after** `R CMD check` and ship the stripped file only in the **CRAN tarball**, never in the git tree.  A common pattern is
 
-OpenMP is a multi-platform API for shared-memory parallelism. Key
-directives:
-- **`#pragma omp parallel for`**: Parallelizes loops across threads.
-- **`#pragma omp simd`**: Enables SIMD vectorization.
-- **`collapse`**: Linearizes nested loops.
-- **`reduction`**: Safely accumulates results across threads.
-- **`private`/`shared`**: Controls variable scope in parallel regions.
+```bash
+# Makefile.local – NOT shipped with the package
+strip:
+	strip -s src/dvesimpler.so
+```
 
-**RcppArmadillo** and **RcppEigen** integrate with BLAS/LAPACK, which
-are often multi-threaded and optimized for the hardware (e.g.,
-OpenBLAS, Intel MKL).
+--------------------------------------------------------------------
+## 2. Registration glue – the real fix for the warning
+--------------------------------------------------------------------
+The message
 
-### GPU Notes
+```
+Found no calls to: ‘R_registerRoutines’, ‘R_useDynamicSymbols’
+```
 
-- **GPU Advantage:** GPUs excel at massively parallel, data-parallel
-  tasks (e.g., matrix operations). For large problems, speedups of
-  10x–100x are possible over CPU.
-- **cuBLAS:** NVIDIA’s GPU-accelerated BLAS library. Comparisons with
-  OpenBLAS/MKL show significant speedups for large matrices ([see
-  benchmarks][gpu_bench]).
-- **Python CUDA in R:** Using Python-based CUDA (e.g., via
-  `reticulate`) is possible but adds complexity. Native R GPU packages
-  (e.g., `gpuR`) are preferable for production.
+is **not** caused by the linker flags – it is caused by **missing registration code**.  
+Create it once and forget about it:
 
-[gpu_bench]: https://developer.nvidia.com/cublas
+```r
+tools::package_native_routine_registration_skeleton(
+        dir = ".", 
+        character_only = FALSE,
+        compile_attributes = TRUE)
+```
 
----
+This writes `src/init.c` (or `init.cpp`) which contains exactly the two symbols CRAN is looking for.  
+Add the file to `src/Makefile.win` / `src/Makevars.win` if you support Windows.
 
-## C++ Implementation
+--------------------------------------------------------------------
+## 3.Internal-development pragmatics
+--------------------------------------------------------------------
+Put **user-specific** flags in
 
-### `./src/dummy_iter.cpp`
+```
+~/.R/Makevars   # Linux / macOS
+~/.R/Makevars.win
+```
 
+Example content:
+
+```make
+# ~/.R/Makevars
+CXX11FLAGS = -O0 -g -DDEBUG -march=native -fsanitize=address,undefined
+CXX14FLAGS = $(CXX11FLAGS)
+PKG_LIBS   = -Wl,--gc-sections -fsanitize=address,undefined
+```
+
+| Tool           | Benefit |
+|----------------|---------|
+| `-O0 -g`       | Full debug symbols, no optimisation → breakpoints work line-by-line. |
+| `-fsanitize=address,undefined` | Catch memory errors and UB with zero false positives. |
+| `march=native` | Use AVX2, AVX-512, etc. on your workstation. |
+
+Nothing above ever leaks into the package sources, so CRAN will never see it.
+
+--------------------------------------------------------------------
+## 4. Template heaviness – RcppArmadillo & RcppEigen
+--------------------------------------------------------------------
+Both headers are **huge** but **header-only**; the instantiated code ends up in **your** `.so`.  Typical sizes (x86-64, GCC 12):
+
+| Library        | Unstripped | `-Wl,-S` | `-Wl,--gc-sections -S` |
+|----------------|------------|----------|-------------------------|
+| RcppArmadillo  | 5.8 MB     | 4.1 MB   | 3.2 MB                  |
+| RcppEigen      | 9.5 MB     | 6.7 MB   | 5.1 MB                  |
+
+`-Wl,--gc-sections` is particularly effective here because only the instantiated template functions that are **really referenced** survive.
+
+--------------------------------------------------------------------
+## 5. RStudio IDE – switching between build flavours
+--------------------------------------------------------------------
+RStudio uses the **same** build button but respects the **current** `Makevars` files.  Two convenient set-ups:
+
+A.  **Project-specific dev build**  
+    Create a **non-tracked** file `local/Makevars.dev` and symlink it while you work:
+
+    ```bash
+    ln -sr local/Makevars.dev ~/.R/Makevars   # Linux/macOS
+    ```
+
+    The file contains the aggressive dev flags from § 3.  
+    Before committing simply delete the symlink – RStudio will fall back to the vanilla `./src/Makevars`.
+
+B.  **RStudio “Build Tools”**  
+    Menu *Tools* → *Project Options* → *Build Tools* → *Configure*  
+    Add two **custom build commands**:
+
+    ```
+    Dev build:    make -f Makefile.dev
+    CRAN build:   R CMD build . --resave-data
+    ```
+
+    `Makefile.dev` can override `PKG_CXXFLAGS` and `PKG_LIBS` on the fly:
+
+    ```make
+    # Makefile.dev
+    include Makevars.in
+    PKG_CXXFLAGS += -O0 -g -march=native
+    PKG_LIBS     += -Wl,--gc-sections
+    ```
+
+--------------------------------------------------------------------
+6.  Cheat-sheet
+--------------------------------------------------------------------
+```make
+# ----------- ~/.R/Makevars (dev) -----------
+CXX11FLAGS = -O0 -g -march=native -fsanitize=address,undefined
+PKG_LIBS   = -Wl,--gc-sections
+
+# ----------- ./src/Makevars (CRAN) ---------
+PKG_CXXFLAGS = -O2 -Wall -pedantic
+PKG_LIBS     = -Wl,-S          # small & safe
+```
+
+Remember to **register** native routines once (`init.c`) and the dreaded
+“Found no calls to …” warning disappears even with `--gc-sections`.
+
+Happy hacking – and happy CRAN submissions!
+
+
+
+-------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------
+# A:3 (LeChat) {#A3-lechat}
+> C/C++ compiler and linker options...
+
+## **1. CRAN-Compliant Linker Options**
+### **Key Requirements**
+- **Symbol Registration**: CRAN mandates registering native routines via `R_registerRoutines()` and disabling dynamic symbol search (`R_useDynamicSymbols: FALSE`).
+- **Avoid Aggressive Linker Flags**: Options like `-Wl,--gc-sections,--strip-all` trigger CRAN warnings/errors, as they interfere with symbol visibility.
+
+### **Recommended `src/Makevars` for CRAN**
+```makefile
+PKG_CXXFLAGS = -Wall -O2 -g
+PKG_LIBS = $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)
+```
+- **`-O2`**: Standard optimization level for CRAN.
+- **`-g`**: Debug symbols (optional for CRAN, but useful for post-release debugging).
+- **Avoid `-march=native`**: Non-portable; CRAN builds on diverse architectures.
+
+### **Symbol Registration**
+In your C++ code, use:
 ```cpp
-// Authors: datalab
-// License: GPL-3
-//' @title Dummy Iterators for Rcpp Performance Tests
-//' @description
-//'   C++ functions for benchmarking iteration strategies in Rcpp.
-//' @useDynLib dummyPkg
-//' @importFrom Rcpp evalCpp
-// [[Rcpp::depends(RcppArmadillo)]]
-// [[Rcpp::plugins(openmp)]]
-#include <RcppArmadillo.h>
-#include <omp.h>
-#include <set>
-#include <string>
+#include <Rinternals.h>
+#include <R_ext/Rdynload.h>
 
-// ---- Logging Support --------------------------------------------------------
-
-static int g_verbosity = 0;
-static std::set<std::string> g_traced_messages;
-
-void dmy_pf_log_set_level(int level) {
-  g_verbosity = level;
-}
-
-int dmy_pf_log_get_level() {
-  return g_verbosity;
-}
-
-void dmy_pf_log_out(const char* file, int line, const std::string& msg) {
-  if (g_verbosity >= 0) {
-    Rcpp::Rcout << "LOG [" << file << ":" << line << "] " << msg << std::endl;
+extern "C" {
+  void R_init_dvesimpler(DllInfo* info) {
+    R_registerRoutines(info, NULL, NULL, NULL, NULL);
+    R_useDynamicSymbols(info, FALSE);
   }
-}
-
-void dmy_pf_log_trace(const char* file, int line, const std::string& msg) {
-  if (g_verbosity >= 3) {
-    std::string key = std::string(file) + ":" + std::to_string(line);
-    if (g_traced_messages.find(key) == g_traced_messages.end()) {
-      Rcpp::Rcerr << "TRACE [" << file << ":" << line << "] " << msg << std::endl;
-      g_traced_messages.insert(key);
-    }
-  }
-}
-
-void dmy_pf_log_reset() {
-  g_traced_messages.clear();
-}
-
-#define V_LOG(msg) dmy_pf_log_out(__FILE__, __LINE__, msg)
-#define V_TRACE(msg) dmy_pf_log_trace(__FILE__, __LINE__, msg)
-
-// ---- Sum Functions ----------------------------------------------------------
-
-//' Sum of a numeric vector (C-style for loop)
-//' @param v NumericVector
-//' @return Sum as double
-// [[Rcpp::export]]
-double dmy_pf_sum_cstyle(Rcpp::NumericVector v) {
-  double s = 0.0;
-  for (int i = 0; i < v.size(); ++i) {
-    s += v[i];
-  }
-  return s;
-}
-
-//' Sum of a numeric vector (STL iterator)
-//' @param v NumericVector
-//' @return Sum as double
-// [[Rcpp::export]]
-double dmy_pf_sum_stl(Rcpp::NumericVector v) {
-  return std::accumulate(v.begin(), v.end(), 0.0);
-}
-
-//' Sum of a numeric vector (OpenMP parallel for)
-//' @param v NumericVector
-//' @return Sum as double
-// [[Rcpp::export]]
-double dmy_pf_sum_omp_parallel(Rcpp::NumericVector v) {
-  double s = 0.0;
-  #pragma omp parallel for reduction(+:s)
-  for (int i = 0; i < v.size(); ++i) {
-    s += v[i];
-  }
-  return s;
-}
-
-//' Sum of a numeric vector (OpenMP parallel for simd)
-//' @param v NumericVector
-//' @return Sum as double
-// [[Rcpp::export]]
-double dmy_pf_sum_omp_simd(Rcpp::NumericVector v) {
-  double s = 0.0;
-  #pragma omp parallel for simd reduction(+:s)
-  for (int i = 0; i < v.size(); ++i) {
-    s += v[i];
-  }
-  return s;
-}
-
-//' Sum of a numeric vector (RcppArmadillo)
-//' @param v NumericVector
-//' @return Sum as double
-// [[Rcpp::export]]
-double dmy_pf_sum_arma(Rcpp::NumericVector v) {
-  arma::vec x(v.begin(), v.size(), false);
-  return arma::sum(x);
-}
-
-//' Sum of a numeric vector (R base::sum)
-//' @param v NumericVector
-//' @return Sum as double
-// [[Rcpp::export]]
-double dmy_pf_sum_rbase(Rcpp::NumericVector v) {
-  V_TRACE("base::sum, start");
-  double s = Rcpp::sum(v);
-  V_TRACE("base::sum, done");
-  return s;
-}
-
-// ---- Outer Product Functions -----------------------------------------------
-
-//' Outer product (C-style nested for)
-//' @param a NumericVector
-//' @param b NumericVector
-//' @return Outer product as NumericMatrix
-// [[Rcpp::export]]
-Rcpp::NumericMatrix dmy_pf_outer_cstyle(Rcpp::NumericVector a, Rcpp::NumericVector b) {
-  int n = a.size(), m = b.size();
-  Rcpp::NumericMatrix out(n, m);
-  for (int i = 0; i < n; ++i) {
-    for (int j = 0; j < m; ++j) {
-      out(i, j) = a[i] * b[j];
-    }
-  }
-  return out;
-}
-
-//' Outer product (STL nested for)
-//' @param a NumericVector
-//' @param b NumericVector
-//' @return Outer product as NumericMatrix
-// [[Rcpp::export]]
-Rcpp::NumericMatrix dmy_pf_outer_stl(Rcpp::NumericVector a, Rcpp::NumericVector b) {
-  int n = a.size(), m = b.size();
-  Rcpp::NumericMatrix out(n, m);
-  auto ait = a.begin(), aend = a.end();
-  auto bit = b.begin();
-  for (int i = 0; ait != aend; ++ait, ++i) {
-    for (bit = b.begin(); bit != b.end(); ++bit) {
-      out(i, std::distance(b.begin(), bit)) = (*ait) * (*bit);
-    }
-  }
-  return out;
-}
-
-//' Outer product (OpenMP parallel for collapse)
-//' @param a NumericVector
-//' @param b NumericVector
-//' @return Outer product as NumericMatrix
-// [[Rcpp::export]]
-Rcpp::NumericMatrix dmy_pf_outer_omp_collapse(Rcpp::NumericVector a, Rcpp::NumericVector b) {
-  int n = a.size(), m = b.size();
-  Rcpp::NumericMatrix out(n, m);
-  #pragma omp parallel for collapse(2)
-  for (int i = 0; i < n; ++i) {
-    for (int j = 0; j < m; ++j) {
-      out(i, j) = a[i] * b[j];
-    }
-  }
-  return out;
-}
-
-//' Outer product (OpenMP parallel for + simd)
-//' @param a NumericVector
-//' @param b NumericVector
-//' @return Outer product as NumericMatrix
-// [[Rcpp::export]]
-Rcpp::NumericMatrix dmy_pf_outer_omp_simd(Rcpp::NumericVector a, Rcpp::NumericVector b) {
-  int n = a.size(), m = b.size();
-  Rcpp::NumericMatrix out(n, m);
-  #pragma omp parallel for
-  for (int i = 0; i < n; ++i) {
-    #pragma omp simd
-    for (int j = 0; j < m; ++j) {
-      out(i, j) = a[i] * b[j];
-    }
-  }
-  return out;
-}
-
-//' Outer product (RcppArmadillo)
-//' @param a NumericVector
-//' @param b NumericVector
-//' @return Outer product as NumericMatrix
-// [[Rcpp::export]]
-Rcpp::NumericMatrix dmy_pf_outer_arma(Rcpp::NumericVector a, Rcpp::NumericVector b) {
-  arma::vec x(a.begin(), a.size(), false);
-  arma::vec y(b.begin(), b.size(), false);
-  return Rcpp::wrap(x * y.t());
-}
-
-//' Outer product (R base::outer)
-//' @param a NumericVector
-//' @param b NumericVector
-//' @return Outer product as NumericMatrix
-// [[Rcpp::export]]
-Rcpp::NumericMatrix dmy_pf_outer_rbase(Rcpp::NumericVector a, Rcpp::NumericVector b) {
-  V_TRACE("base::outer, start");
-  Rcpp::NumericMatrix out = Rcpp::outer(a, b);
-  V_TRACE("base::outer, done");
-  return out;
 }
 ```
+- **Purpose**: Explicitly declare routines and disable symbol search.
 
 ---
 
-## Microbenchmark Test
-
-### `./exec/dummy-rcpp-bench.r`
-
-```r
-#!/usr/bin/env Rscript
-#' @title Dummy Rcpp Benchmark Script
-#' @description
-#'   Microbenchmarking script for Rcpp iteration strategies.
-#' @usage ./exec/dummy-rcpp-bench.r [-h] [-v] [-p] [-t TEST] [-m SAMPLES] [-s] INPUT_SIZES
-#' @seealso
-#'   \code{\link{dmy_pf_sum_cstyle}},
-#'   \code{\link{dmy_pf_outer_cstyle}},
-#'   ./src/Makevars,
-#'   ~/.R/Makevars,
-#'   ./notes/howtos/Rcpp-HOWTO-Q3-all.md
-#' @examples
-#'   ./exec/dummy-rcpp-bench.r -t sum -m 100 10 100 1000
-#'   ./exec/dummy-rcpp-bench.r -t outer -vv -s 100 1000
-
-library(microbenchmark)
-library(ggplot2)
-library(optparse)
-library(logger)
-
-# ---- Argument Parsing --------------------------------------------------------
-
-option_list <- list(
-  make_option(c("-h", "--help"), action = "help"),
-  make_option(c("-v", "--verbose"), type = "integer", default = 0L, count = TRUE),
-  make_option(c("-p", "--profile"), action = "store_true", default = FALSE),
-  make_option(c("-t", "--test"), type = "character", default = "sum",
-              help = "Test type: 'sum' or 'outer'"),
-  make_option(c("-m", "--samples"), type = "integer", default = 100L,
-              help = "Microbenchmark sample size"),
-  make_option(c("-s", "--save"), action = "store_true", default = FALSE,
-              help = "Save data and system info"),
-  make_option(c("--input-size"), type = "integer", default = c(10L, 100L, 1000L),
-              help = "Input sizes (space-separated)")
-)
-opt <- parse_args(OptionParser(option_list = option_list))
-
-if (opt$help) {
-  print(usage())
-  q(status = 0)
-}
-
-# ---- Logging Setup -----------------------------------------------------------
-
-log_dir <- Sys.getenv("P_LOGS_DIR", unset = "logs")
-dir.create(log_dir, showWarnings = FALSE)
-log_file <- file.path(log_dir, sprintf("%s-%s-%s-test.log",
-                                        basename(tempfile()), Sys.time(), opt$test))
-log_appender(appender_file(log_file))
-log_level(ifelse(opt$verbose >= 1L, DEBUG, INFO))
-
-log_info("Script arguments: ~~~\n{str(opt)}")
-log_info("Log directory: {log_dir}")
-log_info("System info:\n{system('inxi -C', intern = TRUE)}")
-
-# ---- Benchmark Functions -----------------------------------------------------
-
-run_bench <- function(test_type, input_size, samples) {
-  set.seed(42L)
-  v <- rnorm(input_size, mean = 0, sd = 100)
-
-  if (test_type == "sum") {
-    funs <- Filter(
-      \(x) grepl("^dmy_pf_sum_", x),
-      ls(pattern = "^dmy_pf_", envir = asNamespace("dummyPkg"))
-    )
-    exprs <- setNames(lapply(funs, as.name), gsub("^dmy_pf_sum_", "", funs))
-    mb <- microbenchmark(list = exprs, times = samples, control = list(order = "block"))
-  } else if (test_type == "outer") {
-    funs <- Filter(
-      \(x) grepl("^dmy_pf_outer_", x),
-      ls(pattern = "^dmy_pf_", envir = asNamespace("dummyPkg"))
-    )
-    exprs <- setNames(lapply(funs, \(f) bquote(.(as.name(f))(v, v))), gsub("^dmy_pf_outer_", "", funs))
-    mb <- microbenchmark(list = exprs, times = samples, control = list(order = "block"))
-  }
-
-  mb
-}
-
-# ---- Main --------------------------------------------------------------------
-
-dummyPkg::dmy_pf_log_set_level(opt$verbose)
-dummyPkg::dmy_pf_log_reset()
-
-results <- lapply(opt$input_size, function(n) {
-  log_debug("Benchmarking input size: {n}")
-  run_bench(opt$test, n, opt$samples)
-})
-
-# ---- Plotting ----------------------------------------------------------------
-
-plot_data <- do.call(rbind, lapply(seq_along(results), function(i) {
-  data.frame(
-    time = as.numeric(results[[i]]$time),
-    function = factor(results[[i]]$expr, levels = results[[i]]$expr),
-    input_size = opt$input_size[i]
-  )
-}))
-
-ggplot(plot_data, aes(x = input_size, y = time, color = function)) +
-  geom_line() +
-  geom_point() +
-  labs(
-    title = sprintf("Benchmark: %s (samples = %d)", opt$test, opt$samples),
-    y = "Time (ns)", x = "Input Size"
-  ) +
-  theme_minimal()
-
-plot_file <- file.path(log_dir, sprintf("%s-%s-%s-bench.png",
-                                        basename(tempfile()), Sys.time(), opt$test))
-ggsave(plot_file, width = 10, height = 6)
-
-# ---- Save Data ---------------------------------------------------------------
-
-if (opt$save) {
-  info_file <- file.path(log_dir, sprintf("%s-%s-%s-info.log",
-                                          basename(tempfile()), Sys.time(), opt$test))
-  writeLines(c(
-    system("date", intern = TRUE),
-    system("whoami", intern = TRUE),
-    system("inxi -CfGMS", intern = TRUE),
-    system("lscpu", intern = TRUE),
-    system("cpupower frequency-info", intern = TRUE),
-    system("nvidia-smi || echo '#NOGPU'", intern = TRUE)
-  ), info_file)
-
-  data_file <- file.path(log_dir, sprintf("%s-%s-%s-data.tsv",
-                                          basename(tempfile()), Sys.time(), opt$test))
-  write.table(
-    data.frame(
-      test_type = opt$test,
-      timestamp = Sys.time(),
-      function_label = rep(plot_data$function, each = nrow(plot_data) / length(unique(plot_data$function))),
-      input_size = plot_data$input_size,
-      time_ns = plot_data$time
-    ),
-    file = data_file, sep = "\t", row.names = FALSE, quote = FALSE
-  )
-}
-
-if (opt$profile) {
-  Rprof(file.path(log_dir, sprintf("%s-%s-%s-rprof.out",
-                                    basename(tempfile()), Sys.time(), opt$test)))
-}
-
-log_info("Done.")
+## **2. Development Pragmatics: Debugging & Error Reporting**
+### **Local `~/.R/Makevars` for Development**
+```makefile
+CXXFLAGS += -march=native -O3 -g -Wall -pedantic
+PKG_CXXFLAGS = $(CXXFLAGS) -UNDDEBUG
 ```
+- **`-march=native`**: Maximize performance on your machine.
+- **`-O3`**: Aggressive optimization.
+- **`-g`**: Full debug symbols.
+- **`-UNDDEBUG`**: Disable assertions (if using `assert.h`).
+
+### **Debugging Tools**
+- **`gdb`/`lldb`**: Attach to R sessions for runtime debugging.
+- **`valgrind`**: Memory leak detection.
+- **Rcpp Attributes**: Use `Rcpp::sourceCpp()` for iterative testing.
+
+### **Error Reporting**
+- **Assertions**: Use `Rcpp::stop()` for user-facing errors, `assert()` for internal checks.
+- **Logging**: Redirect debug output to `Rprintf()` or a file.
 
 ---
 
-## Quick Start Guide
+## **3. Size Impact of C++ Templates (RcppArmadillo/Eigen)**
+### **Template Bloat**
+- **Armadillo/Eigen**: Heavy template use inflates binary size.
+- **Mitigation**:
+  - **Explicit Instantiation**: Manually instantiate templates for common types (e.g., `double`, `int`).
+  - **Link-Time Optimization (LTO)**: Add `-flto` to `PKG_CXXFLAGS` (if CRAN allows).
 
-### Project Configuration
-
-#### `DESCRIPTION`
-```yaml
-Depends:
-    R (>= 4.0.0)
-Imports:
-    Rcpp (>= 1.0.0),
-    RcppArmadillo (>= 0.12.0.0)
-LinkingTo:
-    Rcpp,
-    RcppArmadillo
-SystemRequirements:
-    OpenMP,
-    BLAS,
-    LAPACK
-```
-
-#### `src/Makevars`
-```make
-PKG_CXXFLAGS = -fopenmp
-PKG_LIBS = $(BLAS_LIBS) $(LAPACK_LIBS) $(FLIBS)
-```
-
-#### `~/.R/Makevars`
-```make
-CXXFLAGS = -O3 -march=native -mtune=native
-```
-
----
-
-## References
-
-[^1]: [High Performance Functions with Rcpp](http://adv-r.had.co.nz/Rcpp.html)
-[^2]: [R Packages](https://r-pkgs.org/)
-[^3]: [RcppArmadillo on CRAN](https://cran.r-project.org/web/packages/RcppArmadillo/index.html)
-[^4]: [OpenMP Resources](https://www.openmp.org/resources/)
-[^5]: [CRAN Task View: High-Performance and Parallel Computing with R](https://cran.r-project.org/web/views/HighPerformanceComputing.html)
-[^6]: [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html)
-
--------------------------------------------------------------------------------------------
--------------------------------------------------------------------------------------------
--------------------------------------------------------------------------------------------
-# A:3 (Perplexity)
-> * [Rcpp Iterators Performance Optimization](https://www.perplexity.ai/search/system-you-are-an-expert-r-and-HSR7U07pSxyfCTX84CL9.g)
-
-This document provides a comprehensive overview of **iteration
-strategies** and **performance optimization** techniques in C++ code
-used within an R package via Rcpp and RcppArmadillo. It discusses
-various looping idioms, parallelism with OpenMP, SIMD vectorization,
-and GPU considerations in HPC for R. Example source code and a
-benchmark script are included to evaluate these approaches on
-multi-core systems.
-
-## Introduction
-
-### C/C++ Iteration Strategies and HPC Libraries Alternatives
-
-- **C-style loops:** Low-level control with explicit indexing;
-  efficient but error-prone and less idiomatic.
-- **C++ STL range-based for:** Modern, safer, and more readable;
-  comparable performance to C-style loops.
-- **OpenMP-based parallel loops:** Exploit multi-core CPUs by
-  distributing iterations across threads.
-- **SIMD vectorization:** Uses CPU vector instructions via OpenMP
-  `simd` pragma or compiler intrinsics for data-level parallelism.
-- **BLAS/LAPACK Libraries:** Highly optimized numeric routines using
-  platform-specific assembly optimizations.
-- **RcppArmadillo and RcppEigen:** Provide linear algebra support with
-  BLAS/LAPACK bindings, combining ease of use and high performance.
-
-#### Safety and Performance Considerations
-
-- STL improves robustness and maintainability.
-- OpenMP unlocks thread-level parallelism with thread management
-  complexity.
-- BLAS libraries often outperform manually written loops in matrix
-  computations due to native-level optimizations.
-
-### OpenMP/SIMD Primer
-
-OpenMP simplifies parallel programming in shared-memory architectures.
-
-- **`parallel`:** Creates a team of threads for concurrent execution.
-- **`for`:** Distributes loop iterations among threads with implicit barriers.
-- **`collapse(n)`:** Merges nested loops into a single iteration space for better load balance.
-- **`simd`:** Vectorizes the loop using SIMD instructions.
-- **`private`/`shared`:** Control variable scoping per thread.
-- **`reduction`:** Safely aggregates results, such as sums, across threads.
-
-RcppArmadillo internally often uses BLAS libraries which may
-themselves use OpenMP or similar threading tech, merging threading and
-SIMD benefits.
-
-### Portability and CRAN Compliance
-
-- OpenMP is widely supported on Linux and CRAN-compatible compilers.
-- Architecture-specific flags like `-march=native` boost performance
-  but reduce portability; recommend placing in user `~/.R/Makevars`
-  rather than package files.
-- CRAN discourages mandatory hardware-specific optimizations unless
-  optional and safe.
-
-### GPU Alternatives
-
-GPUs offer massive parallelism for suitable tasks.
-
-- **CUDA/cuBLAS:** NVIDIA’s libraries provide up to 5–50x speedup
-  versus CPU for matrix operations.
-- CUDA Python distributions are helpful for prototyping but may face
-  challenges in rootless or containerized R package environments.
-- GPU support in R often comes via packages like `gpuR` or deep
-  learning frameworks ready for GPU acceleration.
-
-## C++ Implementation
-
-The following C++ source file `dummy_iter.cpp` implements two groups of functions:
-
-- **Sum functions:** Sum elements in various styles.
-- **Outer functions:** Compute outer products using different loop and parallel strategies.
-
-Logging support enables conditional tracing based on verbosity level.
-
+### **Example: Explicit Instantiation**
 ```cpp
-// dummy_iter.cpp
-// Author: Rcpp HPC Expert
-// License: GPL-3
-
-#include <RcppArmadillo.h>
-#include <Rcpp.h>
-#include <vector>
-#include <set>
-#include <string>
-#ifdef _OPENMP
-#include <omp.h>
-#endif
-
-using namespace Rcpp;
-
-// [[Rcpp::plugins(cpp11)]]
-// [[Rcpp::depends(RcppArmadillo)]]
-
-namespace {
-// Static verbosity level for logging
-int verbosity_level = 0;
-// Set to track file+line pairs for one-time trace logging
-std::set<std::pair<std::string, int>> trace_once_locations;
-}
-
-/**
- * @brief Set verbosity level for logging
- * @param level Integer verbosity level
- * \notrun{
- * dmy_pf_log_set_level(3)
- * }
- */
-// [[Rcpp::export]]
-void dmy_pf_log_set_level(int level) {
-  verbosity_level = level;
-}
-
-/**
- * @brief Get current verbosity level
- * @return int Current verbosity level
- * \notrun{
- * int v = dmy_pf_log_get_level()
- * }
- */
-// [[Rcpp::export]]
-int dmy_pf_log_get_level() {
-  return verbosity_level;
-}
-
-/**
- * @brief Output log message to Rcpp::Rcout if verbosity >= 0
- * @param file Source file name
- * @param line Source line number
- * @param msg Message string
- */
-void dmy_pf_log_out(const std::string& file, int line, const std::string& msg) {
-  if (verbosity_level >= 0) {
-    Rcpp::Rcout << "[LOG] " << file << ":" << line << " - " << msg << std::endl;
-  }
-}
-
-/**
- * @brief Output trace message once to Rcpp::Rcerr if verbosity >=3
- * Avoids flooding repeated logs from same file+line.
- * @param file Source file name
- * @param line Source line number
- * @param msg Message string
- */
-void dmy_pf_log_trace(const std::string& file, int line, const std::string& msg) {
-  if (verbosity_level >= 3) {
-    auto loc = std::make_pair(file, line);
-    if (trace_once_locations.find(loc) == trace_once_locations.end()) {
-      trace_once_locations.insert(loc);
-      Rcpp::Rcerr << "[TRACE] " << file << ":" << line << " - " << msg << std::endl;
-    }
-  }
-}
-
-/**
- * @brief Reset trace deduplication to allow logging same location again.
- */
-// [[Rcpp::export]]
-void dmy_pf_log_reset() {
-  trace_once_locations.clear();
-}
-
-// Macros for convenient logging
-#define V_LOG(msg) dmy_pf_log_out(__FILE__, __LINE__, msg)
-#define V_TRACE(msg) dmy_pf_log_trace(__FILE__, __LINE__, msg)
-
-// Sum functions group
-
-/**
- * @brief Sum vector elements using C-style for loop
- * @param v NumericVector input
- * @return double sum
- * \notrun{
- * dmy_pf_sum_cstyle(NumericVector::create(1.0,2.0,3.0))
- * }
- */
-// [[Rcpp::export]]
-double dmy_pf_sum_cstyle(const NumericVector& v) {
-  double s = 0.0;
-  for (int i = 0; i < (int)v.size(); ++i) {
-    s += v[i];
-  }
-  return s;
-}
-
-/**
- * @brief Sum vector elements using C++11 range-based for loop
- * @param v NumericVector input
- * @return double sum
- */
-// [[Rcpp::export]]
-double dmy_pf_sum_range(const NumericVector& v) {
-  double s = 0.0;
-  for (auto x : v) {
-    s += x;
-  }
-  return s;
-}
-
-/**
- * @brief Sum vector elements using OpenMP parallel for with reduction
- * @param v NumericVector input
- * @return double sum
- */
-// [[Rcpp::export]]
-double dmy_pf_sum_omp(const NumericVector& v) {
-  double s = 0.0;
-#ifdef _OPENMP
-#pragma omp parallel for reduction(+ : s)
-#endif
-  for (int i = 0; i < (int)v.size(); ++i) {
-    s += v[i];
-  }
-  return s;
-}
-
-/**
- * @brief Sum vector elements using OpenMP parallel for simd with reduction
- * @param v NumericVector input
- * @return double sum
- */
-// [[Rcpp::export]]
-double dmy_pf_sum_omp_simd(const NumericVector& v) {
-  double s = 0.0;
-#ifdef _OPENMP
-#pragma omp parallel for simd reduction(+ : s)
-#endif
-  for (int i = 0; i < (int)v.size(); ++i) {
-    s += v[i];
-  }
-  return s;
-}
-
-/**
- * @brief Sum vector elements using Armadillo sum function
- * @param v NumericVector input
- * @return double sum
- */
-// [[Rcpp::export]]
-double dmy_pf_sum_armadillo(const NumericVector& v) {
-  arma::vec a(v.begin(), v.size(), false);
-  return arma::sum(a);
-}
-
-/**
- * @brief Sum vector elements using R base::sum function via Rcpp
- * @param v NumericVector input
- * @return double sum
- */
-// [[Rcpp::export]]
-double dmy_pf_sum_rbase(const NumericVector& v) {
-  static Rcpp::Function base_sum("base::sum");
-  V_TRACE("base::sum, ...")
-  double s = Rcpp::as<double>(base_sum(v));
-  V_TRACE("base::sum, done.")
-  return s;
-}
-
-// Outer product functions group
-
-/**
- * @brief Outer product via C-style nested loops
- * @param x NumericVector
- * @param y NumericVector
- * @return NumericMatrix
- */
-// [[Rcpp::export]]
-NumericMatrix dmy_pf_outer_cstyle(const NumericVector& x, const NumericVector& y) {
-  int nx = x.size();
-  int ny = y.size();
-  NumericMatrix out(nx, ny);
-  for (int i = 0; i < nx; ++i) {
-    for (int j = 0; j < ny; ++j) {
-      out(i, j) = x[i] * y[j];
-    }
-  }
-  return out;
-}
-
-/**
- * @brief Outer product via C++11 range-based loops
- * @param x NumericVector
- * @param y NumericVector
- * @return NumericMatrix
- */
-// [[Rcpp::export]]
-NumericMatrix dmy_pf_outer_range(const NumericVector& x, const NumericVector& y) {
-  int nx = x.size();
-  int ny = y.size();
-  NumericMatrix out(nx, ny);
-  int i = 0;
-  for (auto xv : x) {
-    int j = 0;
-    for (auto yv : y) {
-      out(i, j) = xv * yv;
-      ++j;
-    }
-    ++i;
-  }
-  return out;
-}
-
-/**
- * @brief Outer product with OpenMP nested parallel for collapse(2)
- * @param x NumericVector
- * @param y NumericVector
- * @return NumericMatrix
- */
-// [[Rcpp::export]]
-NumericMatrix dmy_pf_outer_omp_collapse(const NumericVector& x, const NumericVector& y) {
-  int nx = x.size();
-  int ny = y.size();
-  NumericMatrix out(nx, ny);
-#ifdef _OPENMP
-#pragma omp parallel for collapse(2)
-#endif
-  for (int i = 0; i < nx; ++i) {
-    for (int j = 0; j < ny; ++j) {
-      out(i, j) = x[i] * y[j];
-    }
-  }
-  return out;
-}
-
-/**
- * @brief Outer product with OpenMP parallel outer loop and simd inner loop
- * @param x NumericVector
- * @param y NumericVector
- * @return NumericMatrix
- */
-// [[Rcpp::export]]
-NumericMatrix dmy_pf_outer_omp_parallel_simd(const NumericVector& x, const NumericVector& y) {
-  int nx = x.size();
-  int ny = y.size();
-  NumericMatrix out(nx, ny);
-#ifdef _OPENMP
-#pragma omp parallel for
-#endif
-  for (int i = 0; i < nx; ++i) {
-#ifdef _OPENMP
-#pragma omp simd
-#endif
-    for (int j = 0; j < ny; ++j) {
-      out(i, j) = x[i] * y[j];
-    }
-  }
-  return out;
-}
-
-/**
- * @brief Outer product using Armadillo
- * @param x NumericVector
- * @param y NumericVector
- * @return NumericMatrix
- */
-// [[Rcpp::export]]
-NumericMatrix dmy_pf_outer_armadillo(const NumericVector& x, const NumericVector& y) {
-  arma::vec a(x.begin(), x.size(), false);
-  arma::vec b(y.begin(), y.size(), false);
-  arma::mat A = a * b.t();
-  return Rcpp::wrap(A);
-}
-
-/**
- * @brief Outer product using R base::outer called via Rcpp
- * @param x NumericVector
- * @param y NumericVector
- * @return NumericMatrix
- */
-// [[Rcpp::export]]
-NumericMatrix dmy_pf_outer_rbase(const NumericVector& x, const NumericVector& y) {
-  static Rcpp::Function base_outer("base::outer");
-  V_TRACE("base::outer, ...")
-  NumericMatrix out = base_outer(x, y, "*");
-  V_TRACE("base::outer, done.")
-  return out;
-}
+// In a .cpp file:
+template class MyClass<double>;  // Explicitly instantiate for double
 ```
 
-## Microbenchmark Test Script
-
-```r
-#' Microbenchmark script for Rcpp vector iteration strategies
-#'
-#' This script benchmarks various implementations of "sum" and "outer"
-#' functions from the dummy_iter Rcpp package for differing input sizes.
-#'
-#' @seealso ./src/dummy_iter.cpp
-#' @seealso ./src/Makevars
-#' @seealso ~/.R/Makevars
-#' @seealso ./notes/howtos/Rcpp-HOWTO-Q3-all.md
-#'
-#' Usage:
-#'   Rscript exec/dummy-rcpp-bench.r [options] [input_sizes...]
-#'
-#' Options:
-#'   -h, --help        Show help and exit
-#'   -v, --verbose     Verbosity level (repeat for more verbosity)
-#'   -p, --profile     Enable profiling with Rprof
-#'   -t, --test        Test type: "sum" or "outer" (default "sum")
-#'   -m, --samples     Microbenchmark sample size (default 100)
-#'   -s, --save        Save benchmark results and system info
-#'   input_sizes       Space separated integer vector sizes (default: 10 100 1000)
-#'
-#' @export
-library(optparse)
-library(microbenchmark)
-library(logging)
-library(ggplot2)
-
-# Setup option parsing
-option_list <- list(
-  make_option(c("-v", "--verbose"), action = "count", default = 0,
-              help = "Verbosity level 0..3"),
-  make_option(c("-p", "--profile"), action = "store_true", default = FALSE,
-              help = "Enable profiling with Rprof"),
-  make_option(c("-t", "--test"), type = "character", default = "sum",
-              help = "Test type: sum or outer"),
-  make_option(c("-m", "--samples"), type = "integer", default = 100,
-              help = "Microbenchmark sample size"),
-  make_option(c("-s", "--save"), action = "store_true", default = FALSE,
-              help = "Save benchmark data and system info")
-)
-
-parser <- OptionParser(usage = "%prog [options] [input_sizes...]", option_list = option_list)
-args <- parse_args(parser, positional_arguments = TRUE)
-
-verbose <- args$options$verbose
-profile <- args$options$profile
-test_type <- tolower(args$options$test)
-samples <- args$options$samples
-save_data <- args$options$save
-input_sizes <- as.integer(args$args)
-if (length(input_sizes) == 0) input_sizes <- c(10, 100, 1000)
-
-# Set logging configuration
-basicConfig(level = ifelse(verbose >= 1, "DEBUG", "INFO"))
-logs_dir <- Sys.getenv("P_LOGS_DIR", unset = "logs")
-if (!dir.exists(logs_dir)) dir.create(logs_dir, recursive = TRUE)
-
-loginfo(paste("Arguments:", paste(commandArgs(trailingOnly=TRUE), collapse = " ")))
-loginfo(paste("Log directory:", normalizePath(logs_dir)))
-
-# Log CPU info for environment context
-cpu_info <- system("inxi -C", intern = TRUE)
-loginfo(paste(cpu_info, collapse = "\n"))
-
-# Load dummy_iter package assumed attached or installed:
-# library(dummy_iter)
-
-# Set verbosity for C++ logging
-dummy_iter::dmy_pf_log_set_level(verbose)
-dummy_iter::dmy_pf_log_reset()
-
-# Define list of functions by test_type
-sum_funcs <- list(
-  cstyle = dummy_iter::dmy_pf_sum_cstyle,
-  range = dummy_iter::dmy_pf_sum_range,
-  omp = dummy_iter::dmy_pf_sum_omp,
-  omp_simd = dummy_iter::dmy_pf_sum_omp_simd,
-  armadillo = dummy_iter::dmy_pf_sum_armadillo,
-  rbase = dummy_iter::dmy_pf_sum_rbase
-)
-outer_funcs <- list(
-  cstyle = dummy_iter::dmy_pf_outer_cstyle,
-  range = dummy_iter::dmy_pf_outer_range,
-  omp_collapse = dummy_iter::dmy_pf_outer_omp_collapse,
-  omp_parallel_simd = dummy_iter::dmy_pf_outer_omp_parallel_simd,
-  armadillo = dummy_iter::dmy_pf_outer_armadillo,
-  rbase = dummy_iter::dmy_pf_outer_rbase
-)
-
-funcs <- if (test_type == "sum") sum_funcs else outer_funcs
-
-# Result collector
-results <- data.frame()
-
-# Main benchmarking loop
-for (size in input_sizes) {
-  set.seed(123)
-  vec <- rnorm(size, mean=0, sd=100)
-  
-  message(paste("Benchmarking", test_type, "functions with input size", size))
-  
-  bm <- microbenchmark(
-    list = lapply(names(funcs), function(fname) {
-      if (test_type == "sum") {
-        expr <- bquote(.(funcs[[fname]])(vec))
-      } else {
-        expr <- bquote(.(funcs[[fname]])(vec, vec))
-      }
-      expr
-    }),
-    times = samples,
-    unit = "ms",
-    control = list(order = "random")
-  )
-  
-  bm_df <- as.data.frame(bm)
-  bm_df$function_label <- factor(bm_df$expr, levels = unique(bm_df$expr))
-  bm_df$input_size <- size
-  bm_df$test_type <- test_type
-  results <- rbind(results, bm_df)
-}
-
-# Plot aggregated results
-library(dplyr)
-library(ggplot2)
-
-sumname <- function(x) sub("dummy_iter::dmy_pf_\\w+_", "", x)
-results$func_abbr <- sapply(as.character(results$function_label), sumname)
-
-summary_df <- results %>%
-  group_by(func_abbr, input_size) %>%
-  summarize(median_time = median(time) / 1e6)  # convert ns to ms
-
-p <- ggplot(summary_df, aes(x = input_size, y = median_time, color = func_abbr)) +
-  geom_line() + geom_point() +
-  scale_x_log10() + scale_y_log10() +
-  labs(title = paste("Benchmark:", test_type, "function performance"),
-       subtitle = paste("Sample size:", samples, "| Verbosity:", verbose),
-       x = "Input size (log scale)",
-       y = "Median elapsed time (ms, log scale)",
-       color = "Function") +
-  theme_minimal()
-
-print(p)
-
-# Save plots and logs with timestamp
-timestamp <- format(Sys.time(), "%Y%m%d-%H%M%S")
-prefix <- paste0("dummy-rcpp-bench-", timestamp, "-", test_type, "-")
-
-pngfile <- file.path(logs_dir, paste0(prefix, "bench.png"))
-ggsave(filename = pngfile, plot = p)
-
-logfile <- file.path(logs_dir, paste0(prefix, "test.log"))
-cat(capture.output(sessionInfo()), file = logfile, append = TRUE)
-
-if (save_data) {
-  datfile <- file.path(logs_dir, paste0(prefix, "data.tsv"))
-  write.table(results, file = datfile, sep = "\t", row.names = FALSE)
-  
-  sysinfofile <- file.path(logs_dir, paste0(prefix, "info.log"))
-  info_txt <- c(
-    system("date", intern=TRUE),
-    system("whoami", intern=TRUE),
-    system("inxi -CfGMS", intern=TRUE),
-    system("lscpu", intern=TRUE),
-    system("cpupower frequency-info", intern=TRUE),
-    system("nvidia-smi || echo '#NOGPU'", intern=TRUE)
-  )
-  writeLines(info_txt, sysinfofile)
-}
-
-if (profile) {
-  proffile <- file.path(logs_dir, paste0(prefix, "rprof.out"))
-  Rprof(proffile)
-  # Perform a small profiling run
-  # ... omitted for brevity, would re-run microbenchmark here ...
-  Rprof(NULL)
-  loginfo(paste("Saved profile to", proffile))
-}
-
-loginfo("Benchmark completed.")
-```
-
-> Note:
-> 
-> The `./exec` directory is an appropriate CRAN-compliant location for
-> package support scripts that may be invoked via `system()` calls
-> internally or run interactively by users. It keeps scripts organized
-> and distinct from R code and source code.
-
-
-## Quick Start Guide
-
-### Project Configuration
-
-#### DESCRIPTION (partial)
-
-```yaml
-Depends:
-    R (>= 3.6.0)
-Imports:
-    Rcpp (>= 1.0.6),
-    RcppArmadillo (>= 0.10.8.0)
-LinkingTo:
-    Rcpp,
-    RcppArmadillo
-SystemRequirements:
-    BLAS, LAPACK, OpenMP
-```
-
-#### src/Makevars (example for Linux)
-
-```make
-PKG_CPPFLAGS = -fopenmp
-PKG_LIBS = -fopenmp $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)
-```
-
-#### ~/.R/Makevars (user local config for CPU optimizations)
-
-```make
-CXXFLAGS += -march=native -O3 -pipe
-```
-
-This local user config enables native architecture SIMD instruction
-generation automatically and high-level optimizations, improving
-performance while retaining package portability on CRAN.
+### **Size Tradeoffs**
+| Option                | Size Reduction | CRAN Compliance |
+|-----------------------|----------------|-----------------|
+| `--gc-sections`       | High (~50x)    | ❌ No           |
+| `-flto`               | Moderate (~2x) | ✅ Yes          |
+| Explicit Instantiation| Low (~1.2x)    | ✅ Yes          |
 
 ---
 
-## References
+## **4. RStudio Build Modalities**
+### **Switching Between Modes**
+1. **Project-Specific `.Rproj`**:
+   - Use **Build > Configure Build Tools** to set environment variables (e.g., `DEV_MODE=1`).
+   - In `src/Makevars`, check for `DEV_MODE`:
+```makefile
+     ifeq ($(DEV_MODE),1)
+       PKG_CXXFLAGS += -march=native -O3
+     endif
+```
 
-[^1]: [High performance functions with Rcpp](http://adv-r.had.co.nz/Rcpp.html)
-[^2]: [R Packages](https://r-pkgs.org/)
-[^3]: [RcppArmadillo on CRAN](https://cran.r-project.org/web/packages/RcppArmadillo/index.html)
-[^4]: [OpenMP Resources](https://www.openmp.org/resources/)
-[^5]: [CRAN Task View: High-Performance and Parallel Computing with R](https://cran.r-project.org/web/views/HighPerformanceComputing.html)
-[^6]: [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html)
+2. **RStudio Terminal**:
+   - Manually toggle `~/.R/Makevars` or use:
+```bash
+     # For development
+     ln -sf ~/.R/Makevars.dev ~/.R/Makevars
+     # For CRAN
+     ln -sf ~/.R/Makevars.cran ~/.R/Makevars
+```
 
+3. **`devtools` Workflow**:
+```r
+   # Development build
+   devtools::document(); devtools::load_all()
+   # CRAN build
+   devtools::check(manual = TRUE)
+```
+
+---
+
+## **5. Summary Table**
+
+
+| Scenario         | `Makevars` Flags       | CRAN Compliance | Debug Support | Size Optimization |
+|------------------|------------------------|-----------------|---------------|-------------------|
+| **Development**  | `-march=native -O3 -g` | ❌ No           | ✅ Full       | ❌ None           |
+| **CRAN Release** | `-O2 -g`               | ✅ Yes          | ✅ Partial    | ✅ Moderate       |
+
+---
+
+## **Key Takeaways**
+- **CRAN**: Prioritize portability and symbol registration.
+- **Development**: Use local `Makevars` for performance/debugging.
+- **Templates**: Explicit instantiation + LTO for size control.
+- **RStudio**: Leverage project configurations or symlinks for flexibility.
 
 -------------------------------------------------------------------------------------------
 -------------------------------------------------------------------------------------------
 -------------------------------------------------------------------------------------------
+# A:3 (Perplexity) {#A3-perplexity}
+> C++ Compiler and Linker Options for R packages
+
+Here is a detailed response about best practices for g++ linker
+options in Rcpp-based R package development, addressing internal
+development with debugging and CRAN-compliant release builds,
+including advice on linker options, debugging, template-heavy
+dependencies, and RStudio build modality:
+
+***
+
+## CRAN-Compliant Linker Options
+
+- CRAN requires packages to **register native routines** explicitly with calls to `R_registerRoutines` and to **disable dynamic symbol lookup** using `R_useDynamicSymbols(FALSE)` for security and portability reasons. This practice is necessary regardless of linker flags and is checked by `R CMD check`. Failure to do so results in notes or warnings about missing these registrations.
+
+- Linker options like `-Wl,--gc-sections` (garbage collect unused sections) and `-Wl,--strip-all` (strip all symbols) significantly reduce shared library size but tend to remove symbols needed for R's dynamic interface, causing **CRAN check failures**.
+
+- Therefore, **avoid aggressive linker stripping and section garbage collection** in release builds submitted to CRAN to maintain necessary symbol references and registration compliance.
+
+- For **CRAN compliance**, use minimal linker flags in your package's `src/Makevars`, focusing on safety and portability:
+  ```makefile
+  PKG_LIBS = $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)
+  ```
+  (or whatever your package needs without `--strip-all` or `--gc-sections`).
+
+- Register native routines manually or with Rcpp's support functions (`Rcpp::compileAttributes()` generates registration code by default).
+
+***
+
+## Development Pragmatics: Debugging and Error Reporting
+
+- For internal development builds, enable **performance optimizations and debugging support** simultaneously by combining:
+
+  - Compiler options: `-O3 -march=native -g3 -fno-omit-frame-pointer` to optimize with full debug symbols.
+  
+  - Linker options avoiding stripping or removal of debug symbols.
+
+- Put those in **user-specific Makevars file**, e.g., `~/.R/Makevars`:
+  ```makefile
+  CXXFLAGS += -O3 -march=native -g3 -fno-omit-frame-pointer
+  ```
+  This keeps development tuning local without affecting CRAN builds.
+
+- Use `Rcpp::compileAttributes()` regularly to update exported C++ to R interfaces with registration info to improve error diagnostics and cleaner `.Call` linkage.
+
+- Enable **AddressSanitizer (`-fsanitize=address`)** or other sanitizers locally for memory checks, but disable for CRAN due to potential false positives.
+
+***
+
+## Impact of Heavy Template Dependencies (RcppArmadillo and RcppEigen)
+
+- Packages using **heavy template libraries** like RcppArmadillo and RcppEigen generate **large binaries** due to template instantiations.
+
+- Aggressive stripping options further than CRAN-compliant ones can reduce sizes dramatically (sometimes by 50x), but cripple the compliance as described.
+
+- For **internal builds**, `--gc-sections` and `--strip-all` can be enabled for fast prototyping and debugging of performance trade-offs but **should never be shipped to CRAN**.
+
+- Also consider using **Link Time Optimization (LTO)** and **thin LTO** options (`-flto=thin`) when supported, as LTO can reduce code size and improve performance without breaking CRAN rules.
+
+***
+
+## Different Build Modalities in RStudio UI
+
+- RStudio allows configuring build settings for packages using multiple approaches:
+
+  - Use **multiple Makevars files**:
+    - Put **CRAN-compliant minimal flags** in `src/Makevars`.
+    - Put **development flags** (e.g., aggressive optimizations, debug info) in `~/.R/Makevars`.
+  
+  - When building locally inside RStudio (Build Pane or Ctrl + Shift + B):
+    - It uses the combination of `src/Makevars` and local `~/.R/Makevars`.
+    - This allows internal builds with debug info and optimizations without affecting the CRAN rules.
+  
+  - For CRAN release builds:
+    - Run `R CMD check` or the **Build & Reload** command ensuring CRAN flags are respected.
+    - Possibly use environment variables or custom RStudio Build Tools to switch modes.
+
+- Another approach is to use **custom RStudio Build Configurations** in `.Rprofile` or inside R projects to set different environment variables controlling flags.
+
+***
+
+## Summary of Recommendations
+
+| Scenario             | Compiler Flags Example                      | Linker Flags Example              | Notes                                             |
+|----------------------|--------------------------------------------|---------------------------------|---------------------------------------------------|
+| Internal Development | `-O3 -march=native -g3 -fno-omit-frame-pointer` | (default; no stripping)          | Full debug info + optimization from `~/.R/Makevars` |
+| CRAN Release Build   | `-O2` (or default)                         | No `--strip-all`, no `--gc-sections` | Use minimal flags in `src/Makevars`                |
+
+- Always **register routines and disable dynamic symbols** for CRAN:
+  ```cpp
+  static const R_CallMethodDef CallEntries[] = {
+    {"myfunc", (DL_FUNC) &myfunc, 1},
+    {NULL, NULL, 0}
+  };
+
+  void R_init_mypackage(DllInfo *dll) {
+    R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
+    R_useDynamicSymbols(dll, FALSE);
+  }
+  ```
+
+***
+
+This advice strikes a balance between package size reduction and CRAN policies, supporting advanced development with debug-ready builds locally while complying fully for public submission.
+
+Should detailed Makevars templates or example workflow instructions in RStudio UI be desired, those can be provided next.
+
+***
+
+References: Rcpp vignette, CRAN Writing R Extensions manual, R CMD check notes, RcppArmadillo documentation[1][2][3][4][5]
+
+[1](https://cran.r-project.org/web/packages/Rcpp/vignettes/Rcpp-package.pdf)
+[2](https://stat.ethz.ch/pipermail/r-package-devel/2017q2/001473.html)
+[3](https://adv-r.hadley.nz/rcpp.html)
+[4](https://stackoverflow.com/questions/42313373/r-cmd-check-note-found-no-calls-to-r-registerroutines-r-usedynamicsymbols)
+[5](https://stackoverflow.com/questions/59416168/compacting-shared-libraries-in-r-package)
+[6](https://cran.r-project.org/web/packages/Rcpp/refman/Rcpp.html)
+[7](https://rdrr.io/rforge/Rcpp/man/RcppLdFlags.html)
+[8](https://stackoverflow.com/questions/50413660/linking-to-another-package-undefined-symbol)
+[9](https://www.rdocumentation.org/packages/Rcpp/versions/1.1.0)
+[10](https://maskray.me/blog/2021-03-14-the-dark-side-of-riscv-linker-relaxation)
+[11](https://cran.r-project.org/doc/manuals/r-patched/R-admin.html)
+[12](https://stackoverflow.com/questions/54056594/cran-acceptable-way-of-linking-to-openmp-some-c-code-called-from-rcpp)
+[13](https://discourse.mc-stan.org/t/found-no-calls-to-r-registerroutines-r-usedynamicsymbols/1014)
+[14](https://cran.r-project.org/web/packages/Rcpp/vignettes/Rcpp-libraries.pdf)
+[15](https://stackoverflow.com/questions/63752046/is-there-any-optimization-function-in-rcpp)
+[16](https://stackoverflow.com/questions/12328156/r-package-that-links-to-external-c-library)
+[17](http://dirk.eddelbuettel.com/code/rcpp/Rcpp-FAQ.pdf)
+[18](https://privefl.github.io/blog/Tip-Optimize-your-Rcpp-loops/)
+[19](https://blog.djnavarro.net/posts/2022-01-10_setting-cran-repositories/)
+[20](https://www.rcpp.org/pdf/Rcpp-libraries.pdf)
+
 # ::}}} \\ %3.
+

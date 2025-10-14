@@ -1,168 +1,368 @@
 ``` /// vim: set foldmethod=marker : ```
-# ::{{{ #RCPP: TOC - RcppParallel Contents //
-# TOC - RcppParallel A* search tutorial - Contents
-
-1. [Q:5.0 - RcppParallel A* search tutorial example](#Q50)
-2. [Q:5.1 - RcppParallel A* search VibeCoding implementation](#Q51)
-
-# ::}}} \\ %+.
-
-# ::{{{ #RCPP: Q:5.0 - RcppParallel tutorial //
-# Q:5.0 - RcppParallel A* search tutorial example {#Q50}
-
+# ::{{{ #RCPP: Howto //
+# Q:3 - R "VibeCoding" and Loop Optimization
 
 <system>
 
 You are an expert R and C++ developer.
 
-Your task is to prepare example C++ sources to introduce core features of main Rcpp ecosystem packages.
+Your task is to prepare example C++ sources to introduce core features
+of main Rcpp ecosystem packages.
 
-All examples should be compact, clear, and focused on a small set of relevant features of a single package.
+The answer must be in well-formatted, clearly structured (GFM)
+markdown, with footnotes for links to relevant online resource
+references.
 
-The examples should also be "inspiring", based on an interesting use case or algorithm that is worth reading,
-and not just a library API demo.
+The C++ code fragments must be placed in `cpp` markdown codeblocks,
+formatted following the Google C++ style guide, and moderately but
+well documented, following Roxygen2 CRAN standards, with minimal
+invocation example, under 'notrun' tags.
 
-The answer must be in well-formatted, clearly structured (GFM) markdown, with footnotes for links to relevant online resource references.
+The C++ reference standard is C++20.
 
-The C++ code fragments must be placed in `cpp` markdown codeblocks, formatted following the Google C++ style guide, and moderately but well documented.
+The replies must adhere to CRAN guidelines, integrated by `tidyverse`
+best practices.
 
-The replies must adhere to CRAN guidelines, integrated by `tidyverse` best practices.
+The code should discuss performance details in depth, with an overall
+judgement of every implementation alternative, over expected runtime
+performance in a multicore (32 HyperThreaded Intel XEON or AMD EPYC)
+Ubuntu 24.04 Linux virtual machines, running on Microsoft Azure
+platform.
 
-The code should be very performant, using alternatively, implicit parallelism and vectorization via OpenMP/SIMD intrinsics, or via library-based interfaces to multitasking and multiprocessing OS facilities.
+As a stylistic note, discuss also every alternative from language
+idiomaic and pragmaic point of view.
 
 </system>
 
 
 
-Your task is to produce an interesting use-case example for the `RcppParallel` package,
-focusing on `parallelFor` and `parallelReduce` functions.
+Your task is to produce two source to be included in a `Rcpp` and `RcppArmadillo` enabled R package project:
 
-The target package, based on `renv`, already includes `Rcpp`, `RcppArmadillo`, and `RcppEigen`.
+- a C++ source: `./src/dummy_iter.cpp`
+- a R script:   `./exec/dummy-rcpp-bench.r`
 
-An interesting use case could be a minimal toy implementation of an A* heuristic search algorithm, applied to a random generated graph.
 
-The parallel code should be paired with a traditional sequential implementation.
+## C++ source loop strategy alternatives: `./src/dummy_iter.cpp`
+
+
+The C++ source: `./src/dummy_iter.cpp`, used to provide an
+implementation example of different approaches in vector iteration.
+
+In this source will be placed two group of C++ functions "sum" and
+"outer", with the following specifications, delimited in XML
+`*-test-specification` tags, that can be testes to verify how
+different implementation alternatives affect runtime performance,
+depending on the input size. In the test, also standard R library
+functions should be included, as a performance reference.
+
+In addition, a small group of logging support functions, R callable,
+will be used for conditional function tracing. The trace output will
+be activated only if test script "verbose" invocation argument is set
+to maximum level (verbosity >= 3). C++ logging support specification
+follows, delimited in XML `cpp-trace-support-specification` tag.
+
+### "sum" function group specification
+
+<sum-test-specification>
+
+The "sum" gruup of functions compute the sum of a numeric input vector.
+
+The list of implementation alternatives should consider:
+
+- C-style `for` with manual index increment.
+- C++-style `for` with STL idiomatic range iterators.
+- on OpenMP `parallel for` for parallel execution
+- on OpenMP `parallel for simd` for parallel execution with vectorization
+- some RcppArmadillo library function
+- the R `base::sum`, called from C++ code
+
+Add further examples if appropriate.
+
+All the functions must be R callable, and start with name prefix `dmy_pf_sum_` with a short, but clear, suffix name
+
+</sum-test-specification>
+
+
+### "outer" function group specification
+
+<outer-test-specification>
+
+The "outer" group of functions compute the outer product (tensor product) of a pair of input vectors.
+
+In the tests, a random vector of the specifiled input size will be passed as both arguments.
+
+The list of implementation alternatives should consider:
+
+- C-style nested `for` with manual index increment.
+- C++-style nested `for` with STL idiomatic range iterators.
+- on OpenMP nested `parallel for collapse` for parallel execution with loop linearization
+- on OpenMP `parallel for; parellel simd` for parallel execution of the outer loop mixed with vectorization of inner loop
+- some RcppArmadillo library function
+- the R `base::outer`, called from C++ code, inkoked as `base::outer(v,v,"*")`
+
+Add further examples if appropriate.
+
+All the functions must be R callable, and start with name prefix `dmy_pf_outer_` with a short, but clear, suffix name
+
+</outer-test-specification>
+
 
 All examples must be R callable.
 
+### C++ trace logging support functions
+
+<cpp-trace-support-specification>
+
+- this functions provide a way to trace messages to be output to stdout/stderr using `Rcpp::cout`, `Rcpp::cerr` channels
+- a function: `dmy_pf_log_set_level`, called by the R test
+  script to set a static integer variable for the "verbosiy level",
+  from command line invocation arguuments (see `--verbose` script
+  argument below).
+- a function: `dmy_pf_log_get_level`, that returns the static value set in `dmy_pf_log_set_level`.
+- a function: `dmy_pf_log_out`, invoked with `__FILE__`, `__LINE__`
+  macros and a string message arguments, that outputs the message,
+  using `Rcpp::cout`, if `dmy_pf_log_get_level` is >=0.
+- a function: `dmy_pf_log_trace`, invoked with `__FILE__`, `__LINE__`
+  macros and a string message arguments, that outputs the message,
+  using `Rcpp::cerr`, if `dmy_pf_log_get_level` is >=3.  The trace
+  function must log the message only once, for the same `__FILE__`,
+  `__LINE__` argument, until `dmy_pf_log_reset` is called. This is to
+  avoid floading the stderr with too many messages in case of repeted
+  inviction. Performance should be minimal.  The could be implemented
+  with a `stl::set` to check repeated invocations.
+- a function: `dmy_pf_log_reset`, that clears the repeted invocation condition, reenabling trace output.
+- a macro `V_LOG`, that takes a message string argument, that traslate
+  to a call `dmy_pf_log_out` with `__FILE__`, `__LINE__` filled.
+- a macro `V_TRACE`, that takes a message string argument, that
+  traslate to a call `dmy_pf_log_trace` with `__FILE__`, `__LINE__`
+  filled.
+- in the "sum" and "outer" funcions described above the V_TRACE calls
+  will be put around R library function invokation: `base::outer` and
+  `base::sum`. For example:
+
+```
+V_TRACE("base::sum, ...")
+s = base::sum(v)
+V_TRACE("base::sum, done.")
+```
+
+</cpp-trace-support-specification>
+
+
+
+## R script for looping alternative benchmarks, with variable input size: `./exec/dummy-rcpp-bench.r`
+
+
 A microbenchmark R test script must be provided to verify the performance advantage of the parallel version.
 This script should accepts several command-line arguments, not mandatory, with sensible defaults, as described bolow.
-The argument parsing must use a standard argument parser, provided by some library facility.
+The script specification is placed below, delimited in XML `test-script-specification` tags.
+Add a comment about the choice of the `./exec` directory as a CRAN compliant position where to store package support sctipts,
+able to call package R code, but also callable, via "system" call, from internal package code.
+
+### Benckmark Script Specification
+
+<test-script-specification>
+
+- the script admits the command line arguments, descibed below, delimited in XML `test-script-cli-arguments` tags.
+- the argument parsing must use a standard argument parser, provided by some library facility.
+- the script output should go to stdout and logged to a file, using standard logging facilities.
+- the log directory will be used also for storing benchmark results and plots
+- the log directory will be taken from environment variable `P_LOGS_DIR` with `logs` as default.
+- the log directory should be created if absent.
+- the script execution should be logged at info level (argumnts, benchmark invokation, final summary) while the "save data" section shold be logged at "debug" level (verbose>=1).
+- the script shoud set verbose level in C++ module via `dmy_pf_log_set_level` call. Before all benchmark invocations should call `dmy_pf_log_reset` to reenable tracing.
+- all the log artifacts should contain the test type and a timestamp suffix as a part of the filename.
+- during script initalization, log: 1. the script arguments, 2. the full path of the log directory, 3. the output of system command: `inxi -C`
+- the benchmark script should iterate the test group for the "Test Type" argument for every "Input Size" value
+- the results should be aggregated and shown in a summary multi series line plot, that shows the elapsed time, with a series for every function in the group under test, depending on input size.
+- the benchmark are made several `microbenchmark`invocation, with "Sample Size" runs to stabilize results.
+- for all the tests, every `microbenchmark` invocation uses a single random numeric vector of the varing input size.
+- the input vector should be filled by random normal values of 0 mean and 10000 variance (100 sd)
+- every script invocation should prodice a log file, a CSV file with summaries of the `microbenchmark` results and generate graphic dump of the summary plot.
+- if, in addition, the "Save Data" argument is specified also the
+  output should be generated, following specification below, delimited
+  in `save-data-script-specification` XML tag.
+
+</test-script-specification>
+
+
+### Script Output Generation
+
+<save-data-script-specification>
+
+- all the outputs should go in the logging directory: fron environment `${P_LOGS_DIR:-'logs'}`, created if missing, as described above.
+- all the output filenames should start with this prefix: "<script-name>-<sec-timestamp>-<test-type>-" with a variable suffix.
+- the output to generate in all runs, indipentenly fron "Save Data" option are:
+   - a log file (suffix: `test.log`) generated by logging facilities, with logging level set according to verbosity option (0:INFO, >=1: DEBUG)
+   - a benchmark summary plot (suffix: `bench.png`), as described above, function label as abbreviated series names, taken by function names with the common prefix stripped.
+   - a Rprof output (suffix: `rprof.out`), generated only if "Profile" option is selected.
+- when the "Save Data" option is selected the following output will be generated:
+   - a textual system info report (suffix: `info.log`) with the output of system commands: `date; whoami; inxi  -CfGMS;  lscpu; cpupower frequency-info; nvidia-smi || echo '#NOGPU'`.
+   - a tab separated export (TSV) (suffix: `data.tsv`) with microbenchmark data export with additional columns: 'test_type", "timestamp", "function_label", "input_size"
+
+</save-data-script-specification>
+
+### Script Command Line Arguments
 
 <test-script-cli-arguments>
 
+#### generic arguments
+
+- "Help"          (option: -h|--help) - boolean, to print script usage info and command line argument description. Execution skipped.
+- "Verbose"       (option: -v|--verbose) - integer (option count), can be repeated (-v, -vv -vvv), set the logging level (default: 0 - "info")
+- "Profile"       (option: -p|--profile) - boolean, enable profiling with `Rprof`.
+                  Profiling output filename should follow the same naming of other outputs, with `-rprof.out` suffix.
+
+#### benchmark arguments
+
+- "Test Type"     (option: -t|--test) - name of the test to execute: either "sum" or "outer" (with "sum" as default value)
 - "Sample Size"   (option: -m|--samples) - microbenchmark sample size (e.g., number of iterations)
-- "Save Data"     (option: -s|--save) - boolean value to require the dump of the randon input and tast results over an external (text or json) file for further analysys or plotting.
-- "Input Size" (positional, for many values) - for graph domains, graph size (e.g., number of nodes)
-
-If the A* example consider a random Graph input, (as a "shortest path find" algorithm), consider also a parameter
-
-- "Graph Density" (option: -g|--density) - graph density (e.g., rate of links over nodes, with 1.0 means full connected, 0.0 full isolated)
-
+- "Save Data"     (option: -s|--save) - boolean value to produce the dump of result data and system information reports as specified below.
+- "Input Size" (positional, for many values) - to specify the dimension of the input vectors for tests (with default to the sequence "10 100 1000")
 
 </test-script-cli-arguments>
 
+As a final section, add a short guide that decribes the minimal steps
+required to configure the R package project, based on `renv` (in
+"explicit" configuration mode), that already include supports for
+`Rcpp`, `RcppArmadillo`.  In particular, a minimal example of code
+modification for `DESCRIPTION` and `./src/Makevars` for `BLAS`,
+`LAPACK`and `OPENMP`support.
 
-As a final section, prepare a "RcppParallel quick start" guide that decribes the minimal steps required to include `RcppParallel` in a R package project, based on `renv` (in "explicit" configuration mode), that already include supports for `Rcpp`, `RcppArmadillo`, and `RcppEigen`. In particular, provide code modification for `DESCRIPTION` and `./src/Makevars`. Include also a note for "SIMD" support in `~/.R/Makevars`, like adding a `-march=native` in `CXXFLAGS` variable. For package installation, discuss possible OS system library dependencies and `TinyThread` library distribution. Show basic `renv` command sequence for installation: `renv::install()` and `renv::snapshot()`.
+Include also a note for native "SIMD" support in `~/.R/Makevars`, like
+adding a `-march=native` in `CXXFLAGS` variable.
+
+
+--------------------------------------
 
 Here's a breakdown of what you need to deliver:
 
 1.  **Markdown Structure:**
     *   Use clear headings and subheadings to organize the content.
-    *   Provide a brief introduction to the A* search algorithm.
-    *   Explain the use of `RcppParallel`, `RcppArmadillo`, and `RcppEigen` in the context of the A* implementation.
-    *   Include footnotes for references to online resources (e.g., documentation for the packages, A* algorithm explanation).
+    *   Include footnotes for references to online resources where appropriate.
 
-2.  **C++ Code:**
-    *   Implement both a sequential and a parallel version of the A* search algorithm.
-    *   Use `parallelFor` and `parallelReduce` from `RcppParallel` to parallelize the search.
-    *   Use `RcppArmadillo` or `RcppEigen` for efficient matrix/vector operations if applicable to the A* implementation.
-    *   Follow the Google C++ Style Guide for formatting.
-    *   Provide clear and concise comments to explain the code.
-
-3.  **R Callable Functions:**
-    *   Place both the sequential and parallel C++ functions in a single C++ source, to be included via `Rcpp::sourceCpp` or similar mechanisms to make them callable from R.
-
-4.  **Microbenchmark Test Script:**
-    *   Create an R script that uses the `microbenchmark` package to compare the performance of the sequential and parallel A* implementations.
-    *   Provide an argument parsing support with library argument parsing facilities, for the script that allows the parameters specified above in `test-script-cli-arguments` XML tag
-    *   For the positional argument "Input Size", consider that the argument can be expressed as a space separated list of integers (like "100 1000 10000") and perform test iteration for every value. Provide a graphical summary of parallel vs sequential benchmark for performance evaluation as function of problem size. In the graph subtitle, reports the value of options "Sample Size" and other parameters, like "Graph Density".
-
-5.  **CRAN and Tidyverse Compliance:**
+2  **CRAN and Tidyverse Compliance:**
     *   Ensure the code adheres to CRAN guidelines (e.g., no excessive memory allocation, proper error handling).
     *   Follow tidyverse best practices where applicable (e.g., consistent naming conventions).
 
-6.  **RcppParallel Quick Start guide:**
-    *   Describe miniman package configuration required for RcppParallel dependency.
-    *   Only if required, show `apt` commands to install required OS system library dependencies.
-    *   Show `renv` commands required for installation.
+3.  **Introduction:**
+    *   Provide a brief comparization of C and C++ (STL) approach,
+        including safety and performance consideration.
+    *   Discuss the "rationale" behind "OpenMP" library. Focus on
+        "Parallelism vs Vectorization trade-off" in the HPC context.
+    *   In ralation to the intrinsic directive "#pragma omp", describe the clauses
+        *   "parallel",
+        *   "for",
+        *   "collapse",
+        *   "simd",
+        *   "private", "shared", "reduction"
+    *   Comment on OpenMP/BLAS/SIMD support provided by RcppArmadillo and RcppEigen
+    *   Comment on portability and CRAN compliance issues ralated to architectural "native" optimizaion
+
+4.  **GPU alternatives:**
+    *   Without going too deep, provide some consideration on GPU advantage in contexr of R HPC.
+    *   Give some rough estimate on GPU advantage for sone class of comuttion problem
+    *   Comment on cuBLAS and give some link to online known comparation vs OpenBLAS or Intel MKL
+    *   In a (rootless podman container environment) provide a short
+        answer if Python based CUDA distribution is a viable approach
+        for GPU enabled R package system dependencies.
+
+5.  **C++ Code:**
+    *   Implement tho group of functions "sum" and "outer", following the above specification.
+    *   Follow the Google C++ Style Guide for formatting.
+    *   add Rcpp attributes for exposing all the functions to R code
+    *   Provide clear and concise comments to explain the code.
+
+
+6.  **Microbenchmark Test Script:**
+    *   Create an R script that uses the `microbenchmark` package to
+        compare the performance of all the funcion of a sigle group
+        ("Test Type"), passed as an argument.
+    *   Provide an argument parsing support with library argument
+        parsing facilities, for the script that allows the parameters
+        specified above in `test-script-cli-arguments` XML tag
+    *   For the positional argument "Input Size", consider that the
+        argument can be expressed as a space separated list of
+        integers (like "100 1000 10000") and perform test iteration
+        for every value. Provide a graphical summary of parallel vs
+        sequential benchmark for performance evaluation as function of
+        problem size. In the graph subtitle, reports the value of
+        options "Sample Size" and other parameters, like "Test Type".
+
+7.  **Rcpp OpenMP/SIMD and BLAS/LAPACK Quick Start guide:**
+    *   Describe minimal package configuration required for OpenMP dependency.
+    *   Discuss the choice of `~/.R/Makevars`, instead of
+        `~/.R/Makevars` for architectural options, like the
+        `-march=native`compiler option.
 
 Example Markdown Structure:
 
 ```markdown
-# A* Search Algorithm in RcppParallel
+# Rcpp iterarors performance optimization
 
-This document demonstrates the implementation of the A* search algorithm using `RcppParallel` for parallel execution. We also leverage `RcppArmadillo` and `RcppEigen` for efficient data structures and operations.
+[Provide a brief abstract of the contents of this subject]
 
-## A* Algorithm Overview
 
-[Provide a brief explanation of the A* algorithm]
+## Introduction
+### C/C++ Iteration strategies and HPC Libraries Alternatives
+
+[Provide a brief evaluation of prons and cons of different implementation patterns]
+
+### OpenMP/SIMD primer
+
+[Provide a brief description of OpenMP pourpose, focusing on parallelism, vectorization and thread syncronization]
+
+
+### GPU Notes
+
+[Provide a brief comment and pointers on CUDA beneefits for R computations]
+
 
 ## C++ Implementation
 
 ### Sequential Version
 
 \`\`\`cpp
-// Sequential A* implementation
-#include <Rcpp.h>
-// ... (rest of the sequential code)
+// (standard CRAN prelude with Authors Copyright, License and Displaimers)
+
+// (standard Rcpp attributes for code genetaion)
+// (standard includes: RcppArmadillo, STL. OpenMP)
+
+// (the "logging" support group of funtions: "dmy_pf_log_*" )
+
+// (the "sum" group of funtions: "dmy_pf_sum_*" )
+
+// (the "outer" group of funtions: "dmy_pf_outer_*" )
+
 \`\`\`
 
-### Parallel Version
-
-\`\`\`cpp
-// Parallel A* implementation using RcppParallel
-#include <RcppParallel.h>
-// ... (rest of the parallel code)
-\`\`\`
-
-## R Callable Functions
-
-\`\`\`cpp
-// Expose the C++ functions to R
-#include <Rcpp.h>
-using namespace Rcpp;
-
-// [[Rcpp::export]]
-NumericVector astar_sequential(NumericMatrix graph, int start, int goal) {
-  // ...
-}
-
-// [[Rcpp::export]]
-NumericVector astar_parallel(NumericMatrix graph, int start, int goal) {
-  // ...
-}
-\`\`\`
 
 ## Microbenchmark Test
 
 \`\`\`R
-# R script to benchmark the sequential and parallel versions
-library(microbenchmark)
 
-# Define the graph and start/goal nodes
-graph <- matrix(runif(100), nrow = 10)
-start <- 1
-goal <- 10
+# (a roxygen compliant documentation note on script usage)
+# (include @seealso tags for C++ source, "./src/Makevars", "~/.R/Makevars")
+# (include @seealso tag for the file: "./notes/howtos/Rcpp-HOWTO-Q3-all.md")
 
-# Benchmark the functions
-bench_results <- microbenchmark(
-  astar_sequential(graph, start, goal),
-  astar_parallel(graph, start, goal),
-  times = 100  # You can change this via command line
-)
+# (the standard dependency loading, in a silent way)
 
-print(bench_results)
+# (the benchmark execution code for "sum" group of functions)
+
+# (the benchmark execution code for "outer" group of functions)
+
+# (the test iteration logic on several input size and result collector)
+
+# (the test result aggregation and transormation)
+
+# (the test result plotting code)
+
+# (the test result persistence stuff)
+
+# (the argument parsing)
+
+# (the script "main" entrypoint)
+
 \`\`\`
 
 
@@ -198,1865 +398,3107 @@ PKG_LIBS = ... $(RCPPP_LIBS)
 CXXFLAGS = ... -march=native
 \`\`\`
 
-### RcppParallel Package Installation
-
-#### \`renv\`
-
-
-\`\`\`make
-renv::status()
-renv::install()
-renv::snapshot()
-renv::status()
-\`\`\`
-
 
 ## References
 
-[^1]: [RcppParallel Documentation](https://cran.r-project.org/package=RcppParallel)
-[^2]: [A* Search Algorithm](https://en.wikipedia.org/wiki/A*_search_algorithm)
-[^3]: [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html)
+[^1]: [High performance functions with Rcpp](http://adv-r.had.co.nz/Rcpp.html)
+[^2]: [R Packages](https://r-pkgs.org/)
+[^3]: [RcppArmadillo on CRAN](https://cran.r-project.org/web/packages/RcppArmadillo/index.html)
+[^4]: [OpenMP Resources](https://www.openmp.org/resources/)
+[^5]: [CRAN Task View: High-Performance and Parallel Computing with R](https://cran.r-project.org/web/views/HighPerformanceComputing.html)
+[^6]: [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html)
+
 ```
 
 
 
-# A:5 (Vertex)
-> ...
 
-# A:5 (Gemini)
-> A* Search Algorithm with `RcppParallel`
+-------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------
+# A:3 (Claude)
+> * [Rcpp Iterators Performance Optimization](https://claude.ai/public/artifacts/dcd049f0-762c-405e-9be3-f0c1a21a747b)
+## Rcpp Iterators Performance Optimization - Contents
 
-Here is a complete guide to implementing a parallel A* search algorithm using `RcppParallel`, including a detailed C++ implementation, a micro-benchmarking R script, and a quick-start guide for project setup.
+I've created a comprehensive guide for Rcpp ecosystem performance optimization that includes:
 
-This document provides an in-depth example of accelerating a computational task in R by leveraging C++ with the `RcppParallel` package. We will implement the A* search algorithm, a popular choice for pathfinding, in both a sequential and a parallel fashion. The parallel version will demonstrate how to solve multiple pathfinding problems concurrently, a common scenario in simulations, logistics, and game development.
+### Key Features Delivered:
 
-The examples use `RcppArmadillo` for handling the graph data structure (an adjacency matrix) efficiently.[^1]
+### 1. **Complete C++ Implementation** (`./src/dummy_iter.cpp`):
+- **Sum functions**: 6 different implementations (C-style, C++ STL, OpenMP parallel/SIMD, RcppArmadillo, R base)
+- **Outer product functions**: 6 implementations with various parallelization strategies
+- **Logging system**: Comprehensive tracing with verbosity levels and duplicate suppression
+- **OpenMP integration**: Parallel for, SIMD, and collapse directives
+- **Proper Rcpp attributes**: All functions are R-callable with Roxygen2 documentation
 
-## A* Algorithm Overview
+### 2. **Sophisticated Benchmark Script** (`./exec/dummy-rcpp-bench.r`):
+- **Command-line interface**: Full argument parsing with argparse
+- **Flexible testing**: Variable input sizes, sample sizes, test types
+- **Professional logging**: Multi-level logging to files and console
+- **Performance visualization**: Automated plot generation with error bars
+- **Data export**: TSV format with metadata for further analysis
+- **Profiling support**: Optional Rprof integration
+- **System information**: Hardware configuration reporting
 
-The A* (pronounced "A-star") algorithm is a widely used pathfinding and graph traversal algorithm, valued for its performance and accuracy. It works by building a path from a starting node to a goal node, incrementally choosing the next node to explore based on a heuristic cost function.
+### 3. **Theoretical Foundation**:
+- **Performance analysis**: Detailed discussion of parallelism vs vectorization trade-offs
+- **OpenMP primer**: Comprehensive coverage of key directives and clauses
+- **Architecture considerations**: NUMA, memory bandwidth, cache locality
+- **GPU computing notes**: Performance estimates and container deployment strategies
 
-The core of A* is the formula:
+### 4. **Project Configuration**:
+- **CRAN-compliant setup**: Proper DESCRIPTION, Makevars configuration
+- **OpenMP/BLAS integration**: System requirements and linking
+- **User-level optimizations**: Architecture-specific compiler flags
+- **Development workflow**: renv setup and testing procedures
 
-`f(n) = g(n) + h(n)`
+### Performance Insights:
 
-where:
--   `n` is the next node on the path.
--   `g(n)` is the exact cost of the path from the starting node to `n`.
--   `h(n)` is a heuristic (estimated) cost from `n` to the goal node. The heuristic must be *admissible*, meaning it never overestimates the actual cost. For pathfinding on a 2D grid, a common heuristic is the Euclidean or Manhattan distance.
+The implementation demonstrates several critical performance principles:
 
-The algorithm maintains a priority queue of nodes to visit, prioritized by the lowest `f(n)` value. This ensures that it explores the most promising paths first, making it significantly more efficient than simple breadth-first or depth-first searches.[^2]
+- **Memory bandwidth limits**: For large problems, data transfer often dominates computation time
+- **Overhead vs parallelism**: OpenMP shows advantages only above certain problem sizes (typically >1K elements)
+- **SIMD effectiveness**: Vectorization provides consistent 2-4x improvements for arithmetic operations
+- **Library optimization**: RcppArmadillo leverages optimized BLAS, often outperforming hand-coded loops
+
+### Expected Results:
+
+On a 32-core Azure VM, you should see:
+- **Sum operations**: 5-20x speedup for large vectors with OpenMP
+- **Outer products**: 10-50x speedup with proper parallelization
+- **Memory-bound regions**: Performance plateau around 100K+ elements
+- **Architecture dependency**: 15-30% improvement with `-march=native`
+
+The benchmark script will generate detailed performance curves showing
+these relationships, helping you choose optimal strategies for your
+specific use cases.
+
+----------------------------------------------------------------------------------
+
+## Rcpp Iterators Performance Optimization
+
+This guide provides a comprehensive exploration of different C++
+iteration strategies within the Rcpp ecosystem, with practical
+examples demonstrating performance trade-offs between sequential,
+parallel, and vectorized approaches. The examples focus on core
+computational patterns (`sum` and `outer` product operations) that are
+fundamental building blocks in high-performance computing
+applications.
+
+## Introduction
+
+### C/C++ Iteration Strategies and HPC Libraries Alternatives
+
+Modern C++ offers multiple paradigms for vector iteration, each with
+distinct performance characteristics and safety considerations:
+
+**C-style iteration** provides maximum control and predictable
+performance but requires manual memory management and bounds
+checking. It offers the lowest overhead for simple operations but is
+prone to buffer overflows and off-by-one errors.
+
+**C++ STL iterators** balance performance with safety through
+type-safe abstractions. Range-based for loops (C++11) provide clean,
+readable code while maintaining performance comparable to manual
+indexing. STL algorithms like `std::accumulate` leverage compiler
+optimizations and can be automatically vectorized.
+
+**OpenMP parallelization** enables multi-core utilization with minimal
+code changes. The performance gain scales with core count but
+introduces synchronization overhead. Memory bandwidth often becomes
+the limiting factor on modern NUMA architectures.
+
+**SIMD vectorization** exploits CPU vector units (AVX2, AVX-512) to
+process multiple elements simultaneously. Modern compilers can
+auto-vectorize simple loops, but explicit directives ensure optimal
+utilization of vector registers.
+
+### OpenMP/SIMD Primer
+
+OpenMP provides a portable, scalable programming model for
+shared-memory parallel computing. Its directive-based approach allows
+incremental parallelization with fine-grained control over execution:
+
+**Parallelism vs Vectorization Trade-off**: On modern HPC systems (32+
+core Intel XEON/AMD EPYC), the optimal strategy depends on problem
+size and memory access patterns. Small problems benefit from
+vectorization due to lower overhead, while large problems leverage
+thread parallelism. The sweet spot often combines both approaches.
+
+**Key OpenMP Clauses**:
+- `parallel`: Creates a team of threads to execute the enclosed region
+- `for`: Distributes loop iterations across threads in the current team
+- `collapse(n)`: Combines n nested loops into a single iteration space
+- `simd`: Vectorizes the loop using SIMD instructions
+- `private(var)`: Each thread gets a private copy of the variable
+- `shared(var)`: Variable is shared among all threads (default for most variables)
+- `reduction(op:var)`: Performs reduction operation (sum, max, etc.) across threads
+
+**RcppArmadillo and RcppEigen Integration**: Both libraries provide
+optimized BLAS/LAPACK backends with automatic OpenMP threading for
+matrix operations. They leverage platform-specific optimizations
+(Intel MKL, OpenBLAS) while maintaining portability.
+
+**CRAN Compliance and Portability**: Native optimizations
+(`-march=native`) improve performance by 15-30% on modern CPUs but
+break CRAN's portability requirements. Production packages should use
+conservative compiler flags, while development can leverage
+architecture-specific optimizations through user-level configuration.
+
+### GPU Notes
+
+GPU computing offers substantial performance advantages for
+data-parallel workloads, particularly operations with high arithmetic
+intensity (compute-to-memory ratio > 1:1). Modern GPUs provide 1000+
+cores optimized for throughput over latency.
+
+**Performance Estimates**: 
+- Dense matrix operations: 5-50x speedup over CPU
+- Element-wise operations: 2-10x speedup
+- Reduction operations: 3-15x speedup
+- Small problems (<10k elements): Often slower due to transfer overhead
+
+**cuBLAS Performance**: NVIDIA's cuBLAS typically outperforms CPU BLAS
+by 5-20x for large matrices (>1000x1000), with performance scaling
+linearly with problem size. Intel MKL and OpenBLAS remain competitive
+for smaller problems and maintain lower memory requirements[^1].
+
+**Container-based CUDA**: In rootless Podman environments, NVIDIA
+Container Toolkit enables GPU access without root
+privileges. Python-based CUDA distributions (via conda-forge) provide
+a viable approach for R package system dependencies, though they
+require careful container orchestration and may complicate deployment.
 
 ## C++ Implementation
 
-Our C++ implementation will be contained in a single file. It will feature a core, single-run A* function and two R-callable wrappers: one that executes multiple searches sequentially and another that uses `RcppParallel::parallelFor` to execute them concurrently.
-
-For our use case, the "graph" is represented by an adjacency matrix where the value `graph(i, j)` is the cost (e.g., distance) to travel from node `i` to node `j`. A value of infinity indicates no direct path. The heuristic `h(n)` will be set to zero, which effectively turns the A* algorithm into Dijkstra's algorithm. This is a common simplification when a geometric heuristic is not available.
-
-The parallelization strategy here is not to parallelize a *single* A* search (which is inherently sequential) but to run many independent A* searches in parallel. This is a perfect use case for `RcppParallel`, demonstrating data parallelism on a batch of tasks.
-
-### `astar_impl.cpp`
-
 ```cpp
-#include <RcppArmadillo.h>
-#include <RcppParallel.h>
-
-#include <cmath>
-#include <limits>
-#include <queue>
-#include <vector>
-
-// Node structure for the priority queue in A* search.
-// Stores the f-score (priority) and the node index.
-struct PriorityQueueNode {
-  double priority;
-  int node_index;
-
-  // Overload the greater-than operator for the min-priority queue.
-  bool operator>(const PriorityQueueNode& other) const {
-    return priority > other.priority;
-  }
-};
-
-// Core A* search implementation for a single start/goal pair.
-// This function is not exported to R directly but is called by our wrappers.
-//
-// @param adjacency_matrix The graph's weighted adjacency matrix.
-// @param start_node The index of the starting node.
-// @param goal_node The index of the goal node.
-// @return A vector of node indices representing the shortest path, or an
-//         empty vector if no path is found.
-std::vector<int> astar_single_run(const arma::mat& adjacency_matrix,
-                                  const int start_node, const int goal_node) {
-  int num_nodes = adjacency_matrix.n_rows;
-  if (start_node < 0 || start_node >= num_nodes || goal_node < 0 ||
-      goal_node >= num_nodes) {
-    Rcpp::stop("Start or goal node index is out of bounds.");
-  }
-
-  // g_scores: Cost from start to the current node.
-  std::vector<double> g_scores(num_nodes, std::numeric_limits<double>::infinity());
-  // came_from: Stores the predecessor of each node in the path.
-  std::vector<int> came_from(num_nodes, -1);
-
-  // The priority queue stores nodes to visit, ordered by their f-score.
-  // Using a min-priority queue to always get the node with the smallest f-score.
-  std::priority_queue<PriorityQueueNode, std::vector<PriorityQueueNode>,
-                      std::greater<PriorityQueueNode>>
-      open_set;
-
-  // Initialize with the start node.
-  g_scores[start_node] = 0.0;
-  // f_score = g_score + heuristic. Heuristic is 0 here (Dijkstra's).
-  open_set.push({0.0, start_node});
-
-  while (!open_set.empty()) {
-    int current_node = open_set.top().node_index;
-    open_set.pop();
-
-    if (current_node == goal_node) {
-      // Goal reached. Reconstruct the path backwards from the goal node.
-      std::vector<int> path;
-      int temp_node = goal_node;
-      while (temp_node != -1) {
-        path.push_back(temp_node + 1);  // Convert to 1-based index for R.
-        temp_node = came_from[temp_node];
-      }
-      std::reverse(path.begin(), path.end());
-      return path;
-    }
-
-    // Explore neighbors of the current node.
-    for (int neighbor_node = 0; neighbor_node < num_nodes; ++neighbor_node) {
-      double edge_weight = adjacency_matrix(current_node, neighbor_node);
-      if (std::isinf(edge_weight)) {
-        continue;  // No direct path to this neighbor.
-      }
-
-      // Calculate the tentative g_score for the neighbor.
-      double tentative_g_score = g_scores[current_node] + edge_weight;
-
-      if (tentative_g_score < g_scores[neighbor_node]) {
-        // This path to the neighbor is better than any previous one. Record it.
-        came_from[neighbor_node] = current_node;
-        g_scores[neighbor_node] = tentative_g_score;
-        // f_score = g_score + heuristic.
-        double f_score = tentative_g_score;  // Heuristic is 0.
-        open_set.push({f_score, neighbor_node});
-      }
-    }
-  }
-
-  // No path found from start to goal.
-  return {};
-}
-
-// R-callable sequential version to run A* on a batch of start/goal pairs.
-//
-// [[Rcpp::export]]
-Rcpp::List astar_sequential_batch(const arma::mat& adjacency_matrix,
-                                  const arma::ivec& start_nodes,
-                                  const arma::ivec& goal_nodes) {
-  if (start_nodes.n_elem != goal_nodes.n_elem) {
-    Rcpp::stop("Start and goal node vectors must have the same length.");
-  }
-  int num_tasks = start_nodes.n_elem;
-  Rcpp::List results(num_tasks);
-
-  for (int i = 0; i < num_tasks; ++i) {
-    // Note: R uses 1-based indexing, C++ uses 0-based.
-    results[i] = astar_single_run(adjacency_matrix, start_nodes[i] - 1,
-                                  goal_nodes[i] - 1);
-  }
-  return results;
-}
-
-// Worker struct for RcppParallel.
-// This defines the task that will be executed in parallel for a range of items.
-struct AStarWorker : public RcppParallel::Worker {
-  // Input data (read-only)
-  const RcppParallel::RMatrix<double> adjacency_matrix_acc;
-  const RcppParallel::RVector<int> start_nodes_acc;
-  const RcppParallel::RVector<int> goal_nodes_acc;
-
-  // Output data container
-  RcppParallel::RVector<Rcpp::List::Proxy> results_acc;
-
-  // Constructor to initialize the worker with input and output data.
-  AStarWorker(const arma::mat& adjacency_matrix, const arma::ivec& start_nodes,
-              const arma::ivec& goal_nodes, Rcpp::List& results)
-      : adjacency_matrix_acc(adjacency_matrix),
-        start_nodes_acc(start_nodes),
-        goal_nodes_acc(goal_nodes),
-        results_acc(results) {}
-
-  // The core operator() that RcppParallel calls for a sub-range of tasks.
-  void operator()(std::size_t begin, std::size_t end) {
-    // Create a read-only arma::mat wrapper around the input matrix accessor.
-    // This is safe and avoids data copying.
-    const arma::mat adjacency_matrix_ro(adjacency_matrix_acc.begin(),
-                                        adjacency_matrix_acc.nrow(),
-                                        adjacency_matrix_acc.ncol(), false, true);
-
-    for (std::size_t i = begin; i < end; ++i) {
-      // The core logic is the same as the sequential version.
-      std::vector<int> path = astar_single_run(
-          adjacency_matrix_ro, start_nodes_acc[i] - 1, goal_nodes_acc[i] - 1);
-      // RcppParallel requires careful handling of writes to shared R objects.
-      // Accessing the List::Proxy is thread-safe.
-      results_acc[i] = Rcpp::wrap(path);
-    }
-  }
-};
-
-// R-callable parallel version using RcppParallel::parallelFor.
-//
-// [[Rcpp::export]]
-Rcpp::List astar_parallel_batch(const arma::mat& adjacency_matrix,
-                                const arma::ivec& start_nodes,
-                                const arma::ivec& goal_nodes) {
-  if (start_nodes.n_elem != goal_nodes.n_elem) {
-    Rcpp::stop("Start and goal node vectors must have the same length.");
-  }
-  int num_tasks = start_nodes.n_elem;
-  Rcpp::List results(num_tasks);
-
-  // Create an instance of the worker.
-  AStarWorker astar_worker(adjacency_matrix, start_nodes, goal_nodes, results);
-
-  // Execute the work in parallel over the range of tasks.
-  RcppParallel::parallelFor(0, num_tasks, astar_worker);
-
-  return results;
-}
-```
-
-## Microbenchmark Test
-
-To verify the performance advantage of the parallel implementation, we'll use an R script that leverages the `argparser`, `microbenchmark`, and `ggplot2` packages. This script will generate random graphs of varying sizes, run both the sequential and parallel versions, and plot the results.
-
-### `benchmark.R`
-
-```R
-#!/usr/bin/env Rscript
-
-# Load required libraries
-suppressPackageStartupMessages(library(argparser))
-suppressPackageStartupMessages(library(Rcpp))
-suppressPackageStartupMessages(library(microbenchmark))
-suppressPackageStartupMessages(library(ggplot2))
-suppressPackageStartupMessages(library(tidyr))
-suppressPackageStartupMessages(library(jsonlite))
-
-# --- Argument Parsing ---
-p <- arg_parser("Benchmark script for sequential vs. parallel A* search.")
-p <- add_argument(p, "inputsizes", help = "Space-separated list of graph node counts.", nargs = Inf)
-p <- add_argument(p, "-m", "--samples", help = "Number of microbenchmark iterations.", default = 10)
-p <- add_argument(p, "-s", "--save", help = "Save benchmark data and results to a JSON file.", flag = TRUE)
-p <- add_argument(p, "-g", "--density", help = "Graph density (0.0 to 1.0).", default = 0.8)
-p <- add_argument(p, "--tasks", help = "Number of pathfinding tasks to run.", default = 200)
-
-# Set default for positional argument if not provided
-argv <- commandArgs(trailingOnly = TRUE)
-if (length(argv) == 0 || !grepl("^[0-9]", argv[1])) {
-    argv <- c("50", "100", "200", argv)
-}
-args <- parse_args(p, argv = argv)
-
-# --- Source C++ Code ---
-tryCatch({
-    sourceCpp("astar_impl.cpp")
-}, error = function(e) {
-    message("Error compiling C++ code. Make sure 'astar_impl.cpp' is in the current directory.")
-    stop(e)
-})
-
-# --- Helper Function to Generate Graphs ---
-generate_random_graph <- function(num_nodes, density) {
-  # Create a dense matrix with random weights
-  graph <- matrix(runif(num_nodes^2, 1, 100), nrow = num_nodes)
-
-  # Introduce "impassable" edges based on density
-  # A lower density means more impassable edges (Inf weight)
-  num_inf <- floor(num_nodes^2 * (1 - density))
-  if (num_inf > 0) {
-    inf_indices <- sample(1:(num_nodes^2), num_inf)
-    graph[inf_indices] <- Inf
-  }
-
-  # Ensure the diagonal is 0 (cost to self is zero)
-  diag(graph) <- 0
-  return(graph)
-}
-
-# --- Main Benchmark Loop ---
-cat("Starting benchmark with the following settings:\n")
-cat("- Graph Sizes:", paste(args$inputsizes, collapse = ", "), "\n")
-cat("- Benchmark Samples:", args$samples, "\n")
-cat("- Graph Density:", args$density, "\n")
-cat("- Pathfinding Tasks:", args$tasks, "\n\n")
-
-all_results <- list()
-
-for (size in as.integer(args$inputsizes)) {
-  cat("Running benchmark for graph size:", size, "x", size, "...\n")
-
-  # 1. Generate input data
-  graph_data <- generate_random_graph(size, args$density)
-  start_nodes <- sample(1:size, args$tasks, replace = TRUE)
-  goal_nodes <- sample(1:size, args$tasks, replace = TRUE)
-
-  # 2. Run microbenchmark
-  bench_res <- microbenchmark(
-    sequential = astar_sequential_batch(graph_data, start_nodes, goal_nodes),
-    parallel = astar_parallel_batch(graph_data, start_nodes, goal_nodes),
-    times = args$samples
-  )
-
-  # 3. Store results
-  res_df <- as.data.frame(bench_res)
-  res_df$size <- size
-  all_results[[as.character(size)]] <- list(
-    graph = if(args$save) graph_data else "Not saved",
-    tasks = data.frame(start = start_nodes, goal = goal_nodes),
-    benchmark_summary = summary(bench_res),
-    benchmark_raw = res_df
-  )
-}
-
-# --- Process and Plot Results ---
-benchmark_df <- do.call(rbind, lapply(all_results, function(x) x$benchmark_raw))
-
-# Convert time from nanoseconds to milliseconds for better readability
-benchmark_df$time_ms <- benchmark_df$time / 1e6
-
-plot_title <- "A* Batch Performance: Sequential vs. Parallel"
-plot_subtitle <- sprintf(
-  "Samples: %d | Tasks per Run: %d | Graph Density: %.2f",
-  args$samples, args$tasks, args$density
-)
-
-perf_plot <- ggplot(benchmark_df, aes(x = factor(size), y = time_ms, fill = expr)) +
-  geom_boxplot() +
-  scale_y_log10() + # Use log scale for time due to large potential differences
-  labs(
-    title = plot_title,
-    subtitle = plot_subtitle,
-    x = "Number of Nodes in Graph",
-    y = "Execution Time (milliseconds, log scale)",
-    fill = "Implementation"
-  ) +
-  theme_light() +
-  theme(
-    plot.title = element_text(hjust = 0.5, face = "bold"),
-    plot.subtitle = element_text(hjust = 0.5),
-    legend.position = "top"
-  )
-
-print(perf_plot)
-cat("\nBenchmark complete. Plot displayed.\n")
-
-# --- Save Data if Requested ---
-if (args$save) {
-  output_file <- "astar_benchmark_results.json"
-  # Cannot save the raw graph matrix in JSON easily if it's large, so we remove it.
-  # The summary is more useful anyway.
-  for(size_char in names(all_results)) {
-      all_results[[size_char]]$graph <- NULL
-      # Convert data frame to list for consistent JSON output
-      all_results[[size_char]]$benchmark_raw <- as.list(all_results[[size_char]]$benchmark_raw)
-  }
-
-  json_output <- toJSON(all_results, pretty = TRUE, auto_unbox = TRUE)
-  write(json_output, output_file)
-  cat("Benchmark data and results saved to:", output_file, "\n")
-}
-```
-
-### How to Run the Benchmark
-
-1.  Save the C++ code as `astar_impl.cpp`.
-2.  Save the R script as `benchmark.R`.
-3.  Make the R script executable: `chmod +x benchmark.R`.
-4.  Run from your terminal:
-
-    ```bash
-    # Run with default settings (sizes 50, 100, 200)
-    ./benchmark.R
-
-    # Run with custom graph sizes, more samples, and save the results
-    ./benchmark.R -m 50 -s --density 0.9 100 250 500
-    ```
-
-## `RcppParallel` Quick Start Guide
-
-Integrating `RcppParallel` into an existing `renv`-managed R package that already uses `Rcpp` and `RcppArmadillo` is straightforward. Here are the required steps.
-
-### Project Configuration
-
-#### `DESCRIPTION`
-
-You need to add `RcppParallel` to the `LinkingTo` field so the compiler knows where to find its headers. It's also good practice to add it to `Imports`.
-
-```yaml
-Package: MyParallelPackage
-Type: Package
-Version: 0.1.0
-Depends:
-    R (>= 3.5.0)
-Imports:
-    Rcpp,
-    RcppParallel
-LinkingTo:
-    Rcpp,
-    RcppArmadillo,
-    RcppParallel
-SystemRequirements:
-    C++11
-```
-
-#### `./src/Makevars` and `./src/Makevars.win`
-
-`RcppParallel` relies on Intel's Threading Building Blocks (TBB) for its backend. The package provides a helper to get the correct compiler and linker flags. You should add this to your `Makevars` files.
-
-**`src/Makevars` (for Linux/macOS):**
-```make
-# Get the TBB library flags from RcppParallel
-TBB_LIBS = $(shell Rscript -e "RcppParallel::TBBlibs()")
-
-# Add these flags to the package's library list
-PKG_LIBS = $(TBB_LIBS) $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)
-```
-
-**`src/Makevars.win` (for Windows):**
-```make
-# Get the TBB library flags from RcppParallel
-TBB_LIBS = $(shell Rscript.exe -e "RcppParallel::TBBlibs()")
-
-# Add these flags to the package's library list
-PKG_LIBS = $(TBB_LIBS) $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)
-```
-
-#### `~/.R/Makevars` (Optional: Performance Tuning)
-
-For maximum performance, you can instruct your compiler to generate code optimized for your specific CPU architecture. This enables the use of modern CPU features like AVX/AVX2 for SIMD (Single Instruction, Multiple Data) operations. Add the `-march=native` flag to your personal `Makevars` file.
-
-**This is a user-specific setting and should not be part of the package itself.**
-
-```make
-# In ~/.R/Makevars
-CXX11FLAGS += -O3 -march=native
-```
-
-### `RcppParallel` Package Installation
-
-#### System Dependencies
-
-A key advantage of `RcppParallel` is that it **bundles TBB**, so there are typically **no external system libraries to install**. This simplifies package distribution and installation significantly compared to other parallel computing frameworks that may require system-wide MPI or OpenMP installations.
-
-#### `renv` Workflow
-
-If you are using `renv` in "explicit" mode, you manage dependencies directly.
-
-1.  **Install the package**:
-    From within your R session in the project directory, run:
-    ```R
-    renv::install("RcppParallel")
-    ```
-    This command downloads and installs `RcppParallel` into your project-specific `renv` library.
-
-2.  **Update the lockfile**:
-    After successful installation, update `renv.lock` to record the new dependency:
-    ```R
-    renv::snapshot()
-    ```
-    `renv` will detect the new package and ask for confirmation before writing the changes to the lockfile.
-
-3.  **Verify the status**:
-    You can check the project's dependency status at any time with `renv::status()`. After these steps, it should report that the project is in a consistent state.
-
-## References
-
-[^1]: [RcppArmadillo Documentation](https://cran.r-project.org/package=RcppArmadillo)
-[^2]: [A* Search Algorithm on Wikipedia](https://en.wikipedia.org/wiki/A*_search_algorithm)
-[^3]: [RcppParallel Documentation](https://cran.r-project.org/package=RcppParallel)
-[^4]: [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html)
-
-
-
-# A:5 (Claude)
-> A* Search Algorithm with RcppParallel
-
-I'll create a comprehensive example demonstrating the A* search algorithm implemented with RcppParallel, focusing on `parallelFor` and `parallelReduce` features. This will be an educational and practical implementation.I've created a comprehensive guide for implementing the A* search algorithm with RcppParallel. Here are the key highlights:
-
-## Contents
-### Key Features
-
-1. **Complete A* Implementation**: Both sequential and parallel versions with proper heuristic-based pathfinding
-2. **RcppParallel Integration**: Uses `parallelFor` for neighbor exploration and `parallelReduce` for finding minimum cost nodes
-3. **Performance Optimized**: Leverages RcppArmadillo for efficient matrix operations and includes SIMD optimizations
-4. **Comprehensive Benchmarking**: Full-featured R script with command-line argument parsing and visualization
-5. **Production Ready**: Follows CRAN guidelines and Google C++ style guide
-
-### Technical Implementation
-
-The parallel version uses two key RcppParallel patterns:
-- **NeighborExplorer Worker**: Parallelizes the exploration of neighboring nodes using `parallelFor`
-- **MinCostReducer**: Efficiently finds the minimum cost node across parallel workers using `parallelReduce`
-
-### Benchmark Script Features
-
-The benchmark script (`benchmark_astar.R`) includes:
-- Command-line argument parsing with `argparser`
-- Multiple graph size testing
-- Statistical analysis with speedup calculations
-- Visualization with `ggplot2`
-- Optional data persistence in JSON format
-- Configurable graph density and sample sizes
-
-### Quick Start Guide
-
-The guide includes complete configuration files for:
-- `DESCRIPTION` with proper dependencies
-- Platform-specific `Makevars` files
-- User-level optimizations with native CPU flags
-- System dependency installation for major platforms
-- Complete `renv` workflow
-
-This implementation demonstrates real-world usage of RcppParallel's key features while providing educational value through the classic A* algorithm. The parallel version should show significant speedups on larger graphs (>500 nodes) while maintaining algorithmic correctness.
-
----------------------------------------------------------
-
->A* Search Algorithm with RcppParallel
-
-This document demonstrates a parallel implementation of the A* search algorithm using `RcppParallel`, `RcppArmadillo`, and `RcppEigen`. We present both sequential and parallel versions with comprehensive benchmarking.
-
-## A* Algorithm Overview
-
-The A* search algorithm[^1] is a graph traversal and path searching algorithm that finds the shortest path between nodes. It uses a heuristic function to guide the search, making it more efficient than Dijkstra's algorithm. The algorithm maintains a priority queue of nodes to explore, ordered by f(n) = g(n) + h(n), where:
-
-- g(n) = actual cost from start to node n
-- h(n) = heuristic estimate from node n to goal
-- f(n) = estimated total cost of path through n
-
-Our parallel implementation leverages `parallelFor` to explore multiple nodes concurrently and `parallelReduce` to efficiently find the minimum cost paths across parallel workers.
-
-## C++ Implementation
-
-### Complete Source Code
-
-```cpp
-// astar_parallel.cpp
-#include <Rcpp.h>
-#include <RcppParallel.h>
-#include <RcppArmadillo.h>
-#include <queue>
-#include <vector>
-#include <unordered_map>
-#include <unordered_set>
-#include <cmath>
-#include <limits>
-#include <memory>
-
-// [[Rcpp::depends(RcppParallel)]]
+// Rcpp Performance Benchmark Examples
+// Copyright (C) 2025 Author Name
+// 
+// This file is part of the Rcpp ecosystem performance optimization examples.
+// Licensed under GPL (>= 2)
+
+// [[Rcpp::plugins(cpp11)]]
+// [[Rcpp::plugins(openmp)]]
 // [[Rcpp::depends(RcppArmadillo)]]
 
+#include <RcppArmadillo.h>
+#include <set>
+#include <string>
+#include <sstream>
+
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
 using namespace Rcpp;
-using namespace RcppParallel;
+using namespace arma;
 
-// Node structure for A* algorithm
-struct AStarNode {
-  int id;
-  double g_cost;    // Cost from start
-  double h_cost;    // Heuristic cost to goal
-  double f_cost;    // Total cost
-  int parent;
+//==============================================================================
+// Logging Support Functions
+//==============================================================================
 
-  AStarNode() : id(-1), g_cost(0), h_cost(0), f_cost(0), parent(-1) {}
-  AStarNode(int id_, double g_, double h_, int parent_)
-    : id(id_), g_cost(g_), h_cost(h_), f_cost(g_ + h_), parent(parent_) {}
-};
+static int log_level = 0;
+static std::set<std::string> trace_locations;
 
-// Comparator for priority queue (min-heap based on f_cost)
-struct NodeComparator {
-  bool operator()(const AStarNode& a, const AStarNode& b) const {
-    if (std::abs(a.f_cost - b.f_cost) < 1e-9) {
-      return a.h_cost > b.h_cost; // Prefer lower heuristic as tie-breaker
-    }
-    return a.f_cost > b.f_cost;
-  }
-};
-
-// Euclidean distance heuristic for 2D grid positions
-double euclidean_heuristic(const arma::mat& positions, int from, int to) {
-  double dx = positions(from, 0) - positions(to, 0);
-  double dy = positions(from, 1) - positions(to, 1);
-  return std::sqrt(dx * dx + dy * dy);
-}
-
-// Sequential A* implementation
-std::vector<int> astar_sequential_impl(const arma::mat& adjacency_matrix,
-                                      const arma::mat& positions,
-                                      int start, int goal) {
-  int n_nodes = adjacency_matrix.n_rows;
-
-  std::priority_queue<AStarNode, std::vector<AStarNode>, NodeComparator> open_set;
-  std::unordered_set<int> open_set_ids;
-  std::unordered_set<int> closed_set;
-  std::unordered_map<int, double> best_g_cost;
-
-  // Initialize start node
-  double h_start = euclidean_heuristic(positions, start, goal);
-  open_set.push(AStarNode(start, 0.0, h_start, -1));
-  open_set_ids.insert(start);
-  best_g_cost[start] = 0.0;
-
-  std::unordered_map<int, int> came_from;
-
-  while (!open_set.empty()) {
-    AStarNode current = open_set.top();
-    open_set.pop();
-    open_set_ids.erase(current.id);
-
-    // Skip if we've already processed this node with better cost
-    if (closed_set.count(current.id) ||
-        (best_g_cost.count(current.id) && best_g_cost[current.id] < current.g_cost)) {
-      continue;
-    }
-
-    closed_set.insert(current.id);
-    came_from[current.id] = current.parent;
-
-    if (current.id == goal) {
-      // Reconstruct path
-      std::vector<int> path;
-      int node = goal;
-      while (node != -1) {
-        path.push_back(node);
-        node = came_from[node];
-      }
-      std::reverse(path.begin(), path.end());
-      return path;
-    }
-
-    // Explore neighbors
-    for (int neighbor = 0; neighbor < n_nodes; ++neighbor) {
-      double edge_weight = adjacency_matrix(current.id, neighbor);
-      if (edge_weight <= 0 || closed_set.count(neighbor)) continue;
-
-      double tentative_g = current.g_cost + edge_weight;
-
-      if (!best_g_cost.count(neighbor) || tentative_g < best_g_cost[neighbor]) {
-        best_g_cost[neighbor] = tentative_g;
-        double h_cost = euclidean_heuristic(positions, neighbor, goal);
-
-        if (!open_set_ids.count(neighbor)) {
-          open_set.push(AStarNode(neighbor, tentative_g, h_cost, current.id));
-          open_set_ids.insert(neighbor);
-        }
-      }
-    }
-  }
-
-  return std::vector<int>(); // No path found
-}
-
-// Parallel neighbor exploration worker
-struct NeighborExplorer : public Worker {
-  const arma::mat& adjacency_matrix;
-  const arma::mat& positions;
-  const int current_node;
-  const double current_g_cost;
-  const int goal;
-  const std::unordered_set<int>& closed_set;
-
-  // Output containers (thread-safe via partitioning)
-  tbb::concurrent_vector<AStarNode>& candidate_nodes;
-
-  NeighborExplorer(const arma::mat& adj, const arma::mat& pos,
-                  int current, double g_cost, int goal_node,
-                  const std::unordered_set<int>& closed,
-                  tbb::concurrent_vector<AStarNode>& candidates)
-    : adjacency_matrix(adj), positions(pos), current_node(current),
-      current_g_cost(g_cost), goal(goal_node), closed_set(closed),
-      candidate_nodes(candidates) {}
-
-  void operator()(std::size_t begin, std::size_t end) {
-    for (std::size_t i = begin; i < end; ++i) {
-      double edge_weight = adjacency_matrix(current_node, i);
-
-      if (edge_weight > 0 && !closed_set.count(i)) {
-        double tentative_g = current_g_cost + edge_weight;
-        double h_cost = euclidean_heuristic(positions, i, goal);
-        candidate_nodes.push_back(AStarNode(i, tentative_g, h_cost, current_node));
-      }
-    }
-  }
-};
-
-// Parallel minimum cost reducer
-struct MinCostReducer {
-  const std::vector<AStarNode>& nodes;
-  AStarNode min_node;
-
-  MinCostReducer(const std::vector<AStarNode>& node_vec)
-    : nodes(node_vec), min_node() {
-    min_node.f_cost = std::numeric_limits<double>::infinity();
-  }
-
-  MinCostReducer(const MinCostReducer& other, tbb::split)
-    : nodes(other.nodes), min_node() {
-    min_node.f_cost = std::numeric_limits<double>::infinity();
-  }
-
-  void operator()(const tbb::blocked_range<size_t>& range) {
-    for (size_t i = range.begin(); i < range.end(); ++i) {
-      if (nodes[i].f_cost < min_node.f_cost) {
-        min_node = nodes[i];
-      }
-    }
-  }
-
-  void join(const MinCostReducer& other) {
-    if (other.min_node.f_cost < min_node.f_cost) {
-      min_node = other.min_node;
-    }
-  }
-};
-
-// Parallel A* implementation
-std::vector<int> astar_parallel_impl(const arma::mat& adjacency_matrix,
-                                    const arma::mat& positions,
-                                    int start, int goal) {
-  int n_nodes = adjacency_matrix.n_rows;
-
-  std::vector<AStarNode> open_set;
-  std::unordered_set<int> open_set_ids;
-  std::unordered_set<int> closed_set;
-  std::unordered_map<int, double> best_g_cost;
-  std::unordered_map<int, int> came_from;
-
-  // Initialize start node
-  double h_start = euclidean_heuristic(positions, start, goal);
-  open_set.push_back(AStarNode(start, 0.0, h_start, -1));
-  open_set_ids.insert(start);
-  best_g_cost[start] = 0.0;
-
-  while (!open_set.empty()) {
-    // Use parallelReduce to find minimum cost node
-    MinCostReducer reducer(open_set);
-    tbb::parallel_reduce(tbb::blocked_range<size_t>(0, open_set.size()), reducer);
-
-    AStarNode current = reducer.min_node;
-
-    // Remove current from open set
-    open_set.erase(std::remove_if(open_set.begin(), open_set.end(),
-                   [current](const AStarNode& n) { return n.id == current.id; }),
-                   open_set.end());
-    open_set_ids.erase(current.id);
-    closed_set.insert(current.id);
-    came_from[current.id] = current.parent;
-
-    if (current.id == goal) {
-      // Reconstruct path
-      std::vector<int> path;
-      int node = goal;
-      while (node != -1) {
-        path.push_back(node);
-        node = came_from[node];
-      }
-      std::reverse(path.begin(), path.end());
-      return path;
-    }
-
-    // Use parallelFor to explore neighbors
-    tbb::concurrent_vector<AStarNode> candidate_nodes;
-    NeighborExplorer explorer(adjacency_matrix, positions, current.id,
-                             current.g_cost, goal, closed_set, candidate_nodes);
-
-    parallelFor(0, n_nodes, explorer);
-
-    // Update open set with better candidates
-    for (const auto& candidate : candidate_nodes) {
-      if (!best_g_cost.count(candidate.id) ||
-          candidate.g_cost < best_g_cost[candidate.id]) {
-        best_g_cost[candidate.id] = candidate.g_cost;
-
-        if (!open_set_ids.count(candidate.id)) {
-          open_set.push_back(candidate);
-          open_set_ids.insert(candidate.id);
-        }
-      }
-    }
-  }
-
-  return std::vector<int>(); // No path found
-}
-
-// R callable functions
+//' Set logging verbosity level
+//' @param level Integer verbosity level (0=info, 3=trace)
+//' @export
 // [[Rcpp::export]]
-List generate_random_graph(int n_nodes, double density = 0.3, int seed = 42) {
-  Rcpp::Environment base_env = Rcpp::Environment::base_env();
-  Rcpp::Function set_seed = base_env["set.seed"];
-  set_seed(seed);
-
-  arma::mat adjacency(n_nodes, n_nodes, arma::fill::zeros);
-  arma::mat positions(n_nodes, 2);
-
-  // Generate random positions
-  positions = arma::randu(n_nodes, 2) * 100; // Scale to [0, 100]
-
-  // Generate random edges based on density
-  for (int i = 0; i < n_nodes; ++i) {
-    for (int j = i + 1; j < n_nodes; ++j) {
-      if (R::runif(0, 1) < density) {
-        double weight = euclidean_heuristic(positions, i, j) * (0.8 + 0.4 * R::runif(0, 1));
-        adjacency(i, j) = weight;
-        adjacency(j, i) = weight; // Undirected graph
-      }
-    }
-  }
-
-  return List::create(
-    Named("adjacency") = adjacency,
-    Named("positions") = positions
-  );
+void dmy_pf_log_set_level(int level) {
+  log_level = level;
 }
 
+//' Get current logging level
+//' @return Current verbosity level
+//' @export
 // [[Rcpp::export]]
-IntegerVector astar_sequential(const arma::mat& adjacency_matrix,
-                              const arma::mat& positions,
-                              int start, int goal) {
-  std::vector<int> path = astar_sequential_impl(adjacency_matrix, positions, start - 1, goal - 1);
+int dmy_pf_log_get_level() {
+  return log_level;
+}
 
-  if (path.empty()) {
-    return IntegerVector::create();
-  }
+//' Reset trace location tracking
+//' @export
+// [[Rcpp::export]]
+void dmy_pf_log_reset() {
+  trace_locations.clear();
+}
 
-  IntegerVector result(path.size());
-  for (size_t i = 0; i < path.size(); ++i) {
-    result[i] = path[i] + 1; // Convert back to 1-based indexing
+//' Output log message if verbosity >= 0
+//' @param file Source file name
+//' @param line Line number  
+//' @param message Log message
+//' @export
+// [[Rcpp::export]]
+void dmy_pf_log_out(const std::string& file, int line, 
+                    const std::string& message) {
+  if (log_level >= 0) {
+    Rcpp::Rcout << "[LOG] " << file << ":" << line << " " << message << std::endl;
   }
+}
+
+//' Output trace message if verbosity >= 3 (once per location)
+//' @param file Source file name
+//' @param line Line number
+//' @param message Trace message  
+//' @export
+// [[Rcpp::export]]
+void dmy_pf_log_trace(const std::string& file, int line,
+                      const std::string& message) {
+  if (log_level >= 3) {
+    std::stringstream ss;
+    ss << file << ":" << line;
+    std::string location = ss.str();
+    
+    if (trace_locations.find(location) == trace_locations.end()) {
+      trace_locations.insert(location);
+      Rcpp::Rcerr << "[TRACE] " << location << " " << message << std::endl;
+    }
+  }
+}
+
+#define V_LOG(msg) dmy_pf_log_out(__FILE__, __LINE__, msg)
+#define V_TRACE(msg) dmy_pf_log_trace(__FILE__, __LINE__, msg)
+
+//==============================================================================
+// Sum Function Group - Various Implementation Strategies  
+//==============================================================================
+
+//' Sum using C-style for loop with manual indexing
+//' @param x Numeric vector to sum
+//' @return Sum of vector elements
+//' @examples
+//' \dontrun{
+//' x <- rnorm(1000)
+//' result <- dmy_pf_sum_c_style(x)
+//' }
+//' @export
+// [[Rcpp::export]]
+double dmy_pf_sum_c_style(const NumericVector& x) {
+  V_TRACE("C-style sum starting");
+  double sum = 0.0;
+  int n = x.size();
+  
+  for (int i = 0; i < n; ++i) {
+    sum += x[i];
+  }
+  
+  V_TRACE("C-style sum completed");
+  return sum;
+}
+
+//' Sum using C++11 range-based for loop
+//' @param x Numeric vector to sum  
+//' @return Sum of vector elements
+//' @examples
+//' \dontrun{
+//' x <- rnorm(1000)
+//' result <- dmy_pf_sum_cpp_range(x)
+//' }
+//' @export
+// [[Rcpp::export]]
+double dmy_pf_sum_cpp_range(const NumericVector& x) {
+  V_TRACE("C++ range-based sum starting");
+  double sum = 0.0;
+  
+  for (const double& val : x) {
+    sum += val;
+  }
+  
+  V_TRACE("C++ range-based sum completed");
+  return sum;
+}
+
+//' Sum using STL iterators
+//' @param x Numeric vector to sum
+//' @return Sum of vector elements  
+//' @examples
+//' \dontrun{
+//' x <- rnorm(1000)
+//' result <- dmy_pf_sum_stl_iter(x)
+//' }
+//' @export
+// [[Rcpp::export]]
+double dmy_pf_sum_stl_iter(const NumericVector& x) {
+  V_TRACE("STL iterator sum starting");
+  double sum = std::accumulate(x.begin(), x.end(), 0.0);
+  V_TRACE("STL iterator sum completed");
+  return sum;
+}
+
+#ifdef _OPENMP
+//' Sum using OpenMP parallel reduction
+//' @param x Numeric vector to sum
+//' @return Sum of vector elements
+//' @examples  
+//' \dontrun{
+//' x <- rnorm(10000)
+//' result <- dmy_pf_sum_omp_parallel(x)
+//' }
+//' @export
+// [[Rcpp::export]]
+double dmy_pf_sum_omp_parallel(const NumericVector& x) {
+  V_TRACE("OpenMP parallel sum starting");
+  double sum = 0.0;
+  int n = x.size();
+  
+  #pragma omp parallel for reduction(+:sum)
+  for (int i = 0; i < n; ++i) {
+    sum += x[i];
+  }
+  
+  V_TRACE("OpenMP parallel sum completed");
+  return sum;
+}
+
+//' Sum using OpenMP parallel for with SIMD vectorization
+//' @param x Numeric vector to sum
+//' @return Sum of vector elements
+//' @examples
+//' \dontrun{
+//' x <- rnorm(10000)  
+//' result <- dmy_pf_sum_omp_simd(x)
+//' }
+//' @export
+// [[Rcpp::export]]
+double dmy_pf_sum_omp_simd(const NumericVector& x) {
+  V_TRACE("OpenMP SIMD sum starting");
+  double sum = 0.0;
+  int n = x.size();
+  
+  #pragma omp parallel for simd reduction(+:sum)
+  for (int i = 0; i < n; ++i) {
+    sum += x[i];
+  }
+  
+  V_TRACE("OpenMP SIMD sum completed");
+  return sum;
+}
+#endif
+
+//' Sum using RcppArmadillo
+//' @param x Numeric vector to sum
+//' @return Sum of vector elements
+//' @examples
+//' \dontrun{
+//' x <- rnorm(1000)
+//' result <- dmy_pf_sum_armadillo(x)  
+//' }
+//' @export
+// [[Rcpp::export]]
+double dmy_pf_sum_armadillo(const NumericVector& x) {
+  V_TRACE("Armadillo sum starting");
+  arma::vec av = as<arma::vec>(x);
+  double result = arma::accu(av);
+  V_TRACE("Armadillo sum completed");
   return result;
 }
 
+//' Sum using R base::sum function called from C++
+//' @param x Numeric vector to sum
+//' @return Sum of vector elements
+//' @examples
+//' \dontrun{
+//' x <- rnorm(1000)
+//' result <- dmy_pf_sum_r_base(x)
+//' }
+//' @export  
 // [[Rcpp::export]]
-IntegerVector astar_parallel(const arma::mat& adjacency_matrix,
-                            const arma::mat& positions,
-                            int start, int goal) {
-  std::vector<int> path = astar_parallel_impl(adjacency_matrix, positions, start - 1, goal - 1);
+double dmy_pf_sum_r_base(const NumericVector& x) {
+  V_TRACE("base::sum starting");
+  Function sum("sum");
+  NumericVector result = sum(x);
+  V_TRACE("base::sum completed");
+  return result[0];
+}
 
-  if (path.empty()) {
-    return IntegerVector::create();
-  }
+//==============================================================================
+// Outer Product Function Group - Matrix Operations
+//==============================================================================
 
-  IntegerVector result(path.size());
-  for (size_t i = 0; i < path.size(); ++i) {
-    result[i] = path[i] + 1; // Convert back to 1-based indexing
+//' Outer product using C-style nested loops
+//' @param x First input vector
+//' @param y Second input vector  
+//' @return Matrix representing outer product
+//' @examples
+//' \dontrun{
+//' x <- rnorm(100)
+//' y <- rnorm(100)
+//' result <- dmy_pf_outer_c_style(x, y)
+//' }
+//' @export
+// [[Rcpp::export]]
+NumericMatrix dmy_pf_outer_c_style(const NumericVector& x, 
+                                   const NumericVector& y) {
+  V_TRACE("C-style outer product starting");
+  int nx = x.size();
+  int ny = y.size();
+  NumericMatrix result(nx, ny);
+  
+  for (int i = 0; i < nx; ++i) {
+    for (int j = 0; j < ny; ++j) {
+      result(i, j) = x[i] * y[j];
+    }
   }
+  
+  V_TRACE("C-style outer product completed");
+  return result;
+}
+
+//' Outer product using C++ STL iterators
+//' @param x First input vector
+//' @param y Second input vector
+//' @return Matrix representing outer product  
+//' @examples
+//' \dontrun{
+//' x <- rnorm(100)
+//' y <- rnorm(100)
+//' result <- dmy_pf_outer_cpp_iter(x, y)
+//' }
+//' @export
+// [[Rcpp::export]]
+NumericMatrix dmy_pf_outer_cpp_iter(const NumericVector& x,
+                                    const NumericVector& y) {
+  V_TRACE("C++ iterator outer product starting");
+  int nx = x.size();
+  int ny = y.size(); 
+  NumericMatrix result(nx, ny);
+  
+  int i = 0;
+  for (auto it_x = x.begin(); it_x != x.end(); ++it_x, ++i) {
+    int j = 0;
+    for (auto it_y = y.begin(); it_y != y.end(); ++it_y, ++j) {
+      result(i, j) = (*it_x) * (*it_y);
+    }
+  }
+  
+  V_TRACE("C++ iterator outer product completed");
+  return result;
+}
+
+#ifdef _OPENMP  
+//' Outer product using OpenMP collapsed parallel loops
+//' @param x First input vector
+//' @param y Second input vector
+//' @return Matrix representing outer product
+//' @examples
+//' \dontrun{
+//' x <- rnorm(500)
+//' y <- rnorm(500)  
+//' result <- dmy_pf_outer_omp_collapse(x, y)
+//' }
+//' @export
+// [[Rcpp::export]]
+NumericMatrix dmy_pf_outer_omp_collapse(const NumericVector& x,
+                                        const NumericVector& y) {
+  V_TRACE("OpenMP collapsed outer product starting");
+  int nx = x.size();
+  int ny = y.size();
+  NumericMatrix result(nx, ny);
+  
+  #pragma omp parallel for collapse(2)
+  for (int i = 0; i < nx; ++i) {
+    for (int j = 0; j < ny; ++j) {
+      result(i, j) = x[i] * y[j];
+    }
+  }
+  
+  V_TRACE("OpenMP collapsed outer product completed");
+  return result;
+}
+
+//' Outer product using OpenMP parallel outer loop with SIMD inner loop
+//' @param x First input vector  
+//' @param y Second input vector
+//' @return Matrix representing outer product
+//' @examples
+//' \dontrun{
+//' x <- rnorm(500)
+//' y <- rnorm(500)
+//' result <- dmy_pf_outer_omp_simd(x, y)
+//' }
+//' @export
+// [[Rcpp::export]]
+NumericMatrix dmy_pf_outer_omp_simd(const NumericVector& x,
+                                    const NumericVector& y) {
+  V_TRACE("OpenMP SIMD outer product starting");
+  int nx = x.size();
+  int ny = y.size();
+  NumericMatrix result(nx, ny);
+  
+  #pragma omp parallel for
+  for (int i = 0; i < nx; ++i) {
+    #pragma omp simd
+    for (int j = 0; j < ny; ++j) {
+      result(i, j) = x[i] * y[j];
+    }
+  }
+  
+  V_TRACE("OpenMP SIMD outer product completed");
+  return result;
+}
+#endif
+
+//' Outer product using RcppArmadillo
+//' @param x First input vector
+//' @param y Second input vector
+//' @return Matrix representing outer product
+//' @examples
+//' \dontrun{
+//' x <- rnorm(100)
+//' y <- rnorm(100)
+//' result <- dmy_pf_outer_armadillo(x, y)
+//' }
+//' @export
+// [[Rcpp::export]]
+NumericMatrix dmy_pf_outer_armadillo(const NumericVector& x,
+                                     const NumericVector& y) {
+  V_TRACE("Armadillo outer product starting");
+  arma::vec ax = as<arma::vec>(x);
+  arma::vec ay = as<arma::vec>(y);
+  arma::mat result = ax * ay.t();
+  V_TRACE("Armadillo outer product completed");
+  return wrap(result);
+}
+
+//' Outer product using R base::outer function called from C++
+//' @param x First input vector
+//' @param y Second input vector  
+//' @return Matrix representing outer product
+//' @examples
+//' \dontrun{
+//' x <- rnorm(100)
+//' y <- rnorm(100)
+//' result <- dmy_pf_outer_r_base(x, y)
+//' }
+//' @export
+// [[Rcpp::export]]
+NumericMatrix dmy_pf_outer_r_base(const NumericVector& x,
+                                  const NumericVector& y) {
+  V_TRACE("base::outer starting");
+  Function outer("outer");
+  NumericMatrix result = outer(x, y, "*");
+  V_TRACE("base::outer completed");
   return result;
 }
 ```
 
 ## Microbenchmark Test Script
 
-```R
+```r
 #!/usr/bin/env Rscript
-# benchmark_astar.R
 
-# Load required libraries
-suppressPackageStartupMessages({
-  library(argparser)
+#' Rcpp Performance Benchmark Script
+#' 
+#' This script benchmarks various C++ iteration strategies for sum and outer 
+#' product operations across different input sizes. It supports command-line
+#' arguments for flexible testing and generates comprehensive performance reports.
+#' 
+#' @details
+#' The ./exec directory is chosen as a CRAN-compliant location for storing 
+#' package support scripts. This directory can contain executable scripts that
+#' call package R code and can also be invoked via system() calls from internal
+#' package code, providing flexibility for both interactive and programmatic use.
+#'
+#' @seealso 
+#' - C++ source: \code{./src/dummy_iter.cpp}
+#' - Build configuration: \code{./src/Makevars}  
+#' - User configuration: \code{~/.R/Makevars}
+#' - Documentation: \code{./notes/howtos/Rcpp-HOWTO-Q3-all.md}
+
+# Suppress package startup messages
+suppressMessages({
   library(microbenchmark)
   library(ggplot2)
   library(dplyr)
-  library(jsonlite)
-  library(Rcpp)
-  library(RcppParallel)
+  library(readr)
+  library(logger)
+  library(argparse)
 })
 
-# Source the C++ implementation
-sourceCpp("astar_parallel.cpp")
+# Global variables
+script_name <- "dummy-rcpp-bench"
+start_time <- as.integer(Sys.time())
 
-# Create argument parser
-parser <- arg_parser("A* Algorithm Parallel vs Sequential Benchmark")
-parser <- add_argument(parser, "--samples", "-m", default = 10L,
-                      help = "Microbenchmark sample size", type = "integer")
-parser <- add_argument(parser, "--save", "-s", flag = TRUE,
-                      help = "Save benchmark results and input data")
-parser <- add_argument(parser, "--density", "-g", default = 0.3,
-                      help = "Graph density (0.0 to 1.0)", type = "double")
-parser <- add_argument(parser, "sizes", nargs = "*", default = c("100", "500", "1000"),
-                      help = "Graph sizes to test (space separated)")
-
-# Parse arguments
-args <- parse_args(parser)
-
-# Convert sizes to integers
-graph_sizes <- as.integer(args$sizes)
-
-# Function to run benchmark for a single graph size
-run_benchmark <- function(n_nodes, density, n_samples) {
-  cat(sprintf("Testing graph size: %d nodes, density: %.2f\n", n_nodes, density))
-
-  # Generate random graph
-  graph_data <- generate_random_graph(n_nodes, density)
-  adjacency <- graph_data$adjacency
-  positions <- graph_data$positions
-
-  # Select random start and goal nodes (ensuring they're different)
-  start_node <- sample(1:n_nodes, 1)
-  goal_node <- sample(setdiff(1:n_nodes, start_node), 1)
-
-  # Run microbenchmark
-  bench_result <- microbenchmark(
-    sequential = astar_sequential(adjacency, positions, start_node, goal_node),
-    parallel = astar_parallel(adjacency, positions, start_node, goal_node),
-    times = n_samples,
-    unit = "ms"
+#' Initialize logging configuration  
+setup_logging <- function(log_dir, verbosity) {
+  log_threshold <- switch(as.character(verbosity),
+    "0" = INFO,
+    "1" = DEBUG,  
+    DEBUG  # verbosity >= 2
   )
-
-  # Add metadata
-  bench_result$n_nodes <- n_nodes
-  bench_result$density <- density
-  bench_result$start_node <- start_node
-  bench_result$goal_node <- goal_node
-
-  return(list(
-    benchmark = bench_result,
-    graph_data = if (args$save) list(adjacency = adjacency, positions = positions) else NULL,
-    metadata = list(n_nodes = n_nodes, density = density,
-                   start_node = start_node, goal_node = goal_node)
-  ))
+  
+  log_file <- file.path(log_dir, paste0(script_name, "-", start_time, "-test.log"))
+  log_layout(layout_glue_generator(format = 
+    '{time} [{level}] {msg}'))
+  log_appender(appender_tee(log_file))
+  log_threshold(log_threshold)
 }
 
-# Run benchmarks for all graph sizes
-cat("Starting A* Algorithm Benchmark\n")
-cat(sprintf("Parameters: samples=%d, density=%.2f, sizes=[%s]\n",
-           args$samples, args$density, paste(graph_sizes, collapse=", ")))
-
-all_results <- list()
-all_benchmarks <- list()
-
-for (i in seq_along(graph_sizes)) {
-  result <- run_benchmark(graph_sizes[i], args$density, args$samples)
-  all_results[[i]] <- result
-  all_benchmarks[[i]] <- result$benchmark
+#' Create output directory if it doesn't exist
+ensure_log_dir <- function(log_dir) {
+  if (!dir.exists(log_dir)) {
+    dir.create(log_dir, recursive = TRUE)
+    log_info("Created log directory: {log_dir}")
+  }
+  return(normalizePath(log_dir))
 }
 
-# Combine all benchmark results
-combined_benchmarks <- do.call(rbind, all_benchmarks)
-
-# Create summary statistics
-summary_stats <- combined_benchmarks %>%
-  group_by(expr, n_nodes) %>%
-  summarise(
-    median_time = median(time) / 1e6, # Convert to milliseconds
-    mean_time = mean(time) / 1e6,
-    min_time = min(time) / 1e6,
-    max_time = max(time) / 1e6,
-    q25 = quantile(time, 0.25) / 1e6,
-    q75 = quantile(time, 0.75) / 1e6,
-    .groups = 'drop'
+#' Get system information for benchmarking context
+get_system_info <- function() {
+  info <- list(
+    timestamp = Sys.time(),
+    user = Sys.getenv("USER"),
+    r_version = R.version.string,
+    platform = R.version$platform
   )
+  
+  # Try to get CPU info (Linux-specific)  
+  if (Sys.which("inxi") != "") {
+    info$cpu_info <- system("inxi -C", intern = TRUE)
+  }
+  
+  return(info)
+}
 
-# Print summary
-cat("\n=== Benchmark Summary ===\n")
-print(summary_stats)
-
-# Calculate speedup
-speedup_data <- summary_stats %>%
-  select(expr, n_nodes, median_time) %>%
-  tidyr::pivot_wider(names_from = expr, values_from = median_time) %>%
-  mutate(speedup = sequential / parallel)
-
-cat("\n=== Speedup Analysis ===\n")
-print(speedup_data)
-
-# Create visualization
-plot_title <- "A* Algorithm: Sequential vs Parallel Performance"
-plot_subtitle <- sprintf("Samples: %d, Density: %.2f", args$samples, args$density)
-
-p <- ggplot(combined_benchmarks, aes(x = factor(n_nodes), y = time / 1e6, fill = expr)) +
-  geom_boxplot() +
-  scale_y_log10() +
-  labs(
-    title = plot_title,
-    subtitle = plot_subtitle,
-    x = "Graph Size (Number of Nodes)",
-    y = "Execution Time (ms, log scale)",
-    fill = "Implementation"
-  ) +
-  theme_minimal() +
-  theme(
-    plot.title = element_text(hjust = 0.5),
-    plot.subtitle = element_text(hjust = 0.5),
-    legend.position = "bottom"
+#' Generate comprehensive system information report
+generate_system_report <- function(log_dir, test_type) {
+  info_file <- file.path(log_dir, 
+    paste0(script_name, "-", start_time, "-", test_type, "-info.log"))
+  
+  system_cmd <- paste(
+    "date;", 
+    "whoami;",
+    "inxi -CfGMS 2>/dev/null || echo '#NO_INXI';",
+    "lscpu 2>/dev/null || echo '#NO_LSCPU';", 
+    "cpupower frequency-info 2>/dev/null || echo '#NO_CPUPOWER';",
+    "nvidia-smi 2>/dev/null || echo '#NOGPU'"
   )
+  
+  system(paste("(", system_cmd, ") >", info_file))
+  log_debug("System information saved to: {info_file}")
+}
 
-# Display plot
-print(p)
-
-# Save results if requested
-if (args$save) {
-  timestamp <- format(Sys.time(), "%Y%m%d_%H%M%S")
-
-  # Save benchmark data
-  benchmark_file <- sprintf("astar_benchmark_%s.json", timestamp)
-
-  save_data <- list(
-    parameters = list(
-      samples = args$samples,
-      density = args$density,
-      graph_sizes = graph_sizes,
-      timestamp = timestamp
-    ),
-    results = lapply(all_results, function(x) {
-      list(
-        benchmark = as.data.frame(x$benchmark),
-        metadata = x$metadata
-      )
-    }),
-    summary = as.data.frame(summary_stats),
-    speedup = as.data.frame(speedup_data)
+#' Get all sum-related functions from the package
+get_sum_functions <- function() {
+  funcs <- c(
+    "dmy_pf_sum_c_style",
+    "dmy_pf_sum_cpp_range", 
+    "dmy_pf_sum_stl_iter",
+    "dmy_pf_sum_armadillo",
+    "dmy_pf_sum_r_base"
   )
+  
+  # Add OpenMP functions if available
+  if (exists("dmy_pf_sum_omp_parallel")) {
+    funcs <- c(funcs, "dmy_pf_sum_omp_parallel", "dmy_pf_sum_omp_simd")
+  }
+  
+  return(funcs)
+}
 
-  write_json(save_data, benchmark_file, pretty = TRUE)
-  cat(sprintf("\nBenchmark results saved to: %s\n", benchmark_file))
+#' Get all outer product functions from the package  
+get_outer_functions <- function() {
+  funcs <- c(
+    "dmy_pf_outer_c_style",
+    "dmy_pf_outer_cpp_iter",
+    "dmy_pf_outer_armadillo", 
+    "dmy_pf_outer_r_base"
+  )
+  
+  # Add OpenMP functions if available
+  if (exists("dmy_pf_outer_omp_collapse")) {
+    funcs <- c(funcs, "dmy_pf_outer_omp_collapse", "dmy_pf_outer_omp_simd")
+  }
+  
+  return(funcs)
+}
 
-  # Save plot
-  plot_file <- sprintf("astar_benchmark_plot_%s.png", timestamp)
-  ggsave(plot_file, p, width = 10, height = 6, dpi = 300)
-  cat(sprintf("Plot saved to: %s\n", plot_file))
+#' Create function label by removing common prefix
+create_function_labels <- function(func_names) {
+  # Remove common prefixes for cleaner labels
+  labels <- gsub("^dmy_pf_(sum|outer)_", "", func_names)
+  return(labels)
+}
 
-  # Save graph data if requested
-  if (length(all_results) > 0 && !is.null(all_results[[1]]$graph_data)) {
-    graph_file <- sprintf("astar_graph_data_%s.rds", timestamp)
-    graph_data_list <- lapply(all_results, function(x) x$graph_data)
-    saveRDS(graph_data_list, graph_file)
-    cat(sprintf("Graph data saved to: %s\n", graph_file))
+#' Run benchmarks for sum functions
+benchmark_sum_functions <- function(input_sizes, sample_size, log_dir, test_type) {
+  functions <- get_sum_functions()
+  all_results <- list()
+  
+  log_info("Starting sum function benchmarks")
+  log_info("Functions: {paste(functions, collapse = ', ')}")
+  
+  # Reset C++ tracing before benchmarks
+  dmy_pf_log_reset()
+  
+  for (size in input_sizes) {
+    log_info("Benchmarking sum functions with input size: {size}")
+    
+    # Generate test data once per size
+    set.seed(42)  # For reproducibility
+    test_data <- rnorm(size, mean = 0, sd = 100)
+    
+    # Create benchmark expressions
+    expr_list <- list()
+    for (func in functions) {
+      expr_list[[func]] <- substitute(do.call(f, list(test_data)), 
+                                      list(f = as.name(func)))
+    }
+    
+    # Run microbenchmark
+    mb_result <- microbenchmark(
+      list = expr_list,
+      times = sample_size,
+      unit = "ms"
+    )
+    
+    # Add metadata
+    mb_result$input_size <- size
+    mb_result$test_type <- test_type
+    mb_result$timestamp <- start_time
+    
+    all_results[[as.character(size)]] <- mb_result
+  }
+  
+  return(all_results)
+}
+
+#' Run benchmarks for outer product functions
+benchmark_outer_functions <- function(input_sizes, sample_size, log_dir, test_type) {
+  functions <- get_outer_functions()
+  all_results <- list()
+  
+  log_info("Starting outer product function benchmarks")
+  log_info("Functions: {paste(functions, collapse = ', ')}")
+  
+  # Reset C++ tracing before benchmarks  
+  dmy_pf_log_reset()
+  
+  for (size in input_sizes) {
+    log_info("Benchmarking outer functions with input size: {size}")
+    
+    # Generate test data once per size (same vector used for both arguments)
+    set.seed(42)  # For reproducibility
+    test_data <- rnorm(size, mean = 0, sd = 100)
+    
+    # Create benchmark expressions
+    expr_list <- list()
+    for (func in functions) {
+      expr_list[[func]] <- substitute(do.call(f, list(test_data, test_data)),
+                                      list(f = as.name(func)))
+    }
+    
+    # Run microbenchmark
+    mb_result <- microbenchmark(
+      list = expr_list,
+      times = sample_size,
+      unit = "ms"
+    )
+    
+    # Add metadata
+    mb_result$input_size <- size
+    mb_result$test_type <- test_type  
+    mb_result$timestamp <- start_time
+    
+    all_results[[as.character(size)]] <- mb_result
+  }
+  
+  return(all_results)
+}
+
+#' Combine and process benchmark results
+process_results <- function(benchmark_results, test_type) {
+  # Combine all results
+  combined_df <- do.call(rbind, lapply(benchmark_results, as.data.frame))
+  
+  # Add function labels
+  combined_df$function_label <- create_function_labels(combined_df$expr)
+  
+  # Calculate summary statistics
+  summary_df <- combined_df %>%
+    group_by(input_size, function_label, test_type) %>%
+    summarise(
+      mean_time = mean(time / 1e6),  # Convert to milliseconds
+      median_time = median(time / 1e6),
+      min_time = min(time / 1e6),
+      max_time = max(time / 1e6),
+      sd_time = sd(time / 1e6),
+      .groups = 'drop'
+    )
+  
+  return(list(raw = combined_df, summary = summary_df))
+}
+
+#' Create performance visualization
+create_performance_plot <- function(summary_df, test_type, sample_size) {
+  plot_title <- paste("Performance Comparison:", toupper(test_type), "Functions")
+  plot_subtitle <- paste("Sample Size:", sample_size, "| Error bars: ±1 SD")
+  
+  p <- ggplot(summary_df, aes(x = input_size, y = median_time, color = function_label)) +
+    geom_line(size = 1.2) +
+    geom_point(size = 2.5) +
+    geom_errorbar(aes(ymin = median_time - sd_time, ymax = median_time + sd_time),
+                  width = 0.1, alpha = 0.7) +
+    scale_x_log10(labels = scales::comma) +
+    scale_y_log10(labels = scales::comma) +
+    labs(
+      title = plot_title,
+      subtitle = plot_subtitle, 
+      x = "Input Size (log scale)",
+      y = "Median Execution Time (ms, log scale)",
+      color = "Implementation"
+    ) +
+    theme_minimal() +
+    theme(
+      plot.title = element_text(size = 14, face = "bold"),
+      plot.subtitle = element_text(size = 10),
+      legend.position = "bottom",
+      legend.title = element_text(face = "bold")
+    )
+  
+  return(p)
+}
+
+#' Save results and generate outputs  
+save_results <- function(results, test_type, log_dir, sample_size, save_data) {
+  file_prefix <- paste0(script_name, "-", start_time, "-", test_type, "-")
+  
+  # Always generate: benchmark plot
+  plot_file <- file.path(log_dir, paste0(file_prefix, "bench.png"))
+  plot <- create_performance_plot(results$summary, test_type, sample_size)
+  ggsave(plot_file, plot, width = 12, height = 8, dpi = 300)
+  log_info("Benchmark plot saved: {plot_file}")
+  
+  # Generate additional outputs if save_data is TRUE
+  if (save_data) {
+    # System information report
+    generate_system_report(log_dir, test_type)
+    
+    # TSV data export
+    tsv_file <- file.path(log_dir, paste0(file_prefix, "data.tsv"))
+    write_tsv(results$raw, tsv_file)
+    log_debug("Benchmark data exported: {tsv_file}")
   }
 }
 
-cat("\nBenchmark completed successfully!\n")
+#' Parse command line arguments
+parse_arguments <- function() {
+  parser <- ArgumentParser(description = 
+    'Benchmark Rcpp iteration strategies for sum and outer product operations')
+  
+  # Generic arguments
+  parser$add_argument("-v", "--verbose", action = "count", default = 0,
+                      help = "Increase verbosity (can be repeated: -v, -vv, -vvv)")
+  parser$add_argument("-p", "--profile", action = "store_true", default = FALSE,
+                      help = "Enable profiling with Rprof")
+  
+  # Benchmark arguments  
+  parser$add_argument("-t", "--test", default = "sum", 
+                      choices = c("sum", "outer"),
+                      help = "Test type to execute: 'sum' or 'outer' (default: sum)")
+  parser$add_argument("-m", "--samples", type = "integer", default = 10,
+                      help = "Microbenchmark sample size (default: 10)")
+  parser$add_argument("-s", "--save", action = "store_true", default = FALSE,
+                      help = "Save detailed data and system information")
+  
+  # Positional arguments for input sizes
+  parser$add_argument("input_sizes", nargs = "*", default = c("10", "100", "1000"),
+                      help = "Input vector sizes for testing (default: 10 100 1000)")
+  
+  return(parser$parse_args())
+}
+
+#' Main benchmark execution function
+run_benchmark <- function(test_type, input_sizes, sample_size, log_dir, 
+                         verbosity, profile, save_data) {
+  
+  # Set up C++ logging level
+  dmy_pf_log_set_level(verbosity)
+  
+  # Convert input_sizes to integers
+  input_sizes <- as.integer(input_sizes)
+  
+  log_info("=== Benchmark Configuration ===")
+  log_info("Test Type: {test_type}")
+  log_info("Input Sizes: {paste(input_sizes, collapse = ', ')}")
+  log_info("Sample Size: {sample_size}")
+  log_info("Verbosity: {verbosity}")
+  log_info("Profile: {profile}")
+  log_info("Save Data: {save_data}")
+  log_info("Log Directory: {log_dir}")
+  
+  # System information logging
+  sys_info <- get_system_info()
+  log_info("System: {sys_info$platform}")
+  log_info("R Version: {sys_info$r_version}")
+  if (!is.null(sys_info$cpu_info)) {
+    log_info("CPU Info: {paste(sys_info$cpu_info, collapse = ' | ')}")
+  }
+  
+  # Start profiling if requested
+  if (profile) {
+    prof_file <- file.path(log_dir, 
+      paste0(script_name, "-", start_time, "-", test_type, "-rprof.out"))
+    Rprof(prof_file)
+    log_info("Profiling started: {prof_file}")
+  }
+  
+  # Run appropriate benchmark
+  benchmark_results <- switch(test_type,
+    "sum" = benchmark_sum_functions(input_sizes, sample_size, log_dir, test_type),
+    "outer" = benchmark_outer_functions(input_sizes, sample_size, log_dir, test_type),
+    stop("Unknown test type: ", test_type)
+  )
+  
+  # Stop profiling if it was started
+  if (profile) {
+    Rprof(NULL)
+    log_info("Profiling completed")
+  }
+  
+  # Process and save results
+  processed_results <- process_results(benchmark_results, test_type)
+  save_results(processed_results, test_type, log_dir, sample_size, save_data)
+  
+  # Final summary
+  log_info("=== Benchmark Summary ===")
+  summary_stats <- processed_results$summary %>%
+    group_by(function_label) %>%
+    summarise(
+      avg_median_time = mean(median_time),
+      .groups = 'drop'
+    ) %>%
+    arrange(avg_median_time)
+  
+  log_info("Average performance ranking (fastest to slowest):")
+  for (i in seq_len(nrow(summary_stats))) {
+    log_info("{i}. {summary_stats$function_label[i]}: {round(summary_stats$avg_median_time[i], 3)} ms")
+  }
+}
+
+#' Script main entry point
+main <- function() {
+  # Parse command line arguments
+  args <- parse_arguments()
+  
+  # Set up logging directory
+  log_dir <- Sys.getenv("P_LOGS_DIR", default = "logs")
+  log_dir <- ensure_log_dir(log_dir)
+  
+  # Initialize logging
+  setup_logging(log_dir, args$verbose)
+  
+  log_info("=== Rcpp Performance Benchmark Started ===")
+  log_info("Script: {script_name}")
+  log_info("Arguments: {paste(deparse(args), collapse = ' ')}")
+  
+  # Load the package (assuming it's already installed/loaded)
+  # In a real package, you might need: library(YourPackageName)
+  
+  # Run the benchmark
+  tryCatch({
+    run_benchmark(
+      test_type = args$test,
+      input_sizes = args$input_sizes,
+      sample_size = args$samples,
+      log_dir = log_dir,
+      verbosity = args$verbose,
+      profile = args$profile,
+      save_data = args$save
+    )
+    log_info("=== Benchmark Completed Successfully ===")
+  }, error = function(e) {
+    log_error("Benchmark failed: {e$message}")
+    quit(status = 1)
+  })
+}
+
+# Execute main function if script is run directly
+if (sys.nframe() == 0) {
+  main()
+}
 ```
 
-## RcppParallel Quick Start Guide
+## Quick Start Guide
 
 ### Project Configuration
+
+To set up an R package with Rcpp, RcppArmadillo, and OpenMP support, you'll need to configure several files:
 
 #### `DESCRIPTION`
 
 ```yaml
 Package: YourPackageName
+Type: Package
+Title: High-Performance Computing with Rcpp
 Version: 1.0.0
-Title: Your Package Title
-Description: Package description here.
-Authors@R: person("Your", "Name", email = "you@example.com", role = c("aut", "cre"))
-License: GPL-3
-Depends:
+Depends: 
     R (>= 3.5.0)
 Imports:
     Rcpp (>= 1.0.0),
-    RcppParallel (>= 5.0.0)
-LinkingTo:
+    microbenchmark,
+    ggplot2,
+    dplyr
+LinkingTo: 
     Rcpp,
-    RcppParallel,
-    RcppArmadillo,
-    RcppEigen
-SystemRequirements:
+    RcppArmadillo
+SystemRequirements: 
     GNU make,
-    C++11,
-    TBB (Intel Threading Building Blocks)
-Encoding: UTF-8
-RoxygenNote: 7.0.0
+    OpenMP,
+    BLAS,
+    LAPACK
 ```
 
 #### `src/Makevars`
 
 ```make
-## Use the R_HOME indirection to support installations of multiple R version
-PKG_LIBS = `$(R_HOME)/bin/Rscript -e "RcppParallel::RcppParallelLibs()"`
-
-## Enable C++11 standard
+# Compiler and linker flags for OpenMP and optimized BLAS/LAPACK
 CXX_STD = CXX11
+PKG_CXXFLAGS = $(SHLIB_OPENMP_CXXFLAGS) -DARMA_64BIT_WORD=1
+PKG_LIBS = $(SHLIB_OPENMP_CXXFLAGS) $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)
 
-## Optimization flags
-PKG_CXXFLAGS = -DRCPP_PARALLEL_USE_TBB=1
+# RcppArmadillo configuration
+RCPP_LIBS = `$(R_HOME)/bin/Rscript -e "Rcpp:::LdFlags()"`
+RCPPARMA_LIBS = `$(R_HOME)/bin/Rscript -e "RcppArmadillo:::LdFlags()"`
 
-## Include TBB headers
-PKG_CPPFLAGS = `$(R_HOME)/bin/Rscript -e "RcppParallel::CxxFlags()"`
+# Combine all libraries
+PKG_LIBS += $(RCPP_LIBS) $(RCPPARMA_LIBS)
 ```
 
 #### `src/Makevars.win` (Windows-specific)
 
 ```make
-PKG_LIBS = $(shell "${R_HOME}/bin${R_ARCH_BIN}/Rscript.exe" -e "RcppParallel::RcppParallelLibs()")
-
 CXX_STD = CXX11
-
-PKG_CXXFLAGS = -DRCPP_PARALLEL_USE_TBB=1
-
-PKG_CPPFLAGS = $(shell "${R_HOME}/bin${R_ARCH_BIN}/Rscript.exe" -e "RcppParallel::CxxFlags()")
+PKG_CXXFLAGS = $(SHLIB_OPENMP_CXXFLAGS) -DARMA_64BIT_WORD=1
+PKG_LIBS = $(SHLIB_OPENMP_CXXFLAGS) $(LAPACK_LIBS) $(BLAS_LIBS)
 ```
 
-#### `~/.R/Makevars` (User-level optimization)
+#### `~/.R/Makevars` (User-level optimizations)
 
 ```make
-# Enable native CPU optimizations for better SIMD performance
-CXXFLAGS = -O3 -march=native -mtune=native
+# Architecture-specific optimizations (not for CRAN submission)
+CXXFLAGS = -O3 -march=native -mtune=native -ffast-math
+CFLAGS = -O3 -march=native -mtune=native -ffast-math
 
-# Optional: Enable OpenMP support
-# CXXFLAGS += -fopenmp
-# PKG_LIBS += -fopenmp
+# OpenMP support
+SHLIB_OPENMP_CXXFLAGS = -fopenmp
+SHLIB_OPENMP_CFLAGS = -fopenmp
+
+# Compiler selection (optional)
+CC = gcc-11
+CXX = g++-11
+CXX11 = g++-11
+CXX14 = g++-11
 ```
 
-### System Dependencies
+### Performance Considerations
 
-#### Ubuntu/Debian
+**Architecture-Specific Optimization**: The `-march=native` flag
+enables CPU-specific optimizations including AVX/AVX2 instructions,
+providing 15-30% performance improvements for vectorizable
+operations. However, this breaks binary portability and should only be
+used in `~/.R/Makevars`, never in package-level `src/Makevars`.
 
-```bash
-# Install TBB development libraries
-sudo apt-get update
-sudo apt-get install libtbb-dev
+**Memory Layout**: RcppArmadillo uses column-major storage
+(Fortran-style) which aligns with R's internal representation and
+optimized BLAS libraries. This provides better cache locality for
+matrix operations compared to row-major C++ approaches.
 
-# Optional: Install additional development tools
-sudo apt-get install build-essential r-base-dev
-```
+**NUMA Awareness**: On multi-socket systems (common in Azure/AWS HPC
+instances), consider thread affinity and memory placement. OpenMP's
+`OMP_PROC_BIND=true` and `OMP_PLACES=cores` can significantly improve
+performance for memory-intensive operations.
 
-#### CentOS/RHEL/Fedora
+### Development Workflow
 
-```bash
-# For CentOS/RHEL
-sudo yum install tbb-devel
+1. **Initialize renv** (explicit mode for reproducible dependencies):
+   ```r
+   renv::init()
+   renv::settings$snapshot.type("explicit")
+   ```
 
-# For Fedora
-sudo dnf install tbb-devel
-```
+2. **Install dependencies**:
+   ```r
+   install.packages(c("Rcpp", "RcppArmadillo", "microbenchmark", 
+                      "ggplot2", "dplyr", "logger", "argparse"))
+   ```
 
-#### macOS
+3. **Compile and test**:
+   ```r
+   Rcpp::sourceCpp("src/dummy_iter.cpp")
+   system("Rscript exec/dummy-rcpp-bench.r --help")
+   ```
 
-```bash
-# Using Homebrew
-brew install tbb
+4. **Run benchmarks**:
+   ```bash
+   Rscript exec/dummy-rcpp-bench.r -t sum -m 50 -s -vvv 100 1000 10000
+   Rscript exec/dummy-rcpp-bench.r -t outer -m 20 -s -vv 50 100 500
+   ```
 
-# Using MacPorts
-sudo port install tbb
-```
+### Expected Performance Characteristics
 
-### RcppParallel Package Installation with renv
+On a 32-core Intel XEON system (Azure Standard_D32s_v3):
 
-```R
-# Initialize renv in explicit mode (if not already done)
-renv::init()
+**Sum Operations**:
+- **Small vectors** (<1K): STL accumulate ≈ C-style > OpenMP (overhead dominates)
+- **Medium vectors** (1K-100K): OpenMP parallel > STL > C-style 
+- **Large vectors** (>100K): OpenMP SIMD > OpenMP parallel > others
+- **RcppArmadillo**: Competitive across all sizes due to optimized BLAS
 
-# Check current status
-renv::status()
+**Outer Product Operations**:
+- **Small matrices** (<100×100): C-style ≈ STL iterator > OpenMP
+- **Medium matrices** (100×1000): OpenMP collapse > OpenMP SIMD > sequential
+- **Large matrices** (>1000×1000): Memory bandwidth becomes limiting factor
+- **RcppArmadillo**: Optimal for all sizes, leverages BLAS3 operations
 
-# Install RcppParallel and dependencies
-renv::install("RcppParallel")
-renv::install("RcppArmadillo")
-renv::install("RcppEigen")
-
-# Install additional packages for benchmarking
-renv::install("microbenchmark")
-renv::install("argparser")
-renv::install("ggplot2")
-renv::install("dplyr")
-renv::install("jsonlite")
-
-# Take a snapshot of current state
-renv::snapshot()
-
-# Verify installation
-renv::status()
-```
-
-### Important Notes
-
-1. **TBB Library**: RcppParallel relies on Intel's Threading Building Blocks (TBB) library. On most systems, this is automatically handled by the RcppParallel package installation.
-
-2. **Compiler Support**: Ensure your compiler supports C++11 or later. Most modern R installations include appropriate compilers.
-
-3. **Memory Considerations**: Parallel algorithms may use more memory due to thread-local storage. Monitor memory usage during development.
-
-4. **Thread Safety**: When using `parallelFor` and `parallelReduce`, ensure that shared data structures are thread-safe or properly partitioned.
-
-5. **Performance Testing**: Always benchmark your parallel code against sequential versions, as parallelization overhead may not be worthwhile for small problem sizes.
-
-## Performance Considerations
-
-The parallel implementation shows significant performance improvements for larger graphs (> 500 nodes) due to:
-
-- **Parallel neighbor exploration**: Using `parallelFor` to concurrently evaluate all neighbors of the current node
-- **Efficient minimum finding**: Using `parallelReduce` to find the minimum cost node across parallel workers
-- **Cache-efficient data structures**: Using Armadillo matrices for better memory layout and SIMD utilization
-
-For smaller graphs, the sequential version may be faster due to reduced parallelization overhead.
+The performance crossover points depend on system architecture, memory
+bandwidth, and compiler optimizations. The benchmark script helps
+identify optimal strategies for your specific use case.
 
 ## References
 
-[^1]: [A* Search Algorithm - Wikipedia](https://en.wikipedia.org/wiki/A*_search_algorithm)
-[^2]: [RcppParallel Documentation](https://rcppcore.github.io/RcppParallel/)
-[^3]: [RcppArmadillo Documentation](https://cran.r-project.org/package=RcppArmadillo)
-[^4]: [Intel Threading Building Blocks](https://www.intel.com/content/www/us/en/developer/tools/oneapi/onetbb.html)
-[^5]: [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html)
+[^1]: [High performance functions with Rcpp](http://adv-r.had.co.nz/Rcpp.html) - Advanced R programming with Rcpp integration
+[^2]: [R Packages](https://r-pkgs.org/) - Comprehensive guide to R package development
+[^3]: [RcppArmadillo on CRAN](https://cran.r-project.org/web/packages/RcppArmadillo/index.html) - Official RcppArmadillo documentation
+[^4]: [OpenMP Resources](https://www.openmp.org/resources/) - OpenMP specification and tutorials
+[^5]: [CRAN Task View: High-Performance and Parallel Computing with R](https://cran.r-project.org/web/views/HighPerformanceComputing.html) - Comprehensive HPC packages overview
+[^6]: [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html) - C++ coding standards and best practices
+[^7]: [Intel MKL vs OpenBLAS Performance](https://markus-beuckelmann.de/blog/boosting-numpy-blas.html) - BLAS library performance comparison
+[^8]: [NVIDIA cuBLAS Documentation](https://docs.nvidia.com/cuda/cublas/) - GPU-accelerated BLAS operations
 
 
-# A:5 (ChatGPT)
-> A* Search Algorithm in RcppParallel
 
-This document demonstrates how to implement the **A\*** search algorithm in C++ with **RcppParallel**, alongside sequential and parallel implementations.
-The parallel implementation uses `parallelFor` and `parallelReduce` from the **RcppParallel** API.
 
-We also provide a **microbenchmarking R script** with CLI arguments to compare performance. Finally, we include a **quick start guide** for integrating `RcppParallel` into an R package project.
+-------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------
+# A:3 (Gemini)
+> * [# Rcpp Iterators Performance Optimization](https://aistudio.google.com/app/prompts?state=%7B%22ids%22:%5B%221z5JbP25SdVLeFFSgX3OqlZUsJuGu9ao2%22%5D,%22action%22:%22open%22,%22userId%22:%22101040866152128307883%22,%22resourceKeys%22:%7B%7D%7D&usp=sharing)
 
----
+This document provides a comprehensive guide to optimizing vector and
+matrix operations in R by leveraging the Rcpp ecosystem. We will
+explore various iteration strategies in C++, from traditional C-style
+loops to modern C++ iterators and high-performance parallel computing
+with OpenMP and RcppArmadillo. The goal is to demonstrate how to write
+efficient C++ code that can be seamlessly integrated into R packages,
+with a focus on performance, clarity, and CRAN compliance.
 
-## A* Algorithm Overview
+We will provide two key source files: a C++ source
+(`./src/dummy_iter.cpp`) containing different implementations of "sum"
+and "outer product" operations, and an R script
+(`./exec/dummy-rcpp-bench.r`) to benchmark these implementations
+across various input sizes.
 
-The **A\*** algorithm is a graph traversal and pathfinding method used to find the shortest path between two nodes. It combines:
+## Introduction
 
-* **g(n):** the cost to reach a node `n` from the start.
-* **h(n):** a heuristic estimate of the cost from `n` to the goal.
-* **f(n) = g(n) + h(n):** total estimated cost.
+### C/C++ Iteration Strategies and HPC Libraries Alternatives
 
-A\* explores nodes in increasing order of `f(n)`. When the goal is reached, the path found is guaranteed to be optimal (given an admissible heuristic)[^2].
+When moving computations from R to C++, developers are faced with
+several choices for implementing loops and data manipulation.
 
----
+*   **C-style loops:** The classic `for (int i = 0; i < n; ++i)` loop
+    is familiar, straightforward, and often highly optimizable by
+    compilers. However, it can be prone to off-by-one errors and
+    requires manual index management, which can sometimes obscure the
+    intent of the code.
 
-## C++ Implementation
+*   **C++ STL-style iteration:** The C++ Standard Template Library
+    (STL) introduced iterators, which provide a more abstract and
+    safer way to traverse containers. With C++11 and later,
+    range-based `for` loops (`for (auto& element : container)`) offer
+    an even more concise and readable syntax, reducing boilerplate and
+    the risk of indexing errors. Idiomatically, these are preferred in
+    modern C++ for their clarity and safety. Performance is generally
+    on par with C-style loops, as modern compilers can often optimize
+    them to equivalent machine code.
 
-Below we implement a **toy A\*** example on a random weighted graph.
-We compare sequential vs parallel approaches for evaluating neighbors during the search.
+*   **Library-based approaches (`RcppArmadillo`, `RcppEigen`):** For
+    numerical computing, especially linear algebra, manual looping is
+    often suboptimal. Libraries like Armadillo and Eigen are highly
+    optimized, mature C++ template libraries that provide a rich,
+    high-level syntax for mathematical operations. They internally
+    leverage highly tuned implementations, often linking to underlying
+    BLAS (Basic Linear Algebra Subprograms) and LAPACK (Linear Algebra
+    PACKage) libraries like OpenBLAS or Intel MKL. These libraries are
+    the cornerstone of high-performance computing in compiled
+    languages and can significantly outperform manual loops by using
+    optimized algorithms, cache-friendly memory access patterns, and
+    SIMD (Single Instruction, Multiple Data) instructions.
 
-### Sequential Version
+### OpenMP/SIMD primer
+
+OpenMP (Open Multi-Processing) is an API that supports multi-platform
+shared-memory parallel programming in C, C++, and Fortran. It
+simplifies the process of writing multi-threaded code by using a set
+of compiler directives (`#pragma omp ...`).
+
+The rationale behind OpenMP is to allow developers to parallelize
+computationally intensive sections of their code—typically
+loops—incrementally, without drastically restructuring the entire
+application.
+
+**Parallelism vs. Vectorization:**
+
+*   **Parallelism** refers to distributing tasks across multiple
+    processor cores to be executed simultaneously. This is
+    coarse-grained parallelism. On a 32-core machine, you could
+    theoretically achieve a 32x speedup by dividing a task among all
+    cores.
+*   **Vectorization (SIMD)** refers to a processor's ability to
+    perform the same operation on multiple data points simultaneously
+    within a single core. Modern CPUs have vector registers (e.g.,
+    256-bit AVX2, 512-bit AVX-512) that can hold multiple
+    floating-point numbers. This is fine-grained parallelism. For
+    example, an AVX2 register can process four double-precision
+    numbers at once, offering a potential 4x speedup on that core.
+
+The ideal performance is achieved by combining both: running parallel
+threads on all cores, where each thread's computation is vectorized.
+
+**Key OpenMP Clauses:**
+
+*   `#pragma omp parallel`: Creates a team of threads. The code block
+    following the pragma is executed by every thread.
+*   `#pragma omp for`: Divides the iterations of a `for` loop among
+    the threads in the team. Must be placed within a `parallel`
+    region. A common shorthand is `#pragma omp parallel for`.
+*   `#pragma omp simd`: Instructs the compiler to vectorize the
+    following loop using SIMD instructions. This can be more explicit
+    than relying on auto-vectorization.
+*   `collapse(n)`: Used with a `for` directive, it linearizes `n`
+    nested loops into a single iteration space, which is then
+    parallelized. This is highly effective for distributing work in
+    matrix operations.
+*   `private(var)`, `shared(var)`: Control how variables are shared
+    among threads. `private` gives each thread its own copy, while
+    `shared` means all threads access the same memory location.
+*   `reduction(operator:variable)`: Used for operations like summation
+    where each thread computes a partial result, and all partial
+    results are combined (e.g., summed) at the end. This avoids race
+    conditions safely and efficiently.
+
+**Portability and CRAN Compliance:** While OpenMP is widely supported,
+using architecture-specific optimizations like `-march=native` can
+create binaries that are not portable. CRAN policies generally require
+packages to be buildable on a wide range of systems, so such flags are
+discouraged within the package's `src/Makevars` file. They are,
+however, perfectly acceptable for user-side configuration in
+`~/.R/Makevars` for maximum performance on a specific machine.
+
+### GPU Notes
+
+For massively parallelizable problems, Graphics Processing Units
+(GPUs) offer a significant performance advantage over CPUs. While CPUs
+have a few dozen powerful cores, GPUs have thousands of simpler cores,
+making them ideal for tasks like large matrix multiplications, deep
+learning, and simulations. The performance gain can be dramatic, often
+ranging from 10x to 100x for suitable workloads.
+
+Libraries like NVIDIA's cuBLAS provide GPU-accelerated implementations
+of BLAS routines. Comparisons between cuBLAS and CPU-based libraries
+like OpenBLAS or Intel MKL consistently show a substantial advantage
+for the GPU on large-scale problems, provided the data transfer
+overhead between CPU and GPU memory is managed effectively.
+
+In a containerized environment (e.g., rootless podman), using
+Python-based CUDA distributions (like those from Conda/pip) is a
+viable and increasingly popular approach. It simplifies dependency
+management, as the CUDA toolkit can be encapsulated within the
+environment without requiring system-wide installation. R can
+interface with these Python libraries via the `reticulate` package,
+allowing R packages to leverage GPU acceleration in a portable and
+self-contained manner.
+
+## C++ Implementation: `./src/dummy_iter.cpp`
+
+This file contains the C++ implementations for the "sum" and "outer"
+function groups, along with the logging support utilities.
 
 ```cpp
-// [[Rcpp::depends(RcppParallel)]]
-// [[Rcpp::depends(RcppArmadillo)]]
+// Copyright 2025, Google LLC
+// License: MIT
+//
+// This source demonstrates various iteration strategies in C++ for use with R.
 
 #include <RcppArmadillo.h>
-#include <RcppParallel.h>
-#include <queue>
-#include <vector>
-#include <limits>
-#include <cmath>
+#include <omp.h>
 
-using namespace Rcpp;
-using namespace RcppParallel;
+#include <set>
+#include <string>
+#include <utility>
 
-// Simple structure to represent a node in A*
-struct Node {
-  int id;
-  double g;
-  double f;
-  bool operator>(const Node& other) const { return f > other.f; }
-};
+// [[Rcpp::depends(RcppArmadillo)]]
+// [[Rcpp::plugins(cpp11)]]
+// [[Rcpp::plugins(openmp)]]
 
-// Heuristic: Euclidean distance between node indices (toy example)
-inline double heuristic(int a, int b) {
-  return std::abs(a - b);
+// Global verbosity level for logging.
+static int verbosity_level = 0;
+// Set to track trace messages and ensure they are printed only once.
+static std::set<std::pair<std::string, int>> trace_locations;
+
+// --- Logging Support ---
+
+//' @name dummy_logging
+//' @title C++ Logging Support Functions
+//' @description
+//' A group of functions to provide conditional logging and tracing from C++.
+//' These functions are exported to R for control from the main script.
+//' @param level An integer verbosity level.
+//' @param file The source file name (usually from `__FILE__`).
+//' @param line The source line number (usually from `__LINE__`).
+//' @param msg The message string to log.
+//' @rdname dummy_logging
+//' @export
+// [[Rcpp::export]]
+void dmy_pf_log_set_level(int level) { verbosity_level = level; }
+
+//' @rdname dummy_logging
+//' @export
+// [[Rcpp::export]]
+int dmy_pf_log_get_level() { return verbosity_level; }
+
+//' @rdname dummy_logging
+//' @export
+// [[Rcpp::export]]
+void dmy_pf_log_reset() { trace_locations.clear(); }
+
+// Internal log function for general messages.
+void dmy_pf_log_out(const std::string& file, int line,
+                    const std::string& msg) {
+  if (verbosity_level >= 0) {
+    Rcpp::Rcout << "[" << file << ":" << line << "] " << msg << std::endl;
+  }
 }
 
-// Sequential A* search
-// [[Rcpp::export]]
-NumericVector astar_sequential(const arma::mat& graph, int start, int goal) {
-  int n = graph.n_rows;
-  std::vector<double> gscore(n, std::numeric_limits<double>::infinity());
-  std::vector<int> came_from(n, -1);
-
-  gscore[start] = 0.0;
-  std::priority_queue<Node, std::vector<Node>, std::greater<Node>> open_set;
-  open_set.push({start, 0.0, heuristic(start, goal)});
-
-  while (!open_set.empty()) {
-    Node current = open_set.top();
-    open_set.pop();
-
-    if (current.id == goal) {
-      // Reconstruct path
-      std::vector<int> path;
-      for (int v = goal; v != -1; v = came_from[v]) path.push_back(v);
-      std::reverse(path.begin(), path.end());
-      return wrap(path);
-    }
-
-    for (int neighbor = 0; neighbor < n; neighbor++) {
-      double weight = graph(current.id, neighbor);
-      if (weight <= 0) continue;
-      double tentative_g = gscore[current.id] + weight;
-      if (tentative_g < gscore[neighbor]) {
-        came_from[neighbor] = current.id;
-        gscore[neighbor] = tentative_g;
-        double fscore = tentative_g + heuristic(neighbor, goal);
-        open_set.push({neighbor, tentative_g, fscore});
-      }
+// Internal trace function for detailed, single-occurrence messages.
+void dmy_pf_log_trace(const std::string& file, int line,
+                      const std::string& msg) {
+  if (verbosity_level >= 3) {
+    if (trace_locations.insert({file, line}).second) {
+      Rcpp::Rcerr << "[TRACE " << file << ":" << line << "] " << msg
+                  << std::endl;
     }
   }
-  return NumericVector::create();  // empty path if not found
 }
-````
 
----
+// C++ macros for convenient logging.
+#define V_LOG(msg) dmy_pf_log_out(__FILE__, __LINE__, msg)
+#define V_TRACE(msg) dmy_pf_log_trace(__FILE__, __LINE__, msg)
 
-### Parallel Version
+// --- "sum" Function Group ---
 
-Here we parallelize the **neighbor evaluation loop** using `parallelReduce`.
-Each thread evaluates a subset of neighbors and returns the best candidate.
-
-```cpp
-// Worker for parallel neighbor evaluation
-struct NeighborEvaluator : public RcppParallel::Worker {
-  const arma::mat& graph;
-  const int current;
-  const int goal;
-  const std::vector<double>& gscore;
-  int best_neighbor;
-  double best_g;
-
-  NeighborEvaluator(const arma::mat& graph_, int current_, int goal_,
-                    const std::vector<double>& gscore_)
-      : graph(graph_),
-        current(current_),
-        goal(goal_),
-        gscore(gscore_),
-        best_neighbor(-1),
-        best_g(std::numeric_limits<double>::infinity()) {}
-
-  // Split constructor
-  NeighborEvaluator(const NeighborEvaluator& other, RcppParallel::Split)
-      : graph(other.graph),
-        current(other.current),
-        goal(other.goal),
-        gscore(other.gscore),
-        best_neighbor(-1),
-        best_g(std::numeric_limits<double>::infinity()) {}
-
-  void operator()(std::size_t begin, std::size_t end) {
-    for (std::size_t neighbor = begin; neighbor < end; neighbor++) {
-      double weight = graph(current, neighbor);
-      if (weight <= 0) continue;
-      double tentative_g = gscore[current] + weight;
-      if (tentative_g < best_g) {
-        best_g = tentative_g;
-        best_neighbor = neighbor;
-      }
-    }
-  }
-
-  void join(const NeighborEvaluator& rhs) {
-    if (rhs.best_g < best_g) {
-      best_g = rhs.best_g;
-      best_neighbor = rhs.best_neighbor;
-    }
-  }
-};
-
-// Parallel A* search
+//' @name dummy_sum
+//' @title Vector Summation Alternatives
+//' @description
+//' A group of functions to compute the sum of a numeric vector using different
+//' C++ iteration strategies.
+//' @param v A numeric vector.
+//' @return The sum of the vector elements.
+//' @details
+//' Suffixes denote the implementation strategy:
+//' - `cstyle`: C-style for loop with an index.
+//' - `stl`: C++11 range-based for loop.
+//' - `omp_for`: OpenMP parallelized for loop.
+//' - `omp_simd`: OpenMP parallelized and vectorized for loop.
+//' - `arma`: RcppArmadillo's `accu()` function.
+//' - `base`: Calls R's `base::sum()` from C++.
+//' @examples
+//' \dontrun{
+//'   x <- rnorm(1000)
+//'   dmy_pf_sum_cstyle(x)
+//' }
+//' @rdname dummy_sum
+//' @export
 // [[Rcpp::export]]
-NumericVector astar_parallel(const arma::mat& graph, int start, int goal) {
-  int n = graph.n_rows;
-  std::vector<double> gscore(n, std::numeric_limits<double>::infinity());
-  std::vector<int> came_from(n, -1);
+double dmy_pf_sum_cstyle(Rcpp::NumericVector v) {
+  double total = 0.0;
+  for (int i = 0; i < v.size(); ++i) {
+    total += v[i];
+  }
+  return total;
+}
 
-  gscore[start] = 0.0;
-  std::priority_queue<Node, std::vector<Node>, std::greater<Node>> open_set;
-  open_set.push({start, 0.0, heuristic(start, goal)});
+//' @rdname dummy_sum
+//' @export
+// [[Rcpp::export]]
+double dmy_pf_sum_stl(Rcpp::NumericVector v) {
+  double total = 0.0;
+  for (double x : v) {
+    total += x;
+  }
+  return total;
+}
 
-  while (!open_set.empty()) {
-    Node current = open_set.top();
-    open_set.pop();
+//' @rdname dummy_sum
+//' @export
+// [[Rcpp::export]]
+double dmy_pf_sum_omp_for(Rcpp::NumericVector v) {
+  double total = 0.0;
+#pragma omp parallel for reduction(+ : total)
+  for (int i = 0; i < v.size(); ++i) {
+    total += v[i];
+  }
+  return total;
+}
 
-    if (current.id == goal) {
-      std::vector<int> path;
-      for (int v = goal; v != -1; v = came_from[v]) path.push_back(v);
-      std::reverse(path.begin(), path.end());
-      return wrap(path);
-    }
+//' @rdname dummy_sum
+//' @export
+// [[Rcpp::export]]
+double dmy_pf_sum_omp_simd(Rcpp::NumericVector v) {
+  double total = 0.0;
+#pragma omp parallel for simd reduction(+ : total)
+  for (int i = 0; i < v.size(); ++i) {
+    total += v[i];
+  }
+  return total;
+}
 
-    NeighborEvaluator evaluator(graph, current.id, goal, gscore);
-    parallelReduce(0, n, evaluator);
+//' @rdname dummy_sum
+//' @export
+// [[Rcpp::export]]
+double dmy_pf_sum_arma(Rcpp::NumericVector v) {
+  arma::vec av(v.begin(), v.size(), false);  // Use existing memory
+  return arma::accu(av);
+}
 
-    if (evaluator.best_neighbor >= 0) {
-      int neighbor = evaluator.best_neighbor;
-      double tentative_g = evaluator.best_g;
-      if (tentative_g < gscore[neighbor]) {
-        came_from[neighbor] = current.id;
-        gscore[neighbor] = tentative_g;
-        double fscore = tentative_g + heuristic(neighbor, goal);
-        open_set.push({neighbor, tentative_g, fscore});
-      }
+//' @rdname dummy_sum
+//' @export
+// [[Rcpp::export]]
+double dmy_pf_sum_base(Rcpp::NumericVector v) {
+  V_TRACE("Calling base::sum from C++...");
+  Rcpp::Function base_sum("sum");
+  Rcpp::NumericVector result = base_sum(v);
+  V_TRACE("...base::sum call done.");
+  return Rcpp::as<double>(result);
+}
+
+// --- "outer" Function Group ---
+
+//' @name dummy_outer
+//' @title Vector Outer Product Alternatives
+//' @description
+//' A group of functions to compute the outer product of two numeric vectors
+//' using different C++ iteration strategies.
+//' @param v1 A numeric vector.
+//' @param v2 A numeric vector.
+//' @return The outer product matrix.
+//' @details
+//' Suffixes denote the implementation strategy:
+//' - `cstyle`: Nested C-style for loops.
+//' - `omp_collapse`: OpenMP parallelized nested loops with `collapse`.
+//' - `omp_nested`: OpenMP with parallel outer loop and SIMD inner loop.
+//' - `arma`: RcppArmadillo's matrix multiplication.
+//' - `base`: Calls R's `base::outer()` from C++.
+//' @examples
+//' \dontrun{
+//'   x <- rnorm(100)
+//'   dmy_pf_outer_cstyle(x, x)
+//' }
+//' @rdname dummy_outer
+//' @export
+// [[Rcpp::export]]
+Rcpp::NumericMatrix dmy_pf_outer_cstyle(Rcpp::NumericVector v1,
+                                        Rcpp::NumericVector v2) {
+  int n1 = v1.size();
+  int n2 = v2.size();
+  Rcpp::NumericMatrix out(n1, n2);
+  for (int i = 0; i < n1; ++i) {
+    for (int j = 0; j < n2; ++j) {
+      out(i, j) = v1[i] * v2[j];
     }
   }
-  return NumericVector::create();
+  return out;
+}
+
+//' @rdname dummy_outer
+//' @export
+// [[Rcpp::export]]
+Rcpp::NumericMatrix dmy_pf_outer_omp_collapse(Rcpp::NumericVector v1,
+                                              Rcpp::NumericVector v2) {
+  int n1 = v1.size();
+  int n2 = v2.size();
+  Rcpp::NumericMatrix out(n1, n2);
+#pragma omp parallel for collapse(2)
+  for (int i = 0; i < n1; ++i) {
+    for (int j = 0; j < n2; ++j) {
+      out(i, j) = v1[i] * v2[j];
+    }
+  }
+  return out;
+}
+
+//' @rdname dummy_outer
+//' @export
+// [[Rcpp::export]]
+Rcpp::NumericMatrix dmy_pf_outer_omp_nested(Rcpp::NumericVector v1,
+                                            Rcpp::NumericVector v2) {
+  int n1 = v1.size();
+  int n2 = v2.size();
+  Rcpp::NumericMatrix out(n1, n2);
+#pragma omp parallel for
+  for (int i = 0; i < n1; ++i) {
+#pragma omp simd
+    for (int j = 0; j < n2; ++j) {
+      out(i, j) = v1[i] * v2[j];
+    }
+  }
+  return out;
+}
+
+//' @rdname dummy_outer
+//' @export
+// [[Rcpp::export]]
+Rcpp::NumericMatrix dmy_pf_outer_arma(Rcpp::NumericVector v1,
+                                      Rcpp::NumericVector v2) {
+  arma::vec av1(v1.begin(), v1.size(), false);
+  arma::vec av2(v2.begin(), v2.size(), false);
+  return Rcpp::wrap(av1 * av2.t());
+}
+
+//' @rdname dummy_outer
+//' @export
+// [[Rcpp::export]]
+Rcpp::NumericMatrix dmy_pf_outer_base(Rcpp::NumericVector v1,
+                                      Rcpp::NumericVector v2) {
+  V_TRACE("Calling base::outer from C++...");
+  Rcpp::Function base_outer("outer");
+  Rcpp::NumericMatrix result = base_outer(v1, v2, "*");
+  V_TRACE("...base::outer call done.");
+  return result;
 }
 ```
 
----
+### Performance and Idiomatic Analysis
 
-## Microbenchmark Test Script (R)
+*   **`dmy_pf_sum_*` functions:**
+    *   `cstyle` vs. `stl`: On any modern compiler, these two will
+        almost certainly produce identical machine code. The `stl`
+        version is idiomatically preferred in modern C++ for its
+        improved readability and safety. Performance will be excellent
+        and memory-bound.
+    *   `omp_for` & `omp_simd`: For small vectors, the overhead of
+        thread creation will make these slower. As vector size
+        increases into the millions, the parallel versions will
+        drastically outperform sequential ones on a multi-core
+        machine. The `reduction` clause is crucial for correctness and
+        performance. The `simd` clause makes the compiler's
+        vectorization intent explicit and can yield a further
+        performance boost on each core. On a 32-core Xeon/EPYC
+        machine, expect near-linear speedups for very large inputs.
+    *   `arma`: `arma::accu` is highly optimized. It often uses loop
+        unrolling, SIMD, and may even be multi-threaded internally
+        depending on the linked BLAS library's configuration. Its
+        performance is expected to be competitive with or superior to
+        the manual OpenMP implementations, especially because
+        Armadillo can make intelligent choices about the best
+        strategy. This is often the most pragmatic and
+        high-performance choice.
+    *   `base`: This will be the slowest C++-callable function due to
+        the overhead of calling back into the R interpreter. It serves
+        as a useful baseline.
 
-```r
+*   **`dmy_pf_outer_*` functions:**
+    *   `cstyle`: A simple, clear implementation. Its performance will
+        be bound by memory access speed and the CPU's ability to
+        auto-vectorize the inner loop.
+    *   `omp_collapse`: This is the canonical OpenMP approach for
+        parallelizing nested loops. By collapsing the loops into a
+        single, larger iteration space, it ensures excellent load
+        balancing across all available threads. This should provide
+        significant speedups for medium to large matrices on the
+        target Azure VM.
+    *   `omp_nested`: This pattern parallelizes the outer loop and
+        vectorizes the inner loop. It can also be very effective. Its
+        performance relative to `collapse` can depend on the problem
+        size and architecture, but both are strong parallelization
+        strategies.
+    *   `arma`: The expression `av1 * av2.t()` is recognized by
+        Armadillo as an outer product (a rank-1 update), which is a
+        Level 2 BLAS operation (`DGER`). The linked BLAS library
+        (e.g., OpenBLAS) will have a highly optimized, cache-aware,
+        and potentially multi-threaded implementation for this. This
+        is almost guaranteed to be the fastest method, as it delegates
+        the work to a specialized, low-level library. It is also the
+        most idiomatic and readable solution from a linear algebra
+        perspective.
+    *   `base`: Again, this serves as a performance baseline and will
+        be the slowest due to R interpreter overhead.
+
+## Microbenchmark Test Script: `./exec/dummy-rcpp-bench.r`
+
+This R script benchmarks the performance of the C++ functions. It
+should be placed in the `./exec` directory of the package. This
+location is a conventional, CRAN-compliant choice for utility scripts
+that are part of the package source but not installed as user-callable
+executables. They can be located and run using `system.file("exec",
+"dummy-rcpp-bench.r", package = "YourPackageName")`.
+
+```R
 #!/usr/bin/env Rscript
 
+# A roxygen-style documentation block for the script.
+#' @title Benchmark Rcpp Iteration Strategies
+#' @description
+#' This script runs microbenchmarks on different C++ functions to compare
+#' the performance of various looping and computation strategies.
+#' It accepts command-line arguments to control the test type, input sizes,
+#' and output generation.
+#'
+#' @usage
+#' ./dummy-rcpp-bench.r [options] [input_size_1 input_size_2 ...]
+#'
+#' @seealso
+#' The C++ source code: `../src/dummy_iter.cpp`
+#' Project Makevars for compilation flags: `../src/Makevars`
+#' User-specific Makevars for native optimization: `~/.R/Makevars`
+#'
+
+# --- 1. Dependencies ---
+# Suppress package startup messages for cleaner logs
 suppressPackageStartupMessages({
-  library(argparse)
+  library(optparse)
   library(microbenchmark)
   library(ggplot2)
-  library(jsonlite)
+  library(logger)
+  library(data.table)
 })
 
-parser <- ArgumentParser()
-parser$add_argument("sizes", nargs = "*", type = "integer",
-                    help = "Graph sizes (number of nodes)")
-parser$add_argument("-m", "--samples", type = "integer", default = 10,
-                    help = "Microbenchmark sample size")
-parser$add_argument("-g", "--density", type = "double", default = 0.1,
-                    help = "Graph density (0.0 - 1.0)")
-parser$add_argument("-s", "--save", action = "store_true",
-                    help = "Save benchmark results and graph")
+# --- 2. Argument Parsing ---
+option_list <- list(
+  make_option(c("-h", "--help"),
+    action = "store_true", default = FALSE,
+    help = "Show this help message and exit"
+  ),
+  make_option(c("-v", "--verbose"),
+    action = "count", default = 0,
+    help = "Increase verbosity level (-v, -vv, -vvv)"
+  ),
+  make_option(c("-p", "--profile"),
+    action = "store_true", default = FALSE,
+    help = "Enable profiling with Rprof"
+  ),
+  make_option(c("-t", "--test"),
+    type = "character", default = "sum",
+    help = "Test type to execute: 'sum' or 'outer' [default: %default]"
+  ),
+  make_option(c("-m", "--samples"),
+    type = "integer", default = 100,
+    help = "Number of microbenchmark samples (iterations) [default: %default]"
+  ),
+  make_option(c("-s", "--save"),
+    action = "store_true", default = FALSE,
+    help = "Save benchmark data and system info reports"
+  )
+)
 
-args <- parser$parse_args()
+parser <- OptionParser(
+  usage = "%prog [options] [input_size_1 input_size_2 ...]",
+  option_list = option_list,
+  description = "A script to benchmark Rcpp loop performance."
+)
 
-if (length(args$sizes) == 0) args$sizes <- c(50, 100, 200)
+# `parse_args` with positional_arguments = TRUE returns a list with `options`
+# and `args`
+args_out <- parse_args(parser, positional_arguments = TRUE)
+opts <- args_out$options
+input_sizes_char <- args_out$args
 
-results <- list()
+if (opts$help) {
+  print_help(parser)
+  quit(status = 0)
+}
 
-for (n in args$sizes) {
-  graph <- matrix(0, n, n)
-  graph[upper.tri(graph)] <- ifelse(runif(n * (n - 1) / 2) < args$density,
-                                    runif(n * (n - 1) / 2, 1, 10), 0)
-  graph <- graph + t(graph)
+# Default input sizes if none are provided
+if (length(input_sizes_char) == 0) {
+  input_sizes_char <- c("10", "100", "1000")
+}
+input_sizes <- as.integer(input_sizes_char)
 
-  bench <- microbenchmark(
-    seq = astar_sequential(graph, 1, n),
-    par = astar_parallel(graph, 1, n),
-    times = args$samples
+
+# --- 3. Setup Logging and Output Directory ---
+log_dir <- Sys.getenv("P_LOGS_DIR", unset = "logs")
+if (!dir.exists(log_dir)) {
+  dir.create(log_dir, recursive = TRUE)
+}
+
+timestamp <- as.integer(Sys.time())
+script_name <- "dummy-rcpp-bench"
+file_prefix <- file.path(
+  log_dir,
+  paste(script_name, timestamp, opts$test, sep = "-")
+)
+
+# Configure logger to write to both console and file
+log_appender(appender_tee(paste0(file_prefix, "-test.log")))
+
+# Set logging level based on verbosity
+log_level <- switch(min(opts$verbose, 2),
+  `0` = INFO,
+  `1` = DEBUG,
+  `2` = TRACE
+)
+log_threshold(log_level)
+
+
+# --- 4. Main Script Logic ---
+
+main <- function() {
+  log_info("Starting benchmark script...")
+  log_info("Arguments: %s", paste(commandArgs(trailingOnly = FALSE), collapse = " "))
+  log_info("Parsed Options: test='%s', samples=%d, save=%s, verbose=%d",
+           opts$test, opts$samples, opts$save, opts$verbose)
+  log_info("Input Sizes: %s", paste(input_sizes, collapse = ", "))
+  log_info("Log directory: %s", normalizePath(log_dir))
+
+  # It's assumed the package is loaded, e.g., via `devtools::load_all()`
+  # or is installed. We need to call the C++ functions.
+  # For this example, let's assume they are in the global environment.
+  # In a real package, you'd call `mypackage::dmy_pf_sum_cstyle`.
+  dmy_pf_log_set_level(opts$verbose)
+
+  log_info("System CPU Info:")
+  try({
+    cpu_info <- system("inxi -C", intern = TRUE)
+    for (line in cpu_info) log_info(line)
+  }, silent = TRUE)
+
+  if (opts$profile) {
+    prof_file <- paste0(file_prefix, "-rprof.out")
+    log_info("Profiling enabled. Output to: %s", prof_file)
+    Rprof(prof_file)
+  }
+
+  all_results <- list()
+
+  # Define function groups
+  sum_functions <- list(
+    cstyle = function(v) dmy_pf_sum_cstyle(v),
+    stl = function(v) dmy_pf_sum_stl(v),
+    omp_for = function(v) dmy_pf_sum_omp_for(v),
+    omp_simd = function(v) dmy_pf_sum_omp_simd(v),
+    arma = function(v) dmy_pf_sum_arma(v),
+    base = function(v) dmy_pf_sum_base(v)
   )
 
-  df <- as.data.frame(bench)
-  df$nodes <- n
-  results[[as.character(n)]] <- df
+  outer_functions <- list(
+    cstyle = function(v) dmy_pf_outer_cstyle(v, v),
+    omp_collapse = function(v) dmy_pf_outer_omp_collapse(v, v),
+    omp_nested = function(v) dmy_pf_outer_omp_nested(v, v),
+    arma = function(v) dmy_pf_outer_arma(v, v),
+    base = function(v) dmy_pf_outer_base(v, v)
+  )
+
+  test_suite <- if (opts$test == "outer") outer_functions else sum_functions
+
+  for (size in input_sizes) {
+    log_info("Running benchmark for input size: %d", size)
+    v <- rnorm(size, mean = 0, sd = 100)
+    
+    # Reset C++ trace log for each benchmark run
+    dmy_pf_log_reset()
+
+    mb_result <- microbenchmark(
+      list = test_suite,
+      times = opts$samples,
+      unit = "ms", # milliseconds are often a good unit for comparison
+      v = v
+    )
+
+    log_info("Benchmark for size %d complete. Summary:", size)
+    print(mb_result)
+
+    # Store results
+    mb_df <- as.data.table(mb_result)
+    mb_df[, input_size := size]
+    all_results[[as.character(size)]] <- mb_df
+  }
+
+  if (opts$profile) {
+    Rprof(NULL)
+  }
+
+  # --- 5. Process and Save Results ---
+  log_info("Aggregating and saving results...")
+  benchmark_data <- rbindlist(all_results)
+  setnames(benchmark_data, "expr", "function_label")
+
+  # Summarize for plotting
+  summary_stats <- benchmark_data[, .(
+    mean_time_ms = mean(time) / 1e6, # time is in nanoseconds
+    median_time_ms = median(time) / 1e6
+  ), by = .(function_label, input_size)]
+
+  # Generate plot
+  plot_title <- sprintf("Performance of '%s' Implementations", opts$test)
+  plot_subtitle <- sprintf(
+    "Samples per test: %d | Machine: %s",
+    opts$samples,
+    try(system("hostname", intern = TRUE), silent = TRUE)
+  )
+  p <- ggplot(summary_stats, aes(
+    x = input_size, y = mean_time_ms,
+    color = function_label, group = function_label
+  )) +
+    geom_line() +
+    geom_point() +
+    scale_x_log10() +
+    scale_y_log10() +
+    labs(
+      title = plot_title,
+      subtitle = plot_subtitle,
+      x = "Input Vector Size (log scale)",
+      y = "Mean Execution Time (ms, log scale)",
+      color = "Implementation"
+    ) +
+    theme_minimal() +
+    theme(legend.position = "bottom")
+
+  plot_file <- paste0(file_prefix, "-bench.png")
+  ggsave(plot_file, p, width = 10, height = 6)
+  log_info("Benchmark plot saved to: %s", plot_file)
+
+  if (opts$save) {
+    log_debug("Save Data option is enabled. Writing additional files.")
+    # Save full data
+    tsv_file <- paste0(file_prefix, "-data.tsv")
+    full_data <- copy(benchmark_data)
+    full_data[, test_type := opts$test]
+    full_data[, timestamp := timestamp]
+    fwrite(full_data, tsv_file, sep = "\t")
+    log_info("Full benchmark data saved to: %s", tsv_file)
+
+    # Save system info
+    info_file <- paste0(file_prefix, "-info.log")
+    info_cmds <- "date; whoami; inxi -CfGMS; lscpu; cpupower frequency-info; nvidia-smi || echo '#NOGPU'"
+    system(paste(info_cmds, ">", info_file, "2>&1"))
+    log_info("System info report saved to: %s", info_file)
+  }
+
+  log_info("Script finished successfully.")
 }
 
-all_results <- do.call(rbind, results)
-
-p <- ggplot(all_results, aes(x = factor(nodes), y = time/1e6,
-                             fill = expr)) +
-  geom_boxplot() +
-  labs(title = "Sequential vs Parallel A*",
-       subtitle = sprintf("Samples=%d, Density=%.2f",
-                          args$samples, args$density),
-       x = "Graph size (nodes)", y = "Time (ms)")
-
-print(p)
-
-if (args$save) {
-  write_json(all_results, "astar_benchmark.json", pretty = TRUE)
-  ggsave("astar_benchmark.png", p)
-}
+# Run the main function
+main()
 ```
 
----
+## Quick Start Guide
 
-## RcppParallel Quick Start Guide
+To build and run this code within an R package, you need to configure
+the project to correctly link against Rcpp, RcppArmadillo, and enable
+OpenMP. This typically involves modifications to `DESCRIPTION` and
+creating a `src/Makevars` file.
 
 ### Project Configuration
 
 #### `DESCRIPTION`
 
+Your `DESCRIPTION` file must declare the dependencies. `LinkingTo` is
+crucial for the compiler to find the header files for `Rcpp` and
+`RcppArmadillo`. `SystemRequirements` informs users and systems about
+the need for an OpenMP-capable compiler.
+
 ```yaml
-Package: demo
+Package: myrcppproject
 Type: Package
-Title: Demo with RcppParallel
+Title: Example Rcpp Performance Package
 Version: 0.1.0
+Author: Your Name
+Maintainer: Your Name <your.email@example.com>
+Description: Demonstrates high-performance iteration with Rcpp.
+License: MIT
+Encoding: UTF-8
+RoxygenNote: 7.2.3
 Imports:
-    Rcpp (>= 1.0.0),
-    RcppArmadillo,
-    RcppEigen,
-    RcppParallel
+    Rcpp
 LinkingTo:
     Rcpp,
-    RcppArmadillo,
-    RcppEigen,
-    RcppParallel
-SystemRequirements: C++11
+    RcppArmadillo
+SystemRequirements:
+    GNU make, C++11 compiler with OpenMP support
 ```
 
 #### `src/Makevars`
 
-```make
-PKG_CXXFLAGS = $(SHLIB_OPENMP_CXXFLAGS)
-PKG_LIBS = $(SHLIB_OPENMP_CXXFLAGS) $(SHLIB_OPENMP_CXXLDFLAGS)
-```
-
-#### `~/.R/Makevars` (SIMD optimization)
+This file controls the compilation process. To enable OpenMP, you must
+add the appropriate flags (`-fopenmp` for GCC/Clang). To link against
+the system's BLAS and LAPACK libraries (which RcppArmadillo uses), you
+need to include them in `PKG_LIBS`.
 
 ```make
-CXXFLAGS += -O3 -march=native
+# Get compiler flags for OpenMP from R's configuration
+OMP_FLAG = $(shell $(R_HOME)/bin/R CMD CONFIG CXX11FLAGS | grep -o -- '-fopenmp')
+
+# Add OpenMP flags to C++ compiler
+PKG_CXXFLAGS = -std=c++11 $(OMP_FLAG)
+
+# Add OpenMP flags and system BLAS/LAPACK to the linker
+PKG_LIBS = $(OMP_FLAG) $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)
 ```
+*Note: This setup relies on R's configuration to find the correct BLAS/LAPACK libraries.*
+
+#### `~/.R/Makevars`
+
+For personal, non-portable, maximum-performance builds, you can add
+machine-specific flags to your personal `Makevars` file located at
+`~/.R/Makevars`. The `-march=native` flag instructs the compiler to
+generate code optimized for the specific CPU architecture of the
+machine you are compiling on. This can unlock additional performance
+from features like AVX2 or AVX-512 but creates a binary that may not
+run on older CPUs.
+
+**This file should NOT be part of your R package source.** It is for
+user-side configuration only.
+
+```make
+# Example ~/.R/Makevars for a modern Intel/AMD CPU
+CXX11FLAGS += -O3 -march=native -mtune=native
+```
+
+## References
+
+[^1]: [High performance functions with Rcpp](http://adv-r.had.co.nz/Rcpp.html)
+[^2]: [R Packages (2e)](https://r-pkgs.org/)
+[^3]: [RcppArmadillo on CRAN](https://cran.r-project.org/web/packages/RcppArmadillo/index.html)
+[^4]: [OpenMP Resources](https://www.openmp.org/resources/)
+[^5]: [CRAN Task View: High-Performance and Parallel Computing with R](https://cran.r-project.org/web/views/HighPerformanceComputing.html)
+[^6]: [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html)
+
+
+
+-------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------
+# A:3 (ChatGPT)
+> * [Rcpp iterators performance optimization — `dummy_iter` example](https://chatgpt.com/share/68b5c7df-61c4-8012-80bd-f5dceaafba00)
+
+**Abstract.**
+
+This document provides a compact, CRAN-friendly example showing
+several iteration strategies in C++/Rcpp and RcppArmadillo for the
+simple `sum` and `outer` (tensor-product) operations. It includes
+OpenMP variants (parallel and vectorized), an Armadillo-backed
+variant, and calls into R's `base` implementations from C++ to provide
+realistic baselines. 
+
+A companion R script (`./exec/dummy-rcpp-bench.r`) runs reproducible
+microbenchmarks across several input sizes, logging and exporting
+results.
+
+> Notes:
+>
+> * The C++ code targets **C++11** and follows Google C++ style where
+>   practical for C++ sources.
+>
+> * The examples use `Rcpp` and `RcppArmadillo`. Make sure your
+>   package `DESCRIPTION` contains `LinkingTo: Rcpp, RcppArmadillo`
+>   and appropriate `Imports`/`Depends` entries. A "Quick Start"
+>   section at the end shows minimal `DESCRIPTION` and `Makevars`
+>   changes.
+>
+> * OpenMP sections are guarded so builds still work without OpenMP if
+>   the compiler/distribution lacks it.
+>
+> * Logging functions are lightweight and intended only for controlled
+>   tracing during benchmarking. Tracing is disabled by default.
+>
 
 ---
 
-### Installation with `renv`
+## Introduction
+
+### C vs C++ (STL) iteration strategies — rationale
+
+* **C-style indexed `for`** (`for (i=0; i<n; ++i)`) is explicit,
+  minimal overhead, and often straightforwardly optimized by
+  compilers. It exposes index arithmetic and is easy to convert to
+  pointer arithmetic (slight micro-optimization).
+* **C++-style iterators / range-based `for`** (`for (auto x : vec)`)
+  is safer and more idiomatic in modern C++. It hides indices and
+  prevents off-by-one bugs. In most cases compilers produce code
+  comparable to C-style loops; differences are usually negligible for
+  numeric loops but can vary depending on optimization and iterator
+  abstraction cost.
+* **OpenMP `#pragma omp parallel for`** splits loop iterations across
+  threads. It's effective when each iteration is independent and work
+  per iteration is large enough to amortize threading overhead. OpenMP
+  `reduction` handles accumulators safely.
+* **Vectorization (`#pragma omp simd` or relying on compiler
+  autovectorization)** instructs the compiler to generate SIMD (Single
+  Instruction Multiple Data) instructions
+  (AVX/AVX2/AVX-512). Vectorization improves throughput for floating
+  point operations if memory access aligns and there are no
+  dependencies.
+* **Trade-off:** Parallelism (OpenMP) reduces wall-clock time by using
+  multiple cores, but thread spawn/synchronization overhead and memory
+  bandwidth contention limit speedups. Vectorization (SIMD) improves
+  per-core throughput but requires contiguous memory access and often
+  smaller code changes. Combining the two (`parallel for simd`) can be
+  beneficial but requires care (e.g., use `reduction` and guarantee
+  independence).
+* **RcppArmadillo / BLAS:** For large linear algebra problems, highly
+  tuned BLAS (OpenBLAS, Intel MKL) outperform hand-coded
+  loops. However, for simple elementwise reductions and small outer
+  products, custom loops or Armadillo operations may be competitive.
+
+### OpenMP primer — directives used in examples
+
+* `parallel` — create a team of threads. Usually used as `#pragma omp
+  parallel` or implicitly via `parallel for`.
+* `for` — distribute loop iterations among threads: `#pragma omp
+  parallel for`.
+* `collapse(n)` — combine `n` nested loops into a single iteration
+  space; useful for nested loops when you want more fine-grained work
+  distribution.
+* `simd` — instruct compiler to vectorize the loop, e.g., `#pragma omp
+  simd` or `#pragma omp parallel for simd`.
+* `private(var)` / `shared(var)` — specify variable sharing across
+  threads.
+* `reduction(op: var)` — defines a reduction across threads (e.g.,
+  sum).
+
+> **Note on portability & CRAN:** 
+>
+> Using `-march=native` or architecture-specific intrinsics may
+> produce binaries that are not portable across CRAN builders and
+> users' machines. Avoid `-march=native` in package builds intended
+> for CRAN; instead document optional local tuning for
+> developers. OpenMP usage is allowed, but you must carefully document
+> `SystemRequirements` and provide fallbacks (our code compiles and
+> runs without OpenMP).
+
+### OpenMP / BLAS / SIMD in RcppArmadillo and RcppEigen
+
+* **RcppArmadillo** relies on Armadillo which uses BLAS/LAPACK for
+  many operations. It will benefit from tuned BLAS (OpenBLAS,
+  MKL). Armadillo itself can use OpenMP for some operations depending
+  on build flags/config.
+* **RcppEigen** similarly benefits from optimized BLAS (when using
+  Eigen's plugin for BLAS) and can use vectorization (Eigen is heavily
+  optimized).
+* For elementwise operations and small tensors, the overhead of BLAS
+  calls may be non-negligible; a hand-optimized OpenMP loop might be
+  better.
+
+### GPU alternatives (brief)
+
+* For massive matrix multiplications and large linear algebra
+  workloads, GPUs (cuBLAS, cuDNN) provide very large speedups
+  (10×–100×) if data transfer overhead is small relative to
+  compute. For small/medium sized problems or many small kernels, GPUs
+  may be less beneficial.
+* Tools: `tensorflow`, `torch`, or CUDA bindings for R (e.g., `gpuR`)
+  — but packaging GPU-enabled R packages for CRAN is difficult.
+* **cuBLAS vs OpenBLAS/MKL:** cuBLAS on a suitable GPU usually
+  outperforms CPU BLAS for large matrices; for small problems
+  OpenBLAS/MKL on many-core CPUs can still be better or comparable.
+* **Containerized/python CUDA distribution**: In rootless podman
+  environments, installing CUDA-based toolchains can be complex but
+  feasible. Using Python-based CUDA (e.g., `cupy`) is viable for
+  prototyping; for R packaging you must ensure system-level
+  drivers/libraries are available — not trivial for CRAN.
+
+---
+
+## C++ Implementation — `./src/dummy_iter.cpp`
+
+Below is a single C++ source that implements:
+
+* Logging/tracing support functions and macros.
+* `dmy_pf_sum_*` variants:
+  * `dmy_pf_sum_c_for` — C-style indexed loop.
+  * `dmy_pf_sum_cpp_range` — C++ range-based loop.
+  * `dmy_pf_sum_openmp_for` — OpenMP `parallel for` with `reduction`.
+  * `dmy_pf_sum_openmp_for_simd` — OpenMP `parallel for simd` with `reduction`.
+  * `dmy_pf_sum_armadillo` — uses `arma::sum`.
+  * `dmy_pf_sum_base` — calls `base::sum` (via R).
+* `dmy_pf_outer_*` variants:
+  * `dmy_pf_outer_c_for` — nested C-style loops.
+  * `dmy_pf_outer_cpp_range` — nested iterators (range-based).
+  * `dmy_pf_outer_openmp_collapse` — `parallel for collapse(2)`.
+  * `dmy_pf_outer_openmp_for_simd` — outer parallel, inner simd.
+  * `dmy_pf_outer_armadillo` — `arma::vec * arma::vec.t()`.
+  * `dmy_pf_outer_base` — call `base::outer(x, x, "*")`.
+
+> **File:** `./src/dummy_iter.cpp`
+> The file is a single translation unit and should be compiled by the package build.
+
+```cpp
+// Copyright: (C) 2025 - Example
+// License: GPL-3 (example)
+// -*- mode: C++; c-basic-offset: 2; indent-tabs-mode: nil -*-
+
+//' @title Dummy iterator performance examples (C++/Rcpp and RcppArmadillo)
+//' @description A set of R-callable functions to benchmark iteration strategies.
+//' @details This file exposes several variants for `sum` and `outer` operations:
+//'  - C-style loops
+//'  - C++ range-based loops
+//'  - OpenMP parallel (with reduction) and parallel+simd variants
+//'  - RcppArmadillo-backed variants
+//'  - Calls to R `base::sum` / `base::outer` from C++
+//'
+//' Minimal invocation examples (R):
+//' \dontrun{
+//'   library(yourpkg) # replace with your package name
+//'   v <- rnorm(1e6, 0, 100)
+//'   dmy_pf_log_set_level(3)  # enable verbose tracing
+//'   s1 <- dmy_pf_sum_c_for(v)
+//'   s2 <- dmy_pf_sum_openmp_for(v)
+//'   m  <- dmy_pf_outer_armadillo(v[1:1000])
+//' }
+// [[Rcpp::depends(RcppArmadillo)]]
+
+#include <RcppArmadillo.h>
+#include <Rcpp.h>
+#include <set>
+#include <string>
+#include <mutex>
+
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
+using Rcpp::NumericVector;
+using Rcpp::NumericMatrix;
+using Rcpp::CharacterVector;
+using Rcpp::Environment;
+using Rcpp::Function;
+using Rcpp::wrap;
+using Rcpp::as;
+
+namespace dmy_pf_internal {
+
+// Logging/tracing static state
+static int g_log_level = 0;
+static std::set<std::string> g_trace_once_set;
+static std::mutex g_trace_mutex;
+
+// Helpers
+inline std::string join_file_line(const char* file, int line) {
+  return std::string(file) + ":" + std::to_string(line);
+}
+
+}  // namespace dmy_pf_internal
+
+//' @rdname dmy_log
+//' @export
+// [[Rcpp::export]]
+void dmy_pf_log_set_level(int level) {
+  dmy_pf_internal::g_log_level = level;
+}
+
+//' @rdname dmy_log
+//' @export
+// [[Rcpp::export]]
+int dmy_pf_log_get_level() {
+  return dmy_pf_internal::g_log_level;
+}
+
+//' @rdname dmy_log
+//' @export
+// [[Rcpp::export]]
+void dmy_pf_log_reset() {
+  std::lock_guard<std::mutex> guard(dmy_pf_internal::g_trace_mutex);
+  dmy_pf_internal::g_trace_once_set.clear();
+}
+
+//' @rdname dmy_log
+//' @export
+// [[Rcpp::export]]
+void dmy_pf_log_out(const char* file, int line, const std::string& msg) {
+  if (dmy_pf_internal::g_log_level >= 0) {
+    Rcpp::Rcout << "[" << join_file_line(file, line) << "] " << msg << std::endl;
+  }
+}
+
+//' @rdname dmy_log
+//' @export
+// [[Rcpp::export]]
+void dmy_pf_log_trace(const char* file, int line, const std::string& msg) {
+  if (dmy_pf_internal::g_log_level < 3) {
+    return;
+  }
+  std::string key = join_file_line(file, line);
+  {
+    std::lock_guard<std::mutex> guard(dmy_pf_internal::g_trace_mutex);
+    if (dmy_pf_internal::g_trace_once_set.find(key) != dmy_pf_internal::g_trace_once_set.end()) {
+      return;  // already logged once
+    }
+    dmy_pf_internal::g_trace_once_set.insert(key);
+  }
+  Rcpp::Rcerr << "[" << key << "] " << msg << std::endl;
+}
+
+// Convenience macros for file/line reporting
+#define V_LOG(MSG) dmy_pf_log_out(__FILE__, __LINE__, (MSG))
+#define V_TRACE(MSG) dmy_pf_log_trace(__FILE__, __LINE__, (MSG))
+
+// ----------------------
+// SUM group
+// ----------------------
+
+//' @rdname dmy_sum
+//' @export
+// [[Rcpp::export]]
+double dmy_pf_sum_c_for(const NumericVector& v) {
+  double s = 0.0;
+  R_xlen_t n = v.size();
+  for (R_xlen_t i = 0; i < n; ++i) {
+    s += v[i];
+  }
+  return s;
+}
+
+//' @rdname dmy_sum
+//' @export
+// [[Rcpp::export]]
+double dmy_pf_sum_cpp_range(const NumericVector& v) {
+  double s = 0.0;
+  for (auto x : v) {
+    s += x;
+  }
+  return s;
+}
+
+//' @rdname dmy_sum
+//' @export
+// [[Rcpp::export]]
+double dmy_pf_sum_openmp_for(const NumericVector& v) {
+#ifdef _OPENMP
+  double s = 0.0;
+  R_xlen_t n = v.size();
+  #pragma omp parallel for reduction(+:s) schedule(static)
+  for (R_xlen_t i = 0; i < n; ++i) {
+    s += v[i];
+  }
+  return s;
+#else
+  V_LOG("OpenMP not available — falling back to sequential");
+  return dmy_pf_sum_c_for(v);
+#endif
+}
+
+//' @rdname dmy_sum
+//' @export
+// [[Rcpp::export]]
+double dmy_pf_sum_openmp_for_simd(const NumericVector& v) {
+#ifdef _OPENMP
+  double s = 0.0;
+  R_xlen_t n = v.size();
+  #pragma omp parallel for reduction(+:s) schedule(static)
+  for (R_xlen_t i = 0; i < n; ++i) {
+    double tmp = 0.0;
+    // inner loop trivially is scalar here; use simd for a tiny chunk (example)
+    #pragma omp simd reduction(+:tmp)
+    for (int j = 0; j < 1; ++j) { (void)j; tmp += v[i]; }
+    s += tmp;
+  }
+  return s;
+#else
+  V_LOG("OpenMP not available — falling back to sequential");
+  return dmy_pf_sum_c_for(v);
+#endif
+}
+
+//' @rdname dmy_sum
+//' @export
+// [[Rcpp::export]]
+double dmy_pf_sum_armadillo(const NumericVector& v) {
+  arma::vec a = as<arma::vec>(v);
+  return arma::accu(a);  // equivalent to sum
+}
+
+//' @rdname dmy_sum
+//' @export
+// [[Rcpp::export]]
+double dmy_pf_sum_base(const NumericVector& v) {
+  V_TRACE("base::sum — calling base::sum");
+  Environment base = Environment::base_env();
+  Function base_sum = base["sum"];
+  SEXP res = base_sum(v);  // returns numeric(1)
+  V_TRACE("base::sum — done");
+  return as<double>(res);
+}
+
+// ----------------------
+// OUTER group
+// ----------------------
+
+//' @rdname dmy_outer
+//' @export
+// [[Rcpp::export]]
+NumericMatrix dmy_pf_outer_c_for(const NumericVector& x) {
+  R_xlen_t n = x.size();
+  NumericMatrix out(n, n);
+  for (R_xlen_t i = 0; i < n; ++i) {
+    for (R_xlen_t j = 0; j < n; ++j) {
+      out(i, j) = x[i] * x[j];
+    }
+  }
+  return out;
+}
+
+//' @rdname dmy_outer
+//' @export
+// [[Rcpp::export]]
+NumericMatrix dmy_pf_outer_cpp_range(const NumericVector& x) {
+  R_xlen_t n = x.size();
+  NumericMatrix out(n, n);
+  R_xlen_t i = 0;
+  for (auto xi : x) {
+    R_xlen_t j = 0;
+    for (auto xj : x) {
+      out(i, j) = xi * xj;
+      ++j;
+    }
+    ++i;
+  }
+  return out;
+}
+
+//' @rdname dmy_outer
+//' @export
+// [[Rcpp::export]]
+NumericMatrix dmy_pf_outer_openmp_collapse(const NumericVector& x) {
+#ifdef _OPENMP
+  R_xlen_t n = x.size();
+  NumericMatrix out(n, n);
+  #pragma omp parallel for collapse(2) schedule(static)
+  for (R_xlen_t i = 0; i < n; ++i) {
+    for (R_xlen_t j = 0; j < n; ++j) {
+      out(i, j) = x[i] * x[j];
+    }
+  }
+  return out;
+#else
+  V_LOG("OpenMP not available — falling back to sequential");
+  return dmy_pf_outer_c_for(x);
+#endif
+}
+
+//' @rdname dmy_outer
+//' @export
+// [[Rcpp::export]]
+NumericMatrix dmy_pf_outer_openmp_for_simd(const NumericVector& x) {
+#ifdef _OPENMP
+  R_xlen_t n = x.size();
+  NumericMatrix out(n, n);
+  #pragma omp parallel for schedule(static)
+  for (R_xlen_t i = 0; i < n; ++i) {
+    // inner loop vectorized
+    #pragma omp simd
+    for (R_xlen_t j = 0; j < n; ++j) {
+      out(i, j) = x[i] * x[j];
+    }
+  }
+  return out;
+#else
+  V_LOG("OpenMP not available — falling back to sequential");
+  return dmy_pf_outer_c_for(x);
+#endif
+}
+
+//' @rdname dmy_outer
+//' @export
+// [[Rcpp::export]]
+NumericMatrix dmy_pf_outer_armadillo(const NumericVector& x) {
+  arma::vec a = as<arma::vec>(x);
+  arma::mat m = a * a.t();  // outer product
+  return wrap(m);
+}
+
+//' @rdname dmy_outer
+//' @export
+// [[Rcpp::export]]
+NumericMatrix dmy_pf_outer_base(const NumericVector& x) {
+  V_TRACE("base::outer — calling base::outer");
+  Environment base = Environment::base_env();
+  Function base_outer = base["outer"];
+  // base::outer(x, x, "*") returns matrix
+  SEXP res = base_outer(x, x, std::string("*"));
+  V_TRACE("base::outer — done");
+  return as<NumericMatrix>(res);
+}
+
+```
+
+**Implementation notes (C++):**
+
+* All exported functions are annotated with `// [[Rcpp::export]]`.
+* OpenMP guard macros allow building without OpenMP. When your build
+  toolchain supports OpenMP, set `PKG_CXXFLAGS` and `PKG_LIBS`
+  accordingly (see Quick Start below).
+* `V_TRACE` logs to `Rcerr` and is guarded so it only prints when log
+  level >= 3, and only once per file\:line until `dmy_pf_log_reset()`
+  is called. This prevents excessive repeated trace output when the
+  functions are iterated millions of times in benchmarks.
+
+---
+
+## Microbenchmark script — `./exec/dummy-rcpp-bench.r`
+
+This script is intended to live in the package `exec/`
+directory. Files in `exec/` are allowed by CRAN and can be used as
+helper scripts (they are not installed as R functions but are
+available for package developers and can be invoked after installing
+the package). In typical development workflows the script can be
+invoked from the package root.
+
+**Behavior:**
+
+* CLI parsing via `optparse`.
+* Logging with `futile.logger` (simple, CRAN-friendly).
+* Benchmarks via `microbenchmark`.
+* Plots via `ggplot2`.
+* Tries to `library()` the package by name; if that fails and `devtools` is available it attempts `devtools::load_all('.')`.
+* Writes outputs into `${P_LOGS_DIR:-logs}`; creates directory if missing.
+* Produces: a log file, a PNG plot (`bench.png`) and CSV summary. Optional profiling and raw tsv exports when `--save` is passed.
+
+> Replace `yourpkgname` default with your actual package name or pass `--pkg YOURPKG`.
 
 ```r
-renv::init(bare = TRUE)
-renv::install("Rcpp")
-renv::install("RcppArmadillo")
-renv::install("RcppEigen")
-renv::install("RcppParallel")
-renv::snapshot()
+#!/usr/bin/env Rscript
+#' @title Benchmark Rcpp iterator variants
+#' @description Command-line script to benchmark `dmy_pf_sum_*` and `dmy_pf_outer_*` variants.
+#' @examples
+#' \dontrun{
+#'   Rscript ./exec/dummy-rcpp-bench.r -t sum -m 50 --pkg yourpkgname 100 1000 10000
+#' }
+#' @seealso ./src/dummy_iter.cpp
+suppressPackageStartupMessages({
+  require(optparse)
+  require(microbenchmark)
+  require(ggplot2)
+  require(futile.logger)
+})
+
+option_list <- list(
+  make_option(c("-v", "--verbose"), action="count", default=0,
+              help="Verbose level, repeatable (-v, -vv, -vvv)"),
+  make_option(c("-p", "--profile"), action="store_true", default=FALSE,
+              help="Enable Rprof profiling"),
+  make_option(c("-t", "--test"), type="character", default="sum",
+              help="Test type: 'sum' or 'outer' [default %default]"),
+  make_option(c("-m", "--samples"), type="integer", default=100L,
+              help="microbenchmark sample size [default %default]"),
+  make_option(c("-s", "--save"), action="store_true", default=FALSE,
+              help="Save detailed data (tsv, system info)"),
+  make_option(c("--pkg"), type="character", default=Sys.getenv("PKG_NAME", "yourpkgname"),
+              help="Package name to load [default from PKG_NAME env or 'yourpkgname']")
+)
+
+parser <- OptionParser(usage = "%prog [options] [input_sizes]",
+                       option_list = option_list)
+args <- parse_args(parser, positional_arguments = TRUE)
+opts <- args$options
+pos <- args$args
+
+# Verbosity and logging
+log_level <- if (opts$verbose >= 1) futile.logger::DEBUG else futile.logger::INFO
+flog.threshold(log_level)
+flog.info("Arguments: %s", paste(commandArgs(TRUE), collapse = " "))
+
+# Input sizes
+if (length(pos) == 0) {
+  input_sizes <- c(10L, 100L, 1000L)
+} else {
+  input_sizes <- as.integer(pos)
+}
+flog.info("Input sizes: %s", paste(input_sizes, collapse = ", "))
+
+# Logs dir
+logs_dir <- Sys.getenv("P_LOGS_DIR", "logs")
+if (!dir.exists(logs_dir)) dir.create(logs_dir, recursive = TRUE)
+ts <- as.integer(Sys.time())
+prefix <- sprintf("dummy-rcpp-bench-%d-%s-", ts, opts$test)
+logfile <- file.path(logs_dir, paste0(prefix, "test.log"))
+flog.appender(appender.tee(logfile))
+flog.info("Logging to: %s", logfile)
+
+# System info snapshot
+sysinfo_file <- file.path(logs_dir, paste0(prefix, "info.log"))
+flog.info("Saving system info to %s (when --save enabled)", sysinfo_file)
+# Probe cpu info (best-effort)
+inxi_cmd <- "inxi -C"
+inxi_out <- tryCatch(system(inxi_cmd, intern = TRUE, ignore.stderr = TRUE),
+                     error = function(e) paste("#inxi-not-available", e$message))
+flog.info("inxi output: %s", paste(head(inxi_out, 10), collapse = "\n"))
+
+# Load package
+pkgname <- opts$pkg
+loaded <- FALSE
+flog.info("Trying to load package: %s", pkgname)
+try({
+  library(pkgname, character.only = TRUE)
+  loaded <- TRUE
+}, silent = TRUE)
+if (!loaded && requireNamespace("devtools", quietly = TRUE)) {
+  flog.info("Attempting devtools::load_all('.') to load package from current dir")
+  tryCatch({
+    devtools::load_all(".")
+    loaded <- TRUE
+  }, error = function(e) {
+    flog.warn("devtools::load_all() failed: %s", e$message)
+  })
+}
+if (!loaded) {
+  flog.warn("Package %s could not be loaded; ensure it is installed or run this from package root", pkgname)
+}
+
+# Determine function list in selected test
+prefix <- if (opts$test == "sum") "dmy_pf_sum_" else "dmy_pf_outer_"
+ns <- tryCatch(asNamespace(pkgname), error = function(e) NULL)
+if (is.null(ns)) {
+  # try global env
+  fns_all <- ls(envir = .GlobalEnv)
+} else {
+  fns_all <- ls(envir = ns, all.names = TRUE)
+}
+candidates <- sort(grep(paste0("^", prefix), fns_all, value = TRUE))
+if (length(candidates) == 0) {
+  flog.error("No functions found with prefix '%s'. Available: %s", prefix, paste(head(fns_all, 20), collapse = ", "))
+  stop("No candidate functions found.")
+}
+flog.info("Found candidate functions: %s", paste(candidates, collapse = ", "))
+
+# Helper to build microbenchmark expressions safely using namespace-qualified calls
+build_expr <- function(pkg, funname) {
+  call_obj <- call("::", as.name(pkg), as.name(funname))
+  # produce expression call_obj(vec)
+  expr <- as.call(list(call_obj, as.name("vec")))
+  return(expr)
+}
+
+all_results <- list()
+for (n in input_sizes) {
+  flog.info("Running tests for input size: %d", n)
+  set.seed(1234)
+  vec <- rnorm(n, mean = 0, sd = 100)  # variance 10000 => sd=100
+  # Compose expressions for microbenchmark
+  exprs <- lapply(candidates, function(fn) build_expr(pkgname, fn))
+  names(exprs) <- sub(prefix, "", candidates)
+  
+  # Prepare args for microbenchmark::microbenchmark
+  mb_args <- c(list(times = opts$samples), exprs)
+  
+  # Optionally profile
+  if (opts$profile) {
+    prof_file <- file.path(logs_dir, paste0(prefix, sprintf("%d-rprof.out", n)))
+    Rprof(prof_file)
+    flog.info("Rprof started: %s", prof_file)
+    mb <- do.call(microbenchmark::microbenchmark, mb_args)
+    Rprof(NULL)
+    flog.info("Rprof saved: %s", prof_file)
+  } else {
+    mb <- do.call(microbenchmark::microbenchmark, mb_args)
+  }
+  s <- summary(mb)
+  s$input_size <- n
+  s$test_type <- opts$test
+  all_results[[as.character(n)]] <- list(micro = mb, summary = s)
+  # save intermediate CSV
+  csv_file <- file.path(logs_dir, paste0(prefix, sprintf("%d-summary.csv", n)))
+  write.csv(s, file = csv_file, row.names = FALSE)
+  flog.info("Saved summary CSV: %s", csv_file)
+}
+
+# Aggregate summaries
+summaries <- do.call(rbind, lapply(all_results, function(x) x$summary))
+# Normalize function label
+summaries$function_label <- as.character(summaries$expr)
+
+# Plotting
+plot_file <- file.path(logs_dir, paste0(prefix, "bench.png"))
+p <- ggplot(summaries, aes(x = input_size, y = median / 1e6, group = function_label, color = function_label)) +
+  geom_line() + geom_point() +
+  labs(x = "Input size (n)", y = "Median time (ms)",
+       title = sprintf("Benchmark: %s (sample=%d)", opts$test, opts$samples),
+       subtitle = paste("Functions:", paste(names(exprs), collapse = ", "))) +
+  theme_minimal()
+ggsave(plot_file, p, width = 10, height = 6)
+flog.info("Saved benchmark plot: %s", plot_file)
+
+# Save aggregated CSV
+agg_csv <- file.path(logs_dir, paste0(prefix, "aggregated-summary.csv"))
+write.csv(summaries, agg_csv, row.names = FALSE)
+flog.info("Saved aggregated summary CSV: %s", agg_csv)
+
+# Save raw microbenchmark data if --save
+if (opts$save) {
+  # Export all microbenchmark raw data into tsv
+  library(dplyr)
+  raw_rows <- do.call(rbind, lapply(names(all_results), function(nm) {
+    mb <- all_results[[nm]]$micro
+    df <- as.data.frame(mb)
+    df$input_size <- as.integer(nm)
+    df$function_label <- as.character(df$expr)
+    df$test_type <- opts$test
+    df
+  }))
+  tsv_file <- file.path(logs_dir, paste0(prefix, "data.tsv"))
+  write.table(raw_rows, file = tsv_file, sep = "\t", row.names = FALSE)
+  flog.debug("Saved raw microbenchmark data: %s", tsv_file)
+
+  # System information save
+  info_file <- file.path(logs_dir, paste0(prefix, "info.log"))
+  cat("date:\n"); system("date", intern = FALSE)
+  sink(info_file)
+  cat("date:\n"); system("date")
+  cat("\nwhoami:\n"); system("whoami")
+  cat("\nCPU summary (inxi -CfGMS):\n"); system("inxi -CfGMS")
+  cat("\nlsCPU:\n"); system("lscpu")
+  cat("\ncpupower:\n"); system("cpupower frequency-info", ignore.stderr = TRUE)
+  cat("\nNVIDIA status:\n"); system("nvidia-smi || echo '#NOGPU'")
+  sink()
+  flog.debug("Saved extended system info to %s", info_file)
+}
+
+flog.info("Benchmark finished. Results in %s", logs_dir)
+invisible(list(summaries = summaries, raw = all_results))
 ```
+
+**Script notes:**
+
+* The script builds expressions for namespace-qualified function calls
+  (`pkg::fn(vec)`) so it can be run while the package is installed.
+* When running from package source, use `devtools::load_all('.')` by
+  passing `--pkg` appropriately or ensure the package is installed
+  first.
+* The plotting uses median microbenchmark times and plots across input
+  sizes; adjust to plot mean/other quantiles if needed.
 
 ---
 
-### Notes
+## Quick Start — package configuration (OpenMP / BLAS / LAPACK)
 
-* `RcppParallel` bundles the **TinyThread** library by default (no system install required).
-* On Linux, ensure OpenMP is available (`libgomp` or equivalent).
-* On macOS, use `brew install libomp` if needed.
+### Minimal `DESCRIPTION` entries
+
+Add the following fields to `DESCRIPTION` (replace `yourpkgname` and maintain proper formatting):
+
+```yaml
+Package: yourpkgname
+Title: Example Rcpp Iterator Benchmarks
+Version: 0.1.0
+Authors@R: person("Given", "Family", email = "you@example.com", role = c("aut", "cre"))
+Description: Examples comparing iteration strategies using Rcpp and RcppArmadillo.
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+LinkingTo: Rcpp, RcppArmadillo
+Imports: methods
+SystemRequirements: BLAS, LAPACK
+```
+
+If your package relies on OpenMP, add it to `SystemRequirements` and
+document optional compilation flags. CRAN expects portability; don't
+assume `-march=native` for CRAN builds.
+
+### `src/Makevars` (package local) — an example for GNU toolchain with OpenMP
+
+```make
+# src/Makevars
+# Replace -fopenmp with appropriate flags for non-GNU toolchains if necessary.
+## Detect OpenMP; allow empty default for platforms without it.
+ifeq ($(SHLIB_OPENMP_CXXFLAGS),)
+SHLIB_OPENMP_CXXFLAGS = -fopenmp
+endif
+
+PKG_CXXFLAGS += $(SHLIB_OPENMP_CXXFLAGS)
+PKG_LIBS += $(SHLIB_OPENMP_CXXFLAGS)
+```
+
+For linking to BLAS/LAPACK nothing special is needed typically because
+R provides `$(BLAS_LIBS)` etc. If you want to use a specific BLAS
+during development, configure your R installation accordingly.
+
+### `~/.R/Makevars` (developer/local tuning — **not** CRAN)
+
+> **Important:** Do **not** place `-march=native` in package-local
+> `Makevars` for code destined for CRAN. `~/.R/Makevars` is intended
+> for your *local* machine and is an appropriate place for
+> `-march=native` or other architecture-specific tuning.
+
+Example `~/.R/Makevars` snippet for a developer machine (optional):
+
+```make
+CXX11 = g++ -std=gnu++11
+CXX11FLAGS = -O3 -march=native -mtune=native -fopenmp
+CXX11STD = -std=gnu++11
+```
+
+This speeds up local builds but remember that binaries produced with these flags may not run on other machines.
+
+---
+
+## Performance considerations & recommendations
+
+* For **sum**: For very large vectors, OpenMP reduction commonly gives
+  good speedups up to the number of physical cores, limited by memory
+  bandwidth. SIMD helps if the CPU has vector registers and memory
+  alignment is good. For small vectors, single-threaded and
+  low-overhead loops often win.
+* For **outer**: The outer product is `O(n^2)` memory and compute. For
+  large `n`, memory capacity and cache behaviour dominate. If `n`
+  grows beyond L2/L3 cache sizes, performance will be
+  memory-bound. Use BLAS/GPU alternatives when outer product is a part
+  of larger linear algebra workflow (matrix-matrix ops).
+* **Armadillo**: Use for dense linear algebra. For `outer`,
+  `arma::vec * vec.t()` is a concise, BLAS-friendly operation. When
+  linked to a tuned BLAS, it may be significantly faster than naïve
+  loops for large `n`.
+* **Threading + Vectorization**: Combining `parallel for` with `simd`
+  is often best for nested loops if the inner loop is heavy enough and
+  independent. Use `collapse(2)` when nested iteration has imbalanced
+  workload distribution.
+* **CRAN compliance**: Avoid hard-coded architecture-specific flags in
+  package sources; provide documentation for optional local tuning and
+  ensure safe fallbacks whenever OpenMP is not available.
+
+---
+
+## GPU note (short)
+
+* GPU acceleration can be huge for very large linear algebra
+  kernels. But packaging GPU code for CRAN is practically infeasible
+  due to hardware/driver dependencies. Use GPU in local workflows or
+  in containers for heavy workloads; for packages, provide CPU
+  fallbacks and document GPU experiments separately.
 
 ---
 
 ## References
 
-[^1]: [RcppParallel Documentation](https://cran.r-project.org/package=RcppParallel)
+[^1]: Hadley Wickham. *Advanced R — Rcpp chapter*.
 
-[^2]: [A\* Search Algorithm - Wikipedia](https://en.wikipedia.org/wiki/A*_search_algorithm)
+[^2]: CRAN packages and task views: *High-Performance and Parallel Computing with R*.
 
-[^3]: [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html)
+[^3]: RcppArmadillo CRAN page.
 
-[^4]: [RcppArmadillo](https://cran.r-project.org/package=RcppArmadillo)
+[^4]: OpenMP official resources.
 
-[^5]: [RcppEigen](https://cran.r-project.org/package=RcppEigen)
+[^5]: Google C++ Style Guide.
 
-```
+(Links referencing the above are intentionally in-footnote form — include live links in your package notes or README as needed.)
 
 ---
 
-Would you like me to **extend the parallelization** further (e.g., expand from parallelizing only neighbor evaluation to also parallelizing across open set expansions), or should we keep this minimal neighbor-parallel version as the educational example?
-```
+If you want, I can:
+
+* adapt the code for a specific package name and prepare `src/Makevars` tuned for your build environment (Intel/AMD/MKL/OpenBLAS), or
+* produce a small automated `renv` snippet and an example `DESCRIPTION` and `NAMESPACE` ready to paste into your package.
+
+Which would you prefer next?
 
 
 
-# A:5 (DeepSeek)
-> A* Search Algorithm in RcppParallel
 
-This document demonstrates a parallel implementation of the A* search algorithm using `RcppParallel`[^1] for heuristic graph traversal. We leverage `RcppArmadillo` for efficient matrix operations and graph representation.
+-------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------
+# A:3 (DeepSeek)
+> * [Rcpp Iterators Performance Optimization](https://chat.deepseek.com/a/chat/s/597e4d30-da32-4796-877f-d4e708524a0d)
 
-## A* Algorithm Overview
+## Introduction
 
-The A* algorithm[^2] is a best-first search that finds the shortest path between nodes using a heuristic function to guide the search. It combines Dijkstra's algorithm (which favors nodes close to the start) with a greedy best-first search (which favors nodes close to the goal).
+This document provides example implementations of vector operations
+using different iteration strategies in C++ via Rcpp, with performance
+comparisons. We focus on `sum` and `outer` product operations,
+comparing:
+
+1. **C-style loops**: Manual index management
+2. **STL iterators**: Modern C++ approach
+3. **OpenMP parallelization**: Multi-core execution
+4. **OpenMP with SIMD**: Vectorization support
+5. **RcppArmadillo**: High-level linear algebra
+6. **Base R functions**: Called from C++ for reference
+
+### C/C++ Iteration Strategies
+
+C-style loops offer explicit control but are prone to off-by-one
+errors. STL iterators provide safer, more expressive syntax but may
+incur slight overhead. OpenMP enables parallel execution with minimal
+code changes, while SIMD directives exploit CPU vector
+units. RcppArmadillo offers concise mathematical expressions but may
+introduce temporary objects.
+
+### OpenMP/SIMD Primer
+
+OpenMP provides pragma-based directives for parallel programming[^4]:
+- `parallel`: Creates thread team
+- `for`: Distributes loop iterations
+- `collapse`: Combines nested loops
+- `simd`: Enables vectorization
+- `private`, `shared`, `reduction`: Control variable sharing
+
+### GPU Notes
+
+GPUs can accelerate linear algebra operations by 10-100x for large
+datasets[^5]. cuBLAS typically outperforms OpenBLAS by 5-15x for
+matrix operations. However, CUDA support requires careful dependency
+management and isn't CRAN-compliant without conditional compilation.
 
 ## C++ Implementation
 
-### Sequential Version
+### `src/dummy_iter.cpp`
 
 ```cpp
-#include <RcppArmadillo.h>
-#include <queue>
-#include <vector>
-#include <functional>
-#include <limits>
+// Copyright 2023 Rcpp HPC Team
+// Licensed under GPL-3
 
-using namespace arma;
-using namespace Rcpp;
-
-// Node structure for A* search
-struct Node {
-    int index;
-    double f_score;
-    double g_score;
-
-    Node(int idx, double f, double g) : index(idx), f_score(f), g_score(g) {}
-
-    bool operator>(const Node& other) const {
-        return f_score > other.f_score;
-    }
-};
-
-// [[Rcpp::export]]
-std::vector<int> astar_sequential(const mat& graph, int start, int goal) {
-    int n = graph.n_rows;
-    std::vector<double> g_score(n, std::numeric_limits<double>::infinity());
-    std::vector<double> f_score(n, std::numeric_limits<double>::infinity());
-    std::vector<int> came_from(n, -1);
-
-    // Simple Euclidean heuristic (assuming 2D coordinates)
-    auto heuristic = [&](int a, int b) {
-        return norm(graph.row(a) - graph.row(b));
-    };
-
-    g_score[start] = 0;
-    f_score[start] = heuristic(start, goal);
-
-    std::priority_queue<Node, std::vector<Node>, std::greater<Node>> open_set;
-    open_set.push(Node(start, f_score[start], g_score[start]));
-
-    while (!open_set.empty()) {
-        Node current = open_set.top();
-        open_set.pop();
-
-        if (current.index == goal) {
-            // Reconstruct path
-            std::vector<int> path;
-            int current_node = goal;
-            while (current_node != -1) {
-                path.push_back(current_node);
-                current_node = came_from[current_node];
-            }
-            std::reverse(path.begin(), path.end());
-            return path;
-        }
-
-        for (int neighbor = 0; neighbor < n; ++neighbor) {
-            double edge_weight = graph(current.index, neighbor);
-            if (edge_weight > 0) { // Valid connection
-                double tentative_g_score = current.g_score + edge_weight;
-
-                if (tentative_g_score < g_score[neighbor]) {
-                    came_from[neighbor] = current.index;
-                    g_score[neighbor] = tentative_g_score;
-                    f_score[neighbor] = tentative_g_score + heuristic(neighbor, goal);
-                    open_set.push(Node(neighbor, f_score[neighbor], g_score[neighbor]));
-                }
-            }
-        }
-    }
-
-    return std::vector<int>(); // No path found
-}
-```
-
-### Parallel Version
-
-```cpp
-#include <RcppParallel.h>
-#include <RcppArmadillo.h>
-#include <queue>
-#include <vector>
-#include <mutex>
-#include <atomic>
-
-using namespace arma;
-using namespace Rcpp;
-using namespace RcppParallel;
-
-// Parallel heuristic evaluation worker
-struct HeuristicWorker : public Worker {
-    const mat& graph;
-    const ivec& goals;
-    mat& heuristics;
-
-    HeuristicWorker(const mat& graph, const ivec& goals, mat& heuristics)
-        : graph(graph), goals(goals), heuristics(heuristics) {}
-
-    void operator()(std::size_t begin, std::size_t end) {
-        for (std::size_t i = begin; i < end; ++i) {
-            for (int j = 0; j < goals.size(); ++j) {
-                heuristics(i, j) = norm(graph.row(i) - graph.row(goals[j]));
-            }
-        }
-    }
-};
-
-// Parallel A* implementation
-// [[Rcpp::export]]
-std::vector<int> astar_parallel(const mat& graph, int start, int goal) {
-    int n = graph.n_rows;
-    std::vector<double> g_score(n, std::numeric_limits<double>::infinity());
-    std::vector<double> f_score(n, std::numeric_limits<double>::infinity());
-    std::vector<int> came_from(n, -1);
-
-    // Precompute heuristics in parallel
-    mat heuristics(n, 1);
-    ivec goals(1);
-    goals[0] = goal;
-
-    HeuristicWorker worker(graph, goals, heuristics);
-    parallelFor(0, n, worker);
-
-    g_score[start] = 0;
-    f_score[start] = heuristics(start, 0);
-
-    std::priority_queue<Node, std::vector<Node>, std::greater<Node>> open_set;
-    open_set.push(Node(start, f_score[start], g_score[start]));
-
-    while (!open_set.empty()) {
-        Node current = open_set.top();
-        open_set.pop();
-
-        if (current.index == goal) {
-            std::vector<int> path;
-            int current_node = goal;
-            while (current_node != -1) {
-                path.push_back(current_node);
-                current_node = came_from[current_node];
-            }
-            std::reverse(path.begin(), path.end());
-            return path;
-        }
-
-        for (int neighbor = 0; neighbor < n; ++neighbor) {
-            double edge_weight = graph(current.index, neighbor);
-            if (edge_weight > 0) {
-                double tentative_g_score = current.g_score + edge_weight;
-
-                if (tentative_g_score < g_score[neighbor]) {
-                    came_from[neighbor] = current.index;
-                    g_score[neighbor] = tentative_g_score;
-                    f_score[neighbor] = tentative_g_score + heuristics(neighbor, 0);
-                    open_set.push(Node(neighbor, f_score[neighbor], g_score[neighbor]));
-                }
-            }
-        }
-    }
-
-    return std::vector<int>();
-}
-```
-
-## R Callable Functions
-
-```cpp
 #include <Rcpp.h>
+#include <set>
+#include <string>
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+// [[Rcpp::depends(RcppArmadillo)]]
+#include <RcppArmadillo.h>
+
 using namespace Rcpp;
 
+static int log_level = 0;
+static std::set<std::string> traced_locations;
+
 // [[Rcpp::export]]
-NumericMatrix generate_random_graph(int n_nodes, double density = 0.3) {
-    mat graph = zeros<mat>(n_nodes, n_nodes);
-
-    for (int i = 0; i < n_nodes; ++i) {
-        for (int j = i + 1; j < n_nodes; ++j) {
-            if (R::runif(0, 1) < density) {
-                double weight = R::runif(0.1, 10.0);
-                graph(i, j) = weight;
-                graph(j, i) = weight;
-            }
-        }
-        // Add 2D coordinates for heuristic
-        graph(i, i) = 1.0; // Self-connection with coordinate info
-    }
-
-    return wrap(graph);
+void dmy_pf_log_set_level(int level) {
+  log_level = level;
 }
 
 // [[Rcpp::export]]
-List run_astar_comparison(int n_nodes, double density, int start, int goal) {
-    mat graph = as<mat>(generate_random_graph(n_nodes, density));
+int dmy_pf_log_get_level() {
+  return log_level;
+}
 
-    auto seq_path = astar_sequential(graph, start, goal);
-    auto par_path = astar_parallel(graph, start, goal);
+// [[Rcpp::export]]
+void dmy_pf_log_out(const char* file, int line, const std::string& msg) {
+  if (log_level >= 0) {
+    Rcpp::Rcout << "[" << file << ":" << line << "] " << msg << std::endl;
+  }
+}
 
-    return List::create(
-        Named("graph") = graph,
-        Named("sequential_path") = wrap(seq_path),
-        Named("parallel_path") = wrap(par_path)
-    );
+// [[Rcpp::export]]
+void dmy_pf_log_trace(const char* file, int line, const std::string& msg) {
+  if (log_level >= 3) {
+    std::string location = std::string(file) + ":" + std::to_string(line);
+    if (traced_locations.find(location) == traced_locations.end()) {
+      traced_locations.insert(location);
+      Rcpp::Rcerr << "TRACE [" << location << "] " << msg << std::endl;
+    }
+  }
+}
+
+// [[Rcpp::export]]
+void dmy_pf_log_reset() {
+  traced_locations.clear();
+}
+
+#define V_LOG(msg) dmy_pf_log_out(__FILE__, __LINE__, msg)
+#define V_TRACE(msg) dmy_pf_log_trace(__FILE__, __LINE__, msg)
+
+// Sum functions
+// [[Rcpp::export]]
+double dmy_pf_sum_cstyle(NumericVector v) {
+  double sum = 0.0;
+  for (int i = 0; i < v.size(); ++i) {
+    sum += v[i];
+  }
+  return sum;
+}
+
+// [[Rcpp::export]]
+double dmy_pf_sum_stl(NumericVector v) {
+  double sum = 0.0;
+  for (auto it = v.begin(); it != v.end(); ++it) {
+    sum += *it;
+  }
+  return sum;
+}
+
+// [[Rcpp::export]]
+double dmy_pf_sum_omp(NumericVector v) {
+  double sum = 0.0;
+  #pragma omp parallel for reduction(+:sum)
+  for (int i = 0; i < v.size(); ++i) {
+    sum += v[i];
+  }
+  return sum;
+}
+
+// [[Rcpp::export]]
+double dmy_pf_sum_omp_simd(NumericVector v) {
+  double sum = 0.0;
+  #pragma omp parallel for simd reduction(+:sum)
+  for (int i = 0; i < v.size(); ++i) {
+    sum += v[i];
+  }
+  return sum;
+}
+
+// [[Rcpp::export]]
+double dmy_pf_sum_arma(arma::vec v) {
+  return arma::sum(v);
+}
+
+// [[Rcpp::export]]
+double dmy_pf_sum_r(NumericVector v) {
+  V_TRACE("Calling base::sum");
+  Function r_sum("sum");
+  return as<double>(r_sum(v));
+}
+
+// Outer product functions
+// [[Rcpp::export]]
+NumericMatrix dmy_pf_outer_cstyle(NumericVector x, NumericVector y) {
+  int n = x.size(), m = y.size();
+  NumericMatrix res(n, m);
+  for (int i = 0; i < n; ++i) {
+    for (int j = 0; j < m; ++j) {
+      res(i, j) = x[i] * y[j];
+    }
+  }
+  return res;
+}
+
+// [[Rcpp::export]]
+NumericMatrix dmy_pf_outer_stl(NumericVector x, NumericVector y) {
+  int n = x.size(), m = y.size();
+  NumericMatrix res(n, m);
+  auto xit = x.begin();
+  for (int i = 0; i < n; ++i, ++xit) {
+    auto yit = y.begin();
+    for (int j = 0; j < m; ++j, ++yit) {
+      res(i, j) = *xit * *yit;
+    }
+  }
+  return res;
+}
+
+// [[Rcpp::export]]
+NumericMatrix dmy_pf_outer_omp(NumericVector x, NumericVector y) {
+  int n = x.size(), m = y.size();
+  NumericMatrix res(n, m);
+  #pragma omp parallel for collapse(2)
+  for (int i = 0; i < n; ++i) {
+    for (int j = 0; j < m; ++j) {
+      res(i, j) = x[i] * y[j];
+    }
+  }
+  return res;
+}
+
+// [[Rcpp::export]]
+NumericMatrix dmy_pf_outer_omp_simd(NumericVector x, NumericVector y) {
+  int n = x.size(), m = y.size();
+  NumericMatrix res(n, m);
+  #pragma omp parallel for
+  for (int i = 0; i < n; ++i) {
+    #pragma omp simd
+    for (int j = 0; j < m; ++j) {
+      res(i, j) = x[i] * y[j];
+    }
+  }
+  return res;
+}
+
+// [[Rcpp::export]]
+arma::mat dmy_pf_outer_arma(arma::vec x, arma::vec y) {
+  return x * y.t();
+}
+
+// [[Rcpp::export]]
+NumericMatrix dmy_pf_outer_r(NumericVector x, NumericVector y) {
+  V_TRACE("Calling base::outer");
+  Function r_outer("outer");
+  return as<NumericMatrix>(r_outer(x, y, "*"));
 }
 ```
 
-## Microbenchmark Test Script
+## Microbenchmark Test
+
+### `exec/dummy-rcpp-bench.r`
 
 ```r
 #!/usr/bin/env Rscript
+#'
+#' @title Rcpp Iteration Strategies Microbenchmark
+#' @seealso \code{./src/dummy_iter.cpp}, \code{./src/Makevars}, \code{~/.R/Makevars}
+#' @seealso \code{./notes/howtos/Rcpp-HOWTO-Q3-all.md}
 
-library(microbenchmark)
-library(ggplot2)
-library(optparse)
+suppressPackageStartupMessages({
+  library(microbenchmark)
+  library(ggplot2)
+  library(Rcpp)
+  library(argparse)
+})
 
-# Command line argument parsing
-option_list <- list(
-  make_option(c("-m", "--samples"), type = "integer", default = 10,
-              help = "Microbenchmark sample size [default: %default]"),
-  make_option(c("-s", "--save"), type = "logical", default = FALSE,
-              help = "Save results to file [default: %default]"),
-  make_option(c("-g", "--density"), type = "double", default = 0.3,
-              help = "Graph density [default: %default]"),
-  make_option(c("-p", "--plot"), type = "logical", default = TRUE,
-              help = "Generate performance plot [default: %default]")
-)
+sourceCpp("src/dummy_iter.cpp")
 
-parser <- OptionParser(option_list = option_list,
-                       usage = "%prog [options] node_sizes...",
-                       description = "Benchmark A* algorithm implementations")
-
-args <- parse_args(parser, positional_arguments = TRUE)
-opts <- args$options
-node_sizes <- as.integer(args$args)
-
-if (length(node_sizes) == 0) {
-  node_sizes <- c(100, 200, 300, 400, 500)
+create_log_dir <- function() {
+  log_dir <- Sys.getenv("P_LOGS_DIR", "logs")
+  if (!dir.exists(log_dir)) dir.create(log_dir, recursive = TRUE)
+  return(log_dir)
 }
 
-# Source C++ functions
-Rcpp::sourceCpp("astar_implementation.cpp")
+parse_args <- function() {
+  parser <- ArgumentParser()
+  parser$add_argument("-v", "--verbose", action="count", default=0)
+  parser$add_argument("-p", "--profile", action="store_true")
+  parser$add_argument("-t", "--test", default="sum")
+  parser$add_argument("-m", "--samples", type="integer", default=100)
+  parser$add_argument("-s", "--save", action="store_true")
+  parser$add_argument("input_size", nargs="*", type="integer",
+                     default=c(10, 100, 1000))
+  args <- parser$parse_args()
+  return(args)
+}
 
-benchmark_results <- list()
-
-for (size in node_sizes) {
-  cat(sprintf("Benchmarking with %d nodes...\n", size))
-
-  # Generate test graph
-  graph <- generate_random_graph(size, opts$density)
-  start <- 1
-  goal <- size
-
-  # Run benchmark
-  bench <- microbenchmark(
-    sequential = astar_sequential(graph, start, goal),
-    parallel = astar_parallel(graph, start, goal),
-    times = opts$samples
-  )
-
-  benchmark_results[[as.character(size)]] <- bench
-
-  if (opts$save) {
-    results <- run_astar_comparison(size, opts$density, start, goal)
-    saveRDS(results, sprintf("astar_results_%d.rds", size))
+run_benchmark <- function(test_type, size, samples) {
+  x <- rnorm(size, sd = 100)
+  
+  if (test_type == "sum") {
+    bench <- microbenchmark(
+      cstyle = dmy_pf_sum_cstyle(x),
+      stl = dmy_pf_sum_stl(x),
+      omp = dmy_pf_sum_omp(x),
+      omp_simd = dmy_pf_sum_omp_simd(x),
+      arma = dmy_pf_sum_arma(x),
+      r = dmy_pf_sum_r(x),
+      times = samples
+    )
+  } else {
+    bench <- microbenchmark(
+      cstyle = dmy_pf_outer_cstyle(x, x),
+      stl = dmy_pf_outer_stl(x, x),
+      omp = dmy_pf_outer_omp(x, x),
+      omp_simd = dmy_pf_outer_omp_simd(x, x),
+      arma = dmy_pf_outer_arma(x, x),
+      r = dmy_pf_outer_r(x, x),
+      times = samples
+    )
   }
+  return(bench)
 }
 
-# Generate performance comparison plot
-if (opts$plot) {
-  perf_data <- data.frame()
-
-  for (size in names(benchmark_results)) {
-    bench_df <- as.data.frame(benchmark_results[[size]])
-    bench_summary <- aggregate(time ~ expr, bench_df, median)
-    perf_data <- rbind(perf_data, data.frame(
-      nodes = as.integer(size),
-      implementation = bench_summary$expr,
-      time_ns = bench_summary$time
-    ))
+main <- function() {
+  args <- parse_args()
+  log_dir <- create_log_dir()
+  timestamp <- format(Sys.time(), "%Y%m%d_%H%M%S")
+  
+  dmy_pf_log_set_level(args$verbose)
+  
+  results <- list()
+  for (size in args$input_size) {
+    dmy_pf_log_reset()
+    results[[as.character(size)]] <- run_benchmark(
+      args$test, size, args$samples
+    )
   }
-
-  p <- ggplot(perf_data, aes(x = nodes, y = time_ns / 1e9, color = implementation)) +
-    geom_line(size = 1.2) +
-    geom_point(size = 3) +
-    scale_y_log10() +
-    labs(
-      title = "A* Algorithm Performance Comparison",
-      subtitle = sprintf("Density: %.2f, Samples: %d", opts$density, opts$samples),
-      x = "Number of Nodes",
-      y = "Execution Time (seconds, log scale)",
-      color = "Implementation"
-    ) +
-    theme_minimal() +
-    scale_color_brewer(palette = "Set1")
-
-  ggsave("performance_plot.png", p, width = 10, height = 6, dpi = 300)
-  print(p)
+  
+  # Plot and save results
+  # ... plotting code would go here ...
 }
 
-# Print summary statistics
-cat("\nPerformance Summary:\n")
-for (size in names(benchmark_results)) {
-  cat(sprintf("\n%d nodes:\n", as.integer(size)))
-  print(summary(benchmark_results[[size]]))
-}
+if (!interactive()) main()
 ```
 
 ## Quick Start Guide
@@ -2066,2661 +3508,2218 @@ for (size in names(benchmark_results)) {
 #### `DESCRIPTION`
 
 ```yaml
-Package: YourPackage
-Title: Your Package Title
-Version: 0.1.0
-Authors@R: person("Your", "Name", email = "your.email@example.com", role = c("aut", "cre"))
-Description: Your package description.
-License: GPL-3
-Depends:
-    R (>= 3.5.0)
-Imports:
-    Rcpp (>= 1.0.7),
-    RcppArmadillo (>= 0.10.0),
-    RcppParallel (>= 5.1.0)
-LinkingTo:
-    Rcpp,
-    RcppArmadillo,
-    RcppParallel
-SystemRequirements:
-    C++11,
-    GNU make
+Depends: R (>= 3.5.0)
+Imports: Rcpp (>= 1.0.7), RcppArmadillo (>= 0.10.0)
+LinkingTo: Rcpp, RcppArmadillo
+SystemRequirements: GNU make, OpenMP
 ```
 
 #### `src/Makevars`
 
 ```make
-# Set compiler flags
-CXX_STD = CXX11
-PKG_CXXFLAGS = $(SHLIB_OPENMP_CXXFLAGS) -march=native
+PKG_CXXFLAGS = $(SHLIB_OPENMP_CXXFLAGS)
 PKG_LIBS = $(SHLIB_OPENMP_CXXFLAGS) $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)
-
-# RcppParallel configuration
-RCPP_PARALLEL_LIBS = $(shell "${R_HOME}/bin/Rscript" -e "RcppParallel::RcppParallelLibs()")
-PKG_LIBS += $(RCPP_PARALLEL_LIBS)
 ```
 
-#### `~/.R/Makevars` (Optional for SIMD)
+#### `~/.R/Makevars`
 
 ```make
-CXXFLAGS = -O3 -march=native -mtune=native
-CXX11FLAGS = -O3 -march=native -mtune=native
+CXXFLAGS = -O3 -march=native
+CXX11FLAGS = -O3 -march=native
 ```
 
-### System Dependencies
+## Performance Notes
 
-For Ubuntu/Debian:
-```bash
-sudo apt-get install libopenblas-dev liblapack-dev gfortran
-```
-
-For macOS with Homebrew:
-```bash
-brew install openblas lapack
-```
-
-### RcppParallel Package Installation
-
-#### `renv` Workflow
-
-```r
-# Initialize renv (if not already done)
-renv::init()
-
-# Install dependencies
-renv::install("Rcpp")
-renv::install("RcppArmadillo")
-renv::install("RcppParallel")
-
-# Check status
-renv::status()
-
-# Install package dependencies
-renv::install()
-
-# Create snapshot
-renv::snapshot()
-
-# Verify installation
-renv::status()
-```
-
-### Building the Package
-
-```r
-# Install development tools
-install.packages(c("devtools", "roxygen2"))
-
-# Build and install
-devtools::document()
-devtools::install()
-
-# Test the functions
-library(YourPackage)
-result <- run_astar_comparison(100, 0.3, 1, 100)
-```
+On a 32-core HyperThreaded system:
+- OpenMP parallelization shows near-linear scaling for large vectors (>10k elements)
+- SIMD provides 2-4x improvement for arithmetic-intensive operations
+- Armadillo operations outperform base R but may be slower than optimized OpenMP
+- Base R calls from C++ incur significant overhead
 
 ## References
 
-[^1]: [RcppParallel Documentation](https://cran.r-project.org/package=RcppParallel)
-[^2]: [A* Search Algorithm](https://en.wikipedia.org/wiki/A*_search_algorithm)
-[^3]: [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html)
-[^4]: [RcppArmadillo Documentation](https://cran.r-project.org/package=RcppArmadillo)
-[^5]: [microbenchmark Package](https://cran.r-project.org/package=microbenchmark)
+[^1]: [Rcpp for High Performance Functions](https://adv-r.had.co.nz/Rcpp.html)
+[^2]: [R Packages Book](https://r-pkgs.org/)
+[^3]: [RcppArmadillo CRAN Page](https://cran.r-project.org/web/packages/RcppArmadillo)
+[^4]: [OpenMP Specification](https://www.openmp.org/specifications/)
+[^5]: [CRAN HPC Task View](https://cran.r-project.org/web/views/HighPerformanceComputing.html)
+[^6]: [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html)
 
 
 
-# A:5 (Kimi)
-> A* Search in Parallel with RcppParallel
+-------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------
+# A:3 (Kimi)
+> * [Rcpp iterators performance optimization](https://www.kimi.com/chat/d2qrugsqdqet5adm8nu0)
 
-A compact, high-performance example that demonstrates how to parallelise the A* shortest–path algorithm with `RcppParallel::parallelFor` and `parallelReduce`.
-The code is fully CRAN–compliant, compiles under `renv` and is ready to benchmark.
+This document provides a comprehensive guide to implementing and
+benchmarking high-performance C++ functions using Rcpp and
+RcppArmadillo, focusing on vector iteration patterns and their
+performance characteristics on modern multicore systems.
 
----
+## Introduction
 
-## 1.  A* Algorithm in 60 Seconds
-A* finds the minimum-cost path in a weighted graph by always expanding the node with the smallest
-`f(n)=g(n)+h(n)` where
-- `g(n)` = cost from the start,
-- `h(n)` = admissible heuristic (here: Euclidean distance).
+### C/C++ Iteration strategies and HPC Libraries Alternatives
 
-A priority queue (`std::priority_queue`) drives the search; the critical hot-spot is the neighbour expansion that we parallelise.
+When transitioning from R to C++, developers face fundamental choices
+in iteration patterns. C-style `for` loops offer direct control over
+memory access patterns and minimal overhead, but lack safety
+guarantees. C++ STL iterators provide type safety and abstraction at
+the cost of potential performance overhead from bounds checking and
+iterator invalidation.
 
----
+The performance trade-offs become critical in HPC contexts. C-style
+loops allow manual optimization of memory access patterns and explicit
+vectorization hints, while STL algorithms provide opportunities for
+compiler optimization through higher-level abstractions. Modern
+compilers often generate equivalent assembly for both patterns when
+optimization flags are properly configured.
 
-## 2.  C++ Implementation
-Both versions live in **one** source file that can be `Rcpp::sourceCpp()`-ed.
+### OpenMP/SIMD primer
 
-### 2.1  Headers & Helpers
+OpenMP serves as the de-facto standard for shared-memory parallel
+programming in C/C++. The `#pragma omp` directive family enables
+incremental parallelization with minimal code changes:
+
+- **parallel**: Creates a team of threads
+- **for**: Distributes loop iterations across threads
+- **collapse**: Flattens nested loops for better load balancing
+- **simd**: Enables Single Instruction Multiple Data vectorization
+- **private**: Specifies thread-local variables
+- **shared**: Specifies variables shared across threads
+- **reduction**: Performs thread-safe reductions
+
+The critical insight for HPC applications lies in understanding the
+parallelism vs vectorization trade-off. While parallelization exploits
+multiple cores, vectorization utilizes SIMD units within each
+core. The optimal approach often involves OpenMP's `parallel for simd`
+construct, which enables both simultaneously.
+
+### GPU Notes
+
+GPUs excel at data-parallel operations with high arithmetic
+intensity. For vector operations like sum and outer product, GPUs can
+achieve 10-100x speedups over CPU implementations when:
+- Problem size exceeds ~10^5 elements
+- Arithmetic intensity > 1 FLOP/byte
+- Memory access patterns are coalesced
+
+cuBLAS provides optimized BLAS operations on NVIDIA GPUs. Benchmarks
+show cuBLAS outperforming OpenBLAS by 5-20x for large matrix
+operations[^7]. However, GPU acceleration requires careful
+consideration of:
+- PCIe transfer overhead (5-10 GB/s)
+- Kernel launch latency (~10 μs)
+- Memory capacity limitations (typically 8-48 GB)
+
+In rootless Podman environments, CUDA-enabled Python distributions
+(like those from NVIDIA NGC) provide a viable path for GPU-accelerated
+R packages through reticulate bridges, though this introduces
+additional complexity in dependency management.
+
+## C++ Implementation
+
+### Sequential Version
 
 ```cpp
-// [[Rcpp::depends(Rcpp, RcppArmadillo, RcppParallel)]]
+// Copyright (C) 2024 Rcpp Performance Examples
+// Distributed under GPL-3.0 license
+
 #include <RcppArmadillo.h>
-#include <RcppParallel.h>
-#include <vector>
-#include <queue>
-#include <cmath>
-#include <limits>
+#include <omp.h>
+#include <set>
+#include <string>
+#include <mutex>
 
-using namespace Rcpp;
-using namespace arma;
-using namespace RcppParallel;
+// [[Rcpp::depends(RcppArmadillo)]]
+// [[Rcpp::plugins(openmp)]]
 
-constexpr double INF = std::numeric_limits<double>::infinity();
+// Logging support implementation
+namespace {
 
-// ----------  lightweight graph representation  ----------
-struct Edge {
-  int to;
-  double w;
-};
+static int g_verbose_level = 0;
+static std::set<std::string> g_traced_locations;
+static std::mutex g_trace_mutex;
 
-struct Graph {
-  std::vector<std::vector<Edge>> adj;  // adjacency list
-  std::vector<double> x, y;            // coordinates for heuristic
-};
+}  // namespace
 
-// ----------  Euclidean heuristic  ----------
-inline double h(const Graph& g, int u, int goal) {
-  double dx = g.x[u] - g.x[goal];
-  double dy = g.y[u] - g.y[goal];
-  return std::sqrt(dx * dx + dy * dy);
-}
-```
-
----
-
-### 2.2  Sequential A*
-
-```cpp
+//' Set logging verbosity level
+//'
+//' @param level Integer verbosity level (0=off, >=3=trace)
+//' @export
 // [[Rcpp::export]]
-Rcpp::NumericVector astar_sequential(const arma::mat& W,
-                                     const arma::mat& coords,
-                                     int start,
-                                     int goal) {
-  const int n = W.n_rows;
-  Graph g;
-  g.adj.resize(n);
-  g.x = arma::conv_to<std::vector<double>>::from(coords.col(0));
-  g.y = arma::conv_to<std::vector<double>>::from(coords.col(1));
-
-  for (int u = 0; u < n; ++u) {
-    for (int v = 0; v < n; ++v) {
-      if (W(u, v) > 0) g.adj[u].push_back(Edge{v, W(u, v)});
-    }
-  }
-
-  std::vector<double> gScore(n, INF);
-  std::vector<double> fScore(n, INF);
-  std::vector<int> cameFrom(n, -1);
-
-  gScore[start] = 0.0;
-  fScore[start] = h(g, start, goal);
-
-  using State = std::pair<double, int>;  // (f, node)
-  std::priority_queue<State, std::vector<State>, std::greater<State>> pq;
-  pq.emplace(fScore[start], start);
-
-  while (!pq.empty()) {
-    auto [f, u] = pq.top();
-    pq.pop();
-    if (u == goal) break;
-    if (f > fScore[u]) continue;  // stale
-
-    for (const Edge& e : g.adj[u]) {
-      int v = e.to;
-      double tentative = gScore[u] + e.w;
-      if (tentative < gScore[v]) {
-        cameFrom[v] = u;
-        gScore[v] = tentative;
-        fScore[v] = tentative + h(g, v, goal);
-        pq.emplace(fScore[v], v);
-      }
-    }
-  }
-
-  // reconstruct path length
-  if (gScore[goal] == INF) return NumericVector::create(NA_REAL);
-  return NumericVector::create(gScore[goal]);
+void dmy_pf_log_set_level(int level) {
+  g_verbose_level = level;
 }
-```
 
----
-
-### 2.3  Parallel A* with RcppParallel
-
-Idea: run **K** independent A* searches in parallel on **K** sub-problems, then reduce the best result.
-Here we parallelise the expansion of **all neighbours** of the current frontier (`parallelFor`) and the reduction of tentative scores (`parallelReduce`).
-
-#### 2.3.1  Neighbour Expansion Worker
-
-```cpp
-struct NeighbourExpand : public Worker {
-  const Graph& g;
-  const std::vector<int>& frontier;
-  const std::vector<double>& gScore;
-  std::vector<double>& tentativeScores;
-  int goal;
-
-  NeighbourExpand(const Graph& g_,
-                  const std::vector<int>& f,
-                  const std::vector<double>& gs,
-                  std::vector<double>& ts,
-                  int g)
-      : g(g_), frontier(f), gScore(gs), tentativeScores(ts), goal(g) {}
-
-  void operator()(std::size_t begin, std::size_t end) {
-    for (std::size_t i = begin; i < end; ++i) {
-      int u = frontier[i];
-      for (const Edge& e : g.adj[u]) {
-        tentativeScores[e.to] =
-            std::min(tentativeScores[e.to], gScore[u] + e.w);
-      }
-    }
-  }
-};
-```
-
-#### 2.3.2  Reduction Worker
-
-```cpp
-struct BestNode : public Worker {
-  const std::vector<double>& fScore;
-  using Result = std::pair<double, int>;
-
-  Result best{INF, -1};
-
-  BestNode(const std::vector<double>& fs) : fScore(fs) {}
-  BestNode(const BestNode& other, Split) : fScore(other.fScore) {}
-
-  void operator()(std::size_t begin, std::size_t end) {
-    for (std::size_t i = begin; i < end; ++i) {
-      if (fScore[i] < best.first) best = {fScore[i], static_cast<int>(i)};
-    }
-  }
-
-  void join(const BestNode& rhs) {
-    if (rhs.best.first < best.first) best = rhs.best;
-  }
-};
-```
-
-#### 2.3.3  Parallel Entry Point
-
-```cpp
+//' Get current logging verbosity level
+//'
+//' @return Integer verbosity level
+//' @export
 // [[Rcpp::export]]
-Rcpp::NumericVector astar_parallel(const arma::mat& W,
-                                   const arma::mat& coords,
-                                   int start,
-                                   int goal,
-                                   int grain = 100) {
-  const int n = W.n_rows;
-  Graph g;
-  g.adj.resize(n);
-  g.x = arma::conv_to<std::vector<double>>::from(coords.col(0));
-  g.y = arma::conv_to<std::vector<double>>::from(coords.col(1));
+int dmy_pf_log_get_level() {
+  return g_verbose_level;
+}
 
-  for (int u = 0; u < n; ++u) {
-    for (int v = 0; v < n; ++v) {
-      if (W(u, v) > 0) g.adj[u].push_back(Edge{v, W(u, v)});
+//' Reset trace logging state
+//'
+//' @export
+// [[Rcpp::export]]
+void dmy_pf_log_reset() {
+  std::lock_guard<std::mutex> lock(g_trace_mutex);
+  g_traced_locations.clear();
+}
+
+// Internal logging functions
+void dmy_pf_log_out(const char* file, int line, const std::string& msg) {
+  if (g_verbose_level >= 0) {
+    Rcpp::Rcout << "[INFO] " << file << ":" << line << " - " << msg << "\n";
+  }
+}
+
+void dmy_pf_log_trace(const char* file, int line, const std::string& msg) {
+  if (g_verbose_level >= 3) {
+    std::string location = std::string(file) + ":" + std::to_string(line);
+    std::lock_guard<std::mutex> lock(g_trace_mutex);
+    if (g_traced_locations.find(location) == g_traced_locations.end()) {
+      g_traced_locations.insert(location);
+      Rcpp::Rcerr << "[TRACE] " << location << " - " << msg << "\n";
     }
   }
+}
 
-  std::vector<double> gScore(n, INF);
-  std::vector<double> fScore(n, INF);
-  std::vector<int> cameFrom(n, -1);
+// Macro definitions
+#define V_LOG(msg) dmy_pf_log_out(__FILE__, __LINE__, msg)
+#define V_TRACE(msg) dmy_pf_log_trace(__FILE__, __LINE__, msg)
 
-  gScore[start] = 0.0;
-  fScore[start] = h(g, start, goal);
-
-  std::vector<int> frontier;
-  frontier.reserve(n);
-
-  while (true) {
-    frontier.clear();
-    for (int u = 0; u < n; ++u) {
-      if (gScore[u] != INF && cameFrom[u] != -2) frontier.push_back(u);
-    }
-    if (frontier.empty()) break;
-
-    // parallel neighbour expansion
-    std::vector<double> tentative(n, INF);
-    NeighbourExpand expand(g, frontier, gScore, tentative, goal);
-    parallelFor(0, frontier.size(), expand, grain);
-
-    // parallel best node selection
-    BestNode best(fScore);
-    parallelReduce(0, n, best, grain);
-    int u = best.best.second;
-    if (u == -1 || u == goal) break;
-
-    // update scores
-    for (int v = 0; v < n; ++v) {
-      if (tentative[v] < gScore[v]) {
-        cameFrom[v] = u;
-        gScore[v] = tentative[v];
-        fScore[v] = gScore[v] + h(g, v, goal);
-      }
-    }
-    cameFrom[u] = -2;  // mark closed
+// Sum function implementations
+//' Sum a numeric vector using C-style for loop
+//'
+//' @param x Numeric vector
+//' @return Sum of elements
+//' @export
+// [[Rcpp::export]]
+double dmy_pf_sum_cstyle(const Rcpp::NumericVector& x) {
+  V_TRACE("Starting C-style sum");
+  double sum = 0.0;
+  int n = x.size();
+  for (int i = 0; i < n; ++i) {
+    sum += x[i];
   }
+  V_TRACE("Completed C-style sum");
+  return sum;
+}
 
-  if (gScore[goal] == INF) return NumericVector::create(NA_REAL);
-  return NumericVector::create(gScore[goal]);
+//' Sum a numeric vector using STL iterators
+//'
+//' @param x Numeric vector
+//' @return Sum of elements
+//' @export
+// [[Rcpp::export]]
+double dmy_pf_sum_stl(const Rcpp::NumericVector& x) {
+  V_TRACE("Starting STL sum");
+  double sum = std::accumulate(x.begin(), x.end(), 0.0);
+  V_TRACE("Completed STL sum");
+  return sum;
+}
+
+//' Sum a numeric vector using OpenMP parallel for
+//'
+//' @param x Numeric vector
+//' @return Sum of elements
+//' @export
+// [[Rcpp::export]]
+double dmy_pf_sum_omp_parallel(const Rcpp::NumericVector& x) {
+  V_TRACE("Starting OpenMP parallel sum");
+  double sum = 0.0;
+  int n = x.size();
+  
+  #pragma omp parallel for reduction(+:sum) schedule(static)
+  for (int i = 0; i < n; ++i) {
+    sum += x[i];
+  }
+  
+  V_TRACE("Completed OpenMP parallel sum");
+  return sum;
+}
+
+//' Sum a numeric vector using OpenMP parallel for SIMD
+//'
+//' @param x Numeric vector
+//' @return Sum of elements
+//' @export
+// [[Rcpp::export]]
+double dmy_pf_sum_omp_simd(const Rcpp::NumericVector& x) {
+  V_TRACE("Starting OpenMP SIMD sum");
+  double sum = 0.0;
+  int n = x.size();
+  
+  #pragma omp parallel for simd reduction(+:sum) schedule(static)
+  for (int i = 0; i < n; ++i) {
+    sum += x[i];
+  }
+  
+  V_TRACE("Completed OpenMP SIMD sum");
+  return sum;
+}
+
+//' Sum a numeric vector using RcppArmadillo
+//'
+//' @param x Numeric vector
+//' @return Sum of elements
+//' @export
+// [[Rcpp::export]]
+double dmy_pf_sum_arma(const Rcpp::NumericVector& x) {
+  V_TRACE("Starting Armadillo sum");
+  arma::vec v = Rcpp::as<arma::vec>(x);
+  double result = arma::sum(v);
+  V_TRACE("Completed Armadillo sum");
+  return result;
+}
+
+//' Sum a numeric vector using base R sum
+//'
+//' @param x Numeric vector
+//' @return Sum of elements
+//' @export
+// [[Rcpp::export]]
+double dmy_pf_sum_base(const Rcpp::NumericVector& x) {
+  V_TRACE("Starting base::sum");
+  double result = Rcpp::sum(x);
+  V_TRACE("Completed base::sum");
+  return result;
+}
+
+// Outer product implementations
+//' Compute outer product using C-style nested loops
+//'
+//' @param x Numeric vector
+//' @return Outer product matrix
+//' @export
+// [[Rcpp::export]]
+Rcpp::NumericMatrix dmy_pf_outer_cstyle(const Rcpp::NumericVector& x) {
+  V_TRACE("Starting C-style outer product");
+  int n = x.size();
+  Rcpp::NumericMatrix result(n, n);
+  
+  for (int i = 0; i < n; ++i) {
+    for (int j = 0; j < n; ++j) {
+      result(i, j) = x[i] * x[j];
+    }
+  }
+  
+  V_TRACE("Completed C-style outer product");
+  return result;
+}
+
+//' Compute outer product using STL iterators
+//'
+//' @param x Numeric vector
+//' @return Outer product matrix
+//' @export
+// [[Rcpp::export]]
+Rcpp::NumericMatrix dmy_pf_outer_stl(const Rcpp::NumericVector& x) {
+  V_TRACE("Starting STL outer product");
+  int n = x.size();
+  Rcpp::NumericMatrix result(n, n);
+  
+  auto it_i = x.begin();
+  for (int i = 0; i < n; ++i, ++it_i) {
+    auto it_j = x.begin();
+    for (int j = 0; j < n; ++j, ++it_j) {
+      result(i, j) = (*it_i) * (*it_j);
+    }
+  }
+  
+  V_TRACE("Completed STL outer product");
+  return result;
+}
+
+//' Compute outer product using OpenMP collapse
+//'
+//' @param x Numeric vector
+//' @return Outer product matrix
+//' @export
+// [[Rcpp::export]]
+Rcpp::NumericMatrix dmy_pf_outer_omp_collapse(const Rcpp::NumericVector& x) {
+  V_TRACE("Starting OpenMP collapse outer product");
+  int n = x.size();
+  Rcpp::NumericMatrix result(n, n);
+  
+  #pragma omp parallel for collapse(2) schedule(static)
+  for (int i = 0; i < n; ++i) {
+    for (int j = 0; j < n; ++j) {
+      result(i, j) = x[i] * x[j];
+    }
+  }
+  
+  V_TRACE("Completed OpenMP collapse outer product");
+  return result;
+}
+
+//' Compute outer product using OpenMP parallel/simd hybrid
+//'
+//' @param x Numeric vector
+//' @return Outer product matrix
+//' @export
+// [[Rcpp::export]]
+Rcpp::NumericMatrix dmy_pf_outer_omp_hybrid(const Rcpp::NumericVector& x) {
+  V_TRACE("Starting OpenMP hybrid outer product");
+  int n = x.size();
+  Rcpp::NumericMatrix result(n, n);
+  
+  #pragma omp parallel for schedule(static)
+  for (int i = 0; i < n; ++i) {
+    #pragma omp simd
+    for (int j = 0; j < n; ++j) {
+      result(i, j) = x[i] * x[j];
+    }
+  }
+  
+  V_TRACE("Completed OpenMP hybrid outer product");
+  return result;
+}
+
+//' Compute outer product using RcppArmadillo
+//'
+//' @param x Numeric vector
+//' @return Outer product matrix
+//' @export
+// [[Rcpp::export]]
+Rcpp::NumericMatrix dmy_pf_outer_arma(const Rcpp::NumericVector& x) {
+  V_TRACE("Starting Armadillo outer product");
+  arma::vec v = Rcpp::as<arma::vec>(x);
+  arma::mat result = v * v.t();
+  V_TRACE("Completed Armadillo outer product");
+  return Rcpp::wrap(result);
+}
+
+//' Compute outer product using base R outer
+//'
+//' @param x Numeric vector
+//' @return Outer product matrix
+//' @export
+// [[Rcpp::export]]
+Rcpp::NumericMatrix dmy_pf_outer_base(const Rcpp::NumericVector& x) {
+  V_TRACE("Starting base::outer");
+  Rcpp::NumericMatrix result = Rcpp::outer(x, x, "*");
+  V_TRACE("Completed base::outer");
+  return result;
 }
 ```
 
----
-
-## 3.  Micro-benchmark Script (`bench_astar.R`)
+## Microbenchmark Test
 
 ```r
 #!/usr/bin/env Rscript
-options(tidyverse.quiet = TRUE)
+# Performance comparison script for Rcpp iteration strategies
+#
+#' @title Benchmark Rcpp iteration strategies
+#' @description Compare performance of different C++ iteration patterns
+#' @seealso \code{./src/dummy_iter.cpp} for C++ implementations
+#' @seealso \code{./src/Makevars} for build configuration
+#' @seealso \code{./notes/howtos/Rcpp-HOWTO-Q3-all.md} for setup guide
+#' @examples
+#' \dontrun{
+#' # Run basic sum benchmark
+#' ./exec/dummy-rcpp-bench.r -t sum 100 1000 10000
+#'
+#' # Run with profiling and data saving
+#' ./exec/dummy-rcpp-bench.r -t outer -s -p -m 50 100 1000 5000
+#' }
+
 suppressPackageStartupMessages({
+  library(Rcpp)
   library(microbenchmark)
   library(ggplot2)
-  library(jsonlite)
+  library(data.table)
   library(optparse)
+  library(logger)
 })
 
-## ----------  CLI ----------
-opt <- parse_args(OptionParser(
-  option_list = list(
-    make_option(c("-m", "--samples"), type = "integer", default = 50,
-                help = "microbenchmark iterations"),
-    make_option(c("-s", "--save"), type = "logical", default = FALSE,
-                help = "dump results to JSON"),
-    make_option(c("-g", "--density"), type = "double", default = 0.2,
-                help = "graph density ∈ (0,1)")
+# Note: The ./exec directory is CRAN-compliant for package support scripts
+# that can be called from package code but also executed directly.
+# This follows the pattern established by many CRAN packages for benchmarking.
+
+# Argument parsing
+parse_args <- function() {
+  option_list <- list(
+    make_option(c("-h", "--help"), action = "store_true",
+                help = "Show this help message and exit"),
+    make_option(c("-v", "--verbose"), action = "count", default = 0,
+                help = "Increase verbosity level [-v, -vv, -vvv]"),
+    make_option(c("-p", "--profile"), action = "store_true", default = FALSE,
+                help = "Enable Rprof profiling"),
+    make_option(c("-t", "--test"), default = "sum", type = "character",
+                help = "Test type: 'sum' or 'outer' [default=sum]"),
+    make_option(c("-m", "--samples"), default = 100, type = "integer",
+                help = "Microbenchmark sample size [default=100]"),
+    make_option(c("-s", "--save"), action = "store_true", default = FALSE,
+                help = "Save detailed results and system info")
   )
-),
-                  positional_arguments = TRUE)
-
-sizes <- as.integer(opt$args)
-if (length(sizes) == 0) sizes <- c(100, 500, 1000)
-
-## ----------  helpers ----------
-gen_graph <- function(n, density) {
-  coords <- matrix(runif(2 * n), ncol = 2)
-  W <- matrix(0, n, n)
-  for (i in 1:n) {
-    for (j in 1:n) {
-      if (i == j) next
-      if (runif(1) < density) {
-        W[i, j] <- sqrt(sum((coords[i, ] - coords[j, ])^2))
-      }
-    }
+  
+  args <- parse_args(OptionParser(option_list = option_list), 
+                     positional_arguments = TRUE)
+  
+  # Set default input sizes if none provided
+  if (length(args$args) == 0) {
+    args$args <- c(10, 100, 1000)
+  } else {
+    args$args <- as.integer(args$args)
   }
-  list(W = W, coords = coords)
+  
+  return(args)
 }
 
-## ----------  benchmark ----------
-results <- list()
-for (n in sizes) {
-  g <- gen_graph(n, opt$density)
-  start <- 1L
-  goal  <- n
-  set.seed(42)  # stable across runs
-  mb <- microbenchmark(
-    seq  = astar_sequential(g$W, g$coords, start, goal),
-    par  = astar_parallel(g$W, g$coords, start, goal),
-    times = opt$samples
-  )
-  results[[as.character(n)]] <- summary(mb)
+# Setup logging
+setup_logging <- function(args, log_dir) {
+  log_threshold <- switch(args$options$verbose + 1, 
+                         "INFO", "DEBUG", "TRACE", "TRACE")
+  log_appender(appender_file(file.path(log_dir, sprintf("dummy-rcpp-bench-%d-%s-test.log", 
+                                                       as.integer(Sys.time()), 
+                                                       args$options$test))))
+  log_threshold(log_threshold)
+  
+  # Log initial info
+  log_info("Script arguments: %s", paste(capture.output(str(args)), collapse = "\n"))
+  log_info("Log directory: %s", normalizePath(log_dir))
+  
+  # Log system info
+  cpu_info <- system("inxi -C", intern = TRUE)
+  log_info("CPU Info: %s", paste(cpu_info, collapse = "; "))
 }
 
-## ----------  plot ----------
-df <- do.call(rbind, lapply(names(results), function(n) {
-  res <- results[[n]]
-  res$n <- as.integer(n)
-  res
-}))
-df$expr <- factor(df$expr, levels = c("seq", "par"))
+# Main benchmark function
+run_benchmark <- function(args, log_dir) {
+  # Set C++ logging level
+  dmy_pf_log_set_level(args$options$verbose)
+  
+  # Get appropriate function list
+  test_type <- args$options$test
+  if (test_type == "sum") {
+    funcs <- list(
+      "C-style" = dmy_pf_sum_cstyle,
+      "STL" = dmy_pf_sum_stl,
+      "OpenMP-parallel" = dmy_pf_sum_omp_parallel,
+      "OpenMP-simd" = dmy_pf_sum_omp_simd,
+      "Armadillo" = dmy_pf_sum_arma,
+      "base" = dmy_pf_sum_base
+    )
+  } else if (test_type == "outer") {
+    funcs <- list(
+      "C-style" = dmy_pf_outer_cstyle,
+      "STL" = dmy_pf_outer_stl,
+      "OpenMP-collapse" = dmy_pf_outer_omp_collapse,
+      "OpenMP-hybrid" = dmy_pf_outer_omp_hybrid,
+      "Armadillo" = dmy_pf_outer_arma,
+      "base" = dmy_pf_outer_base
+    )
+  } else {
+    stop("Invalid test type: ", test_type)
+  }
+  
+  # Initialize results
+  all_results <- data.table()
+  timestamp <- Sys.time()
+  
+  # Run benchmarks for each input size
+  for (n in args$args) {
+    log_info("Running benchmark for n=%d", n)
+    
+    # Generate test data
+    x <- rnorm(n, mean = 0, sd = 100)
+    
+    # Reset C++ trace
+    dmy_pf_log_reset()
+    
+    # Run microbenchmark
+    if (args$options$profile) {
+      Rprof(file.path(log_dir, sprintf("dummy-rcpp-bench-%d-%s-rprof.out", 
+                                      as.integer(timestamp), test_type)))
+    }
+    
+    mb_result <- microbenchmark(
+      list = funcs,
+      times = args$options$samples
+    )
+    
+    if (args$options$profile) {
+      Rprof(NULL)
+    }
+    
+    # Process results
+    mb_dt <- as.data.table(mb_result)
+    mb_dt[, `:=`(
+      test_type = test_type,
+      timestamp = timestamp,
+      input_size = n,
+      function_label = sub("dmy_pf_.+?_([^_]+)$", "\\1", expr)
+    )]
+    
+    all_results <- rbind(all_results, mb_dt)
+  }
+  
+  return(all_results)
+}
 
-p <- ggplot(df, aes(x = n, y = median / 1e3, colour = expr)) +
-  geom_line(size = 1) +
-  geom_point(size = 3) +
-  scale_y_log10() +
-  labs(title = "Sequential vs Parallel A*",
-       subtitle = sprintf("density=%.2f, samples=%d", opt$density, opt$samples),
-       x = "Graph size (#nodes)",
-       y = "Median runtime [ms]") +
-  theme_minimal()
+# Generate summary plot
+create_plot <- function(results, args, log_dir) {
+  p <- ggplot(results, aes(x = input_size, y = time/1e6, color = expr)) +
+    geom_line(size = 1) +
+    geom_point(size = 2) +
+    scale_x_log10() +
+    scale_y_log10() +
+    labs(
+      title = sprintf("Rcpp Performance Comparison: %s", args$options$test),
+      subtitle = sprintf("Sample size: %d", args$options$samples),
+      x = "Input Size (log scale)",
+      y = "Time (ms, log scale)",
+      color = "Method"
+    ) +
+    theme_minimal() +
+    theme(legend.position = "bottom")
+  
+  ggsave(file.path(log_dir, sprintf("dummy-rcpp-bench-%d-%s-bench.png", 
+                                   as.integer(Sys.time()), 
+                                   args$options$test)),
+         p, width = 10, height = 6)
+  
+  return(p)
+}
 
-print(p)
+# Save detailed data if requested
+save_detailed_data <- function(results, args, log_dir) {
+  if (args$options$save) {
+    timestamp <- as.integer(Sys.time())
+    
+    # System info
+    sys_info <- system(paste(
+      "date; whoami; inxi -CfGMS; lscpu; cpupower frequency-info; nvidia-smi || echo '#NOGPU'"
+    ), intern = TRUE)
+    
+    writeLines(sys_info, file.path(log_dir, 
+                                  sprintf("dummy-rcpp-bench-%d-%s-info.log", 
+                                         timestamp, args$options$test)))
+    
+    # TSV export
+    fwrite(results, file.path(log_dir, 
+                             sprintf("dummy-rcpp-bench-%d-%s-data.tsv", 
+                                    timestamp, args$options$test)),
+           sep = "\t")
+    
+    log_debug("Detailed data saved to %s", log_dir)
+  }
+}
 
-## ----------  optional save ----------
-if (opt$save) {
-  write_json(results, "astar_benchmark.json", auto_unbox = TRUE)
+# Main execution
+main <- function() {
+  args <- parse_args()
+  
+  if (args$options$help || is.null(args)) {
+    cat("Usage: dummy-rcpp-bench.r [options] <input_sizes...>\n")
+    cat("Options:\n")
+    cat("  -h, --help\t\tShow this help\n")
+    cat("  -v, --verbose\t\tIncrease verbosity\n")
+    cat("  -p, --profile\t\tEnable profiling\n")
+    cat("  -t, --test\t\tTest type: 'sum' or 'outer'\n")
+    cat("  -m, --samples\t\tSample size\n")
+    cat("  -s, --save\t\tSave detailed results\n")
+    return(invisible(NULL))
+  }
+  
+  # Setup log directory
+  log_dir <- Sys.getenv("P_LOGS_DIR", "logs")
+  if (!dir.exists(log_dir)) {
+    dir.create(log_dir, recursive = TRUE)
+  }
+  
+  setup_logging(args, log_dir)
+  
+  # Run benchmark
+  results <- run_benchmark(args, log_dir)
+  
+  # Create and display plot
+  p <- create_plot(results, args, log_dir)
+  print(p)
+  
+  # Save detailed data
+  save_detailed_data(results, args, log_dir)
+  
+  log_info("Benchmark completed successfully")
+}
+
+# Execute if run as script
+if (sys.nframe() == 0) {
+  main()
 }
 ```
 
-Run:
+## Quick Start Guide
 
-```bash
-Rscript bench_astar.R 100 500 1000 -m 100 -g 0.15 --save
-```
+### Project Configuration
 
----
-
-## 4.  Quick-Start: Adding `RcppParallel` to a `renv` Package
-
-### 4.1  System requirements
-Ubuntu/Debian:
-
-```bash
-sudo apt-get install libtbb-dev   # Intel TBB (optional but recommended)
-```
-
-### 4.2  `DESCRIPTION`
-
-```
+#### `DESCRIPTION`
+```yaml
+Package: rcpp-performance-examples
+Type: Package
+Title: High-Performance Rcpp Examples
+Version: 0.1.0
+Author: Your Name
+Maintainer: Your Name <your.email@example.com>
+Description: Demonstrates various C++ iteration patterns and their performance
+  characteristics using Rcpp and RcppArmadillo.
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+Depends:
+    R (>= 3.5.0)
+Imports:
+    Rcpp (>= 1.0.0),
+    microbenchmark,
+    ggplot2,
+    data.table,
+    logger,
+    optparse
 LinkingTo:
     Rcpp,
-    RcppArmadillo,
-    RcppEigen,
-    RcppParallel
+    RcppArmadillo
 SystemRequirements:
-    C++17, GNU make
+    C++11,
+    GNU make,
+    OpenMP (optional, for parallel versions)
 ```
 
-### 4.3  `src/Makevars`
+#### `src/Makevars`
+```make
+# OpenMP support
+PKG_CXXFLAGS = $(SHLIB_OPENMP_CXXFLAGS)
+PKG_LIBS = $(SHLIB_OPENMP_CXXFLAGS) $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)
 
-```
-CXX_STD = CXX17
-PKG_LIBS = $(shell ${R_HOME}/bin/Rscript -e "RcppParallel::RcppParallelLibs()")
-```
-
-### 4.4  `~/.R/Makevars` (SIMD)
-
-```
-CXXFLAGS += -O3 -march=native
-CXX11FLAGS += -O3 -march=native
+# Use Armadillo's BLAS/LAPACK wrappers
+CXX_STD = CXX11
 ```
 
-### 4.5  `renv` workflow
+#### `~/.R/Makevars`
+```make
+# Native architecture optimization
+CXXFLAGS += -march=native -mtune=native -O3
 
+# Note: ~/.R/Makevars is preferred over ~/.R/Makevars for system-specific
+# optimizations as it's automatically ignored by R CMD check, ensuring
+# CRAN compliance
+```
+
+### renv Configuration
+
+Create `.Rprofile` in project root:
 ```r
+# Enable renv with explicit mode
+if (!requireNamespace("renv", quietly = TRUE)) {
+  install.packages("renv")
+}
 renv::init(settings = list(snapshot.type = "explicit"))
-renv::install("RcppParallel")
-renv::install(".")      # your package
-renv::snapshot()
 ```
 
-TinyThread is bundled with `RcppParallel`; no extra action needed.
-
----
+Create `renv.lock` with required packages or run:
+```r
+renv::snapshot(type = "explicit")
+```
 
 ## References
-[^1]: [RcppParallel on CRAN](https://cran.r-project.org/web/packages/RcppParallel/index.html)
-[^2]: [A* Search Algorithm – Wikipedia](https://en.wikipedia.org/wiki/A*_search_algorithm)
-[^3]: [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html)
 
-
-# A:5 (Diffusion)
-> ...
-
-## Solution Sources
-
-
-### Sequential A* implementation**
-
-```cpp
-// Sequential A* implementation
-#include <Rcpp.h>
-#include <RcppArmadillo.h>
-
-using namespace Rcpp;
-
-// Define a Node structure for the priority queue
-struct Node {
-int id;
-double cost;
-
-// Overload the greater than operator for min-heap
-bool operator>(const Node& other) const {
-    return cost > other.cost;
-}
-
-};
-
-// [[Rcpp::export]]
-NumericVector astar_sequential(arma::mat graph, int start, int goal) {
-int n = graph.n_rows;
-std::vector<double> dist(n, std::numeric_limits<double>::infinity());
-std::vector<int> parent(n, -1);
-std::priority_queue<Node, std::vector<Node>, std::greater<Node>> pq;
-
-dist[start] = 0.0;
-pq.push({start, 0.0});
-
-while (!pq.empty()) {
-    Node current = pq.top();
-    pq.pop();
-    int u = current.id;
-
-    if (current.cost > dist[u]) {
-        continue;
-    }
-
-    if (u == goal) {
-        break;
-    }
-
-
-    for (int v = 0; v < n; ++v) {
-        if (graph(u, v) > 0) { // Check if an edge exists
-            double new_dist = dist[u] + graph(u, v);
-            if (new_dist < dist[v]) {
-                dist[v] = new_dist;
-                parent[v] = u;
-                pq.push({v, new_dist});
-            }
-        }
-    }
-}
-
-
-// Reconstruct the path
-
-NumericVector path;
-if (dist[goal] == std::numeric_limits<double>::infinity()) {
-    return path; // No path found
-}
-
-
-int current_node = goal;
-while (current_node != -1) {
-    path.push_back(current_node + 1); // Convert to 1-based indexing
-    current_node = parent[current_node];
-}
-
-std::reverse(path.begin(), path.end());
-return path;
-
-}
-```
-
-### Parallel A* implementation using RcppParallel
-
-```cpp
-// Parallel A* implementation using RcppParallel
-#include <Rcpp.h>
-#include <RcppArmadillo.h>
-#include <RcppParallel.h>
-#include <queue>
-#include <vector>
-#include <limits>
-#include <map>
-#include <algorithm>
-
-using namespace Rcpp;
-using namespace RcppParallel;
-
-// Define a Node structure for the priority queue
-struct Node {
-    int id;
-    double cost;
-
-    // Overload the greater than operator for min-heap
-    bool operator>(const Node& other) const {
-        return cost > other.cost;
-    }
-};
-
-// Worker function for parallelFor
-struct NeighborWorker : public Worker {
-    const arma::mat& graph;
-    std::vector<double>& dist;
-    std::vector<int>& parent;
-    int u;
-    std::mutex mutex; // Mutex for protecting shared data
-
-    NeighborWorker(const arma::mat& graph_, std::vector<double>& dist_, std::vector<int>& parent_, int u_, std::mutex& mutex_)
-        : graph(graph_), dist(dist_), parent(parent_), u(u_), mutex(mutex_) {}
-
-    void operator()(size_t start, size_t end) {
-        for (size_t v = start; v < end; ++v) {
-            if (graph(u, v) > 0) {  // Check if an edge exists
-                double new_dist = dist[u] + graph(u, v);
-                std::lock_guard<std::mutex> lock(mutex); // Lock before accessing shared data
-                if (new_dist < dist[v]) {
-                    dist[v] = new_dist;
-                    parent[v] = u;
-                }
-            }
-        }
-    }
-};
-
-// Worker function for parallelReduce
-struct MinNodeReducer : public Reducer {
-    const std::vector<double>& dist;
-    const std::vector<bool>& visited;
-    double min_cost = std::numeric_limits<double>::infinity();
-    int min_id = -1;
-
-    MinNodeReducer(const std::vector<double>& dist_, const std::vector<bool>& visited_)
-        : dist(dist_), visited(visited_) {}
-
-    void operator()(size_t start, size_t end) {
-        double local_min_cost = std::numeric_limits<double>::infinity();
-        int local_min_id = -1;
-        for (size_t i = start; i < end; ++i) {
-            if (!visited[i] && dist[i] < local_min_cost) {
-                local_min_cost = dist[i];
-                local_min_id = i;
-            }
-        }
-        std::lock_guard<std::mutex> lock(mutex);
-        if (local_min_cost < min_cost) {
-            min_cost = local_min_cost;
-            min_id = local_min_id;
-        }
-    }
-
-    void join(const MinNodeReducer& other) {
-        if (other.min_cost < min_cost) {
-            min_cost = other.min_cost;
-            min_id = other.min_id;
-        }
-    }
-};
-
-// [[Rcpp::export]]
-NumericVector astar_parallel(arma::mat graph, int start, int goal) {
-    int n = graph.n_rows;
-    std::vector<double> dist(n, std::numeric_limits<double>::infinity());
-    std::vector<int> parent(n, -1);
-    std::vector<bool> visited(n, false);
-
-    dist[start] = 0.0;
-
-    int visited_count = 0;
-    while (visited_count < n) {
-        // Find the unvisited node with the minimum distance using parallelReduce
-        MinNodeReducer reducer(dist, visited);
-        parallelReduce(0, n, reducer);
-        int u = reducer.min_id;
-
-        if (u == -1 || dist[u] == std::numeric_limits<double>::infinity()) {
-            break; // No more reachable unvisited nodes
-        }
-
-        visited[u] = true;
-        visited_count++;
-
-        if (u == goal) {
-            break;
-        }
-
-        // Explore neighbors using parallelFor
-        std::mutex mutex;
-        NeighborWorker worker(graph, dist, parent, u, mutex);
-        parallelFor(0, n, worker);
-    }
-
-    // Reconstruct the path
-    NumericVector path;
-    if (dist[goal] == std::numeric_limits<double>::infinity()) {
-        return path; // No path found
-    }
-
-    int current_node = goal;
-    while (current_node != -1) {
-        path.push_back(current_node + 1); // Convert to 1-based indexing
-        current_node = parent[current_node];
-    }
-    std::reverse(path.begin(), path.end());
-
-    return path;
-}
-```
-
-### Common C++ definitions
-
-```cpp
-// Expose the C++ functions to R
-#include <Rcpp.h>
-#include <RcppArmadillo.h>
-#include <RcppParallel.h>
-#include <queue>
-#include <vector>
-#include <limits>
-#include <map>
-#include <algorithm>
-
-using namespace Rcpp;
-using namespace RcppParallel;
-
-// Define a Node structure for the priority queue
-struct Node {
-    int id;
-    double cost;
-
-    // Overload the greater than operator for min-heap
-    bool operator>(const Node& other) const {
-        return cost > other.cost;
-    }
-};
-
-// Worker function for parallelFor
-struct NeighborWorker : public Worker {
-    const arma::mat& graph;
-    std::vector<double>& dist;
-    std::vector<int>& parent;
-    int u;
-    std::mutex mutex; // Mutex for protecting shared data
-
-    NeighborWorker(const arma::mat& graph_, std::vector<double>& dist_, std::vector<int>& parent_, int u_, std::mutex& mutex_)
-        : graph(graph_), dist(dist_), parent(parent_), u(u_), mutex(mutex_) {}
-
-    void operator()(size_t start, size_t end) {
-        for (size_t v = start; v < end; ++v) {
-            if (graph(u, v) > 0) {  // Check if an edge exists
-                double new_dist = dist[u] + graph(u, v);
-                std::lock_guard<std::mutex> lock(mutex); // Lock before accessing shared data
-                if (new_dist < dist[v]) {
-                    dist[v] = new_dist;
-                    parent[v] = u;
-                }
-            }
-        }
-    }
-};
-
-// Worker function for parallelReduce
-struct MinNodeReducer : public Reducer {
-    const std::vector<double>& dist;
-    const std::vector<bool>& visited;
-    double min_cost = std::numeric_limits<double>::infinity();
-    int min_id = -1;
-
-    MinNodeReducer(const std::vector<double>& dist_, const std::vector<bool>& visited_)
-        : dist(dist_), visited(visited_) {}
-
-    void operator()(size_t start, size_t end) {
-        double local_min_cost = std::numeric_limits<double>::infinity();
-        int local_min_id = -1;
-        for (size_t i = start; i < end; ++i) {
-            if (!visited[i] && dist[i] < local_min_cost) {
-                local_min_cost = dist[i];
-                local_min_id = i;
-            }
-        }
-        std::lock_guard<std::mutex> lock(mutex);
-        if (local_min_cost < min_cost) {
-            min_cost = local_min_cost;
-            min_id = local_min_id;
-        }
-    }
-
-    void join(const MinNodeReducer& other) {
-        if (other.min_cost < min_cost) {
-            min_cost = other.min_cost;
-            min_id = other.min_id;
-        }
-    }
-};
-
-// [[Rcpp::export]]
-NumericVector astar_sequential(arma::mat graph, int start, int goal) {
-    int n = graph.n_rows;
-    std::vector<double> dist(n, std::numeric_limits<double>::infinity());
-    std::vector<int> parent(n, -1);
-    std::priority_queue<Node, std::vector<Node>, std::greater<Node>> pq;
-
-    dist[start] = 0.0;
-    pq.push({start, 0.0});
-
-    while (!pq.empty()) {
-        Node current = pq.top();
-        pq.pop();
-        int u = current.id;
-
-        if (current.cost > dist[u]) {
-            continue;
-        }
-
-        if (u == goal) {
-            break;
-        }
-
-        for (int v = 0; v < n; ++v) {
-            if (graph(u, v) > 0) { // Check if an edge exists
-                double new_dist = dist[u] + graph(u, v);
-                if (new_dist < dist[v]) {
-                    dist[v] = new_dist;
-                    parent[v] = u;
-                    pq.push({v, new_dist});
-                }
-            }
-        }
-    }
-
-    // Reconstruct the path
-    NumericVector path;
-    if (dist[goal] == std::numeric_limits<double>::infinity()) {
-        return path; // No path found
-    }
-
-    int current_node = goal;
-    while (current_node != -1) {
-        path.push_back(current_node + 1); // Convert to 1-based indexing
-        current_node = parent[current_node];
-    }
-    std::reverse(path.begin(), path.end());
-
-    return path;
-}
-
-// [[Rcpp::export]]
-NumericVector astar_parallel(arma::mat graph, int start, int goal) {
-    int n = graph.n_rows;
-    std::vector<double> dist(n, std::numeric_limits<double>::infinity());
-    std::vector<int> parent(n, -1);
-    std::vector<bool> visited(n, false);
-
-    dist[start] = 0.0;
-
-    int visited_count = 0;
-    while (visited_count < n) {
-        // Find the unvisited node with the minimum distance using parallelReduce
-        MinNodeReducer reducer(dist, visited);
-        parallelReduce(0, n, reducer);
-        int u = reducer.min_id;
-
-        if (u == -1 || dist[u] == std::numeric_limits<double>::infinity()) {
-            break; // No more reachable unvisited nodes
-        }
-
-        visited[u] = true;
-        visited_count++;
-
-        if (u == goal) {
-            break;
-        }
-
-        // Explore neighbors using parallelFor
-        std::mutex mutex;
-        NeighborWorker worker(graph, dist, parent, u, mutex);
-        parallelFor(0, n, worker);
-    }
-
-    // Reconstruct the path
-    NumericVector path;
-    if (dist[goal] == std::numeric_limits<double>::infinity()) {
-        return path; // No path found
-    }
-
-    int current_node = goal;
-    while (current_node != -1) {
-        path.push_back(current_node + 1); // Convert to 1-based indexing
-        current_node = parent[current_node];
-    }
-    std::reverse(path.begin(), path.end());
-
-    return path;
-}
-```
-
-### Benchmark R script
-
+[^1]: [High performance functions with Rcpp](http://adv-r.had.co.nz/Rcpp.html)
+[^2]: [R Packages](https://r-pkgs.org/)
+[^3]: [RcppArmadillo on CRAN](https://cran.r-project.org/web/packages/RcppArmadillo/index.html)
+[^4]: [OpenMP Resources](https://www.openmp.org/resources/)
+[^5]: [CRAN Task View: High-Performance and Parallel Computing with R](https://cran.r-project.org/web/views/HighPerformanceComputing.html)
+[^6]: [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html)
+[^7]: [cuBLAS vs OpenBLAS Performance Comparison](https://developer.nvidia.com/blog/cublas-performance-improvements/)
+
+-------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------
+# A:3 (Diffusion)
+> Rcpp iterarors performance optimization
+
+This document provides example C++ sources and an R script for benchmarking different iteration strategies within the Rcpp ecosystem. It focuses on comparing C-style loops, C++-style iterators, OpenMP parallelization, and RcppArmadillo functions for vector summation and outer product operations. The goal is to illustrate performance trade-offs and provide best practices for Rcpp package development, including CRAN considerations.
+
+## Introduction
+
+### C/C++ Iteration strategies and HPC Libraries Alternatives
+
+C++'s Standard Template Library (STL) offers various ways to iterate
+over containers like vectors.
+
+*   **C-style `for` loop:** Uses manual indexing (e.g., `for (int i =
+    0; i < n; ++i)`). This provides explicit control and can be very
+    efficient, especially for simple operations. However, it can be
+    prone to errors (e.g., off-by-one errors) and might be less easily
+    optimized by modern compilers compared to STL iterators.
+*   **C++-style `for` loop with iterators:** Uses range-based `for`
+    loops or explicit iterators (e.g., `for (const auto& element :
+    vec)` or `for (auto it = vec.begin(); it != vec.end();
+    ++it)`). This is generally more idiomatic C++, safer (less prone
+    to index errors), and often allows for better optimization,
+    especially with vectorization (SIMD).
+
+In High-Performance Computing (HPC) contexts, libraries like BLAS
+(Basic Linear Algebra Subprograms) and LAPACK (Linear Algebra Package)
+provide highly optimized routines for linear algebra
+operations. RcppArmadillo and RcppEigen offer interfaces to these
+libraries, allowing users to leverage their optimized implementations
+within C++ code, often benefiting from parallelization and SIMD
+instructions.
+
+Furthermore, libraries like OpenMP provide a way to parallelize C++
+code by distributing computations across multiple cores on a single
+machine. This can lead to significant speedups for tasks that can be
+parallelized.
+
+### OpenMP/SIMD primer
+
+OpenMP (Open Multi-Processing) is an API for shared-memory parallel
+programming in C, C++, and Fortran. It allows programmers to
+parallelize sections of code using compiler directives, pragmas and
+library routines.
+
+*   **`#pragma omp parallel`:** Introduces a parallel region where a
+    team of threads is created to execute the code block.
+*   **`#pragma omp for`:** Used within a parallel region, it
+    distributes the iterations of a `for` loop among the threads.
+*   **`#pragma omp parallel for collapse(n)`:** Parallelizes nested
+    `for` loops by treating the `n` loops as a single, linearized
+    loop. This can be more efficient than parallelizing each loop
+    individually.
+*   **`#pragma omp simd`:** Suggests to the compiler that a loop
+    should be vectorized using Single Instruction, Multiple Data
+    (SIMD) instructions. This allows the same operation to be
+    performed on multiple data elements simultaneously within a single
+    thread.
+*   **`private`, `shared`, `reduction`:** These clauses specify how
+    variables are handled by threads in a parallel region. `private`
+    means each thread gets its own copy; `shared` means all threads
+    access the same variable; `reduction` creates a private copy for
+    each thread and combines the results after the parallel region
+    completes (e.g., for summation).
+
+**Parallelism vs Vectorization trade-off:**
+
+*   **Parallelism (e.g., `omp parallel for`)**: Achieves speedup by
+    distributing the work across multiple cores. Effective for tasks
+    that can be broken down into independent sub-problems.
+*   **Vectorization (e.g., `omp simd`)**: Achieves speedup by
+    performing the same operation on multiple data elements
+    simultaneously within a single core using SIMD
+    instructions. Effective for tasks where the same operation is
+    applied to large vectors or matrices.
+
+Combining both (e.g., `omp parallel for simd`) can often yield the
+best performance for computationally intensive tasks on multi-core
+machines.
+
+RcppArmadillo and RcppEigen often leverage OpenMP and SIMD
+instructions internally, especially when using optimized BLAS/LAPACK
+implementations (like OpenBLAS or MKL) that support them.
+
+### GPU Notes
+
+GPUs (Graphics Processing Units) offer thousands of simple cores,
+making them highly suitable for massively parallelizable computations,
+such as matrix operations and simulations common in machine learning
+and scientific computing. NVIDIA's CUDA (Compute Unified Device
+Architecture) is the dominant platform for GPU computing. R packages
+like TensorFlow/PyTorch (often via Python) allow R users to leverage
+GPUs.
+
+*   **GPU Advantage:** For simple vector sums or outer products, the
+    overhead of transferring data between the CPU and GPU might
+    outweigh the benefits. The advantage depends heavily on the size
+    of the data and the complexity of the computation. For very large
+    matrices or complex algorithms, GPUs can provide significant
+    speedups.
+*   **cuBLAS:** NVIDIA's CUDA-accelerated linear algebra subprograms
+    (BLAS) library. It provides highly optimized implementations of
+    common linear algebra operations on GPUs.
+*   **Comparison:** Performance comparisons between cuBLAS and
+    CPU-based libraries like OpenBLAS or Intel MKL (Math Kernel
+    Library) can vary depending on the hardware and workload. cuBLAS
+    is part of the CUDA toolkit and requires an NVIDIA GPU. OpenBLAS
+    and MKL are generally available on various CPU architectures.
+*   **Python CUDA:** Using Python-based CUDA distributions (e.g., via
+    PyTorch or TensorFlow) as a system dependency for a GPU-enabled R
+    package within a rootless Podman container environment can be
+    complex due to managing dependencies and environment
+    isolation. It's often more straightforward to use R packages
+    specifically designed for GPU computing via R if available, or
+    rely on commercial solutions. However, the landscape for GPU
+    computing in R is evolving.
+
+## R Script Implementation
 
 ```r
 #!/usr/bin/env Rscript
 
+# ----------------------------------------------------------------------------
+# File: dummy-rcpp-bench.r
+# Description: Benchmarks Rcpp functions for vector sum and outer product.
+# Author: [Your Name]
+# Date: [Current Date]
+# License: MIT License
+# ----------------------------------------------------------------------------
+
+# Load required libraries
 library(microbenchmark)
-library(Rcpp)
-library(RcppArmadillo)
 library(optparse)
 library(ggplot2)
 library(dplyr)
-library(jsonlite)
+library(stringr)
 
-# Define command-line argument options
+# ----------------------------------------------------------------------------
+# Command Line Argument Parsing
+# ----------------------------------------------------------------------------
+
 option_list <- list(
-  make_option(c("-m", "--samples"), type="integer", default=100,
-              help="Microbenchmark sample size (e.g., number of iterations)", metavar="NUM"),
-  make_option(c("-s", "--save"), action="store_true", default=FALSE,
-              help="Save random input graph and benchmark results to files"),
-  make_option(c("-g", "--density"), type="double", default=0.1,
-              help="Graph density (e.g., rate of links over nodes, with 1.0 means full connected, 0.0 full isolated)", metavar="NUM")
+    option_list(c("-h", "--help"), action = "store_true", default = FALSE,
+                help = "Print this help message."),
+    option_list(c("-v", "--verbose"), action = "count", default = 0,
+                help = "Set logging level (0: INFO, >=1: DEBUG). Repeat for higher levels."),
+    option_list(c("-p", "--profile"), action = "store_true", default = FALSE,
+                help = "Enable profiling with Rprof."),
+    option_list(c("-t", "--test"), type = "character", default = "sum",
+                help = "Name of the test to execute ('sum' or 'outer'). Default: sum."),
+    option_list(c("-m", "--samples"), type = "integer", default = 100,
+                help = "Microbenchmark sample size. Default: 100."),
+    option_list(c("-s", "--save"), action = "store_true", default = FALSE,
+                help = "Save benchmark data and system info reports.")
 )
 
-opt_parser <- OptionParser(option_list=option_list)
-opt <- parse_args(opt_parser, args = commandArgs(trailingOnly = TRUE))
+opt_parser <- OptionParser(option_list = option_list)
+opt <- parse_args(opt_parser, positional_arguments = TRUE)
 
-# Get positional arguments for graph sizes
+# Handle help option
+if (opt$help) {
+    print_help(opt_parser)
+    stop()
+}
+
+# Get input sizes from positional arguments
 if (length(opt$args) == 0) {
-  stop("Please provide at least one graph size as a positional argument.")
-}
-graph_sizes <- as.integer(opt$args)
-
-# Load the C++ code
-sourceCpp("src/astar_example.cpp")
-
-# Function to generate a random graph
-generate_random_graph <- function(n, density) {
-  adj_matrix <- matrix(0, nrow = n, ncol = n)
-  num_edges <- floor(n * (n - 1) / 2 * density)
-  edges_added <- 0
-  while (edges_added < num_edges) {
-    u <- sample(1:n, 1)
-    v <- sample(1:n, 1)
-    if (u != v && adj_matrix[u, v] == 0) {
-      weight <- runif(1, 1, 10) # Random edge weight
-      adj_matrix[u, v] <- weight
-      adj_matrix[v, u] <- weight # Undirected graph
-      edges_added <- edges_added + 1
-    }
-  }
-  return(arma::mat(adj_matrix))
+    input_sizes <- c(10, 100, 1000)
+} else {
+    input_sizes <- as.integer(opt$args)
 }
 
-# Store benchmark results
-all_results <- list()
+if (any(is.na(input_sizes)) || any(input_sizes <= 0)) {
+    stop("Input sizes must be positive integers.")
+}
 
-# Iterate through different graph sizes
-for (n in graph_sizes) {
-  cat("Benchmarking for graph size:", n, "with density:", opt$density, "\n")
+# ----------------------------------------------------------------------------
+# Logging Setup
+# ----------------------------------------------------------------------------
 
-  # Generate a random graph
-  graph <- generate_random_graph(n, opt$density)
+log_dir <- Sys.getenv("P_LOGS_DIR", unset = "logs")
+if (!dir.exists(log_dir)) {
+    dir.create(log_dir, recursive = TRUE)
+}
 
-  # Choose random start and goal nodes
-  start_node <- sample(1:n, 1)
-  goal_node <- sample(1:n, 1)
-  while (start_node == goal_node) {
-    goal_node <- sample(1:n, 1)
-  }
+timestamp <- format(Sys.time(), "%Y%m%d_%H%M%S")
+script_name <- "dummy-rcpp-bench"
+log_prefix <- paste0(script_name, "-", timestamp, "-", opt$test, "-")
 
-  # Benchmark the functions
-  bench_results <- microbenchmark(
-    sequential = astar_sequential(graph, start_node, goal_node),
-    parallel = astar_parallel(graph, start_node, goal_node),
-    times = opt$samples
-  )
+log_file <- file.path(log_dir, paste0(log_prefix, "test.log"))
+plot_file <- file.path(log_dir, paste0(log_prefix, "bench.png"))
+rprof_file <- file.path(log_dir, paste0(log_prefix, "rprof.out"))
+info_file <- file.path(log_dir, paste0(log_prefix, "info.log"))
+data_file <- file.path(log_dir, paste0(log_prefix, "data.tsv"))
 
-  # Store results
-  all_results[[as.character(n)]] <- list(
-    graph_size = n,
-    density = opt$density,
-    start = start_node,
-    goal = goal_node,
-    results = bench_results
-  )
+# Redirect stdout and stderr to log file
+log_con <- file(log_file, open = "a")
+sink(log_con, type = "output", append = TRUE)
+sink(log_con, type = "message", append = TRUE)
 
-  # Print results for this graph size
-  print(bench_results)
+cat("Script Arguments:\n")
+print(opt)
+cat("Log Directory:", log_dir, "\n")
+cat("System Info (inxi -C):\n")
+system("inxi -C", intern = TRUE)
+cat("\n")
 
-  # Save data if requested
-  if (opt$save) {
-    graph_filename <- paste0("graph_n", n, "_d", opt$density, ".csv")
-    results_filename <- paste0("results_n", n, "_d", opt$density, ".json")
+# Set C++ logging level
+Rcpp::dmy_pf_log_set_level(opt$verbose)
 
-    write.csv(as.matrix(graph), graph_filename, row.names = FALSE, col.names = FALSE)
+# ----------------------------------------------------------------------------
+# Load Rcpp Library
+# ----------------------------------------------------------------------------
 
-    results_list <- list(
-      graph_size = n,
-      density = opt$density,
-      start = start_node,
-      goal = goal_node,
-      benchmark_data = as.list(bench_results)
+cat("Loading Rcpp library...\n")
+library(Rcpp)
+library(RcppArmadillo)
+
+# Load the compiled Rcpp functions (assuming the package is installed)
+# Path might need adjustment depending on package structure
+Rcpp::sourceCpp("src/dummy_iter.cpp")
+
+# ----------------------------------------------------------------------------
+# Benchmark Execution Logic
+# ----------------------------------------------------------------------------
+
+benchmark_results <- list()
+
+if (opt$test == "sum") {
+    functions_to_test <- list(
+        c_for = dmy_pf_sum_c_for,
+        cpp_for = dmy_pf_sum_cpp_for,
+        omp_for = dmy_pf_sum_omp_for,
+        omp_for_simd = dmy_pf_sum_omp_for_simd,
+        arma = dmy_pf_sum_arma,
+        base_r = dmy_pf_sum_base_r
     )
-    write_json(results_list, results_filename, pretty = TRUE)
-
-    cat("Saved graph to", graph_filename, "and results to", results_filename, "\n")
-  }
-}
-
-# Combine results for plotting
-combined_results <- bind_rows(lapply(all_results, function(res) {
-  df <- as.data.frame(res$results)
-  df$graph_size <- res$graph_size
-  df$density <- res$density
-  return(df)
-}))
-
-# Calculate speedup
-combined_results <- combined_results %>%
-  group_by(graph_size) %>%
-  mutate(speedup = mean(time[expr == "sequential"]) / mean(time[expr == "parallel"])) %>%
-  ungroup()
-
-# Plot the results
-ggplot(combined_results, aes(x = factor(graph_size), y = time, fill = expr)) +
-  geom_boxplot(width = 0.8) +
-  scale_y_log10() +
-  labs(
-    title = "A* Algorithm Performance Comparison",
-    subtitle = paste("Sample Size:", opt$samples, ", Graph Density:", opt$density),
-    x = "Graph Size (Number of Nodes)",
-    y = "Execution Time (seconds, log10 scale)",
-    fill = "Implementation"
-  ) +
-  theme_minimal()
-
-# Plot speedup
-ggplot(combined_results, aes(x = factor(graph_size), y = speedup)) +
-  geom_line() +
-  geom_point() +
-  labs(
-    title = "A* Algorithm Speedup",
-    subtitle = paste("Sample Size:", opt$samples, ", Graph Density:", opt$density),
-    x = "Graph Size (Number of Nodes)",
-    y = "Speedup (Sequential / Parallel)"
-  ) +
-  theme_minimal()
-
-cat("\nBenchmarking complete. Check the generated plots and data files if requested.\n")
-
-
-```
-
-
-# A:5 (LeChat)
-> A* Search Algorithm in RcppParallel: Parallel vs. Sequential Implementation
-
-## **1. Introduction**
-This document demonstrates a **parallel implementation of the A* search algorithm** using `RcppParallel`, with a focus on `parallelFor` and `parallelReduce`. The A* algorithm is a popular pathfinding and graph traversal algorithm that efficiently finds the shortest path between nodes in a graph using a heuristic function.
-
-The example includes:
-- A **sequential** and **parallel** C++ implementation of A*.
-- **R-callable** wrappers for both versions.
-- A **microbenchmark** R script to compare performance.
-- A **quick start guide** for integrating `RcppParallel` into an `R` package.
-
-
-## **2. A* Algorithm Overview**
-A* is an informed search algorithm that uses:
-- **g(n)**: Cost from the start node to node `n`.
-- **h(n)**: Heuristic estimate of the cost from node `n` to the goal.
-- **f(n) = g(n) + h(n)**: Total estimated cost.
-
-The algorithm prioritizes nodes with the lowest `f(n)` and guarantees optimality if `h(n)` is admissible.
-
-
-## **3. C++ Implementation**
-
-### **3.1. Sequential A* Implementation**
-```cpp
-#include <Rcpp.h>
-#include <queue>
-#include <vector>
-#include <unordered_map>
-#include <cmath>
-
-// Node structure for A*
-struct Node {
-  int id;
-  double g;  // Cost from start
-  double h;  // Heuristic
-  double f() const { return g + h; }
-  bool operator<(const Node& other) const { return f() > other.f(); }
-};
-
-// Sequential A* implementation
-std::vector<int> astar_sequential(
-    const Rcpp::NumericMatrix& graph,
-    int start,
-    int goal,
-    std::function<double(int, int)> heuristic) {
-
-  int n = graph.nrow();
-  std::vector<double> g(n, INFINITY);
-  std::vector<int> parent(n, -1);
-  std::priority_queue<Node> open;
-
-  g[start] = 0;
-  open.push({start, 0, heuristic(start, goal)});
-
-  while (!open.empty()) {
-    Node current = open.top();
-    open.pop();
-
-    if (current.id == goal) break;
-
-    for (int neighbor = 0; neighbor < n; ++neighbor) {
-      if (graph(current.id, neighbor) > 0) {  // Edge exists
-        double tentative_g = g[current.id] + graph(current.id, neighbor);
-        if (tentative_g < g[neighbor]) {
-          parent[neighbor] = current.id;
-          g[neighbor] = tentative_g;
-          open.push({neighbor, tentative_g, heuristic(neighbor, goal)});
-        }
-      }
-    }
-  }
-
-  // Reconstruct path
-  std::vector<int> path;
-  for (int at = goal; at != -1; at = parent[at]) {
-    path.push_back(at);
-  }
-  std::reverse(path.begin(), path.end());
-  return path;
-}
-```
-
----
-
-### **3.2. Parallel A* Implementation**
-```cpp
-#include <RcppParallel.h>
-#include <RcppArmadillo.h>
-#include <queue>
-#include <vector>
-#include <unordered_map>
-#include <cmath>
-
-// Parallel worker for A*
-struct AStarWorker : public RcppParallel::Worker {
-  const Rcpp::NumericMatrix& graph;
-  int start;
-  int goal;
-  std::function<double(int, int)> heuristic;
-  std::vector<double> g;
-  std::vector<int> parent;
-  std::priority_queue<Node> open;
-
-  AStarWorker(
-      const Rcpp::NumericMatrix& graph,
-      int start,
-      int goal,
-      std::function<double(int, int)> heuristic)
-      : graph(graph), start(start), goal(goal), heuristic(heuristic),
-        g(graph.nrow(), INFINITY), parent(graph.nrow(), -1) {}
-
-  void operator()(std::size_t begin, std::size_t end) {
-    for (std::size_t i = begin; i < end; ++i) {
-      if (!open.empty()) {
-        Node current = open.top();
-        open.pop();
-
-        if (current.id == goal) break;
-
-        for (int neighbor = 0; neighbor < graph.nrow(); ++neighbor) {
-          if (graph(current.id, neighbor) > 0) {
-            double tentative_g = g[current.id] + graph(current.id, neighbor);
-            if (tentative_g < g[neighbor]) {
-              parent[neighbor] = current.id;
-              g[neighbor] = tentative_g;
-              open.push({neighbor, tentative_g, heuristic(neighbor, goal)});
-            }
-          }
-        }
-      }
-    }
-  }
-};
-
-// Parallel A* implementation
-std::vector<int> astar_parallel(
-    const Rcpp::NumericMatrix& graph,
-    int start,
-    int goal,
-    std::function<double(int, int)> heuristic) {
-
-  int n = graph.nrow();
-  std::vector<double> g(n, INFINITY);
-  std::vector<int> parent(n, -1);
-  std::priority_queue<Node> open;
-
-  g[start] = 0;
-  open.push({start, 0, heuristic(start, goal)});
-
-  AStarWorker worker(graph, start, goal, heuristic);
-  RcppParallel::parallelFor(0, 1, worker);  // Single-threaded for simplicity
-
-  // Reconstruct path
-  std::vector<int> path;
-  for (int at = goal; at != -1; at = worker.parent[at]) {
-    path.push_back(at);
-  }
-  std::reverse(path.begin(), path.end());
-  return path;
-}
-```
-
-
-## **4. R Callable Functions**
-```cpp
-#include <Rcpp.h>
-using namespace Rcpp;
-
-// [[Rcpp::export]]
-std::vector<int> astar_sequential_rcpp(
-    NumericMatrix graph,
-    int start,
-    int goal) {
-
-  auto heuristic = [](int a, int b) { return std::abs(a - b); };
-  return astar_sequential(graph, start, goal, heuristic);
-}
-
-// [[Rcpp::export]]
-std::vector<int> astar_parallel_rcpp(
-    NumericMatrix graph,
-    int start,
-    int goal) {
-
-  auto heuristic = [](int a, int b) { return std::abs(a - b); };
-  return astar_parallel(graph, start, goal, heuristic);
-}
-```
-
-## **5. Microbenchmark Test Script**
-```r
-#!/usr/bin/env Rscript
-library(microbenchmark)
-library(argparse)
-library(ggplot2)
-
-# Argument parser
-parser <- ArgumentParser(
-  description = "Benchmark A* Sequential vs. Parallel"
-)
-parser$add_argument(
-  "-m", "--samples",
-  type = integer,
-  default = 100,
-  help = "Microbenchmark sample size"
-)
-parser$add_argument(
-  "-s", "--save",
-  action = "store_true",
-  help = "Save benchmark data"
-)
-parser$add_argument(
-  "-g", "--density",
-  type = numeric,
-  default = 0.2,
-  help = "Graph density (0.0 to 1.0)"
-)
-parser$add_argument(
-  "sizes",
-  nargs = "+",
-  type = integer,
-  help = "Graph sizes (space-separated)"
-)
-args <- parser$parse_args()
-
-# Generate random graph
-generate_graph <- function(n, density) {
-  mat <- matrix(0, nrow = n, ncol = n)
-  for (i in 1:n) {
-    for (j in 1:n) {
-      if (runif(1) < density && i != j) {
-        mat[i, j] <- runif(1)
-      }
-    }
-  }
-  mat
-}
-
-# Benchmark function
-benchmark_astar <- function(n, density, samples) {
-  graph <- generate_graph(n, density)
-  start <- 1
-  goal <- n
-
-  res <- microbenchmark(
-    sequential = astar_sequential_rcpp(graph, start, goal),
-    parallel = astar_parallel_rcpp(graph, start, goal),
-    times = samples
-  )
-
-  if (args$save) {
-    write.csv(
-      data.frame(size = n, density = density, res),
-      file = "astar_benchmark.csv",
-      append = TRUE
+    plot_title <- "Vector Sum Benchmark"
+} else if (opt$test == "outer") {
+    functions_to_test <- list(
+        c_for = dmy_pf_outer_c_for,
+        cpp_for = dmy_pf_outer_cpp_for,
+        omp_for_collapse = dmy_pf_outer_omp_for_collapse,
+        omp_for_simd = dmy_pf_outer_omp_for_simd,
+        arma = dmy_pf_outer_arma,
+        base_r = dmy_pf_outer_base_r
     )
-  }
-
-  res
+    plot_title <- "Outer Product Benchmark"
+} else {
+    stop("Invalid test type. Choose 'sum' or 'outer'.")
 }
 
-# Run benchmarks
-results <- lapply(args$sizes, function(n) {
-  benchmark_astar(n, args$density, args$samples)
-})
+cat("Starting benchmark for test type:", opt$test, "\n")
 
-# Plot results
-plot_data <- do.call(rbind, lapply(results, function(res) {
-  data.frame(
-    size = rep(args$sizes[1], 2),
-    method = c("Sequential", "Parallel"),
-    time = c(median(res$sequential$time), median(res$parallel$time))
-  )
-}))
+for (size in input_sizes) {
+    cat("Benchmarking with input size:", size, "\n")
 
-ggplot(plot_data, aes(x = size, y = time, color = method)) +
-  geom_line() +
-  labs(
-    title = "A* Benchmark: Sequential vs. Parallel",
-    subtitle = paste("Samples:", args$samples, "| Density:", args$density)
-  )
+    # Generate random input vector
+    set.seed(123) # for reproducibility
+    v <- rnorm(size, mean = 0, sd = 10000)
+
+    # Reset logging traces before each benchmark run
+    Rcpp::dmy_pf_log_reset()
+
+    # Run microbenchmark
+    if (opt$profile) {
+        Rprof(rprof_file)
+    }
+
+    mb_results <- microbenchmark(
+        lapply(functions_to_test, function(f) f(v)),
+        times = opt$samples
+    )
+
+    if (opt$profile) {
+        Rprof(NULL)
+        cat("Profiling data saved to:", rprof_file, "\n")
+    }
+
+    # Process results
+    mb_summary <- summary(mb_results) %>%
+        mutate(
+            input_size = size,
+            test_type = opt$test,
+            function_label = str_remove(expr, paste0("dmy_pf_", opt$test, "_"))
+        ) %>%
+        select(test_type, input_size, function_label, mean, iterations)
+
+    benchmark_results[[as.character(size)]] <- mb_summary
+
+    cat("Benchmark summary for size", size, ":\n")
+    print(mb_summary)
+}
+
+# Combine results from all input sizes
+all_results <- bind_rows(benchmark_results)
+
+# ----------------------------------------------------------------------------
+# Plotting Results
+# ----------------------------------------------------------------------------
+
+cat("Generating benchmark plot...\n")
+
+# Create the plot
+p <- ggplot(all_results, aes(x = as.factor(input_size), y = mean, color = function_label, group = function_label)) +
+    geom_line() +
+    geom_point() +
+    labs(
+        title = plot_title,
+        subtitle = paste("Sample Size:", opt$samples, ", Test Type:", opt$test),
+        x = "Input Size",
+        y = "Mean Elapsed Time (seconds)",
+        color = "Function"
+    ) +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+# Save the plot
+ggsave(plot_file, p, width = 10, height = 6)
+cat("Benchmark plot saved to:", plot_file, "\n")
+
+# ----------------------------------------------------------------------------
+# Save Data (Optional)
+# ----------------------------------------------------------------------------
+
+if (opt$save) {
+    cat("Saving benchmark data and system info...\n")
+
+    # Save system info
+    info_con <- file(info_file, open = "w")
+    cat("Date:", Sys.time(), "\n", file = info_con)
+    cat("User:", system("whoami", intern = TRUE), "\n", file = info_con)
+    cat("inxi -CfGMS:\n", file = info_con)
+    cat(system("inxi -CfGMS", intern = TRUE), "\n", file = info_con)
+    cat("\nlscpu:\n", file = info_con)
+    cat(system("lscpu", intern = TRUE), "\n", file = info_con)
+    cat("\ncpupower frequency-info:\n", file = info_con)
+    cat(system("cpupower frequency-info", intern = TRUE), "\n", file = info_con)
+    cat("\nnvidia-smi (or '#NOGPU'):\n", file = info_con)
+    cat(system("nvidia-smi || echo '#NOGPU'", intern = TRUE), "\n", file = info_con)
+    close(info_con)
+    cat("System info saved to:", info_file, "\n")
+
+    # Save benchmark data to TSV
+    all_results_tsv <- all_results %>%
+        mutate(timestamp = Sys.time()) %>%
+        select(test_type, timestamp, function_label, input_size, mean, iterations)
+
+    write.table(all_results_tsv, data_file, sep = "\t", row.names = FALSE, quote = FALSE)
+    cat("Benchmark data saved to:", data_file, "\n")
+}
+
+# ----------------------------------------------------------------------------
+# Cleanup
+# ----------------------------------------------------------------------------
+
+sink()
+close(log_con)
+
+cat("Benchmark finished.\n")
 ```
 
-## **6. RcppParallel Quick Start Guide**
 
-### **6.1. Project Configuration**
-#### **`DESCRIPTION`**
-```yaml
-Imports:
-  Rcpp (>= 1.0.0),
-  RcppParallel (>= 5.0.0),
-  RcppArmadillo,
-  RcppEigen
-LinkingTo:
-  Rcpp,
-  RcppParallel,
-  RcppArmadillo,
-  RcppEigen
-SystemRequirements:
-  GNU make
-  C++11
-```
+-------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------
+# A:3 (LeChat)
+> * [Rcpp Iterators Performance Optimization: A Comparative Study](https://chat.mistral.ai/chat/e36afa9f-8a10-4d97-b567-6f1712315ea1)
 
-#### **`src/Makevars`**
-```make
-PKG_CXXFLAGS = $(SHLIB_OPENMP_CXXFLAGS)
-PKG_LIBS = $(SHLIB_OPENMP_CFLAGS) $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)
-```
-
-#### **`~/.R/Makevars` (Optional for SIMD)**
-```make
-CXXFLAGS = -O3 -march=native
-```
-
-### **6.2. Package Installation**
-#### **System Dependencies (Ubuntu)**
-```bash
-sudo apt-get install libopenblas-dev liblapack-dev
-```
-
-#### **`renv` Commands**
-```r
-renv::install(c("Rcpp", "RcppParallel", "RcppArmadillo", "RcppEigen"))
-renv::snapshot()
-```
+This document provides a comparative analysis of different iteration
+and parallelization strategies in C++ for R package development, using
+**Rcpp** and **RcppArmadillo**. The focus is on performance, idiomatic
+C++, and compliance with CRAN and tidyverse best practices. The
+document includes C++ implementations, a microbenchmarking R script,
+and a quick-start guide for package configuration.
 
 ---
 
-## **7. References**
-[^1]: [RcppParallel Documentation](https://cran.r-project.org/package=RcppParallel)
-[^2]: [A* Search Algorithm](https://en.wikipedia.org/wiki/A*_search_algorithm)
-[^3]: [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html)
+## Introduction
 
+### C/C++ Iteration Strategies and HPC Libraries Alternatives
 
-# A:5 (Perplexity)
-> Parallel A* Search Algorithm with RcppParallel
+- **C-style loops** are fast and predictable, but verbose and
+  error-prone.
+- **C++ STL iterators** are safer and more expressive, but may
+  introduce minor overhead.
+- **OpenMP** enables multi-core parallelism and SIMD vectorization,
+  but requires careful tuning and is not always portable.
+- **RcppArmadillo** provides high-level abstractions for linear
+  algebra, leveraging BLAS/LAPACK for performance.
+- **R library calls** (e.g., `base::sum`, `base::outer`) are
+  convenient but may incur R-C++ transition overhead.
 
-This tutorial presents a minimal yet interesting parallelization of the **A\* search algorithm** leveraging the `RcppParallel` package. For matrix and vector operations, we integrate `RcppArmadillo` for efficient numeric computations and `RcppEigen` for alternative linear algebra utilities if desired.
+**Trade-offs:**
+- **Safety vs. Performance:** STL iterators and RcppArmadillo are
+  safer but may not always match the raw speed of C-style loops or
+  OpenMP.
+- **Portability vs. Optimization:** OpenMP and SIMD (`-march=native`)
+  improve performance but reduce portability.
+- **Parallelism vs. Vectorization:** OpenMP `parallel for` scales with
+  cores, while `simd` exploits CPU vector units. The best choice
+  depends on the problem size and hardware.
 
-We implement both a **sequential** and a **parallel** version of A*, using `parallelFor` and `parallelReduce` in the parallel variant. The parallel example focuses on efficient exploration of neighbor nodes and cost estimations within a random weighted graph. This example provides a practical demonstration of using `RcppParallel` to boost the performance of graph search algorithms.
+### OpenMP/SIMD Primer
 
----
+OpenMP is a multi-platform API for shared-memory parallelism. Key
+directives:
+- **`#pragma omp parallel for`**: Parallelizes loops across threads.
+- **`#pragma omp simd`**: Enables SIMD vectorization.
+- **`collapse`**: Linearizes nested loops.
+- **`reduction`**: Safely accumulates results across threads.
+- **`private`/`shared`**: Controls variable scope in parallel regions.
 
-## A* Algorithm Overview
+**RcppArmadillo** and **RcppEigen** integrate with BLAS/LAPACK, which
+are often multi-threaded and optimized for the hardware (e.g.,
+OpenBLAS, Intel MKL).
 
-**A\*** is a best-first graph traversal and path search algorithm that finds the shortest path from a start node to a goal node. It uses a heuristic to estimate the cost of the cheapest path from a given node to the goal, combining the known path cost so far (`g(n)`) and the heuristic estimated cost (`h(n)`).
+### GPU Notes
 
-Key components:
-- Priority queue to select the next node with the lowest `f(n) = g(n) + h(n)`.
-- `g(n)`: cost from start to current node.
-- `h(n)`: heuristic cost from current node to goal (often Euclidean or Manhattan distance).
-- Explores neighbor nodes updating costs and remembering optimal paths.
+- **GPU Advantage:** GPUs excel at massively parallel, data-parallel
+  tasks (e.g., matrix operations). For large problems, speedups of
+  10x–100x are possible over CPU.
+- **cuBLAS:** NVIDIA’s GPU-accelerated BLAS library. Comparisons with
+  OpenBLAS/MKL show significant speedups for large matrices ([see
+  benchmarks][gpu_bench]).
+- **Python CUDA in R:** Using Python-based CUDA (e.g., via
+  `reticulate`) is possible but adds complexity. Native R GPU packages
+  (e.g., `gpuR`) are preferable for production.
 
-Our example uses a weighted adjacency matrix for the graph representation. The heuristic used will be a straightforward Euclidean-like distance on node indices (as a proxy).
-
+[gpu_bench]: https://developer.nvidia.com/cublas
 
 ---
 
 ## C++ Implementation
 
-The code uses:
-
-- **Rcpp** for R integration.
-- **RcppParallel** `parallelFor` for parallel neighbor relaxation.
-- **RcppParallel** `parallelReduce` for computing minimum cost among candidates.
-- **RcppArmadillo** for matrix storage and numeric efficiency.
-
----
-
-### Sequential A* Implementation
+### `./src/dummy_iter.cpp`
 
 ```cpp
+// Authors: datalab
+// License: GPL-3
+//' @title Dummy Iterators for Rcpp Performance Tests
+//' @description
+//'   C++ functions for benchmarking iteration strategies in Rcpp.
+//' @useDynLib dummyPkg
+//' @importFrom Rcpp evalCpp
 // [[Rcpp::depends(RcppArmadillo)]]
-// [[Rcpp::depends(RcppParallel)]]
+// [[Rcpp::plugins(openmp)]]
 #include <RcppArmadillo.h>
-#include <RcppParallel.h>
-#include <queue>
-#include <vector>
-#include <limits>
-#include <cmath>
+#include <omp.h>
+#include <set>
+#include <string>
 
-using namespace Rcpp;
-using namespace RcppParallel;
+// ---- Logging Support --------------------------------------------------------
 
-constexpr double INF = std::numeric_limits<double>::infinity();
+static int g_verbosity = 0;
+static std::set<std::string> g_traced_messages;
 
-// Structure to represent nodes in the priority queue
-struct Node {
-  int index;
-  double f;
-  bool operator>(const Node& other) const {
-    return f > other.f;
-  }
-};
-
-// Heuristic: simple absolute difference (proxy for spatial distance)
-inline double Heuristic(int node, int goal) {
-  return std::abs(goal - node);
+void dmy_pf_log_set_level(int level) {
+  g_verbosity = level;
 }
 
-// Sequential A* search on weighted adjacency matrix
-// graph: weighted adjacency matrix (0 means no edge)
-// returns vector of node indices representing path from start to goal
-// or empty vector if no path found
+int dmy_pf_log_get_level() {
+  return g_verbosity;
+}
+
+void dmy_pf_log_out(const char* file, int line, const std::string& msg) {
+  if (g_verbosity >= 0) {
+    Rcpp::Rcout << "LOG [" << file << ":" << line << "] " << msg << std::endl;
+  }
+}
+
+void dmy_pf_log_trace(const char* file, int line, const std::string& msg) {
+  if (g_verbosity >= 3) {
+    std::string key = std::string(file) + ":" + std::to_string(line);
+    if (g_traced_messages.find(key) == g_traced_messages.end()) {
+      Rcpp::Rcerr << "TRACE [" << file << ":" << line << "] " << msg << std::endl;
+      g_traced_messages.insert(key);
+    }
+  }
+}
+
+void dmy_pf_log_reset() {
+  g_traced_messages.clear();
+}
+
+#define V_LOG(msg) dmy_pf_log_out(__FILE__, __LINE__, msg)
+#define V_TRACE(msg) dmy_pf_log_trace(__FILE__, __LINE__, msg)
+
+// ---- Sum Functions ----------------------------------------------------------
+
+//' Sum of a numeric vector (C-style for loop)
+//' @param v NumericVector
+//' @return Sum as double
 // [[Rcpp::export]]
-IntegerVector astar_sequential(const arma::mat& graph,
-                              int start,
-                              int goal) {
-  int n = graph.n_rows;
-  if (start < 0 || start >= n || goal < 0 || goal >= n) {
-    stop("Start or goal node index out of bounds.");
+double dmy_pf_sum_cstyle(Rcpp::NumericVector v) {
+  double s = 0.0;
+  for (int i = 0; i < v.size(); ++i) {
+    s += v[i];
   }
-  std::vector<double> g_score(n, INF);
-  std::vector<int> came_from(n, -1);
-  g_score[start] = 0.0;
+  return s;
+}
 
-  // Priority queue for open set: min-heap by f score
-  std::priority_queue<Node, std::vector<Node>, std::greater<Node>> open_set;
-  open_set.push(Node{start, Heuristic(start, goal)});
+//' Sum of a numeric vector (STL iterator)
+//' @param v NumericVector
+//' @return Sum as double
+// [[Rcpp::export]]
+double dmy_pf_sum_stl(Rcpp::NumericVector v) {
+  return std::accumulate(v.begin(), v.end(), 0.0);
+}
 
-  while (!open_set.empty()) {
-    Node current = open_set.top();
-    open_set.pop();
+//' Sum of a numeric vector (OpenMP parallel for)
+//' @param v NumericVector
+//' @return Sum as double
+// [[Rcpp::export]]
+double dmy_pf_sum_omp_parallel(Rcpp::NumericVector v) {
+  double s = 0.0;
+  #pragma omp parallel for reduction(+:s)
+  for (int i = 0; i < v.size(); ++i) {
+    s += v[i];
+  }
+  return s;
+}
 
-    if (current.index == goal) {
-      // Reconstruct path
-      std::vector<int> path;
-      for (int cur = goal; cur != -1; cur = came_from[cur]) {
-        path.push_back(cur);
-      }
-      // Reverse path
-      std::reverse(path.begin(), path.end());
-      return wrap(path);
-    }
+//' Sum of a numeric vector (OpenMP parallel for simd)
+//' @param v NumericVector
+//' @return Sum as double
+// [[Rcpp::export]]
+double dmy_pf_sum_omp_simd(Rcpp::NumericVector v) {
+  double s = 0.0;
+  #pragma omp parallel for simd reduction(+:s)
+  for (int i = 0; i < v.size(); ++i) {
+    s += v[i];
+  }
+  return s;
+}
 
-    // Explore neighbors
-    for (int neighbor = 0; neighbor < n; ++neighbor) {
-      double cost = graph(current.index, neighbor);
-      if (cost > 0) {  // edge exists
-        double tentative_g = g_score[current.index] + cost;
-        if (tentative_g < g_score[neighbor]) {
-          came_from[neighbor] = current.index;
-          g_score[neighbor] = tentative_g;
-          double f = tentative_g + Heuristic(neighbor, goal);
-          open_set.push(Node{neighbor, f});
-        }
-      }
+//' Sum of a numeric vector (RcppArmadillo)
+//' @param v NumericVector
+//' @return Sum as double
+// [[Rcpp::export]]
+double dmy_pf_sum_arma(Rcpp::NumericVector v) {
+  arma::vec x(v.begin(), v.size(), false);
+  return arma::sum(x);
+}
+
+//' Sum of a numeric vector (R base::sum)
+//' @param v NumericVector
+//' @return Sum as double
+// [[Rcpp::export]]
+double dmy_pf_sum_rbase(Rcpp::NumericVector v) {
+  V_TRACE("base::sum, start");
+  double s = Rcpp::sum(v);
+  V_TRACE("base::sum, done");
+  return s;
+}
+
+// ---- Outer Product Functions -----------------------------------------------
+
+//' Outer product (C-style nested for)
+//' @param a NumericVector
+//' @param b NumericVector
+//' @return Outer product as NumericMatrix
+// [[Rcpp::export]]
+Rcpp::NumericMatrix dmy_pf_outer_cstyle(Rcpp::NumericVector a, Rcpp::NumericVector b) {
+  int n = a.size(), m = b.size();
+  Rcpp::NumericMatrix out(n, m);
+  for (int i = 0; i < n; ++i) {
+    for (int j = 0; j < m; ++j) {
+      out(i, j) = a[i] * b[j];
     }
   }
-  // no path found
-  return IntegerVector::create();
+  return out;
+}
+
+//' Outer product (STL nested for)
+//' @param a NumericVector
+//' @param b NumericVector
+//' @return Outer product as NumericMatrix
+// [[Rcpp::export]]
+Rcpp::NumericMatrix dmy_pf_outer_stl(Rcpp::NumericVector a, Rcpp::NumericVector b) {
+  int n = a.size(), m = b.size();
+  Rcpp::NumericMatrix out(n, m);
+  auto ait = a.begin(), aend = a.end();
+  auto bit = b.begin();
+  for (int i = 0; ait != aend; ++ait, ++i) {
+    for (bit = b.begin(); bit != b.end(); ++bit) {
+      out(i, std::distance(b.begin(), bit)) = (*ait) * (*bit);
+    }
+  }
+  return out;
+}
+
+//' Outer product (OpenMP parallel for collapse)
+//' @param a NumericVector
+//' @param b NumericVector
+//' @return Outer product as NumericMatrix
+// [[Rcpp::export]]
+Rcpp::NumericMatrix dmy_pf_outer_omp_collapse(Rcpp::NumericVector a, Rcpp::NumericVector b) {
+  int n = a.size(), m = b.size();
+  Rcpp::NumericMatrix out(n, m);
+  #pragma omp parallel for collapse(2)
+  for (int i = 0; i < n; ++i) {
+    for (int j = 0; j < m; ++j) {
+      out(i, j) = a[i] * b[j];
+    }
+  }
+  return out;
+}
+
+//' Outer product (OpenMP parallel for + simd)
+//' @param a NumericVector
+//' @param b NumericVector
+//' @return Outer product as NumericMatrix
+// [[Rcpp::export]]
+Rcpp::NumericMatrix dmy_pf_outer_omp_simd(Rcpp::NumericVector a, Rcpp::NumericVector b) {
+  int n = a.size(), m = b.size();
+  Rcpp::NumericMatrix out(n, m);
+  #pragma omp parallel for
+  for (int i = 0; i < n; ++i) {
+    #pragma omp simd
+    for (int j = 0; j < m; ++j) {
+      out(i, j) = a[i] * b[j];
+    }
+  }
+  return out;
+}
+
+//' Outer product (RcppArmadillo)
+//' @param a NumericVector
+//' @param b NumericVector
+//' @return Outer product as NumericMatrix
+// [[Rcpp::export]]
+Rcpp::NumericMatrix dmy_pf_outer_arma(Rcpp::NumericVector a, Rcpp::NumericVector b) {
+  arma::vec x(a.begin(), a.size(), false);
+  arma::vec y(b.begin(), b.size(), false);
+  return Rcpp::wrap(x * y.t());
+}
+
+//' Outer product (R base::outer)
+//' @param a NumericVector
+//' @param b NumericVector
+//' @return Outer product as NumericMatrix
+// [[Rcpp::export]]
+Rcpp::NumericMatrix dmy_pf_outer_rbase(Rcpp::NumericVector a, Rcpp::NumericVector b) {
+  V_TRACE("base::outer, start");
+  Rcpp::NumericMatrix out = Rcpp::outer(a, b);
+  V_TRACE("base::outer, done");
+  return out;
 }
 ```
 
 ---
 
-### Parallel A* Implementation with RcppParallel
+## Microbenchmark Test
 
-Here, we parallelize the exploration of neighbor nodes using `parallelFor`, accelerating the relaxation step. The priority queue management remains sequential due to complexity—parallel A* is non-trivial, but this toy example demonstrates partial vectorized exploration with parallel primitives.
-
-```cpp
-#include <RcppArmadillo.h>
-#include <RcppParallel.h>
-#include <queue>
-#include <vector>
-#include <limits>
-#include <cmath>
-#include <atomic>
-
-using namespace RcppParallel;
-
-// Task for relaxing edges from current node in parallel
-struct RelaxEdges : public Worker {
-  const arma::mat& graph;
-  const int current;
-  const std::vector<double>& g_score;
-  std::vector<double>& g_score_mutable;
-  std::vector<int>& came_from;
-  const int goal;
-  std::vector<std::atomic<bool>>& updated;
-
-  RelaxEdges(const arma::mat& graph,
-             int current,
-             const std::vector<double>& g_score,
-             std::vector<double>& g_score_mutable,
-             std::vector<int>& came_from,
-             int goal,
-             std::vector<std::atomic<bool>>& updated)
-    : graph(graph), current(current), g_score(g_score),
-      g_score_mutable(g_score_mutable), came_from(came_from), goal(goal),
-      updated(updated) {}
-
-  void operator()(std::size_t begin, std::size_t end) {
-    int n = graph.n_rows;
-    for (std::size_t neighbor = begin; neighbor < end; ++neighbor) {
-      if (neighbor >= static_cast<std::size_t>(n)) break;
-      double cost = graph(current, neighbor);
-      if (cost > 0) {
-        double tentative_g = g_score[current] + cost;
-        double current_g = g_score_mutable[neighbor];
-        if (tentative_g < current_g) {
-          // atomic update to avoid race conditions
-          bool expected = false;
-          // Only update if this thread won the race
-          if (updated[neighbor].compare_exchange_strong(expected, true)) {
-            g_score_mutable[neighbor] = tentative_g;
-            came_from[neighbor] = current;
-          }
-        }
-      }
-    }
-  }
-};
-
-// Parallel variant with limited parallel relaxation.
-// Returns path vector or empty if none found
-// [[Rcpp::export]]
-IntegerVector astar_parallel(const arma::mat& graph, int start, int goal) {
-  int n = graph.n_rows;
-  if (start < 0 || start >= n || goal < 0 || goal >= n) {
-    stop("Start or goal node index out of bounds.");
-  }
-  std::vector<double> g_score(n, INF);
-  std::vector<int> came_from(n, -1);
-  g_score[start] = 0.0;
-
-  struct Node {
-    int index;
-    double f;
-    bool operator>(const Node& other) const {
-      return f > other.f;
-    }
-  };
-
-  std::priority_queue<Node, std::vector<Node>, std::greater<Node>> open_set;
-  open_set.push(Node{start, Heuristic(start, goal)});
-
-  while (!open_set.empty()) {
-    auto current = open_set.top();
-    open_set.pop();
-
-    if (current.index == goal) {
-      std::vector<int> path;
-      for (int cur = goal; cur != -1; cur = came_from[cur]) {
-        path.push_back(cur);
-      }
-      std::reverse(path.begin(), path.end());
-      return wrap(path);
-    }
-
-    // Vector for atomic update flags per neighbor
-    std::vector<std::atomic<bool>> updated(n);
-    for (auto& flag : updated) flag = false;
-
-    // Parallel relaxation of neighbors
-    RelaxEdges relax(graph, current.index, g_score, g_score, came_from, goal, updated);
-    parallelFor(0, n, relax);
-
-    // After relaxation, add improved neighbors to open set
-    // Note: This insertion is sequential and may limit scalability
-    for (int neighbor = 0; neighbor < n; ++neighbor) {
-      if (updated[neighbor]) {
-        double f = g_score[neighbor] + Heuristic(neighbor, goal);
-        open_set.push(Node{neighbor, f});
-      }
-    }
-  }
-  return IntegerVector::create();
-}
-```
-
----
-
-## R Callable Functions
-
-Both implementations are exposed as callable R functions from a single C++ source that can be compiled with `Rcpp::sourceCpp()`.
-
-```cpp
-// [[Rcpp::depends(RcppArmadillo, RcppParallel)]]
-// Entire C++ code above here...
-
-// Exposed functions:
-// [[Rcpp::export]]
-IntegerVector astar_sequential(const arma::mat& graph, int start, int goal);
-
-// [[Rcpp::export]]
-IntegerVector astar_parallel(const arma::mat& graph, int start, int goal);
-```
-
----
-
-## Microbenchmark Test Script in R
-
-This script benchmarks the sequential vs parallel A* for various graph sizes and densities. It uses `argparse` for command line argument parsing, accepts:
-
-- `-m`, `--samples`: number of benchmark iterations (default 10)
-- `-s`, `--save`: boolean to save inputs/results to JSON
-- `-g`, `--density`: graph density (between 0 and 1, default 0.1)
-- positional args: one or more graph sizes (number of nodes)
-
-It outputs a performance plot comparing runtimes by graph size.
+### `./exec/dummy-rcpp-bench.r`
 
 ```r
 #!/usr/bin/env Rscript
-library(Rcpp)
-library(RcppArmadillo)
-library(argparse)
+#' @title Dummy Rcpp Benchmark Script
+#' @description
+#'   Microbenchmarking script for Rcpp iteration strategies.
+#' @usage ./exec/dummy-rcpp-bench.r [-h] [-v] [-p] [-t TEST] [-m SAMPLES] [-s] INPUT_SIZES
+#' @seealso
+#'   \code{\link{dmy_pf_sum_cstyle}},
+#'   \code{\link{dmy_pf_outer_cstyle}},
+#'   ./src/Makevars,
+#'   ~/.R/Makevars,
+#'   ./notes/howtos/Rcpp-HOWTO-Q3-all.md
+#' @examples
+#'   ./exec/dummy-rcpp-bench.r -t sum -m 100 10 100 1000
+#'   ./exec/dummy-rcpp-bench.r -t outer -vv -s 100 1000
+
 library(microbenchmark)
-library(jsonlite)
 library(ggplot2)
+library(optparse)
+library(logger)
 
-# Load the compiled C++ functions (sourceCpp path must be set accordingly)
-sourceCpp("astar_parallel.cpp")  # adjust path if needed
+# ---- Argument Parsing --------------------------------------------------------
 
-# Utility to generate a random weighted graph adjacency matrix
-generate_graph <- function(n, density) {
-  mat <- matrix(0, n, n)
-  edges <- runif(n * n)
-  weights <- runif(n * n, min = 0.5, max = 10)
-  mat[edges < density & !diag(n)] <- weights[edges < density & !diag(n)]
-  diag(mat) <- 0
-  return(mat)
+option_list <- list(
+  make_option(c("-h", "--help"), action = "help"),
+  make_option(c("-v", "--verbose"), type = "integer", default = 0L, count = TRUE),
+  make_option(c("-p", "--profile"), action = "store_true", default = FALSE),
+  make_option(c("-t", "--test"), type = "character", default = "sum",
+              help = "Test type: 'sum' or 'outer'"),
+  make_option(c("-m", "--samples"), type = "integer", default = 100L,
+              help = "Microbenchmark sample size"),
+  make_option(c("-s", "--save"), action = "store_true", default = FALSE,
+              help = "Save data and system info"),
+  make_option(c("--input-size"), type = "integer", default = c(10L, 100L, 1000L),
+              help = "Input sizes (space-separated)")
+)
+opt <- parse_args(OptionParser(option_list = option_list))
+
+if (opt$help) {
+  print(usage())
+  q(status = 0)
 }
 
-parser <- ArgumentParser(description = 'Benchmark A* Sequential vs Parallel')
-parser$add_argument('-m', '--samples', type = 'integer', default = 10,
-                    help = 'Number of iterations for microbenchmark')
-parser$add_argument('-s', '--save', action = 'store_true', default = FALSE,
-                    help = 'Save input and results to JSON')
-parser$add_argument('-g', '--density', type = 'double', default = 0.1,
-                    help = 'Graph density (0 to 1)')
-parser$add_argument('sizes', nargs = '+', type = 'integer',
-                    help = 'Graph sizes (number of nodes)')
+# ---- Logging Setup -----------------------------------------------------------
 
-args <- parser$parse_args()
+log_dir <- Sys.getenv("P_LOGS_DIR", unset = "logs")
+dir.create(log_dir, showWarnings = FALSE)
+log_file <- file.path(log_dir, sprintf("%s-%s-%s-test.log",
+                                        basename(tempfile()), Sys.time(), opt$test))
+log_appender(appender_file(log_file))
+log_level(ifelse(opt$verbose >= 1L, DEBUG, INFO))
 
-results <- list()
-for (n in args$sizes) {
-  cat(sprintf("Benchmarking graph size %d with density %.2f\n", n, args$density))
-  graph <- generate_graph(n, args$density)
-  start <- 0
-  goal <- n - 1
+log_info("Script arguments: ~~~\n{str(opt)}")
+log_info("Log directory: {log_dir}")
+log_info("System info:\n{system('inxi -C', intern = TRUE)}")
 
-  bench <- microbenchmark(
-    sequential = astar_sequential(graph, start, goal),
-    parallel = astar_parallel(graph, start, goal),
-    times = args$samples,
-    unit = "ms"
-  )
-  summary_df <- summary(bench)
+# ---- Benchmark Functions -----------------------------------------------------
 
-  # Store results with metadata
-  results[[as.character(n)]] <- list(
-    size = n,
-    density = args$density,
-    bench = summary_df
-  )
+run_bench <- function(test_type, input_size, samples) {
+  set.seed(42L)
+  v <- rnorm(input_size, mean = 0, sd = 100)
+
+  if (test_type == "sum") {
+    funs <- Filter(
+      \(x) grepl("^dmy_pf_sum_", x),
+      ls(pattern = "^dmy_pf_", envir = asNamespace("dummyPkg"))
+    )
+    exprs <- setNames(lapply(funs, as.name), gsub("^dmy_pf_sum_", "", funs))
+    mb <- microbenchmark(list = exprs, times = samples, control = list(order = "block"))
+  } else if (test_type == "outer") {
+    funs <- Filter(
+      \(x) grepl("^dmy_pf_outer_", x),
+      ls(pattern = "^dmy_pf_", envir = asNamespace("dummyPkg"))
+    )
+    exprs <- setNames(lapply(funs, \(f) bquote(.(as.name(f))(v, v))), gsub("^dmy_pf_outer_", "", funs))
+    mb <- microbenchmark(list = exprs, times = samples, control = list(order = "block"))
+  }
+
+  mb
 }
 
-# Prepare data for ggplot
-df <- do.call(rbind, lapply(names(results), function(x) {
-  d <- results[[x]]$bench
-  d$size <- as.integer(x)
-  return(d)
+# ---- Main --------------------------------------------------------------------
+
+dummyPkg::dmy_pf_log_set_level(opt$verbose)
+dummyPkg::dmy_pf_log_reset()
+
+results <- lapply(opt$input_size, function(n) {
+  log_debug("Benchmarking input size: {n}")
+  run_bench(opt$test, n, opt$samples)
+})
+
+# ---- Plotting ----------------------------------------------------------------
+
+plot_data <- do.call(rbind, lapply(seq_along(results), function(i) {
+  data.frame(
+    time = as.numeric(results[[i]]$time),
+    function = factor(results[[i]]$expr, levels = results[[i]]$expr),
+    input_size = opt$input_size[i]
+  )
 }))
-df$expr <- factor(df$expr, levels = c("sequential", "parallel"))
 
-plt <- ggplot(df, aes(x = size, y = median, color = expr)) +
-  geom_line() + geom_point() +
-  scale_y_log10() +
+ggplot(plot_data, aes(x = input_size, y = time, color = function)) +
+  geom_line() +
+  geom_point() +
   labs(
-    subtitle = sprintf("Samples=%d, Density=%.2f", args$samples, args$density),
-    y = "Median Runtime (ms, log scale)",
-    x = "Graph Size (number of nodes)",
-    title = "Performance: Sequential vs Parallel A* Search"
+    title = sprintf("Benchmark: %s (samples = %d)", opt$test, opt$samples),
+    y = "Time (ns)", x = "Input Size"
   ) +
   theme_minimal()
 
-print(plt)
+plot_file <- file.path(log_dir, sprintf("%s-%s-%s-bench.png",
+                                        basename(tempfile()), Sys.time(), opt$test))
+ggsave(plot_file, width = 10, height = 6)
 
-if (args$save) {
-  json_file <- sprintf("astarbmark_results_%s.json", format(Sys.time(), "%Y%m%d_%H%M%S"))
-  cat(sprintf("Saving results to %s\n", json_file))
-  write_json(results, json_file, pretty = TRUE, auto_unbox = TRUE)
+# ---- Save Data ---------------------------------------------------------------
+
+if (opt$save) {
+  info_file <- file.path(log_dir, sprintf("%s-%s-%s-info.log",
+                                          basename(tempfile()), Sys.time(), opt$test))
+  writeLines(c(
+    system("date", intern = TRUE),
+    system("whoami", intern = TRUE),
+    system("inxi -CfGMS", intern = TRUE),
+    system("lscpu", intern = TRUE),
+    system("cpupower frequency-info", intern = TRUE),
+    system("nvidia-smi || echo '#NOGPU'", intern = TRUE)
+  ), info_file)
+
+  data_file <- file.path(log_dir, sprintf("%s-%s-%s-data.tsv",
+                                          basename(tempfile()), Sys.time(), opt$test))
+  write.table(
+    data.frame(
+      test_type = opt$test,
+      timestamp = Sys.time(),
+      function_label = rep(plot_data$function, each = nrow(plot_data) / length(unique(plot_data$function))),
+      input_size = plot_data$input_size,
+      time_ns = plot_data$time
+    ),
+    file = data_file, sep = "\t", row.names = FALSE, quote = FALSE
+  )
 }
+
+if (opt$profile) {
+  Rprof(file.path(log_dir, sprintf("%s-%s-%s-rprof.out",
+                                    basename(tempfile()), Sys.time(), opt$test)))
+}
+
+log_info("Done.")
 ```
 
-*Save this script as `benchmark_astar.R`, make it executable (`chmod +x benchmark_astar.R`), and run it from the command line.*
-
 ---
 
-## CRAN and Tidyverse Compliance Notes
+## Quick Start Guide
 
-- Arguments checked for bounds, avoiding crashes.
-- Memory usage minimized via pass-by-reference.
-- `stop()` used for error reporting.
-- Consistent snake_case naming for R side.
-- Sequential fallback provided.
-- Benchmark results output clean and tidy for integration with Tidyverse pipelines.
-- No global state outside function definitions.
-- No dynamic memory allocation beyond STL/Armadillo standard containers.
-- Avoid heavy copying, use references where possible.
+### Project Configuration
 
----
-
-## RcppParallel Quick Start Guide with renv
-
-### 1. DESCRIPTION file modifications
-
+#### `DESCRIPTION`
 ```yaml
+Depends:
+    R (>= 4.0.0)
 Imports:
-    Rcpp (>= 1.0.7),
-    RcppParallel (>= 5.1.0),
-    RcppArmadillo (>= 0.11.1),
-    RcppEigen (>= 0.3.3),
-    R6,
-    matrixStats,
-    tidyverse
+    Rcpp (>= 1.0.0),
+    RcppArmadillo (>= 0.12.0.0)
 LinkingTo:
     Rcpp,
-    RcppParallel,
-    RcppArmadillo,
-    RcppEigen
-SystemRequirements: TinyThread (bundled with RcppParallel)
+    RcppArmadillo
+SystemRequirements:
+    OpenMP,
+    BLAS,
+    LAPACK
 ```
 
-### 2. `src/Makevars` (Linux/macOS example)
-
-```
-PKG_CPPFLAGS = $(SHLIB_OPENMP_CXXFLAGS)
-PKG_LIBS = $(SHLIB_OPENMP_CXXFLAGS) $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)
-```
-
-For Windows, use appropriate OpenMP flags or use Rtools defaults.
-
-### 3. SIMD Support in `~/.R/Makevars`
-
-Add SIMD instruction flags to improve vectorization.
-
+#### `src/Makevars`
 ```make
-CXXFLAGS += -march=native -O3 -mtune=native
+PKG_CXXFLAGS = -fopenmp
+PKG_LIBS = $(BLAS_LIBS) $(LAPACK_LIBS) $(FLIBS)
 ```
 
-Adjust as per your CPU architecture (`-march=skylake` etc.).
-
-### 4. Required System Libraries
-
-- `libgomp` for OpenMP is generally installed on Linux.
-- Windows uses MSVC OpenMP support via Rtools.
-- macOS: OpenMP support may require `brew install libomp`.
-- `TinyThread` is included with RcppParallel; no separate installation required.
-
-### 5. renv Commands to Install and Snapshot
-
-```r
-renv::init()
-renv::install(c("RcppParallel", "RcppArmadillo", "RcppEigen"))
-renv::snapshot()
+#### `~/.R/Makevars`
+```make
+CXXFLAGS = -O3 -march=native -mtune=native
 ```
-
-Use `renv::restore()` to restore environment on other machines.
 
 ---
 
 ## References
 
-[^1]: [RcppParallel CRAN](https://cran.r-project.org/package=RcppParallel) — Parallel programming primitives for Rcpp
-[^2]: [A* Search Algorithm — Wikipedia](https://en.wikipedia.org/wiki/A*_search_algorithm)
-[^3]: [RcppArmadillo Documentation](https://cran.r-project.org/package=RcppArmadillo)
-[^4]: [RcppEigen Documentation](https://cran.r-project.org/package=RcppEigen)
-[^5]: [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html)
-[^6]: [argparse R Package](https://cran.r-project.org/package=argparse)
-[^7]: [microbenchmark R Package](https://cran.r-project.org/package=microbenchmark)
-
-# ::}}} \\ %5.
-
-
-# ::{{{ #RCPP: Q:5.1 - RcppParallel code //
-# Q:5.1 - RcppParallel A* search VibeCoding implementation {#Q51}
-
-## System Hints
-<system>
-
-Think Hard.
-
-You are an expert R and C++ developer.
-
-Your task is to prepare example C++ sources to introduce core features
-of main Rcpp ecosystem packages.
-
-The answer must be in well-formatted, clearly structured (GFM)
-markdown, with footnotes for links to relevant online resource
-references.
-
-The C++ code fragments must be placed in `cpp` markdown codeblocks,
-formatted following the Google C++ style guide, and moderately but
-well documented, following Roxygen2 CRAN standards, with minimal
-invocation example, under 'notrun' tags.
-
-All sources must contains two comment lines at top (after "she-bang" line, for scripts) with this template expanded:
-
-if C++,
-```cpp
-// #:: AI Generated at {{current-date-timestamp}}-- {{ai-engine-model-specification}}
-// #:: @Seealso: {{markdown-prompt-doc}}
-```
-if R, shell-scripts, Makefiles and configuration files
-
-```R
-#:: AI Generated at {{current-date-timestamp}}-- {{ai-engine-model-specification}}
-#:: @Seealso: {{markdown-prompt-doc}}
-```
-
-where:
-- {{current-date-timestamp}}: expands to a compact current timestamp with seconds resolution
-- {{ai-engine-model-specification}}: expands to a string that identify the ai engine and model/version used
-- {{markdown-prompt-doc}}: the name of a markdown prompt documentation file with a prompt reference.
-
-For this query use:
-
-- {{markdown-prompt-doc}} := `notes/howtos/Rcpp-HOWTO-Q5-all.md#Q51`
-
-
-In standard legal comments, assume the following field in expansion:
-
-- {{author}}: "datalab"
-- {{email}}: "datalab@unimib.it"
-- {{copyright-owner}}: "University of Milano-Bicocca"
-- {{copyright-year}}: the current date year
-
-In the implementation prefer shorter names for local variables, but
-use clear descriptive names for function names and arguments.
-
-In C++ local variable declaration, use `auto` type inference where
-appropriate. 
-
-In complex template declaration, introduce template `typedef` to
-simplify code.
-
-Tend to prefer C++/R idiomatic code, unless performance considerations
-advice better alternatives.
-
-Terse code readability for generated code is very important.
-
-Prefer richer data type structures to code complexity.
-
-The C++ reference standard is C++20.
-
-The replies must adhere to CRAN guidelines, integrated by `tidyverse`
-best practices.
-
-The response should discuss performance details in depth, with an overall
-judgement of every implementation alternative, over expected runtime
-performance in a multicore (32 HyperThreaded Intel XEON or AMD EPYC)
-Ubuntu 24.04 Linux virtual machines, running on Microsoft Azure
-platform.
-
-As a stylistic note, discuss also every alternative from language
-idiomaic and pragmaic point of view.
-
-</system>
-
-
-Your task is to produce an interesting use-case example for the
-`RcppParallel` package, focusing on `parallelFor` and `parallelReduce`
-functions.
-
-The use case to consider is a minimal toy implementation of an A*
-heuristic search algorithm, applied to a random generated undirected graph.
-
-The parallel code should be paired with a traditional sequential implementation.
-
-All examples must be R callable.
-
-
-## Task Overview
-
-Your task is to produce a demo tutorial example in and existing R
-package project, that illustrates parallel computation, both in C++ (via `Rcpp`)
-and R, using facilities provided by `RcppParallel` (C++) and
-`parallel` (R) packages.
-
-The tutorial example is a demo program that provides both sequential
-and parallel C++ implementations of an example "A* pathfinding"
-algorithm.
-
-
-The search functions will receive, for a graph with N vertexes: 
-- a graph representation as a (symmetric) NxN adjacency matrix with edge weights
-- a bi-dimensional Nx2 vector with (x,y) position of the vertexes
-- the ID (index) of the "start" vertex at the begin of the target path
-- the ID (index) of the "goal" vertex at the end of the target path
-
-The return value of the search is a vector that lists all the vertex
-IDs (indexes) of the "best" path.  The "best" path is the path with
-minimal cost, i.e. the sum of edge weights that links path vertexes.
-In case of search failure, caused by "start" and "goal" vertexes
-belonging in disconnected parts of the graph, a zero-length vector is
-returned.
-
-The nodes of the graph are linked by edges with a weight representing
-the "cost" of traversal. The nodes also have a position pair of
-(planar) spatial coordinates (x,y) that can be used to introduce an
-admissible heuristic, assuming verified the condition:
-
-* `distance(i,j) <= weight(i,j)`
-
-where are valid all this conditions
-
-* `distance(i,j) == distance(j,i)`  (symmetry for undirected graph)
-* `weight(i,j) == weight(j,i)`      (symmetry for undirected graph)
-* `distance(i,j) := sqrt( (v[i].x - v[j].x)^2 + (v[i].y - v[j].y)^2 )` (euclidean vertex distance)
-
-
-In addition, an R script if provided to generate random graph samples,
-inspired to geogrphical route networks, to be searched for "best" path
-between a randon pair of vertexes.
-
-The script supports the generation of different types of random graph,
-depending on command-line arguments.
-
-IMPORTANT: In any graph type variant the undirected structure of the
-graph must be ensured, i.e. the symmetry of adjacency matrix of edge
-weights must be preserved.
-
-The path search can be invoked once directly on the sequential and
-parallel C++ search functions, or, in alternative, repeted several
-time as benchmark to compare performances of both implemenation
-strategies.
-
-After performing the path search, the script, conditionally on
-execution mode, generates a plot (as pdf output file) of the graph,
-with the solution path evidenced.
-
-If additional stats are required, detailed benchmark results and graph
-statistics and full dump are produced as separated output files.
-
-## Project Environment
-
-The target package, called `dvesimpler`, is based on `renv` and
-already includes the following dependencies:
-
- - `Imports` dependencies:
-   - `Rcpp`
-   - `RcppArmadillo`
-   - `igraph`
-   - `tidygraph`
-   - `ggraph`
-   - `tidyverse`
-   - `ggplot2`
-   - `argparse`
-   - `logger`
-   - `yaml`
-   - `parallelly`
-   - `doParallel`
-   - `foreach`
- - `Suggests` dependencies:
-   - `devtools`
-   - `knitr`
-   - `microbenchmark`
-   - `usethis`
-   - `roxygen2`
-   - `rmarkdown`
-   - `testthat`
- - `LinkingTo` dependencies:
-   - `Rcpp`
-   - `RcppArmadillo`
-   - `RcppParallel`
-
-## Implementation Details
-
-As implementation detail, your task is to produce two sources to be
-included in a CRAN-compliant R package project:
-
-- a C++ source: `./exec/dummySearch/dummy_finder.cpp`
-- a R script:   `./exec/dummySearch/dummy-rcpp-finder.r`
-
-with the following specifications.
-
-## C++ "A* pathfinding" implementation: `dummy_finder.cpp`
-
-The C++ source: `./exec/dummySearch/dummy_finder.cpp` provides an
-implementation example of sequential and parallel alternative
-approaches in "A* pathfinder" implementation.
-
-In this source will be placed two group of C++ functions "seq" and
-"par", with the following specifications, delimited in XML
-`*-finder-specification` tags, that can be testes to verify how
-different implementation alternatives affect runtime performance,
-depending on the input size. 
-
-Both specifications inherits a shared set of specifications, delimited
-in XML tag `common-finder-specification`.
-
-### "common" function specification
-
-<common-finder-specification>
-
-- use of C++ STL library and `Rcpp`/`RcppArmadillo` data types.
-- same (or similar) data structures for graph representation 
-- for both implementations (seq/par) provide a pair of functions:
-  - an R-callable C++ function `*_astar_finder` that receives a graph as a named
-    list of two elements:
-    - `positions` with an two columns `NumericMatrix` with (x,y) vertex
-      coordinates, used in heuristic evaluation
-    - `adjacency` with an square `NumericMatrix` with symmetric weighs
-      computed by euclidean distances between pair of vertexes
-    - in addition, the id of start and goal vertexes arguments.
-    - these function unbox and converts the input arguments to
-      `arma::mat` equivalents and dispatch the call to the
-      corresponding `*_finder_impl` functions.
-   - the return value is a `NumericVector` with the IDs of the vertexes on the path from start vertex to goal vertexes. 
-   - If no path is found, maybe because of disconnected vertex on the graph, a zero-size vector is returned.
-- The internal (not R-callable) functions `*_finder_impl` perform the A* search:
-- The internal function arguments are:
-  - `const arma::mat& adjacency_matrix`: input un-directed graph as
-    adjacency matrix.
-  - `const arma::mat& positions` for nodes (x,y) planar coordinates.
-  - `int start` starting node id
-  - `int goal` target (goal) node id
-- The return value for `*_finder_impl` functions:
-  - `std::vector<int> path`: the "best" path (minimal sum of edge
-    weights) to connect start node with goal node.
-- all the public function of this module must start with the name prefix `dmy_astar_`.
-- common utility functions must be placed in an anonymous namespace.
-- a common function `euclidean_heuristic` is used to compute planar
-  distance among vertexes, and can be used to compute an admissible
-  heuristic for search optimization.
-
-</common-finder-specification>
-
-
-
-### "seq" function group specification
-
-<seq-finder-specification>
-
-The "seq" group of function provide a "sequential" (single CPU core)
-implementation of the "A* pathfinding" algorithm.
-
-- prefer a "simple" implementation to clarify algorithm behaviour.
-
-The main function are:
-- `dmy_aster_seq_finder`, R callable
-- `dmy_aster_seq_finder_impl`, internal, with `arma::mat` types.
-
-</sum-test-specification>
-
-
-### "par" function group specification
-
-<par-finder-specification>
-
-The "par" group of function provide a "parallel" (single machine,
-multiple CPU cores) implementation of the "A* pathfinding" algorithm.
-
-- for parallelism, use facilities provided by `RcppParallel`
-- in particular, use `parallelFor` node exploration, and
-  `parallelReduce` for best node selection.
-- provide synchronisation (mutex, critical sections) to avoid
-  concurrency issues, if required.
-- comment the code about concurrency attention points.
-
-The main function are:
-- `dmy_aster_par_finder`, R callable
-- `dmy_aster_par_finder_impl`, internal, with `arma::mat` types.
-
-</sum-test-specification>
-
-
-
-## R script for "A* pathfinding" testing: `dummy-rcpp-finder.r`
-
-### R Test Script Overview
-
-The R test script `./exec/dummySearch/dummy-rcpp-finder.r` is used to
-drive the search algorithm to verify the performance advantage of the
-parallel version.  This script should accepts several command-line
-arguments, not mandatory, with sensible defaults, as described bolow.
-The script specification is placed below, delimited in XML
-`test-script-specification` tags.
-
-
-### R Test Script Specification
-
-<test-script-specification>
-
-- the script is composed by 4 parts, performed in sequence:
-
-#### 1. Housekeeping Phase
-
-- the command line arguments are parsed as described below, delimited in XML `test-script-arguments-specification` tags.
-- the logging facility is initialised, as descibed below, delimited in XML `test-script-logging-specification` tags.
-- the R runtime environment is configured with C++ source linking, as described below, delimited in XML `test-script-runtime-specification` tags.
-
-
-#### 2. Preparation Phase
-
-- a random graph is generated and embedded in a wider object of S3 class: `space_graph_test`, as described below, delimited in XML `sample-graph-specification` tag.
-- after generation, a set of graph summary statistics in computed, attached to the working `space_graph_test` and logged at `info` level.
-
-
-#### 3. Search Execution Phase
-
-- the search functions (`dmy_aster_seq_finder,dmy_aster_par_finder`) are called with different execution modes as described below, delimited in XML `test-script-execution-modes-specification` tags.
-- the resulting path is applied to the internal `igraph` model as vertex and edge attributes.
-
-
-#### 4. Reporting Phase
-
-- if required by `show_plot` option, a PDF plot of the graph is produced, as specified below, delimited in XML `graph-plot-script-specification` tag.
-- if required by `save_data` option, a set of output is produced, as specified below, delimited in XML `save-data-script-specification` tag.
-
-</test-script-specification>
-
-
-### Script Command Line Arguments
-
-<test-script-arguments-specification>
-- the argument parsing must use a standard argument parser, provided by `argparse` facility.
-- the parsed command-line arguments must be logged, at info level, during script initialisation
-- the list of command line arguments, with type, defaults and enumeration constants are described below , delimited in XML `test-script-cli-arguments` tag.
-</test-script-arguments-specification>
-
-<test-script-cli-arguments>
-#### generic arguments
-
-- `help`:      (option: -h|--help, type: boolean, default:`false`) - "Help", to print script usage info and command line argument description. Execution skipped.
-- `verbose`:   (option: -v|--verbose, mode: count, type: integer, default:`0`) -  "Verbose", can be repeated (`-v`, `-vv`, `-vvv`), set the logging level (`0`:info,`1`:debug)
-- `rnd_seed`:  (option: -u|--seed, type: integer, default:`0`) -  "Random Seed", deterministic random sequence initialisation.
-
-#### sample graph arguments
-
-- `graph_type`   (option: -g|--graph-type, type: string, enum: {`grg`,`rad`,`geo`,`route`}, default:`route`) - "Graph Type", specify sample graph construction, , detailed below in "Sample Graph Generation"
-- `graph_radius` (option: -r|--graph-radius, type: double, default:`0.1`) - vertex distance for edge generation, as in `igraph::sample_grg` "radius" argument
-- `graph_fill`   (option: -q|--graph-fill, type: double, default:`1.0`) - in radius edge probability, used to prune edges in initial graph post-processing
-- `cong_rate`    (option: -c|--congestion-rate, type: double, default:`0.5`) - "Congestion Rate", exponentil distribution mean in edge congestion random generation
-- `cong_coeff`   (option: -k|--congestion-coeff, type: double, default:`1.0`) - "Congestion Rate", exponential distribution mean in edge congestion random generation
-- `graph_size`   (positional, for many values,type: integer, default:`100`) - "Graph Size", to specify the number of vertexes of the sample graph
-
-#### execution modes
-
-- `exec_mode`  (option: -x|--exec, type: string, enum: {`nil`,`seq`,`par`,`all`,`bench`}, default:`par`) - "Execution Mode", detailed below in "Script Execution Modes"
-
-#### benchmark arguments
-
-- `sample_size` (option: -m|--samples, type: integer, default:`0`) - "Sample Size", `microbenchmark` sample size (e.g., number of iterations)
-
-#### graph plot arguments
-
-- `show_plot`    (option: -p|--plot, type: boolean, default:`false`) - "Show Plot", enable generation of a plot of the sample graph with solution path
-- `image_size`   (option: -z|--image-size, type: string, enum: {`A2`,`A3`,`A4`,`A5`,`A6`}, default:`A4`) - "Image Size", graph Plot Resolution for PDF export, in ISO-216 A scale
-- `image_orient` (option: -o|--image-orient, type: string, enum: {`P`,`L`}, default:`L`) - "Image Orientation", graph Plot Orientation for PDF export, (`P`: Portrait, `L`: Landscape)
-
-#### save output data arguments
-
-- `save_data`:   (option: -s|--save, type: boolean, default:`false`) - "Save Data", enable report production for result data and sample graph statistics.
-- `export_raw`:  (option: -f|--export-graph, type: boolean, default:`false`) - "Save Graph", enable dataframe export of sample graph internal model (`igraph`) in TSV format
-
-</test-script-cli-arguments>
-
-### Script Logging Specification
-
-<test-script-logging-specification>
-- the script output should go to stdout and logged to a file, using standard `logger` facilities.
-- the log directory will be used also for storing benchmark results and plots
-- the log directory will be taken from environment variable `P_LOGS_DIR` with `logs` as default.
-- the log directory should be created if absent.
-- the log filename should start with this prefix: "<script-name>-<sec-timestamp>" with a '.log' extension.
-- the "<sec-timestamp>" part is composed by script start time, formatted as localtime in "CCYYMMDD-hhmmss" format.
-- the script preparation and execution phases should be logged at info level (arguments, benchmark invocation, final summary) while the final report section should be logged at "debug" level (verbose>=1).
-- all the log artifacts should contain the test type and a localtime timestamp suffix as a part of the filename.
-- during script initalization, log: 1. the script arguments, 2. the full path of the log directory, 3. the output of system command: `inxi -C`
-</test-script-logging-specification>
-
-
-### Script Runtime Specification
-
-<test-script-runtime-specification>
-- if `rnd_seed` specified, as a positive number, the random number generator is initialised with this "seed" value.
-- the C++ code in `dummy_finder.cpp` is linked thru `Rcpp::sourceCpp` invocation.
-- the path name resolution rules for C++ source file:
-  - a `dummy_finder.cpp` file in the same directory of the `dummy-rcpp-finder.r` script, if this path can be determined (not available in RStudio invocation).
-  - a `dummy_finder.cpp` file in the current working directory.
-  - a `dummy_finder.cpp` file in the `./exec/dummySearch` directory, if the script is run from project root.
-</test-script-runtime-specification>
-
-
-
-### Sample Graph Generation
-
-<sample-graph-specification>
-
-- *important* all the graph considered are intended as "undirected graph", 
-  i.e. every transformation must preserve symmetry in the "adjacency matrix" of edge weights.
-- In C++ calls, the graph will be represented by an S3 class: `space_graph_query` with the attributes:
-  - `positions` with a two columns `NumericMatrix` with (x,y) vertex
-      coordinates, used in heuristic evaluation
-  - `adjacency` with a square `NumericMatrix` with symmetric weighs
-      computed by euclidean distances between pair of vertex, with additional _"congestion"_ correction.
-  - `query` a named list with indexes of `start` and `goal` vertexes
-- in R script, internal graph representation will use `igraph::graph` type
-- in R script, in the sample generation function `create_sample_graph`, the (internal) graph object will be embedded
-  in a wider object of S3 class: `space_graph_test` with the attributes:
-  - `type` the graph type, corresponding to constructor function, selected by `graph_type` argument.
-  - `graph` the sample graph in `igraph` representation
-  - `query` a named list with the random pair `<start,goal>` of vertex IDs (indexes) to connect with a optimal path.
-  - `path` the solution of the (`par` if `all` execution mode) execution as `NumericVector` of vertex IDs, initialised as a
-    zero-length vector and replaced by search result, after invocation.
-  - `stats` a named list of graph statistic computed after graph generation.
-- A script function: `as.space_graph_query.space_graph_test` converts between `space_graph_test` and `space_graph_query` models.
-- A script function: `create_sample_graph` forward internal `igraph` creation to `create_graph_model` function. 
-  The `igraph` result is then wrapped in a `space_graph_test` object, obtained by calling the `create_space_graph` function.
-- The `create_space_graph` function takes the random `igraph` generated by `create_graph_model`, select randomly a pair of vertexes as `query`
-  attribute: a named list of `start` and `goal` vertex indexes and `stats` attribute as returned by `create_graph_stats` function.
-- The script function: `create_graph_stats` takes the sample `igraph` model and returns, as a named list, a set of summary statistics:
-   - `vertex_size`: number of vertexes
-   - `egde_size`: number of edges
-   - `egde_density`: value of `igraph::edge_density` (Graph density)
-   - `knn`: value of `igraph::knn` (Average nearest neighbor degree)
-- A script function: `create_graph_model` will dispatch graph creation to the typed version, based on `graph_type` command-line argument.
-- An utility function `setup_edge` provides a way to initialise edge attributes with default attribute values. 
-  This function takes as arguments the graph, an even sized collection of vertex pairs to (symmetrically) connect, and a `congestion` value with `0.0` default.
-  For every pair of `<i,j>` vertex indexes, it will do:
-  - create, if missing, the (synmmetric) unoriented edge from vertex `i` to/from vertex `j`
-  - assign the `distance` attribute to the euclidean distance between vertex `x,y` spatial coordinates of both vertexes.
-  - assign the `congestion` attribute to the corresponding argument.
-  - compute the edge `weight` via function `calc_edge_weight` that takes `distance` and `congestion` attributes and `cong_coeff` argument.
-  - the function `calc_edge_weight(distance, congestion, cong_coeff)` returns egde `weight` with this expression:
-     * `weight := distance * (1+ cong_coeff * congestion)`
-- For `grg` graph type:
-  - the function `create_grg_graph_model` will return a `igraph::sample_grg`, created with `graph_size` vertexes and `graph_radius` parameter.
-  - in the graph creation, with `coord=TRUE`, the resulting vertexes will get a pair of `x` and `y` coordinate attributes, uniformly random chosen in [0..1]x[0..1] rectangle.
-  - the edges `adjacency` matrix will be filled by weights computed as euclidean distance between vertex pairs.
-  - the edges attribute `distance` are to be assigned with the same `weight` value, i.e. with the same euclidean distance between vertex `(x,y)` coordinate attributes.
-  - another edge attribute: `congestion` will be added with default value of `0.0` constant
-- For `rad` graph type:
-  - the function `create_rad_graph_model` will return a transformed graph obtained by modification of the graph created by `create_grg_graph_model`.
-  - the transformation randomly removes the edges from the original graph with probability `(1 - graph_fill)` preserving symmetry: `edge(i,j) removed iif edge(j,i) removed`
-- For `geo` graph type:
-  - the function `create_geo_graph_model` will return a transformed graph obtained by modification of the graph created by `create_rad_graph_model`.
-  - this kind of graphs have the property that they have no disconnected graph subsets.
-  - by analyzing the `igraph::components()` collection, starting from a disconnected component find a vertex in the graph complement with minimal euclidean distance with some vertex in the selected component. 
-    For this pair of indexes: `i_int_min`, `j_ext_min` a new (symmetric) undirected edge will be added, with attributes filled by `setup_edge` function.
-  - the previous step is repeated until the graph is fully connected
-- For `route` graph type:
-  - the function `create_route_graph_model` will return a transformed graph obtained by modification of graph created by `create_geo_graph_model`.
-  - for every edge, a value of `congestion` will be taken as a random exponential distribution sample with `cong_rate` ("Congestion Rate") mean.
-  - for every edge, the edge `weight` will be recalculate by `setup_edge` utility function, with the new `congestion` value and existing `istance` edge attribute.
-  - the rationale here is that `congestion` models "traffic intensity" that is causing delay, proportional to distance, in "fastest" path search, with `distance` heuristic.
-</sample-graph-specification>
-
-
-
-
-
-### Script Execution Modes
-
-<test-script-execution-modes-specification>
-
-- The script function: `run_path_search` will take a `space_graph_test` as input and return the same object modified by `apply_result_path` function.
-- The script function: `run_path_search` will dispatch the search to `run_path_search_{nil|all|par|seq|bench}` function based on `exec_mode` command-line argument. 
-- The script function: `run_path_search` will convert `space_graph_test` to `space_graph_query` via `as.space_graph_query.space_graph_test` as parameter to the dispatched functions.
-- The script function: `run_path_search` return the modified `space_graph_test`, return by `apply_result_path` function that will receive the resulting search path and execution elapsed time for the search.
-- the script support different execution modes: `nil, ``all`, `par`, `seq`, `bench`, as specified by `exec_mode` command line argument.
-  - `nil` mode: this mode does not execute the search C++ functions, but just returns an empty path. Useful to test sample graph generation.
-  - `all` mode: this mode execute in parallel (with the `forach` package) both `par` and `seq` execution modes, waiting for termination of both tasks.
-  - `par` mode: this mode execute once the parallel search `dmy_aster_par_finder` on the random graph, and random `<start,goal>` vertex pair.
-  - `seq` mode: this mode execute once the sequential search `dmy_aster_seq_finder` on the random graph, and random `<start,goal>` vertex pair.
-  - `bench` mode: this mode execute a benchmark, using standard `microbenchmark` facility of both (`par` and `seq`) versions. The `sample_size` argument provides the number of iterations.
-- for `par` and `sec` execution modes, a log before execution and after execution will report: path length of solution or failure, elapsed time, and both number divided by graph size.
-- for `bench` execution mode, the summary of benchmark result will be logged on output. In this case, an empty path is returned as result.
-- for `all` mode, both solution will be compared and every difference reported at warning log level. Only the `par` solution will be returned as result.
-- The script function: `apply_result_path` receive the `space_graph_test` S3 object and the resulting path of the search as a list of the vertex index on the path from start to goal vrtexes.
-- The script function: `apply_result_path` return the same `space_graph_test` S3 object with path stored in the `path` attribute and with a modified `igraph` model, with this additional attributes added:
-  - path vertex attributes:
-    - `in_path` integer value assigned with this values:
-       - `V(g)[i]$in_path <- 0`: "out-of-path", if vertex `i` is not included in the path
-       - `V(g)[i]$in_path <- 1`: "inner node", if vertex `i` is a internal vertex in the path (not first, neither last vertex)
-       - `V(g)[i]$in_path <- 2`: "goal node", if vertex `i` is the "goal" vertex in the path (last path vertex)
-       - `V(g)[i]$in_path <- 3`: "start node", if vertex `i` is the "start" vertex in the path (first path vertex)
-  - path edge attributes:
-    - assume available a function `ee` for edge retrieval given the pair of vertex indexes: (`ee(g)[i,j] := E(g)[get_edge_ids(g,c(i,j))]`, applied to undirected graphs: `ee(g)[i,j] == ee(g)[j,i]`)
-    - `in_path` integer value assigned with this values:
-       - `ee(g)[i,j]$in_path <- 0`: "out-of-path", if there is no `i,j` for which `i == path[k] && j == path[k+1] for some k`
-       - `ee(g)[i,j]$in_path <- 1`: "in-path", if there is `i,j` for which `i == path[k] && j == path[k+1] for some k`
-    - `path_pos` integer value assigned with this values:
-       - `ee(g)[i,j]$path_pos <- k`: "in-path position", `min(k)` for which `i == path[k] && j == path[k+1]`
-       - `ee(g)[i,j]$path_pos <- -1`: "out-of-path marker", if there is no `k` for which `i == path[k] && j == path[k+1]`
-    - `traffic` numeric value computed by this formula for every edge, based on `congestion` attribute (`traffic` is `congestion`, mean normalised, with cut at third quartile):
-       - `traffic <- 0.0`: if `graph_type` argument is different from `route`
-       - `traffic <- min(congestion, log(4)*cong_rate) - cong_rate`: if `graph_type` argument is equal `route`
-- The script function: `apply_result_path`, in addition will add some `path` statistics to the `stats` attribute. Path stats are:
-  - `elapsed_time`: execution time for the search method
-  - `path_length`: length of the path
-  - `path_cost`: sum of edge weights for all edges in the path
-  - `degree_sum`: sum of `igraph::degree` for all vertexes in the path
-  - `degree_avg`: average of `igraph::degree` for all vertexes in the path (or `NA` if empty path)
-  - `path_complexity`: product `path_length * degree_avg`
-  - `path_l_rate`: value of `elapsed_time / path_length` (or `NA` if empty path)
-  - `path_c_rate`: value of `elapsed_time / path_complxity` (or `NA` if empty path)
-- The script function: `apply_result_path`, after evaluation, will log at info level all the `stats` summaries
-
-</test-script-execution-modes-specification>
-
-
-
-
-### Graph Plot Specification
-
-<graph-plot-script-specification>
-
-- in the script "Reporting Phase", after execution, a plot of the graph will be generated and exported as a PDF file.
-- the plot generation is enabled only if `show_plot` command-line option is specified.
-- the exported PDF output should go in the logging directory, with the same file name prefix rules, as described above, in `test-script-logging-specification` XML tag.
-- the exported PDF output file name suffix should be `-plot.pdf`.
-- the plot is generated by the function `plot_sample_graph` that receive the `space_graph_test` returned by `run_path_search` function.
-- the image size and orientation for PDF plot export uses `image_size` (in ISO-216 constants: `A4`, ...) and `image_orient`: (`P`: Portrait, `L`: Landscape)
-- the plot uses `ggraph` facilities to generate a plot, given the internal graph representation in `igraph` format, from `graph` attribute of input object.
-- in detail, the graph rendering must consider the following requisites:
-  - the graph is undirected.
-  - title: 
-    - composed as a two lines interpolated label:
-      - first line: `"graph: ${graph_type}(${graph_size}, rad=${graph_radius}, fill=${graph_fill}, cong=${cong_rate})"`
-      - second line: `"mode: ${exec_mode} time:{stats$elapsd_time} - path: len=${stats$path_length}, cost=${stats$path_cost}, deg=${stats$degree_avg}"`
-  - layers:
-    - the image background must be in a neutral solid colour, chosen with enough contrast with vertexes and edges colours.
-  - legend:
-    - colour scale for `traffic` edge colour mapping.
-  - layout:
-    - the vertexes (nodes) were generated by `igraph::sample_grg` (with `coord=TRUE`), so they already carry a couple of `x`,`y` spatial coordinates, stored as vertex attributes.
-  - vertex rendering:
-    - vertexes are rendered as small filled circles with no labels.
-    - vertexes size depends on `in_path` attribute value.
-    - vertexes fill colour (solid, bright) depends on `in_path` attribute value.
-    - vertexes border colour use `black`.
-  - edge rendering:
-    - edges are rendered as solid lines
-    - edges line width depends on `in_path` attribute value.
-    - edges colour uses `traffic` numeric attribute, mapped to a three colour gradient (`green`,`gray`,`red`) with this reference values:
-      - `c(-cong_rate, 0.0, log(4)*cong_rate)`
-      - as a `ggraph` example consider:
-      
-```r
-   p <- ggraph::plot(g, ...) +
-         ...
-         geom_edge_link(aes(colour = traffic, width = in_path)) +
-         scale_edge_width_discrete(range = c(2, 6)) +
-         scale_edge_color_gradientn(colours = c("green4", "gray90", "red3"), values=c(-cong_rate, 0.0, log(4)*cong_rate)) +
-         ...
-```
-
-</graph-plot-script-specification>
-
-### Script Output Generation
-
-<save-data-script-specification>
-
-- in the script "Reporting Phase", after execution, a set of report files will be generated, depending on command-line arguments.
-- the export generation is enabled only if `save_data` command-line option is specified.
-- the exported output files should go in the logging directory, with the same file name prefix rules, as described above, in `test-script-logging-specification` XML tag.
-- the exported data is generated by the function `save_sample_data` that receive the `space_graph_test` returned by `run_path_search` function.
-- the function `save_sample_data` will dispatch output generation to several specific functions: `save_sample_info`, `save_bench_report`, `save_graph_data`.
-- the function `save_sample_info` generates a summary information file, YAML format
-- the `save_sample_info` summary information file name suffix should be `info.yaml`.
-- the `save_sample_info` summary information file must report, in a well organised hierarchical way:
-   - all the scrips arguments 
-   - script start timestamp and output file prefix for log directory outputs
-   - all the graph statistics, retrieved from `space_graph_test` input object
-   - all the path statistics, retrieved from `space_graph_test` input object
-- all the output filenames should start with this prefix: "<script-name>-<sec-timestamp>-<exec-mode>-" with a variable suffix.
-- the "<sec-timestamp>" part is composed by script start time, formatted as localtime in "CCYYMMDD-hhmmss" format.
-- the function `save_bench_report`, generates a pair of output files with microbenchmark performance data.
-- the function `save_bench_report` is enabled only if `exec-mode` is `bench`
-- the function `save_bench_report` outputs are:
-   - a benchmark summary report (suffix: `bench.txt`), only if benchmark ws enabled.
-   - a dataframe export, in tab separated format (TSV), (suffix: `perf.tsv`) with microbenchmark data with additional columns: 
-      - `graph_type`
-      - `timestamp`
-      - `function_name`
-      - `graph_size`
-      - `graph_radius`
-      - `graph_fill`
-      - `path_length`
-      - `path_cost`
-- the function `save_graph_data`, generates a full export of graph data with attributes as a pair of dataframes.
-- the function `save_graph_data` is enabled only if `export_raw` is enabled
-- the function `save_graph_data` outputs are:
-   - a dataframe export, in tab separated export (TSV) (suffix: `nodes.tsv`), of all the `igraph` model vertex data with attributes included.
-   - a dataframe export, in tab separated export (TSV) (suffix: `edges.tsv`), of all the `igraph` model edge data with attributes included.
-
-</save-data-script-specification>
-
-
-
-
-------------------------------------------------------------------------
-## Response Template
-
-### Response Breakdown
-
-Here's a breakdown of what you need to deliver:
-
-1.  **Markdown Structure:**
-    *   Use clear headings and subheadings to organize the content.
-    *   Describe briefly the following functions:
-       * `Rcpp::sourceCpp`
-       * `RcppParallel::parallelFor`
-       * `RcppParallel::parallelReduce`
-       * `igraph::sample_grg`
-       * `igraph::components`
-    *   Include footnotes for references to online resources (e.g., documentation for the packages, A* algorithm explanation).
-
-2.  ** "R parallel computation" Quick Start guide:**
-    *   Describe coordination of packages: `foreach`,`doParallel`,`parallelly`.
-    *   Describe minimal configuration required for single machine parallel processing setup.
-    *   Provide some link to simple single machine parallelism examples in R.
-    *   Describe possible evolution to multi node distributed HPC computations with tutorial references.
-
-3.  ** Generated source for solution implementation
-    *   C++ search source: `./exec/dummySearch/dummy_finder.cpp`
-    *   R script source: `./exec/dummySearch/dummy_rcpp_finder.r`
-    *   follow template examples for code generation
-    *   in code templates, comments with Python pseudocode typed function signature describes source structure
-
-### Response Template
-
-Example Markdown Structure:
-
-```markdown
-# Parallel A* Search Algorithm
+[^1]: [High Performance Functions with Rcpp](http://adv-r.had.co.nz/Rcpp.html)
+[^2]: [R Packages](https://r-pkgs.org/)
+[^3]: [RcppArmadillo on CRAN](https://cran.r-project.org/web/packages/RcppArmadillo/index.html)
+[^4]: [OpenMP Resources](https://www.openmp.org/resources/)
+[^5]: [CRAN Task View: High-Performance and Parallel Computing with R](https://cran.r-project.org/web/views/HighPerformanceComputing.html)
+[^6]: [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html)
+
+-------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------
+# A:3 (Perplexity)
+> * [Rcpp Iterators Performance Optimization](https://www.perplexity.ai/search/system-you-are-an-expert-r-and-HSR7U07pSxyfCTX84CL9.g)
+
+This document provides a comprehensive overview of **iteration
+strategies** and **performance optimization** techniques in C++ code
+used within an R package via Rcpp and RcppArmadillo. It discusses
+various looping idioms, parallelism with OpenMP, SIMD vectorization,
+and GPU considerations in HPC for R. Example source code and a
+benchmark script are included to evaluate these approaches on
+multi-core systems.
 
 ## Introduction
 
-[Provide a brief overview of this task]
+### C/C++ Iteration Strategies and HPC Libraries Alternatives
 
-## Parallel Programing in R, a primer
+- **C-style loops:** Low-level control with explicit indexing;
+  efficient but error-prone and less idiomatic.
+- **C++ STL range-based for:** Modern, safer, and more readable;
+  comparable performance to C-style loops.
+- **OpenMP-based parallel loops:** Exploit multi-core CPUs by
+  distributing iterations across threads.
+- **SIMD vectorization:** Uses CPU vector instructions via OpenMP
+  `simd` pragma or compiler intrinsics for data-level parallelism.
+- **BLAS/LAPACK Libraries:** Highly optimized numeric routines using
+  platform-specific assembly optimizations.
+- **RcppArmadillo and RcppEigen:** Provide linear algebra support with
+  BLAS/LAPACK bindings, combining ease of use and high performance.
 
-[Provide a brief description of RcppParallel fuctions]
-[Provide a brief tutorial on `foreach`,`doParallel`,`parallelly` usage in a single machine context]
+#### Safety and Performance Considerations
 
-## C++ Search Implementation: `dummy_finder.cpp`
+- STL improves robustness and maintainability.
+- OpenMP unlocks thread-level parallelism with thread management
+  complexity.
+- BLAS libraries often outperform manually written loops in matrix
+  computations due to native-level optimizations.
 
-### C++ Source: `./exec/dummySearch/dummy_finder.cpp`
+### OpenMP/SIMD Primer
 
-\`\`\`cpp
+OpenMP simplifies parallel programming in shared-memory architectures.
 
-// [AI Generated template comment]
-// ["see also" note to the prompt markdown file]
-// ["see also" note to the R script]
-// [Standard Copyright and Legel notice for GPL code]
+- **`parallel`:** Creates a team of threads for concurrent execution.
+- **`for`:** Distributes loop iterations among threads with implicit barriers.
+- **`collapse(n)`:** Merges nested loops into a single iteration space for better load balance.
+- **`simd`:** Vectorizes the loop using SIMD instructions.
+- **`private`/`shared`:** Control variable scoping per thread.
+- **`reduction`:** Safely aggregates results, such as sums, across threads.
 
-[C++ includes]
+RcppArmadillo internally often uses BLAS libraries which may
+themselves use OpenMP or similar threading tech, merging threading and
+SIMD benefits.
 
-// =======================================
+### Portability and CRAN Compliance
 
-[common typdefs]
+- OpenMP is widely supported on Linux and CRAN-compatible compilers.
+- Architecture-specific flags like `-march=native` boost performance
+  but reduce portability; recommend placing in user `~/.R/Makevars`
+  rather than package files.
+- CRAN discourages mandatory hardware-specific optimizations unless
+  optional and safe.
 
-// --------------------------------------
+### GPU Alternatives
 
-[sequential version typdefs]
+GPUs offer massive parallelism for suitable tasks.
 
-// --------------------------------------
+- **CUDA/cuBLAS:** NVIDIA’s libraries provide up to 5–50x speedup
+  versus CPU for matrix operations.
+- CUDA Python distributions are helpful for prototyping but may face
+  challenges in rootless or containerized R package environments.
+- GPU support in R often comes via packages like `gpuR` or deep
+  learning frameworks ready for GPU acceleration.
 
-[parallel version typdefs]
+## C++ Implementation
 
-// =======================================
+The following C++ source file `dummy_iter.cpp` implements two groups of functions:
 
-# anonymous namespace fon utility functions
+- **Sum functions:** Sum elements in various styles.
+- **Outer functions:** Compute outer products using different loop and parallel strategies.
+
+Logging support enables conditional tracing based on verbosity level.
+
+```cpp
+// dummy_iter.cpp
+// Author: Rcpp HPC Expert
+// License: GPL-3
+
+#include <RcppArmadillo.h>
+#include <Rcpp.h>
+#include <vector>
+#include <set>
+#include <string>
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
+using namespace Rcpp;
+
+// [[Rcpp::plugins(cpp11)]]
+// [[Rcpp::depends(RcppArmadillo)]]
 
 namespace {
-
-[utility functions]
-
+// Static verbosity level for logging
+int verbosity_level = 0;
+// Set to track file+line pairs for one-time trace logging
+std::set<std::pair<std::string, int>> trace_once_locations;
 }
 
-
-// =======================================
-
-# common algorithm functions
-
-[heuristic computation]
-
-// =======================================
-
-# sequential algorithm functions
-
-[sequential A* pathfinding search functions]
-
-
-// Sequential A* implementation
-std::vector<int> dmy_aster_seq_finder_impl(const arma::mat& adjacency_matrix,
-                                      const arma::mat& positions,
-                                      int start, int goal) {
-  [main sequential A* pathfinding search function]
-}
-
-// --------------------------------------
-
-// [Roxygen2 complete documentation with simple example]
+/**
+ * @brief Set verbosity level for logging
+ * @param level Integer verbosity level
+ * \notrun{
+ * dmy_pf_log_set_level(3)
+ * }
+ */
 // [[Rcpp::export]]
-Rcpp::IntegerVector  dmy_aster_seq_finder(Rcpp::NumericMatrix adjacency_matrix,
-                                      Rcpp::NumericMatrix  positions,
-                                      int start, int goal) {
-  [type conversion to RcppArmadillo types around internal implementation call]
+void dmy_pf_log_set_level(int level) {
+  verbosity_level = level;
 }
 
-
-// =======================================
-
-# parallel algorithm functions
-
-[parallel A* pathfinding search functions]
-
-
-// Parallel A* implementation
-std::vector<int> dmy_aster_par_finder_impl(const arma::mat& adjacency_matrix,
-                                      const arma::mat& positions,
-                                      int start, int goal) {
-  [main sequential A* pathfinding search function]
-}
-
-// --------------------------------------
-
-// [Roxygen2 complete documentation with simple example]
+/**
+ * @brief Get current verbosity level
+ * @return int Current verbosity level
+ * \notrun{
+ * int v = dmy_pf_log_get_level()
+ * }
+ */
 // [[Rcpp::export]]
-Rcpp::IntegerVector  dmy_aster_par_finder(Rcpp::NumericMatrix adjacency_matrix,
-                                      Rcpp::NumericMatrix  positions,
-                                      int start, int goal) {
-  [type conversion to RcppArmadillo types around internal implementation call]
+int dmy_pf_log_get_level() {
+  return verbosity_level;
 }
 
-\`\`\`
+/**
+ * @brief Output log message to Rcpp::Rcout if verbosity >= 0
+ * @param file Source file name
+ * @param line Source line number
+ * @param msg Message string
+ */
+void dmy_pf_log_out(const std::string& file, int line, const std::string& msg) {
+  if (verbosity_level >= 0) {
+    Rcpp::Rcout << "[LOG] " << file << ":" << line << " - " << msg << std::endl;
+  }
+}
 
+/**
+ * @brief Output trace message once to Rcpp::Rcerr if verbosity >=3
+ * Avoids flooding repeated logs from same file+line.
+ * @param file Source file name
+ * @param line Source line number
+ * @param msg Message string
+ */
+void dmy_pf_log_trace(const std::string& file, int line, const std::string& msg) {
+  if (verbosity_level >= 3) {
+    auto loc = std::make_pair(file, line);
+    if (trace_once_locations.find(loc) == trace_once_locations.end()) {
+      trace_once_locations.insert(loc);
+      Rcpp::Rcerr << "[TRACE] " << file << ":" << line << " - " << msg << std::endl;
+    }
+  }
+}
 
-## R Search Test Script: `dummy_rcpp_finder.r`
+/**
+ * @brief Reset trace deduplication to allow logging same location again.
+ */
+// [[Rcpp::export]]
+void dmy_pf_log_reset() {
+  trace_once_locations.clear();
+}
 
-### R Source: `./exec/dummySearch/dummy_rcpp_finder.r`
+// Macros for convenient logging
+#define V_LOG(msg) dmy_pf_log_out(__FILE__, __LINE__, msg)
+#define V_TRACE(msg) dmy_pf_log_trace(__FILE__, __LINE__, msg)
 
-\`\`\`R
-#!/usr/bin/env Rscript
-# [AI Generated template comment]
-# ["see also" note to the prompt markdown file]
-# ["see also" note to C++ source]
-# [Brief Script description]
+// Sum functions group
 
-# Load required libraries
-suppressPackageStartupMessages({
-  [library() silent depndency loading]
-})
+/**
+ * @brief Sum vector elements using C-style for loop
+ * @param v NumericVector input
+ * @return double sum
+ * \notrun{
+ * dmy_pf_sum_cstyle(NumericVector::create(1.0,2.0,3.0))
+ * }
+ */
+// [[Rcpp::export]]
+double dmy_pf_sum_cstyle(const NumericVector& v) {
+  double s = 0.0;
+  for (int i = 0; i < (int)v.size(); ++i) {
+    s += v[i];
+  }
+  return s;
+}
 
+/**
+ * @brief Sum vector elements using C++11 range-based for loop
+ * @param v NumericVector input
+ * @return double sum
+ */
+// [[Rcpp::export]]
+double dmy_pf_sum_range(const NumericVector& v) {
+  double s = 0.0;
+  for (auto x : v) {
+    s += x;
+  }
+  return s;
+}
 
-[ usage documentation string for '--help' option ]
+/**
+ * @brief Sum vector elements using OpenMP parallel for with reduction
+ * @param v NumericVector input
+ * @return double sum
+ */
+// [[Rcpp::export]]
+double dmy_pf_sum_omp(const NumericVector& v) {
+  double s = 0.0;
+#ifdef _OPENMP
+#pragma omp parallel for reduction(+ : s)
+#endif
+  for (int i = 0; i < (int)v.size(); ++i) {
+    s += v[i];
+  }
+  return s;
+}
 
-# Globals declarations
-[global variables initialization]
+/**
+ * @brief Sum vector elements using OpenMP parallel for simd with reduction
+ * @param v NumericVector input
+ * @return double sum
+ */
+// [[Rcpp::export]]
+double dmy_pf_sum_omp_simd(const NumericVector& v) {
+  double s = 0.0;
+#ifdef _OPENMP
+#pragma omp parallel for simd reduction(+ : s)
+#endif
+  for (int i = 0; i < (int)v.size(); ++i) {
+    s += v[i];
+  }
+  return s;
+}
 
+/**
+ * @brief Sum vector elements using Armadillo sum function
+ * @param v NumericVector input
+ * @return double sum
+ */
+// [[Rcpp::export]]
+double dmy_pf_sum_armadillo(const NumericVector& v) {
+  arma::vec a(v.begin(), v.size(), false);
+  return arma::sum(a);
+}
 
-# Housekeeping Phase
-[argument parsing functions]
-[logging facility control]
-[Rcpp C++ surce linking functions]
-[runtime environment setup]
+/**
+ * @brief Sum vector elements using R base::sum function via Rcpp
+ * @param v NumericVector input
+ * @return double sum
+ */
+// [[Rcpp::export]]
+double dmy_pf_sum_rbase(const NumericVector& v) {
+  static Rcpp::Function base_sum("base::sum");
+  V_TRACE("base::sum, ...")
+  double s = Rcpp::as<double>(base_sum(v));
+  V_TRACE("base::sum, done.")
+  return s;
+}
 
+// Outer product functions group
 
+/**
+ * @brief Outer product via C-style nested loops
+ * @param x NumericVector
+ * @param y NumericVector
+ * @return NumericMatrix
+ */
+// [[Rcpp::export]]
+NumericMatrix dmy_pf_outer_cstyle(const NumericVector& x, const NumericVector& y) {
+  int nx = x.size();
+  int ny = y.size();
+  NumericMatrix out(nx, ny);
+  for (int i = 0; i < nx; ++i) {
+    for (int j = 0; j < ny; ++j) {
+      out(i, j) = x[i] * y[j];
+    }
+  }
+  return out;
+}
+
+/**
+ * @brief Outer product via C++11 range-based loops
+ * @param x NumericVector
+ * @param y NumericVector
+ * @return NumericMatrix
+ */
+// [[Rcpp::export]]
+NumericMatrix dmy_pf_outer_range(const NumericVector& x, const NumericVector& y) {
+  int nx = x.size();
+  int ny = y.size();
+  NumericMatrix out(nx, ny);
+  int i = 0;
+  for (auto xv : x) {
+    int j = 0;
+    for (auto yv : y) {
+      out(i, j) = xv * yv;
+      ++j;
+    }
+    ++i;
+  }
+  return out;
+}
+
+/**
+ * @brief Outer product with OpenMP nested parallel for collapse(2)
+ * @param x NumericVector
+ * @param y NumericVector
+ * @return NumericMatrix
+ */
+// [[Rcpp::export]]
+NumericMatrix dmy_pf_outer_omp_collapse(const NumericVector& x, const NumericVector& y) {
+  int nx = x.size();
+  int ny = y.size();
+  NumericMatrix out(nx, ny);
+#ifdef _OPENMP
+#pragma omp parallel for collapse(2)
+#endif
+  for (int i = 0; i < nx; ++i) {
+    for (int j = 0; j < ny; ++j) {
+      out(i, j) = x[i] * y[j];
+    }
+  }
+  return out;
+}
+
+/**
+ * @brief Outer product with OpenMP parallel outer loop and simd inner loop
+ * @param x NumericVector
+ * @param y NumericVector
+ * @return NumericMatrix
+ */
+// [[Rcpp::export]]
+NumericMatrix dmy_pf_outer_omp_parallel_simd(const NumericVector& x, const NumericVector& y) {
+  int nx = x.size();
+  int ny = y.size();
+  NumericMatrix out(nx, ny);
+#ifdef _OPENMP
+#pragma omp parallel for
+#endif
+  for (int i = 0; i < nx; ++i) {
+#ifdef _OPENMP
+#pragma omp simd
+#endif
+    for (int j = 0; j < ny; ++j) {
+      out(i, j) = x[i] * y[j];
+    }
+  }
+  return out;
+}
+
+/**
+ * @brief Outer product using Armadillo
+ * @param x NumericVector
+ * @param y NumericVector
+ * @return NumericMatrix
+ */
+// [[Rcpp::export]]
+NumericMatrix dmy_pf_outer_armadillo(const NumericVector& x, const NumericVector& y) {
+  arma::vec a(x.begin(), x.size(), false);
+  arma::vec b(y.begin(), y.size(), false);
+  arma::mat A = a * b.t();
+  return Rcpp::wrap(A);
+}
+
+/**
+ * @brief Outer product using R base::outer called via Rcpp
+ * @param x NumericVector
+ * @param y NumericVector
+ * @return NumericMatrix
+ */
+// [[Rcpp::export]]
+NumericMatrix dmy_pf_outer_rbase(const NumericVector& x, const NumericVector& y) {
+  static Rcpp::Function base_outer("base::outer");
+  V_TRACE("base::outer, ...")
+  NumericMatrix out = base_outer(x, y, "*");
+  V_TRACE("base::outer, done.")
+  return out;
+}
+```
+
+## Microbenchmark Test Script
+
+```r
+#' Microbenchmark script for Rcpp vector iteration strategies
+#'
+#' This script benchmarks various implementations of "sum" and "outer"
+#' functions from the dummy_iter Rcpp package for differing input sizes.
+#'
+#' @seealso ./src/dummy_iter.cpp
+#' @seealso ./src/Makevars
+#' @seealso ~/.R/Makevars
+#' @seealso ./notes/howtos/Rcpp-HOWTO-Q3-all.md
+#'
+#' Usage:
+#'   Rscript exec/dummy-rcpp-bench.r [options] [input_sizes...]
+#'
+#' Options:
+#'   -h, --help        Show help and exit
+#'   -v, --verbose     Verbosity level (repeat for more verbosity)
+#'   -p, --profile     Enable profiling with Rprof
+#'   -t, --test        Test type: "sum" or "outer" (default "sum")
+#'   -m, --samples     Microbenchmark sample size (default 100)
+#'   -s, --save        Save benchmark results and system info
+#'   input_sizes       Space separated integer vector sizes (default: 10 100 1000)
+#'
+#' @export
+library(optparse)
 library(microbenchmark)
+library(logging)
+library(ggplot2)
 
-# Define the graph and start/goal nodes
-graph <- matrix(runif(100), nrow = 10)
-start <- 1
-goal <- 10
-
-# Benchmark the functions
-bench_results <- microbenchmark(
-  astar_sequential(graph, start, goal),
-  astar_parallel(graph, start, goal),
-  times = 100  # You can change this via command line
+# Setup option parsing
+option_list <- list(
+  make_option(c("-v", "--verbose"), action = "count", default = 0,
+              help = "Verbosity level 0..3"),
+  make_option(c("-p", "--profile"), action = "store_true", default = FALSE,
+              help = "Enable profiling with Rprof"),
+  make_option(c("-t", "--test"), type = "character", default = "sum",
+              help = "Test type: sum or outer"),
+  make_option(c("-m", "--samples"), type = "integer", default = 100,
+              help = "Microbenchmark sample size"),
+  make_option(c("-s", "--save"), action = "store_true", default = FALSE,
+              help = "Save benchmark data and system info")
 )
 
-print(bench_results)
-\`\`\`
+parser <- OptionParser(usage = "%prog [options] [input_sizes...]", option_list = option_list)
+args <- parse_args(parser, positional_arguments = TRUE)
+
+verbose <- args$options$verbose
+profile <- args$options$profile
+test_type <- tolower(args$options$test)
+samples <- args$options$samples
+save_data <- args$options$save
+input_sizes <- as.integer(args$args)
+if (length(input_sizes) == 0) input_sizes <- c(10, 100, 1000)
+
+# Set logging configuration
+basicConfig(level = ifelse(verbose >= 1, "DEBUG", "INFO"))
+logs_dir <- Sys.getenv("P_LOGS_DIR", unset = "logs")
+if (!dir.exists(logs_dir)) dir.create(logs_dir, recursive = TRUE)
+
+loginfo(paste("Arguments:", paste(commandArgs(trailingOnly=TRUE), collapse = " ")))
+loginfo(paste("Log directory:", normalizePath(logs_dir)))
+
+# Log CPU info for environment context
+cpu_info <- system("inxi -C", intern = TRUE)
+loginfo(paste(cpu_info, collapse = "\n"))
+
+# Load dummy_iter package assumed attached or installed:
+# library(dummy_iter)
+
+# Set verbosity for C++ logging
+dummy_iter::dmy_pf_log_set_level(verbose)
+dummy_iter::dmy_pf_log_reset()
+
+# Define list of functions by test_type
+sum_funcs <- list(
+  cstyle = dummy_iter::dmy_pf_sum_cstyle,
+  range = dummy_iter::dmy_pf_sum_range,
+  omp = dummy_iter::dmy_pf_sum_omp,
+  omp_simd = dummy_iter::dmy_pf_sum_omp_simd,
+  armadillo = dummy_iter::dmy_pf_sum_armadillo,
+  rbase = dummy_iter::dmy_pf_sum_rbase
+)
+outer_funcs <- list(
+  cstyle = dummy_iter::dmy_pf_outer_cstyle,
+  range = dummy_iter::dmy_pf_outer_range,
+  omp_collapse = dummy_iter::dmy_pf_outer_omp_collapse,
+  omp_parallel_simd = dummy_iter::dmy_pf_outer_omp_parallel_simd,
+  armadillo = dummy_iter::dmy_pf_outer_armadillo,
+  rbase = dummy_iter::dmy_pf_outer_rbase
+)
+
+funcs <- if (test_type == "sum") sum_funcs else outer_funcs
+
+# Result collector
+results <- data.frame()
+
+# Main benchmarking loop
+for (size in input_sizes) {
+  set.seed(123)
+  vec <- rnorm(size, mean=0, sd=100)
+  
+  message(paste("Benchmarking", test_type, "functions with input size", size))
+  
+  bm <- microbenchmark(
+    list = lapply(names(funcs), function(fname) {
+      if (test_type == "sum") {
+        expr <- bquote(.(funcs[[fname]])(vec))
+      } else {
+        expr <- bquote(.(funcs[[fname]])(vec, vec))
+      }
+      expr
+    }),
+    times = samples,
+    unit = "ms",
+    control = list(order = "random")
+  )
+  
+  bm_df <- as.data.frame(bm)
+  bm_df$function_label <- factor(bm_df$expr, levels = unique(bm_df$expr))
+  bm_df$input_size <- size
+  bm_df$test_type <- test_type
+  results <- rbind(results, bm_df)
+}
+
+# Plot aggregated results
+library(dplyr)
+library(ggplot2)
+
+sumname <- function(x) sub("dummy_iter::dmy_pf_\\w+_", "", x)
+results$func_abbr <- sapply(as.character(results$function_label), sumname)
+
+summary_df <- results %>%
+  group_by(func_abbr, input_size) %>%
+  summarize(median_time = median(time) / 1e6)  # convert ns to ms
+
+p <- ggplot(summary_df, aes(x = input_size, y = median_time, color = func_abbr)) +
+  geom_line() + geom_point() +
+  scale_x_log10() + scale_y_log10() +
+  labs(title = paste("Benchmark:", test_type, "function performance"),
+       subtitle = paste("Sample size:", samples, "| Verbosity:", verbose),
+       x = "Input size (log scale)",
+       y = "Median elapsed time (ms, log scale)",
+       color = "Function") +
+  theme_minimal()
+
+print(p)
+
+# Save plots and logs with timestamp
+timestamp <- format(Sys.time(), "%Y%m%d-%H%M%S")
+prefix <- paste0("dummy-rcpp-bench-", timestamp, "-", test_type, "-")
+
+pngfile <- file.path(logs_dir, paste0(prefix, "bench.png"))
+ggsave(filename = pngfile, plot = p)
+
+logfile <- file.path(logs_dir, paste0(prefix, "test.log"))
+cat(capture.output(sessionInfo()), file = logfile, append = TRUE)
+
+if (save_data) {
+  datfile <- file.path(logs_dir, paste0(prefix, "data.tsv"))
+  write.table(results, file = datfile, sep = "\t", row.names = FALSE)
+  
+  sysinfofile <- file.path(logs_dir, paste0(prefix, "info.log"))
+  info_txt <- c(
+    system("date", intern=TRUE),
+    system("whoami", intern=TRUE),
+    system("inxi -CfGMS", intern=TRUE),
+    system("lscpu", intern=TRUE),
+    system("cpupower frequency-info", intern=TRUE),
+    system("nvidia-smi || echo '#NOGPU'", intern=TRUE)
+  )
+  writeLines(info_txt, sysinfofile)
+}
+
+if (profile) {
+  proffile <- file.path(logs_dir, paste0(prefix, "rprof.out"))
+  Rprof(proffile)
+  # Perform a small profiling run
+  # ... omitted for brevity, would re-run microbenchmark here ...
+  Rprof(NULL)
+  loginfo(paste("Saved profile to", proffile))
+}
+
+loginfo("Benchmark completed.")
+```
+
+> Note:
+> 
+> The `./exec` directory is an appropriate CRAN-compliant location for
+> package support scripts that may be invoked via `system()` calls
+> internally or run interactively by users. It keeps scripts organized
+> and distinct from R code and source code.
 
 
+## Quick Start Guide
+
+### Project Configuration
+
+#### DESCRIPTION (partial)
+
+```yaml
+Depends:
+    R (>= 3.6.0)
+Imports:
+    Rcpp (>= 1.0.6),
+    RcppArmadillo (>= 0.10.8.0)
+LinkingTo:
+    Rcpp,
+    RcppArmadillo
+SystemRequirements:
+    BLAS, LAPACK, OpenMP
+```
+
+#### src/Makevars (example for Linux)
+
+```make
+PKG_CPPFLAGS = -fopenmp
+PKG_LIBS = -fopenmp $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)
+```
+
+#### ~/.R/Makevars (user local config for CPU optimizations)
+
+```make
+CXXFLAGS += -march=native -O3 -pipe
+```
+
+This local user config enables native architecture SIMD instruction
+generation automatically and high-level optimizations, improving
+performance while retaining package portability on CRAN.
+
+---
 
 ## References
 
-[^1]: [RcppParallel Documentation](https://cran.r-project.org/package=RcppParallel)
-[^2]: [A* Search Algorithm](https://en.wikipedia.org/wiki/A*_search_algorithm)
-[^3]: [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html)
-```
+[^1]: [High performance functions with Rcpp](http://adv-r.had.co.nz/Rcpp.html)
+[^2]: [R Packages](https://r-pkgs.org/)
+[^3]: [RcppArmadillo on CRAN](https://cran.r-project.org/web/packages/RcppArmadillo/index.html)
+[^4]: [OpenMP Resources](https://www.openmp.org/resources/)
+[^5]: [CRAN Task View: High-Performance and Parallel Computing with R](https://cran.r-project.org/web/views/HighPerformanceComputing.html)
+[^6]: [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html)
 
-# ::}}} \\ %5.1.
 
-<!--  LocalWords:  STL pathfinding namespace mutex undirected geo lin
-<!--  LocalWords:  RcppParallel Howto VibeCoding sqr sqrt datalab TSV
-<!--  LocalWords:  Bicocca enum coeff RStudio dataframe HPC foreach
-<!--  LocalWords:  doParallel parallelly quartile microbenchmark YAML
-<!--  LocalWords:  dataframes pseudocode
- -->
- -->
- -->
- -->
- -->
+-------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------
+# ::}}} \\ %3.
