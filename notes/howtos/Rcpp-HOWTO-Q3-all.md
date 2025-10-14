@@ -3,13 +3,13 @@
 # TOC - C++ Compiler and Linker options for R packages - Contents
 
 1. [Q:3 - C++ Compiler and Linker options for R packages](#Q3)
-   - see: [Package Development with C++: Optimization Strategies (Claude)](#A3-claude)
-   - see: [CRAN Linker Options, Debugging Pragmatics (Gemini)](#A3-gemini)
-   - see: [CRAN linker options and development (ChatGPT)](#A3-chatgpt)
-   - see: [Optimizing Rcpp Package Development: CRAN Compliance and Debugging (DeepSeek)](#A3-deepseek)
-   - see: [Rcpp + g++: “small .so” vs. CRAN – a field guide (Kimi)](#A3-kimi)
-   - see: [C/C++ compiler and linker options (LeChat)](#A3-lechat)
-   - see: [C++ Compiler and Linker Options for R packages (Perplexity)](#A3-perplexity)
+   - see: [Package Development with C++: Optimization Strategies (Claude)](#a3-claude)
+   - see: [CRAN Linker Options, Debugging Pragmatics (Gemini)](#a3-gemini)
+   - see: [CRAN linker options and development (ChatGPT)](#a3-chatgpt)
+   - see: [Optimizing Rcpp Package Development: CRAN Compliance and Debugging (DeepSeek)](#a3-deepseek)
+   - see: [Rcpp + g++: “small .so” vs. CRAN – a field guide (Kimi)](#a3-kimi)
+   - see: [C/C++ compiler and linker options (LeChat)](#a3-lechat)
+   - see: [C++ Compiler and Linker Options for R packages (Perplexity)](#a3-perplexity)
 
 # ::}}} \\ %0.
 # ::{{{ #RCPP: C++ Compiler and Linker options for R packages //
