@@ -3,7 +3,7 @@
 # TOC
 >C++ Compiler and Linker options for R packages - Contents
 
-1. [Q:3 - C++ Compiler and Linker options for R packages](#Q3)
+1. [Q:3 - C++ Compiler and Linker options for R packages](#q3)
    - see: [Package Development with C++: Optimization Strategies (Claude)](#a3-claude)
    - see: [CRAN Linker Options, Debugging Pragmatics (Gemini)](#a3-gemini)
    - see: [CRAN linker options and development (ChatGPT)](#a3-chatgpt)
@@ -14,11 +14,11 @@
 
 # ::}}} \\ %0.
 # ::{{{ #RCPP: C++ Compiler and Linker options for R packages //
-<a href="Q3" ></a>
+<a href="q3" ></a>
 
 # Q:3 - C++ Compiler and Linker options for R packages
 
-[⌃](#TOC)
+[⌃](#toc)
 
 <system>
 
@@ -106,7 +106,7 @@ In your reply, elaborate on the following points:
 # A:3 (Claude)
 > R Package Development with C++: Optimization Strategies for Internal Development vs CRAN Release
 
-[⌃](#TOC)
+[⌃](#toc)
 
 
 ## 1. CRAN Compliant Linker Options
@@ -405,7 +405,7 @@ while maintaining reasonable library sizes across both scenarios.
 # A:3 (Gemini)
 > CRAN Linker Options, Debugging Pragmatics
 
-[⌃](#TOC)
+[⌃](#toc)
 
 
 ### Executive Summary
@@ -632,7 +632,7 @@ This example illustrates CRAN-compliant documentation, safe C++ practices (`Rcpp
 # A:3 (ChatGPT)
 > CRAN linker options and development
 
-[⌃](#TOC)
+[⌃](#toc)
 
 
 ## Summary recommendations (short)
@@ -954,7 +954,7 @@ If you want, I can:
 # A:3 (DeepSeek)
 > Optimizing Rcpp Package Development: CRAN Compliance and Debugging
 
-[⌃](#TOC)
+[⌃](#toc)
 
 
 ## CRAN Compliant Linker Options
@@ -1183,7 +1183,7 @@ development builds with full debugging capabilities.
 # A:3 (Kimi)
 > Rcpp + g++: “small .so” vs. CRAN – a field guide
 
-[⌃](#TOC)
+[⌃](#toc)
 
 
 | Scenario            | Primary goal                     | Where the flags live       | Typical size reduction |
@@ -1342,7 +1342,7 @@ Happy hacking – and happy CRAN submissions!
 # A:3 (LeChat)
 > C/C++ compiler and linker options...
 
-[⌃](#TOC)
+[⌃](#toc)
 
 
 ## **1. CRAN-Compliant Linker Options**
@@ -1472,7 +1472,7 @@ template class MyClass<double>;  // Explicitly instantiate for double
 # A:3 (Perplexity)
 > C++ Compiler and Linker Options for R packages
 
-[⌃](#TOC)
+[⌃](#toc)
 
 
 Here is a detailed response about best practices for g++ linker
@@ -1608,7 +1608,7 @@ References: Rcpp vignette, CRAN Writing R Extensions manual, R CMD check notes, 
 -------------------------------------------------------------------------------------------
 -------------------------------------------------------------------------------------------
 -------------------------------------------------------------------------------------------
-[⌃](#TOC)
+[⌃](#toc)
 
 # ::}}} \\ %3.
 
