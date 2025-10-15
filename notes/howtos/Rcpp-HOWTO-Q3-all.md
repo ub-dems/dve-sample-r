@@ -1,6 +1,7 @@
 ``` /// vim: set foldmethod=marker : ```
 # ::{{{ #RCPP: C++ Compiler and Linker Options //
-# TOC - C++ Compiler and Linker options for R packages - Contents
+# TOC
+>C++ Compiler and Linker options for R packages - Contents
 
 1. [Q:3 - C++ Compiler and Linker options for R packages](#Q3)
    - see: [Package Development with C++: Optimization Strategies (Claude)](#a3-claude)
@@ -13,8 +14,11 @@
 
 # ::}}} \\ %0.
 # ::{{{ #RCPP: C++ Compiler and Linker options for R packages //
-<a href="Q3" />
+<a href="Q3" ></a>
+
 # Q:3 - C++ Compiler and Linker options for R packages
+
+[⌃](#TOC)
 
 <system>
 
@@ -101,6 +105,9 @@ In your reply, elaborate on the following points:
 -------------------------------------------------------------------------------------------
 # A:3 (Claude)
 > R Package Development with C++: Optimization Strategies for Internal Development vs CRAN Release
+
+[⌃](#TOC)
+
 
 ## 1. CRAN Compliant Linker Options
 
@@ -398,6 +405,9 @@ while maintaining reasonable library sizes across both scenarios.
 # A:3 (Gemini)
 > CRAN Linker Options, Debugging Pragmatics
 
+[⌃](#TOC)
+
+
 ### Executive Summary
 
 Managing C/C++ compiler and linker options in an R package involves balancing performance, debuggability, binary size, and portability. The standard and most effective method is to separate configurations:
@@ -621,6 +631,9 @@ This example illustrates CRAN-compliant documentation, safe C++ practices (`Rcpp
 -------------------------------------------------------------------------------------------
 # A:3 (ChatGPT)
 > CRAN linker options and development
+
+[⌃](#TOC)
+
 
 ## Summary recommendations (short)
 
@@ -941,6 +954,9 @@ If you want, I can:
 # A:3 (DeepSeek)
 > Optimizing Rcpp Package Development: CRAN Compliance and Debugging
 
+[⌃](#TOC)
+
+
 ## CRAN Compliant Linker Options
 
 CRAN has strict requirements for portable packages. The error you encountered indicates missing routine registration, not directly caused by your linker flags but rather by how symbols are handled.
@@ -1167,6 +1183,9 @@ development builds with full debugging capabilities.
 # A:3 (Kimi)
 > Rcpp + g++: “small .so” vs. CRAN – a field guide
 
+[⌃](#TOC)
+
+
 | Scenario            | Primary goal                     | Where the flags live       | Typical size reduction |
 |---------------------|----------------------------------|----------------------------|------------------------|
 | **Internal dev**    | Debug symbols + `-march=native`  | `~/.R/Makevars`            | 1 × (no strip)         |
@@ -1323,6 +1342,9 @@ Happy hacking – and happy CRAN submissions!
 # A:3 (LeChat)
 > C/C++ compiler and linker options...
 
+[⌃](#TOC)
+
+
 ## **1. CRAN-Compliant Linker Options**
 ### **Key Requirements**
 - **Symbol Registration**: CRAN mandates registering native routines via `R_registerRoutines()` and disabling dynamic symbol search (`R_useDynamicSymbols: FALSE`).
@@ -1449,6 +1471,9 @@ template class MyClass<double>;  // Explicitly instantiate for double
 -------------------------------------------------------------------------------------------
 # A:3 (Perplexity)
 > C++ Compiler and Linker Options for R packages
+
+[⌃](#TOC)
+
 
 Here is a detailed response about best practices for g++ linker
 options in Rcpp-based R package development, addressing internal
@@ -1578,6 +1603,12 @@ References: Rcpp vignette, CRAN Writing R Extensions manual, R CMD check notes, 
 [18](https://privefl.github.io/blog/Tip-Optimize-your-Rcpp-loops/)
 [19](https://blog.djnavarro.net/posts/2022-01-10_setting-cran-repositories/)
 [20](https://www.rcpp.org/pdf/Rcpp-libraries.pdf)
+
+
+-------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------
+[⌃](#TOC)
 
 # ::}}} \\ %3.
 
