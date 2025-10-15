@@ -9,7 +9,6 @@
 
 # ::}}} \\ %0.
 # ::{{{ #RCPP: RCppEigen RCppArmadillo  Header Conflicts //
-
 # Q:4.1 - Resolving RcppArmadillo and RcppEigen Header Conflicts {#Q4.1}
 
 <system>
@@ -635,7 +634,7 @@ by `compileAttributes()`.
 -------------------------------------------------------------------------------------------
 # ::}}} \\ %4.1.
 # ::{{{ #RCPP: RCppEigen Template Attribute Warnings //
-# Q:4.2 - RCppEigen Template Attribute Warnings {#Q4.2}
+# Q:4.2 - RCppEigen Template Attribute Warnings
 
 <system>
 
@@ -790,7 +789,7 @@ behind each step.
 -------------------------------------------------------------------------------------------
 -------------------------------------------------------------------------------------------
 -------------------------------------------------------------------------------------------
-# A:4.2 (ChatGPT) {#A4.2-chatgpt}
+# A:4.2 (ChatGPT)
 > Eigen compilation warning fix
 
 Great question—this is a classic “Eigen + modern GCC + over-eager SIMD
