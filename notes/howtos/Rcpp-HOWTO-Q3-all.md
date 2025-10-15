@@ -3,7 +3,7 @@
 # TOC
 >C++ Compiler and Linker options for R packages - Contents
 
-1. [Q:3 - C++ Compiler and Linker options for R packages](#q3)
+1. [Q:3 - C++ Compiler and Linker options for R packages](#Q3)
    - see: [Package Development with C++: Optimization Strategies (Claude)](#a3-claude)
    - see: [CRAN Linker Options, Debugging Pragmatics (Gemini)](#a3-gemini)
    - see: [CRAN linker options and development (ChatGPT)](#a3-chatgpt)
@@ -14,7 +14,8 @@
 
 # ::}}} \\ %0.
 # ::{{{ #RCPP: C++ Compiler and Linker options for R packages //
-<a href="q3" ></a>
+
+<a href="#Q3" />
 
 # Q:3 - C++ Compiler and Linker options for R packages
 
