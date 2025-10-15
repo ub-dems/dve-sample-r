@@ -12,10 +12,13 @@
    - see: [C/C++ compiler and linker options (LeChat)](#a3-lechat)
    - see: [C++ Compiler and Linker Options for R packages (Perplexity)](#a3-perplexity)
 
+---------
+[[_TOC_]]
+
 # ::}}} \\ %0.
 # ::{{{ #RCPP: C++ Compiler and Linker options for R packages //
 
-<a id="Q3" />
+<a id="Q3" name="Q3" class="anchor"></a>
 
 # Q:3 - C++ Compiler and Linker options for R packages
 
