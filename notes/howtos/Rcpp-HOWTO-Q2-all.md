@@ -1,5 +1,7 @@
 ``` /// vim: set foldmethod=marker : ```
 # ::{{{ #RCPP: R Package with Rcpp Support //
+[🠴](Rcpp-HOWTO.md)
+
 # TOC
 > R Package with Rcpp Support - Contents
 
@@ -16,7 +18,10 @@
 
 <a id="Q2" name="Q2" class="anchor"></a>
 
-# Q:2 - R Package Template with Rcpp {#Q2}
+# Q:2 - R Package Template with Rcpp
+
+[⌃](#toc)
+
 
 <system>
 
@@ -562,11 +567,7 @@ CXXFLAGS += -O3
 
 [⌃](#toc)
 
-
-* See: [R Package Template Evaluation (Gemini-2.5-pro)](Rcpp-HOWTO-Q2-gemini-v25p.md)
-
-
-### Evaluation Summary
+## Evaluation Summary
 
 The provided template is a solid foundation for building an R package
 with a C++ backend that exposes a unified API for both R and C++
@@ -1074,15 +1075,11 @@ A demo package showcasing Rcpp integration with a uniform R and C++ API.
 ## References
 
 
-<a id="1"></a> Rcpp Attributes Vignette. (n.d.). Retrieved from [https://cran.r-project.org/web/packages/Rcpp/vignettes/Rcpp-attributes.pdf](https://cran.r-project.org/web/packages/Rcpp/vignettes/Rcpp-attributes.pdf)
-
-<a id="2"></a> R Core Team. (2024). *Writing R Extensions*. Retrieved from [https://cran.r-project.org/doc/manuals/r-release/R-exts.html#Using-Makevars](https://cran.r-project.org/doc/manuals/r-release/R-exts.html#Using-Makevars)
-
-<a id="3"></a> CRAN Repository Policy. (n.d.). Retrieved from [https://cran.r-project.org/web/packages/policies.html](https://cran.r-project.org/web/packages/policies.html)
-
-<a id="4"></a> Wickham, H. (2024). *R Packages (2nd ed.)*. O'Reilly. Retrieved from [https://r-pkgs.org/](https://r-pkgs.org/)
-
-<a id="5"></a> Eddelbuettel, D., & Sanderson, C. (2014). RcppArmadillo: Accelerating R with high-performance C++ linear algebra. *Computational Statistics & Data Analysis*, 71, 1054-1063. Retrieved from [http://dirk.eddelbuettel.com/papers/RcppArmadillo.pdf](http://dirk.eddelbuettel.com/papers/RcppArmadillo.pdf)
+[1] [Rcpp Attributes Vignette. (n.d.)](https://cran.r-project.org/web/packages/Rcpp/vignettes/Rcpp-attributes.pdf)
+[2] [R Core Team. (2024). *Writing R Extensions:* Using-Makevars](https://cran.r-project.org/doc/manuals/r-release/R-exts.html#Using-Makevars)
+[3] [CRAN Repository Policy. (n.d.)](https://cran.r-project.org/web/packages/policies.html)
+[4] [Wickham, H. (2024). *R Packages (2nd ed.)*. O'Reilly](https://r-pkgs.org/)
+[5] [Eddelbuettel, D., & Sanderson, C. (2014). RcppArmadillo: Accelerating R with high-performance C++ linear algebra. *Computational Statistics & Data Analysis*, 71, 1054-1063](http://dirk.eddelbuettel.com/papers/RcppArmadillo.pdf)
 
 
 
@@ -1090,6 +1087,7 @@ A demo package showcasing Rcpp integration with a uniform R and C++ API.
 -------------------------------------------------------------------------------------------
 -------------------------------------------------------------------------------------------
 -------------------------------------------------------------------------------------------
+## Overview
 # A:2 (Claude)
 > R Package Template with Rcpp Evaluation
 
@@ -1313,6 +1311,7 @@ PKG_CXXFLAGS = $(SHLIB_OPENMP_CXXFLAGS)
 
 [⌃](#toc)
 
+## Overview
 
 Here is a comprehensive evaluation and enhancement proposal of the
 provided `demo` package template according to your specifications,
