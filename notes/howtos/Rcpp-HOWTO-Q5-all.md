@@ -1,5 +1,5 @@
 ``` /// vim: set foldmethod=marker : ```
-# ::{{{ #RCPP: Howto //
+# ::{{{ #RCPP: Loop Optimization with OpenMP/SIMD -- R VibeCoding (basic) //
 # Q:5 - R "VibeCoding" and Loop Optimization
 
 <system>

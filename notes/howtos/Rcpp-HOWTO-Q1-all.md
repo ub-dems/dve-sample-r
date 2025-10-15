@@ -1,5 +1,7 @@
 ``` /// vim: set foldmethod=marker : ```
 # ::{{{ #RCPP: Rcpp Overview //
+[🠴](Rcpp-HOWTO.md)
+
 # TOC
 > Rcpp Usage Comprehensive Guide - Contents
 

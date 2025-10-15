@@ -1,5 +1,5 @@
 ``` /// vim: set foldmethod=marker : ```
-# ::{{{ #RCPP: TOC - RcppParallel Contents //
+# ::{{{ #RCPP: RcppParallel A* search tutorial //
 # TOC - RcppParallel A* search tutorial - Contents
 
 1. [Q:5.0 - RcppParallel A* search tutorial example](#Q50)
