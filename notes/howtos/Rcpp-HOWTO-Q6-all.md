@@ -3,13 +3,56 @@
 # TOC - RcppParallel A* search tutorial - Contents
 
 1. [Q:5.0 - RcppParallel A* search tutorial example](#Q50)
-2. [Q:5.1 - RcppParallel A* search VibeCoding implementation](#Q51)
 
 # ::}}} \\ %+.
 
 # ::{{{ #RCPP: Q:5.0 - RcppParallel tutorial //
 # Q:5.0 - RcppParallel A* search tutorial example {#Q50}
 
+<system>
+
+You are an expert R and C++ developer.
+
+Your task is to prepare example C++ sources to introduce core features of main Rcpp ecosystem packages.
+
+All examples should be compact, clear, and focused on a small set of relevant features of a single package.
+
+The examples should also be "inspiring", based on an interesting use case or algorithm that is worth reading,
+and not just a library API demo.
+
+The answer must be in well-formatted, clearly structured (GFM) markdown, with footnotes for links to relevant online resource references.
+
+The C++ code fragments must be placed in `cpp` markdown codeblocks, formatted following the Google C++ style guide, and moderately but well documented.
+
+The replies must adhere to CRAN guidelines, integrated by `tidyverse` best practices.
+
+The code should be very performant, using alternatively, implicit parallelism and vectorization via OpenMP/SIMD intrinsics, or via library-based interfaces to multitasking and multiprocessing OS facilities.
+
+</system>
+
+Your task is to produce an interesting use-case example for the `RcppParallel` package,
+focusing on `parallelFor` and `parallelReduce` functions.
+
+The target package, based on `renv`, already includes `Rcpp`, `RcppArmadillo`, and `RcppEigen`.
+
+An interesting use case could be a minimal toy implementation of an A* heuristic search algorithm, applied to a random generated graph.
+
+The parallel code should be paired with a traditional sequential implementation.
+
+2.  ** "R parallel computation" Quick Start guide:**
+    *   Describe coordination of packages: `foreach`,`doParallel`,`parallelly`.
+    *   Describe minimal configuration required for single machine parallel processing setup.
+    *   Provide some link to simple single machine parallelism examples in R.
+    *   Describe possible evolution to multi node distributed HPC computations with tutorial references.
+
+
+
+
+# ::}}} \\ %5.0.
+
+
+# ::{{{ #RCPP: Q:5.1 - RcppParallel tutorial //
+# Q:5.1 - RcppParallel A* search tutorial example {#Q50}
 
 <system>
 
@@ -83,7 +126,7 @@ Here's a breakdown of what you need to deliver:
 3.  **R Callable Functions:**
     *   Place both the sequential and parallel C++ functions in a single C++ source, to be included via `Rcpp::sourceCpp` or similar mechanisms to make them callable from R.
 
-4.  **Microbenchmark Test Script:**
+5.  **Microbenchmark Test Script:**
     *   Create an R script that uses the `microbenchmark` package to compare the performance of the sequential and parallel A* implementations.
     *   Provide an argument parsing support with library argument parsing facilities, for the script that allows the parameters specified above in `test-script-cli-arguments` XML tag
     *   For the positional argument "Input Size", consider that the argument can be expressed as a space separated list of integers (like "100 1000 10000") and perform test iteration for every value. Provide a graphical summary of parallel vs sequential benchmark for performance evaluation as function of problem size. In the graph subtitle, reports the value of options "Sample Size" and other parameters, like "Graph Density".
@@ -220,10 +263,10 @@ renv::status()
 
 
 
-# A:5 (Vertex)
+# A:5.1 (Vertex)
 > ...
 
-# A:5 (Gemini)
+# A:5.1 (Gemini)
 > A* Search Algorithm with `RcppParallel`
 
 Here is a complete guide to implementing a parallel A* search algorithm using `RcppParallel`, including a detailed C++ implementation, a micro-benchmarking R script, and a quick-start guide for project setup.
@@ -684,7 +727,7 @@ If you are using `renv` in "explicit" mode, you manage dependencies directly.
 
 
 
-# A:5 (Claude)
+# A:5.1 (Claude)
 > A* Search Algorithm with RcppParallel
 
 I'll create a comprehensive example demonstrating the A* search algorithm implemented with RcppParallel, focusing on `parallelFor` and `parallelReduce` features. This will be an educational and practical implementation.I've created a comprehensive guide for implementing the A* search algorithm with RcppParallel. Here are the key highlights:
@@ -1403,7 +1446,7 @@ For smaller graphs, the sequential version may be faster due to reduced parallel
 [^5]: [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html)
 
 
-# A:5 (ChatGPT)
+# A:5.1 (ChatGPT)
 > A* Search Algorithm in RcppParallel
 
 This document demonstrates how to implement the **A\*** search algorithm in C++ with **RcppParallel**, alongside sequential and parallel implementations.
@@ -1741,7 +1784,7 @@ Would you like me to **extend the parallelization** further (e.g., expand from p
 
 
 
-# A:5 (DeepSeek)
+# A:5.1 (DeepSeek)
 > A* Search Algorithm in RcppParallel
 
 This document demonstrates a parallel implementation of the A* search algorithm using `RcppParallel`[^1] for heuristic graph traversal. We leverage `RcppArmadillo` for efficient matrix operations and graph representation.
@@ -2170,7 +2213,7 @@ result <- run_astar_comparison(100, 0.3, 1, 100)
 
 
 
-# A:5 (Kimi)
+# A:5.1 (Kimi)
 > A* Search in Parallel with RcppParallel
 
 A compact, high-performance example that demonstrates how to parallelise the A* shortest–path algorithm with `RcppParallel::parallelFor` and `parallelReduce`.
@@ -2557,7 +2600,7 @@ TinyThread is bundled with `RcppParallel`; no extra action needed.
 [^3]: [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html)
 
 
-# A:5 (Diffusion)
+# A:5.1 (Diffusion)
 > ...
 
 ## Solution Sources
@@ -3119,7 +3162,7 @@ cat("\nBenchmarking complete. Check the generated plots and data files if reques
 ```
 
 
-# A:5 (LeChat)
+# A:5.1 (LeChat)
 > A* Search Algorithm in RcppParallel: Parallel vs. Sequential Implementation
 
 ## **1. Introduction**
@@ -3455,7 +3498,7 @@ renv::snapshot()
 [^3]: [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html)
 
 
-# A:5 (Perplexity)
+# A:5.1 (Perplexity)
 > Parallel A* Search Algorithm with RcppParallel
 
 This tutorial presents a minimal yet interesting parallelization of the **A\* search algorithm** leveraging the `RcppParallel` package. For matrix and vector operations, we integrate `RcppArmadillo` for efficient numeric computations and `RcppEigen` for alternative linear algebra utilities if desired.

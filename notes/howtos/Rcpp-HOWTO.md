@@ -1,10 +1,13 @@
 --- 
 title: Rcpp HOWTOs Index
 subtitle: index to C++ Usage Notes in R
-caption: (dir)
 vim: set foldmethod=marker : 
 author: --
 date: 2025-10-27
+output: 
+   pdf_document:
+      toc: true
+      toc_depth: 3
 ---
 # ::{{{ #RCPP: Howto //
 [🠴](README.md)
