@@ -1,4 +1,10 @@
-``` /// vim: set foldmethod=marker : ```
+--- vim: set foldmethod=marker : 
+title: Rcpp HOWTOs Index
+subtitle: index to C++ Usage Notes in R
+caption: (dir)
+author: --
+date: 2025-10-27
+---
 # ::{{{ #RCPP: Howto //
 [🠴](README.md)
 
