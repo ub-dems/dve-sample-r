@@ -17,7 +17,7 @@ output:
 
 1. [Q:7.0 - RcppParallel A* search VibeCoding implementation](#Q1)
    - see: [Comprehensive Rcpp Guide for R Packages (Claude)](#a1-claude)
-   - see: [Rcpp Usage Comprehensive Guide (Vertex)](#a1-vertex)
+   - see: [Enhanced Prompt For LLM (Vertex)](#a1-vertex)
 
 ---------
 [[_TOC_]]
@@ -834,7 +834,9 @@ if (sys.nframe() == 0) {
 -------------------------------------------------------------------------------------------
 -------------------------------------------------------------------------------------------
 # A:1 (Vertex)
-> Comprehensive Rcpp Guide for R Packages
+> Enhanced Prompt For LLM
+
+## Prompt Enhancement Query
 
 <system> 
 
@@ -871,7 +873,7 @@ The prompt to enhance follows, delimited with 5 `---` horizontal lines.
 
 --------------------------------------------------------------------------
 
-#### Footnotes and Comments
+## Prompt Enhancement Footnotes and Comments
 
 [1]: **(Language and Clarity)**: Minor grammatical errors, typos
     (e.g., "geogrphical", "implemenation", "bolow"), and awkward
