@@ -1,6 +1,6 @@
 ``` /// vim: set foldmethod=marker : ```
 # ::{{{ #RCPP: Howto //
-[🠴](../README.md)
+[🠴](README.md)
 
 # TOC
 > RCPP HOWTO - Contents
@@ -11,7 +11,7 @@
 1. [Q:4 - RCppEigen Usage Notes](Rcpp-HOWTO-Q4-all.md)
 1. [Q:5 - Loop Optimization with OpenMP/SIMD -- R VibeCoding (basic)](Rcpp-HOWTO-Q5-all.md)
 1. [Q:6 - RcppParallel A* search Tutorial](Rcpp-HOWTO-Q6-all.md)
-1. [Q:1 - RcppParallel A* search Specification -- R VibeCoding (intermediate)](Rcpp-HOWTO-Q7-all.md)
+1. [Q:7 - RcppParallel A* search Specification -- R VibeCoding (intermediate)](Rcpp-HOWTO-Q7-all.md)
 
 ---------
 [[_TOC_]]
