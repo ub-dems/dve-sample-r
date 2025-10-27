@@ -1,4 +1,5 @@
---- vim: set foldmethod=marker : 
+--- 
+vim: set foldmethod=marker : 
 title: Rcpp HOWTOs Index
 subtitle: index to C++ Usage Notes in R
 caption: (dir)
