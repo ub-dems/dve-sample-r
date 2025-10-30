@@ -8,21 +8,21 @@
 #CXXFLAGS = -g -O2 -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g
 # NOTE: Compilation used the following non-portable flag(s): ‘-Wdate-time’ ‘-Werror=format-security’ ‘-Wformat’""
 
-CXX_STD = CXX20
+CXX_STD = CXX17
 
-CXX20FLAGS = -g -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2 -g
+CXX17FLAGS = -g -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2 -g
 
-CXX20FLAGS += -fno-omit-frame-pointer
-#CXX20FLAGS += -fsanitize=address,undefined
-#CXX20FLAGS += -ffunction-sections -fdata-sections
-#CXX20FLAGS += -ftemplate-depth-256 -fmerge-all-constants
+CXX17FLAGS += -fno-omit-frame-pointer
+#CXX17FLAGS += -fsanitize=address,undefined
+#CXX17FLAGS += -ffunction-sections -fdata-sections
+#CXX17FLAGS += -ftemplate-depth-256 -fmerge-all-constants
 
-CXX20FLAGS += -flto=auto
-CXX20LINKFLAGS += -flto=auto
+CXX17FLAGS += -flto=auto
+CXX17LINKFLAGS += -flto=auto
 
-CXX20FLAGS += -march=native -mtune=native
+CXX17FLAGS += -march=native -mtune=native
 
-CXX20FLAGS += -Wno-ignored-attributes
+CXX17FLAGS += -Wno-ignored-attributes
 
 
 # RcppEigen implicit support to avoid RcppArmdillo include clash

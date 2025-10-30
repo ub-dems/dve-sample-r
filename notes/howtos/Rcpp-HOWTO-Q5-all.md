@@ -18,7 +18,7 @@ formatted following the Google C++ style guide, and moderately but
 well documented, following Roxygen2 CRAN standards, with minimal
 invocation example, under 'notrun' tags.
 
-The C++ reference standard is C++20.
+The C++ reference standard is C++17.
 
 The replies must adhere to CRAN guidelines, integrated by `tidyverse`
 best practices.

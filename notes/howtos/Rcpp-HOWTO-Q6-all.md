@@ -4010,7 +4010,7 @@ Terse code readability for generated code is very important.
 
 Prefer richer data type structures to code complexity.
 
-The C++ reference standard is C++20.
+The C++ reference standard is C++17.
 
 The replies must adhere to CRAN guidelines, integrated by `tidyverse`
 best practices.

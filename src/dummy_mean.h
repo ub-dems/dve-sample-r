@@ -1,7 +1,7 @@
 #pragma once
 
-// Enable C++20 support
-// [[Rcpp::plugins(cpp20)]]
+// Enable C++17 support
+// [[Rcpp::plugins(cpp17)]]
 
 // Rcpp dependencies
 #include <Rcpp.h>

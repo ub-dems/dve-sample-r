@@ -1,13 +1,18 @@
 --- 
 title: RcppParallel example implementation
 subtitle: RcppParallel A* search VibeCoding implementation
-vim: set foldmethod=marker : 
+vim: set foldmethod=marker
 author: --
 date: 2025-10-27
+documentclass: book
+classoption:
+   - a4paper
+   - 10pt
 output: 
    pdf_document:
       toc: true
       toc_depth: 3
+      latex_engine: xelatex
 ---
 # ::{{{ #RCPP: TOC - RcppParallel Contents //
 [🠴](Rcpp-HOWTO.md)
@@ -99,7 +104,7 @@ Terse, readable code is a primary goal for the generated output.
 
 Prefer richer data type structures to overly complex code.
 
-The C++ reference standard is C++20.
+The C++ reference standard is C++17.
 
 The replies must adhere to CRAN guidelines, integrated with `tidyverse`
 best practices.

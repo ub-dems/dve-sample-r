@@ -29,7 +29,7 @@ formatted following the Google C++ style guide, and moderately but
 well documented, following Roxygen2 CRAN standards, with minimal
 invocation example, under 'notrun' tags.
 
-The C++ reference standard is C++20.
+The C++ reference standard is C++17.
 
 
 
@@ -82,8 +82,8 @@ The example source follows:
 
 ```cpp
 // [[Rcpp::interfaces(r,cpp)]]
-// Enable C++20 support
-// [[Rcpp::plugins(cpp20)]]
+// Enable C++17 support
+// [[Rcpp::plugins(cpp17)]]
 // Declare dependencies
 // [[Rcpp::depends(RcppArmadillo)]]
 
@@ -114,8 +114,8 @@ Rcpp::NumericMatrix dmy_eigen_gram_matrix(const Rcpp::NumericMatrix& A) {
 -   RcppEigen source: `src/dummy_eigen.cpp`
 
 ```cpp
-// Enable C++20 support
-// [[Rcpp::plugins(cpp20)]]
+// Enable C++17 support
+// [[Rcpp::plugins(cpp17)]]
 // Declare dependencies
 // [[Rcpp::depends(RcppEigen)]]
 
@@ -191,7 +191,7 @@ Suggests:
     roxygen2 (>= 7.3.2),
     testthat (>= 2.1.0)
 LinkingTo: Rcpp, RcppArmadillo, RcppEigen, RcppGSL
-SystemRequirements: C++20, GNU make, GNU Scientific Library (GSL) (>= 2.0)
+SystemRequirements: C++17, GNU make, GNU Scientific Library (GSL) (>= 2.0)
 ```
 
 the `NAMESPACE` file:
@@ -290,7 +290,7 @@ Suggests:
     testthat (>= 2.1.0),
     RcppEigen  # Move here if needed for development
 LinkingTo: Rcpp, RcppArmadillo, RcppGSL  # Remove RcppEigen
-SystemRequirements: C++20, GNU make, GNU Scientific Library (GSL) (>= 2.0)
+SystemRequirements: C++17, GNU make, GNU Scientific Library (GSL) (>= 2.0)
 ```
 
 #### Updated Makevars with Manual Eigen Headers

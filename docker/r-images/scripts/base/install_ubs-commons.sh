@@ -108,6 +108,20 @@ function install_commons_sys() {
     
 }
 
+function install_commons_latex() {
+
+    [ "$Y_BASE_COMMONS_LATEX" = 1 ] || return 0
+    
+    apt_install \
+        texlive-latex-extra \
+        texlive-xetex
+        
+#    tlmgr install \
+#        unicode-math
+        
+#    tlmgr update --self --all
+}
+
 function install_commons_cran() {
     
     [ "$Y_BASE_COMMONS_CRAN" = 1 ] || return 0
