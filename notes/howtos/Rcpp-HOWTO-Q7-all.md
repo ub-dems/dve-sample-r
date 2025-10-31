@@ -1,18 +1,24 @@
 --- 
-title: RcppParallel example implementation
+title: "RcppParallel example implementation"
 subtitle: RcppParallel A* search VibeCoding implementation
 vim: set foldmethod=marker
-author: --
-date: 2025-10-27
-documentclass: book
+author: "datalab@unimib.it"
+date: "2025-10-27"
+output:
+  pdf_document:
+    toc: true
+    toc_depth: 3
+    latex_engine: lualatex
+    extra_dependencies:
+      hyperref:
+      - unicode=true
+      - breaklinks=true
+      lmodern: null
+documentclass: report
 classoption:
-   - a4paper
-   - 10pt
-output: 
-   pdf_document:
-      toc: true
-      toc_depth: 3
-      latex_engine: xelatex
+- a4paper
+- 10pt
+header-includes: "\\usepackage{unicode-math}"
 ---
 # ::{{{ #RCPP: TOC - RcppParallel Contents //
 [🠴](Rcpp-HOWTO.md)

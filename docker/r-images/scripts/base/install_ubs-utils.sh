@@ -103,11 +103,24 @@ function install_utils_sys() {
         mc \
         ranger \
         silversearcher-ag \
+        atop \
+        btop \
         bat \
-        ripgrep \
+        duf \
+        eza \
+        fd-find \
+        glances \
         iputils-ping \
         iputils-tracepath \
         iputils-clockdiff \
+        jq \
+        lsd \
+        ncdu \
+        nmon \
+        pv \
+        pdfgrep \
+        ripgrep \
+        tig \
         tmux
     
 }

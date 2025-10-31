@@ -1,4 +1,26 @@
-``` /// vim: set foldmethod=marker : ```
+--- 
+title: R Package with Rcpp Support
+subtitle: R package project template with Rcpp support
+vim: set foldmethod=marker
+author: "datalab@unimib.it"
+date: "2025-10-27"
+output:
+  pdf_document:
+    toc: true
+    toc_depth: 3
+    latex_engine: lualatex
+    extra_dependencies:
+      hyperref:
+      - unicode=true
+      - breaklinks=true
+      lmodern: null
+documentclass: report
+classoption:
+- a4paper
+- 10pt
+header-includes: "\\usepackage{unicode-math}"
+---
+
 # ::{{{ #RCPP: R Package with Rcpp Support //
 [🠴](Rcpp-HOWTO.md)
 

@@ -113,7 +113,13 @@ function install_commons_latex() {
     [ "$Y_BASE_COMMONS_LATEX" = 1 ] || return 0
     
     apt_install \
+        texlive \
+        texlive-fonts-recommended \
         texlive-latex-extra \
+        texlive-bibtex-extra \
+        texlive-lang-english \
+        texlive-lang-italian \
+        texlive-luatex \
         texlive-xetex
         
 #    tlmgr install \
@@ -131,10 +137,12 @@ function install_commons_cran() {
                renv \
                devtools \
                usethis \
+               argparse \
                cli \
                here \
                logging \
-               logger
+               logger \
+               microbenchmark
     
 }
 
@@ -143,6 +151,7 @@ function install_commons_cran() {
 function install_commons() {
     
     install_commons_sys
+    install_commons_latex
     install_commons_cran
     
 }

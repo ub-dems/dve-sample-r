@@ -1,4 +1,25 @@
-``` /// vim: set foldmethod=marker : ```
+--- 
+title: "RCPP: Loop Optimization with OpenMP/SIMD"
+subtitle: R/C++ "VibeCoding" (basic) and Loop Optimization
+vim: set foldmethod=marker
+author: "datalab@unimib.it"
+date: "2025-10-27"
+output:
+  pdf_document:
+    toc: true
+    toc_depth: 3
+    latex_engine: lualatex
+    extra_dependencies:
+      hyperref:
+      - unicode=true
+      - breaklinks=true
+      lmodern: null
+documentclass: report
+classoption:
+- a4paper
+- 10pt
+header-includes: "\\usepackage{unicode-math}"
+---
 # ::{{{ #RCPP: Loop Optimization with OpenMP/SIMD -- R VibeCoding (basic) //
 # Q:5 - R "VibeCoding" and Loop Optimization
 
