@@ -17,4 +17,5 @@ Index
 -----
 
 * [C++ (Rcpp) HOWTO](Rcpp-HOWTO.md)
+* [Python HOWTO](Python-HOWTO.md)
 
