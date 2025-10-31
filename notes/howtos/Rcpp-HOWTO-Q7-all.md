@@ -34,7 +34,6 @@ header-includes: "\\usepackage{unicode-math}"
 [[_TOC_]]
 
 # ::}}} \\ %+.
-
 # ::{{{ #RCPP: Q:7.0 - RcppParallel code //
 
 <a id="Q7" name="Q7" class="anchor"></a>
@@ -977,7 +976,17 @@ The prompt to enhance follows, delimited with 5 `---` horizontal lines.
 
 ## Introduction
 
-This tutorial demonstrates the implementation of the A* pathfinding algorithm in both sequential and parallel forms using C++ with Rcpp and RcppParallel. The A* algorithm is a popular graph traversal and pathfinding algorithm that uses heuristics to efficiently find the shortest path between two nodes. We implement both a traditional sequential version and a parallel version that leverages multi-core processing through RcppParallel's `parallelFor` and `parallelReduce` functions.
+This tutorial demonstrates the implementation of the A* pathfinding
+algorithm in both sequential and parallel forms using C++ with Rcpp
+and RcppParallel. 
+
+The A* algorithm is a popular graph traversal and pathfinding
+algorithm that uses heuristics to efficiently find the shortest path
+between two nodes. 
+
+We implement both a traditional sequential version and a parallel
+version that leverages multi-core processing through RcppParallel's
+`parallelFor` and `parallelReduce` functions.
 
 The example showcases:
 - Sequential vs. parallel A* implementations in C++
@@ -1011,7 +1020,9 @@ The sequential A* implementation follows the classical algorithm structure:
 - **Time Complexity**: O(E log V) where E is edges and V is vertices
 - **Space Complexity**: O(V) for storing node states
 - **Cache Efficiency**: Good spatial locality when exploring neighbors
-- **Expected Performance**: On a 32-core Azure VM, single-threaded performance will be ~2-4 GHz with excellent cache utilization for graphs up to 10,000 nodes
+- **Expected Performance**: On a 32-core Azure VM, single-threaded
+  performance will be ~2-4 GHz with excellent cache utilization for
+  graphs up to 10,000 nodes
 
 ### Parallel Implementation
 
