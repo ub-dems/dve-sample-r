@@ -217,11 +217,11 @@ setup_edge <- function(g, pairs, congestion = 0.0, cong_coeff = 1.0) {
     v2 <- pairs[i + 1]
     
     # Add edge if not present (undirected)
-    if (!are.connected(g, v1, v2)) {
+    if (!are_adjacent(g, v1, v2)) {
       g <- add_edges(g, c(v1, v2))
     }
     
-    eid <- get.edge.ids(g, c(v1, v2))
+    eid <- get_edge_ids(g, c(v1, v2))
     
     # Calculate Euclidean distance
     pos1 <- c(V(g)[v1]$x, V(g)[v1]$y)
@@ -473,7 +473,7 @@ apply_result_path <- function(obj, path, elapsed_time) {
     for (i in seq_len(length(path) - 1)) {
       v1 <- path[i]
       v2 <- path[i + 1]
-      eid <- get.edge.ids(g, c(v1, v2))
+      eid <- get_edge_ids(g, c(v1, v2))
       E(g)[eid]$in_path <- 1
       E(g)[eid]$path_pos <- i
     }
@@ -481,7 +481,7 @@ apply_result_path <- function(obj, path, elapsed_time) {
     # Calculate path statistics
     path_cost <- 0
     for (i in seq_len(length(path) - 1)) {
-      eid <- get.edge.ids(g, c(path[i], path[i + 1]))
+      eid <- get_edge_ids(g, c(path[i], path[i + 1]))
       path_cost <- path_cost + E(g)[eid]$weight
     }
     

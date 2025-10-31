@@ -10,7 +10,7 @@
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 
-#include <Rcpp.h>
+//#include <Rcpp.h>
 #include <RcppArmadillo.h>
 #include <RcppParallel.h>
 #include <queue>
