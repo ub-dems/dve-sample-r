@@ -20,10 +20,10 @@ Imports:
     RcppArmadillo,
     tidyverse,
     dplyr,
-    ggplot2,
     readr,
     argparse,
     here,
+    ggplot2,
     logger,
     logging,
     magrittr,
@@ -41,6 +41,11 @@ Suggests:
     devtools,
     knitr,
     lintr,
+    foreach,
+    doParallel,
+    parallelly,
+    ggraph,
+    igraph,
     microbenchmark,
     pacs,
     processx,
@@ -49,8 +54,9 @@ Suggests:
     roxygen2 (>= 7.3.2),
     testthat (>= 2.1.0),
     RcppGSL,
+    RcppParallel,
     RcppEigen
-LinkingTo: Rcpp, RcppArmadillo, RcppGSL
+LinkingTo: Rcpp, RcppArmadillo, RcppParallel, RcppGSL
 SystemRequirements: C++17, GNU Scientific Library (GSL) (>= 2.0)
 VignetteBuilder: 
     knitr

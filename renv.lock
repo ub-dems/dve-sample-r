@@ -109,6 +109,16 @@
       ],
       "Hash": "e8fc7310d256a7b6c4de8e57ab76c55d"
     },
+    "RcppParallel": {
+      "Package": "RcppParallel",
+      "Version": "5.1.11-1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R"
+      ],
+      "Hash": "07d228a359f31d8aebe6d2f643c1f012"
+    },
     "RcppTOML": {
       "Package": "RcppTOML",
       "Version": "0.2.3",
@@ -773,9 +783,9 @@
     },
     "igraph": {
       "Package": "igraph",
-      "Version": "2.1.4",
+      "Version": "2.2.1",
       "Source": "Repository",
-      "Repository": "RSPM",
+      "Repository": "CRAN",
       "Requirements": [
         "Matrix",
         "R",
@@ -792,7 +802,7 @@
         "utils",
         "vctrs"
       ],
-      "Hash": "db7352c3d239d0a319d2e3d0d040ed16"
+      "Hash": "8f3943f8c98e594bff132804aa4edf57"
     },
     "isoband": {
       "Package": "isoband",
