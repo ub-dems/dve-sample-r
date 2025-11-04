@@ -1,10 +1,14 @@
 --- 
-title: "RCPP: Loop Optimization with OpenMP/SIMD"
+title: 'RCPP: Loop Optimization with OpenMP/SIMD'
 subtitle: R/C++ "VibeCoding" (basic) and Loop Optimization
-vim: set foldmethod=marker
 author: "datalab@unimib.it"
+vim: set foldmethod=marker
 date: "2025-10-27"
 output:
+  html_document:
+    toc: true
+    toc_depth: '3'
+    df_print: paged
   pdf_document:
     toc: true
     toc_depth: 3
@@ -18,7 +22,7 @@ documentclass: report
 classoption:
 - a4paper
 - 10pt
-header-includes: "\\usepackage{unicode-math}"
+header-includes: \newcommand{\dontrun}[1]{#1}
 ---
 # ::{{{ #RCPP: Loop Optimization with OpenMP/SIMD -- R VibeCoding (basic) //
 # Q:5 - R "VibeCoding" and Loop Optimization
