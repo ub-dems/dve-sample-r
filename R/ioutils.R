@@ -2,11 +2,14 @@
 
 fn_base <- function() { return("dve-ds") }
 
+# ////////////////////////////////////////////////////////////////////////////
+
 fn_temp <- function() { return("temp") }
 fn_logs <- function() { return("logs") }
 fn_exec <- function() { return("exec") }
 
 fn_exdata <- function() { return("inst/extdata") }
+
 
 
 # ////////////////////////////////////////////////////////////////////////////
@@ -210,35 +213,3 @@ log_path <- function(name, path="") { io_logs(path=path, name=name) }
 exe_path <- function(name, path="") { io_exec(path=path, name=name) }
 
 # ////////////////////////////////////////////////////////////////////////////
-
-log_file <- function(fn) {
-  result <- io_logs(name=fn)
-  return(result)
-}
-
-#' @keywords internal
-#' @noRd
-log_dir <- function() {
-  logfile <- log_file("logfile.log")
-  result <- dirname(logfile)
-  return(result)
-}
-
-#' init logging
-#'
-#' @param logfile String logfile under logs/ (.gitignored) dir
-#' @param args list args, defaults to command-line arg
-#' @param log_level String appender logging level
-#' @param file_level String logfile logging level
-#' @param out_level String console logging level
-#' @export
-log_init <- function(logfile = "logfile.log", args = c(), log_level='DEBUG', file_level='DEBUG', out_level='INFO'){
-  logging::basicConfig()
-  logging::setLevel(log_level)
-  dir.create(log_dir(), showWarnings = FALSE, recursive = TRUE)  
-  logging::addHandler(logging::writeToFile, file=log_file(logfile), level=file_level)
-  logging::setLevel(Sys.getenv("R_LOGGING_LEVEL", out_level), getHandler("basic.stdout"))
-}
-
-# ////////////////////////////////////////////////////////////////////////////
-
