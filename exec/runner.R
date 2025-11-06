@@ -31,12 +31,12 @@ runner_logs <- function(job_desc){ log_init("runner.log", args=job_desc$job_conf
 # ---(scripts)------------------------------------------------
 
 E_PROJECT_SCRIPTS <- c(
-  "pipeline-runner.R",
-  "dummy-runner.R",
-  "dummy-reader.R"
+  "dummy/target/pipeline-runner.R",
+  "dummy/dummy-runner.R",
+  "dummy/dummy-reader.R"
 )
 
-E_DEFAULT_SCRIPT <- E_PROJECT_SCRIPTS[1]
+E_DEFAULT_SCRIPT <- E_PROJECT_SCRIPTS[2]
 
 #{{{ [ JOB ] /////////////////////////////////////////////////////////////////
 

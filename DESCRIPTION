@@ -35,7 +35,6 @@ Imports:
     yaml
 Suggests:
     argparse,
-    argparser,
     optparse,
     cli (>= 3.3.0),
     lintr,

@@ -34,7 +34,8 @@
 #' @importFrom grDevices pdf
 #' @importFrom readr read_csv write_csv cols col_datetime
 #' @importFrom dplyr filter
-#' @importFrom utils str capture.output head View 
+#' @importFrom utils str capture.output head View
+#' @importFrom stats runif
 ## @importFrom argparse ArgumentParser
 ## @importFrom targets tar_make
 ## @importFrom ggplot2 ggplot aes geom_line xlab
