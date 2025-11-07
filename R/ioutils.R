@@ -191,7 +191,27 @@ io_exec <- function(path = "", name = "", create_path = FALSE) {
 
 # ////////////////////////////////////////////////////////////////////////////
 
-#' convert filename to filedesciptor with access timestamp
+#' retrieve all installed packages with versions
+#'
+#' @return dataframe of packages and versions
+#' @export
+list_dependencies <- function() {
+
+  pkgs <- data.frame()
+  for (i in 1:(length((.packages())))){
+    package <- (.packages())[i]
+    version <- utils::packageVersion(package)
+    pv <- data.frame(package, version)
+    pkgs <- rbind(pkgs,pv)
+  }
+  return(pkgs)
+}
+
+
+
+# ////////////////////////////////////////////////////////////////////////////
+
+#' convert filename to filedescriptor with access timestamp
 #'
 #' @param fn String filename
 #' @return fd

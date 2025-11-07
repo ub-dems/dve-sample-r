@@ -48,7 +48,7 @@ auto_load <- function() { return(1) }
 m$auto_load()
 
 
-dmy_p01_init_logging <- function(args = c()){ log_init("dummy-p01-proc.log", args=args) }
+## dmy_p01_init_logging <- function(args = c()){ log_init("dummy-p01-proc.log", args=args) }
 
 
 dmy_p01_env_dump <- function (){
@@ -204,12 +204,14 @@ dmy_p01_plot_user_private_data <- function (PJME_hourly_3y){
   #nm <- names(PJME_hourly_3y)
   loginfo('# plot: %s', fn)
   
-  # Most basic bubble plot
-  p <- ggplot(df, aes(x=Datetime, y=PJME_MW)) +
-    geom_line() + 
-    xlab("")
   pdf(fn)
-  print(p)
+  # Most basic bubble plot
+  # p <- ggplot(df, aes(x=Datetime, y=PJME_MW)) +
+  #  geom_line() + 
+  #  xlab("")
+  # print(p)
+  plot(x = df$Datetime, y = df$PJME_MW)
+  dev.off()
   return (as.IOfd(fn))
 }
 
@@ -225,12 +227,14 @@ dmy_p01_plot_host_local_data <- function (PJME_hourly){
   # nm <- names(PJME_hourly)
   loginfo('# plot: %s', fn)
   
-  # Most basic bubble plot
-  p <- ggplot(df, aes(x=Datetime, y=PJME_MW)) +
-    geom_line() + 
-    xlab("")
   pdf(fn)
-  print(p)  
+  # Most basic bubble plot
+  # p <- ggplot(df, aes(x=Datetime, y=PJME_MW)) +
+  #  geom_line() + 
+  #  xlab("")
+  # print(p)
+  plot(x = df$Datetime, y = df$PJME_MW)
+  dev.off()
   return (as.IOfd(fn))
 }
 
@@ -272,7 +276,7 @@ dmy_p01_task <- function(args = commandArgs(trailingOnly=TRUE)){
 dmy_p01_main <- function(args = commandArgs(trailingOnly=TRUE)){ 
   #args <- commandArgs(trailingOnly=TRUE)
   # m$init_logging(args = args)
-  dmy_p01_init_logging(args = args)
+  ## dmy_p01_init_logging(args = args)
   loginfo('#> start: %s', paste(args,sep = " "))
   loginfo('#? args: %s', paste(commandArgs(),sep = ", "))
   m$log_info("#start")

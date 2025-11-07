@@ -18,6 +18,10 @@
 #
 ## @importFrom keras is_keras_available
 # 
+#' @importFrom foreach foreach
+#' @importFrom doParallel registerDoParallel
+#' @importFrom parallelly availableCores makeClusterPSOCK
+# 
 #' @importFrom here here
 #' @importFrom logger log_info
 #' @importFrom logging loginfo logdebug logerror getHandler
@@ -31,10 +35,10 @@
 # 
 # 
 #' @importFrom tidyverse tidyverse_conflicts
-#' @importFrom grDevices pdf
+#' @importFrom grDevices pdf dev.off
 #' @importFrom readr read_csv write_csv cols col_datetime
 #' @importFrom dplyr filter
-#' @importFrom utils str capture.output head View
+#' @importFrom utils str capture.output head View packageVersion
 #' @importFrom stats runif
 ## @importFrom argparse ArgumentParser
 ## @importFrom targets tar_make

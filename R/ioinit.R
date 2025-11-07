@@ -18,7 +18,7 @@ args_get <- function(args, name, default=NA) {
   } else {
     env_value <- Sys.getenv(paste0("X_ARG_",toupper(name)))
     if (!is.na(env_value)) {
-      if (is.numeric(default) && is_numeric(env_value)) {
+      if (is.numeric(default) && is.numeric(env_value)) {
         result <- as.numeric(env_value)
       } else {
         result <- env_value
@@ -29,7 +29,10 @@ args_get <- function(args, name, default=NA) {
 
 # ////////////////////////////////////////////////////////////////////////////
 
-#' Setup random number generator
+#' Initial setup for random number generator (rng)
+#' @param name script name
+#' @param args parsed args as a named list
+#' @param seed seed to assign, if 0, retrieved from args or env, only set if defined
 init_script_setup_rng <- function(name = "script", args = list(), seed = 0) {
   env_seed <- as.integer(Sys.getenv("R_SEED", unset="0"))
   env_seed <- ifelse(is.na(env_seed) == TRUE, 0, env_seed)
@@ -50,7 +53,9 @@ init_script_setup_rng <- function(name = "script", args = list(), seed = 0) {
 
 # ////////////////////////////////////////////////////////////////////////////
 
-#' Initialize logging facility
+#' Initialize logging facility provided by 'logger' package
+#' @param name script name
+#' @param args parsed args as a named list
 init_script_setup_logging <- function(name = "script", args = list()) {
 
   script_name <- getOption("o_script_name")
@@ -58,7 +63,7 @@ init_script_setup_logging <- function(name = "script", args = list()) {
   # Get log directory from environment or default
   log_dir <- dirname(io_logs("logfile.log"))
   if (!dir.exists(log_dir)) {
-    dir.create(log_output_dir, showWarnings = FALSE, recursive = TRUE)
+    dir.create(log_dir, showWarnings = FALSE, recursive = TRUE)
   }
   options("o_log_dir"=log_dir)
 
@@ -72,13 +77,15 @@ init_script_setup_logging <- function(name = "script", args = list()) {
   
   log_prefix <- sprintf("%s-%s", script_name, timestamp)
   log_file <- file.path(log_dir, sprintf("%s.log", log_prefix))
+  log_threshold <- if (verbose >= 1) logger::DEBUG else logger::INFO
   options("o_log_prefix"=log_prefix)
+  options("o_log_file"=log_file)
+  options("o_log_threshold"=log_threshold)
   
   # Configure logger
-  logger::log_threshold <- if (verbose >= 1) DEBUG else INFO
-  logger::log_appender(appender_tee(log_file))
+  logger::log_appender(logger::appender_tee(log_file))
   logger::log_threshold(log_threshold)
-  logger::log_layout(layout_glue_colors)
+  logger::log_layout(logger::layout_glue_colors)
 
   # Inject hooks in base logging
 
@@ -86,17 +93,20 @@ init_script_setup_logging <- function(name = "script", args = list()) {
   logger::log_warnings()
   logger::log_errors()
   
-  # Store in options
-  message(">>#CTL:START: {script_name} -- at: {timestamp}")
-  message("Logging initialized: {log_file}")
-  message("Log directory: {normalizePath(log_dir)}")
+  # Mark Log Start
+  logger::log_info(">>#CTL:START: {script_name} -- at: {timestamp}")
+  logger::log_info("Log file: {log_file}")
+  logger::log_info("Log dir: {normalizePath(log_dir)}")
+  logger::log_info("Log level: {log_threshold}")
   
-  return(list(dir = log_dir, prefix = log_prefix, file = log_file))
+  return(list(log_dir = log_dir, log_prefix = log_prefix, log_file = log_file))
 }
 
 # ////////////////////////////////////////////////////////////////////////////
 
 #' Log system information
+#' @param name script name
+#' @param args parsed args as a named list
 init_script_show_system_info <- function(name = "script", args = list()) {
   message("=== System Information ===")
   
@@ -113,45 +123,73 @@ init_script_show_system_info <- function(name = "script", args = list()) {
 }
 
 #' Log system information
+#' @param name script name
+#' @param args parsed args as a named list
 init_script_show_arguments <- function(name = "script", args = list()) {
-  args_yaml <- as.yaml(args)
-  message("=== Script Arguments === \n\n{args_yaml}\n\n\n")
-  
+  args_wrap = list(script = list(name = name, args = args))
+  args_yaml <- as.yaml(args_wrap)
+  message(sprintf("=== Script Arguments === \n\n%s\n\n\n", args_yaml))
 }
 
 
 
 # ////////////////////////////////////////////////////////////////////////////
 
-#' init logging
-#'
-#' @param logfile String logfile under logs/ (.gitignored) dir
-#' @param args list args, defaults to command-line arg
-#' @param loglevel String appender logging level
-#' @param filelevel String logfile logging level
-#' @param outlevel String console logging level
-#' @export
-log_init <- function(logfile = "logfile.log", args = c(), loglevel='DEBUG', filelevel='DEBUG', outlevel='INFO'){
-  logdir <- dirname(io_logs("logfile.log"))
-  if (!dir.exists(logdir)) {
-    dir.create(logdir, showWarnings = FALSE, recursive = TRUE)
-  }
-  
-  logging::basicConfig()
-  logging::setLevel(loglevel)
-  logging::addHandler(logging::writeToFile, file=log_file(logfile), level=filelevel)
-  logging::setLevel(Sys.getenv("R_LOGGING_LEVEL", outlevel), getHandler("basic.stdout"))
+logfinest <- function(msg, ...) {
+  logger::log_trace(sprintf(msg,...))
 }
+
+logfiner <- function(msg, ...) {
+  logger::log_trace(sprintf(msg,...))
+}
+
+logfine <- function(msg, ...) {
+  logger::log_trace(sprintf(msg,...))
+}
+
+logdebug <- function(msg, ...) {
+  logger::log_debug(sprintf(msg,...))
+}
+
+loginfo <- function(msg, ...) {
+  logger::log_info(sprintf(msg,...))
+}
+
+logwarn <- function(msg, ...) {
+  logger::log_warn(sprintf(msg,...))
+}
+
+logerror <- function(msg, ...) {
+  logger::log_error(sprintf(msg,...))
+}
+
+# ## @deprecated("removed logging dependency, replaced by logger package") 
+# ## init logging
+# ##
+# ## @param logfile String logfile under logs/ (.gitignored) dir
+# ## @param args list args, defaults to command-line arg
+# ## @param loglevel String appender logging level
+# ## @param filelevel String logfile logging level
+# ## @param outlevel String console logging level
+# ## @export
+# log_init <- function(logfile = "logfile.log", args = c(), loglevel='DEBUG', filelevel='DEBUG', outlevel='INFO'){
+#   logdir <- dirname(io_logs("logfile.log"))
+#   if (!dir.exists(logdir)) {
+#     dir.create(logdir, showWarnings = FALSE, recursive = TRUE)
+#   }
+#   
+#   logging::basicConfig()
+#   logging::setLevel(loglevel)
+#   logging::addHandler(logging::writeToFile, file=log_file(logfile), level=filelevel)
+#   logging::setLevel(Sys.getenv("R_LOGGING_LEVEL", outlevel), getHandler("basic.stdout"))
+# }
 
 # ////////////////////////////////////////////////////////////////////////////
 
 #' init script
 #'
-#' @param logfile String logfile under logs/ (.gitignored) dir
-#' @param args list args, defaults to command-line arg
-#' @param loglevel String appender logging level
-#' @param filelevel String logfile logging level
-#' @param outlevel String console logging level
+#' @param name script name
+#' @param args parsed args as a named list
 #' @export
 init_script <- function(name = "script", args = list()) {
 
@@ -162,6 +200,9 @@ init_script <- function(name = "script", args = list()) {
   init_script_show_arguments(name = name, args = args)
   init_script_setup_rng(name = name, args = args)
   init_script_show_system_info(name = name, args = args)
+  
+  return (invisible(NULL))
+  
 }
 
 #' exit script
@@ -182,6 +223,8 @@ exit_script <- function(rc = 0, msg = "success.") {
   duration <- format_elapsed(elapsed_millis)
 
   message("<<#CTL:END{rc} {script_name} -- at: {timestamp} (elapsed: {duration}) -- {msg}")
+  
+  return (invisible(NULL))
   
 }
 

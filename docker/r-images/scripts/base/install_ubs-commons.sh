@@ -4,7 +4,6 @@
 # install_ubs-commons.sh: install common tools and libraries
 #
 
-
 set -e
 
 ## build ARGs
@@ -47,167 +46,161 @@ LOG_WHO="${IMG_TYPE:-'----'}"
 LOG_LEVEL=""
 function _log() {
 
-    local mess
-    local llev
-    lwho="$LOG_WHO"
-    lcat="$LOG_LOGGER"
-    llev=$(printf '%-5s' ${LOG_LEVEL:-'LOG'})
-    mess="${C_IGreen}$(date '+%Y-%m-%d %H:%M:%S %s') ${C_OFF}${CLOG}| $lwho | $lcat | $llev | ${LCTX} | $$ | $* ${C_OFF}"
+	local mess
+	local llev
+	lwho="$LOG_WHO"
+	lcat="$LOG_LOGGER"
+	llev=$(printf '%-5s' ${LOG_LEVEL:-'LOG'})
+	mess="${C_IGreen}$(date '+%Y-%m-%d %H:%M:%S %s') ${C_OFF}${CLOG}| $lwho | $lcat | $llev | ${LCTX} | $$ | $* ${C_OFF}"
 
-    echo -e ${mess}
-    
+	echo -e ${mess}
+
 }
-debug() { LOG_LEVEL='DEBUG' CLOG="$C_Green"   _log $*; }
-info()  { LOG_LEVEL='INFO.'  CLOG="$C_BICyan"  _log $*; }
-warn()  { LOG_LEVEL='WARN.'  CLOG="$C_BYellow" _log $*; }
-error() { LOG_LEVEL='ERROR' CLOG="$C_IRed"    _log $*; }
-fatal() { LOG_LEVEL='FATAL' CLOG="$C_BIRed"   _log $*; }
-log()   { LOG_LEVEL='_LOG_'   CLOG="$C_BBlue"   _log $*; }
-die ()  { fatal $*; exit 1; }
+debug() { LOG_LEVEL='DEBUG' CLOG="$C_Green" _log $*; }
+info() { LOG_LEVEL='INFO.' CLOG="$C_BICyan" _log $*; }
+warn() { LOG_LEVEL='WARN.' CLOG="$C_BYellow" _log $*; }
+error() { LOG_LEVEL='ERROR' CLOG="$C_IRed" _log $*; }
+fatal() { LOG_LEVEL='FATAL' CLOG="$C_BIRed" _log $*; }
+log() { LOG_LEVEL='_LOG_' CLOG="$C_BBlue" _log $*; }
+die() {
+	fatal $*
+	exit 1
+}
 
 # ---(env)------------------------------------------------
 function env_dump() {
 
-    [ "$Y_DEBUG_ENV" = 1 ] || return 0
-    
-    echo "+++> #ENV($0): $@"
-    echo "+++: #ENV($0): set"
-    set | grep '^Y_' | sort
-    echo "+++: #ENV($0): env"
-    env | sort
-    echo "+++: #ENV($0): path"
-    echo "PATH=$PATH"
-    echo "+++<  #ENV($0): $@"
-    
+	[ "$Y_DEBUG_ENV" = 1 ] || return 0
+
+	echo "+++> #ENV($0): " "$@"
+	echo "+++: #ENV($0): set"
+	set | grep '^Y_' | sort
+	echo "+++: #ENV($0): env"
+	env | sort
+	echo "+++: #ENV($0): path"
+	echo "PATH=$PATH"
+	echo "+++<  #ENV($0): " "$@"
+
 }
 
 # a function to install apt packages only if they are not installed
 function apt_install() {
-    if ! dpkg -s "$@" >/dev/null 2>&1; then
-        if [ "$(find /var/lib/apt/lists/* | wc -l)" = "0" ]; then
-            apt-get update
-        fi
-        apt-get install -y --no-install-recommends "$@"
-    fi
+	if ! dpkg -s "$@" >/dev/null 2>&1; then
+		if [ "$(find /var/lib/apt/lists/* | wc -l)" = "0" ]; then
+			apt-get update
+		fi
+		apt-get install -y --no-install-recommends "$@"
+	fi
 }
 
 function install_commons_sys() {
 
-    [ "$Y_BASE_COMMONS_SYS" = 1 ] || return 0
-    
-    apt_install \
-        libgsl-dev \
-        libzmq3-dev \
-        default-libmysqlclient-dev \
-        parallel \
-        hwloc \
-        tasksel \
-        numactl \
-        inxi \
-        htop
-    
+	[ "$Y_BASE_COMMONS_SYS" = 1 ] || return 0
+
+	apt_install \
+		libgsl-dev \
+		libzmq3-dev \
+		libglpk-dev \
+		default-libmysqlclient-dev \
+		parallel \
+		hwloc \
+		tasksel \
+		numactl \
+		inxi \
+		htop
+
 }
 
 function install_commons_latex() {
 
-    [ "$Y_BASE_COMMONS_LATEX" = 1 ] || return 0
-    
-    apt_install \
-        texlive \
-        texlive-fonts-recommended \
-        texlive-latex-extra \
-        texlive-bibtex-extra \
-        texlive-lang-english \
-        texlive-lang-italian \
-        texlive-luatex \
-        texlive-xetex
-        
-#    tlmgr install \
-#        unicode-math
-        
-#    tlmgr update --self --all
+	[ "$Y_BASE_COMMONS_LATEX" = 1 ] || return 0
+
+	apt_install \
+		texlive \
+		texlive-fonts-recommended \
+		texlive-latex-extra \
+		texlive-bibtex-extra \
+		texlive-lang-english \
+		texlive-lang-italian \
+		texlive-luatex \
+		texlive-xetex
+
+	#    tlmgr install \
+	#        unicode-math
+
+	#    tlmgr update --self --all
 }
 
 function install_commons_cran() {
-    
-    [ "$Y_BASE_COMMONS_CRAN" = 1 ] || return 0
-    
-    install2.r --error --skipmissing --skipinstalled -n $NCPUS \
-               remotes \
-               renv \
-               devtools \
-               usethis \
-               argparse \
-               cli \
-               here \
-               logging \
-               logger \
-               microbenchmark
-    
+
+	[ "$Y_BASE_COMMONS_CRAN" = 1 ] || return 0
+
+	install2.r --error --skipmissing --skipinstalled -n $NCPUS \
+		remotes \
+		renv \
+		devtools \
+		usethis \
+		argparse \
+		cli \
+		here \
+		logging \
+		logger \
+		microbenchmark
+
 }
-
-
 
 function install_commons() {
-    
-    install_commons_sys
-    install_commons_latex
-    install_commons_cran
-    
+
+	install_commons_sys
+	install_commons_latex
+	install_commons_cran
+
 }
-
-
 
 function setenv_rehash() {
 
-    set +e
-    env_dump "setenv_commons::pre"
-    export PS1='# '; source /etc/bash.bashrc
-    env_dump "setenv_commons::post"
-    set -e
-    
-}
+	set +e
+	env_dump "setenv_commons::pre"
+	export PS1='# '
+	source /etc/bash.bashrc
+	env_dump "setenv_commons::post"
+	set -e
 
+}
 
 function check_commons() {
-    
-    [ "$Y_BASE_COMMONS_CHECK" = 1 ] || return 0
-    
-    inxi    -v 1   || true
-    numactl -H     || true
-    numactl -s     || true
-    
-    
-}
 
+	[ "$Y_BASE_COMMONS_CHECK" = 1 ] || return 0
+
+	inxi -v 1 || true
+	numactl -H || true
+	numactl -s || true
+
+}
 
 function clean_up() {
-    :
+	:
 }
-
-
 
 function main() {
 
-    env_dump $@
-    
-    [ "$Y_BASE_COMMONS_INSTALL" = 1 ] || return 0
+	env_dump "$@"
 
-    info "> script($0) -- STARTED, ..."
-    
-    setenv_rehash
+	[ "$Y_BASE_COMMONS_INSTALL" = 1 ] || return 0
 
-    install_commons
-    setenv_rehash
+	info "> script($0) -- STARTED, ..."
 
-    check_commons
+	setenv_rehash
 
-    clean_up
+	install_commons
+	setenv_rehash
 
-    info "> script($0) -- DONE."
+	check_commons
+
+	clean_up
+
+	info "> script($0) -- DONE."
 
 }
-    
 
-main $@
- 
+main "$@"
