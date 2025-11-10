@@ -13,8 +13,8 @@
 #' @export
 args_get <- function(args, name, default=NA) {
   result <- default
-  if (name %in% names(args)) {
-    result <- args[[name]]
+  if (name %in% names(args$options)) {
+    result <- args$options[[name]]
   } else {
     env_value <- Sys.getenv(paste0("X_ARG_",toupper(name)))
     if (!is.na(env_value)) {
@@ -25,7 +25,33 @@ args_get <- function(args, name, default=NA) {
       }
     }
   }
+  return(result)
 }
+
+#' retrieve an optional argument fron the named list of parsed arguments.
+#' if missing, the value is retrieved fron system environment with "X_ARG_" prefix
+#' and uppercase name. If efalt value is nyumeric, this value is converted
+#' as numeric from string.
+#'
+#' @param args parsed arguments as a named list
+#' @param level verbosity level
+#' @return TRUE if verbosity is greater or equal level
+#' @export
+is_verbose <- function(args, level = 1) {
+  verbose <-args_get(args, "verbose", 0)
+  
+  if (is.logical(verbose)) {
+    verbose <- ifelse(verbose,1,0)
+  }
+  
+  if (!(is.numeric(verbose))) {
+    return(FALSE)
+  }
+  result <- ifelse(verbose >= level, TRUE, FALSE) 
+  return(result)
+}
+
+
 
 # ////////////////////////////////////////////////////////////////////////////
 
@@ -37,6 +63,11 @@ init_script_setup_rng <- function(name = "script", args = list(), seed = 0) {
   env_seed <- as.integer(Sys.getenv("R_SEED", unset="0"))
   env_seed <- ifelse(is.na(env_seed) == TRUE, 0, env_seed)
   arg_seed <- args_get(args, "seed", env_seed)
+  
+  if (is_verbose(args)) {
+    message("env_seed:", env_seed)
+    message("arg_seed:", arg_seed)
+  }
 
   if (seed == 0) {
     seed <- arg_seed
@@ -128,7 +159,7 @@ init_script_show_system_info <- function(name = "script", args = list()) {
 init_script_show_arguments <- function(name = "script", args = list()) {
   args_wrap = list(script = list(name = name, args = args))
   args_yaml <- as.yaml(args_wrap)
-  message(sprintf("=== Script Arguments === \n\n%s\n\n\n", args_yaml))
+  message(sprintf("=== Script Arguments === \n\n%s\n\n", args_yaml))
 }
 
 
