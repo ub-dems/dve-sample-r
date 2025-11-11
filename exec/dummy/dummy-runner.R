@@ -3,7 +3,7 @@
 ##
 # runner script example
 #
-
+rm(list = ls())
 devtools::load_all(".")
 
 require(dvesimpler)
@@ -22,24 +22,86 @@ c_script_name <- "dummy-runner"
 
 c_usage_doc <- "
 
-Usage:
-  %prog [options] ...
+  'runtime' exec/dummy/%prog.R [options] ...
+
+In RStudio, the script can be run directly, always from project root,
+in console, or in terminal. 
+
+```
+exec/dummy/dummyRunner.R [options] ...
+```
+
+For long running scripts,
+it is better to run the script directly in command line,
+inside a tmux session, to avoid disconnection interruption.
+In this mode, 'runtime', from the project root, can be one of:
+
+```sh
+./runtime.sh cli exec/dummy/dummyRunner.R [options] ...
+./runtime.sh sh  exec/dummy/dummyRunner.R [options] ...
+```
+
+In order to keep a complete log of script execution,
+in `~/aliases`, the `rrun` function can be defined:
+
+```sh
+rrun() {
+ export RR_PID=$$
+ export RR_TS=$(date -Isec)
+ export RR_LOG=\"logs/rrun-$(date -Isec)-$RR_PID.log\"
+ ( echo \"$(date),#RRUN($RR_PID)>,ARGS=$@\"; \
+   ./runtime.sh cli $@; rc=$?; \
+   echo \"$(date),#RRUN($RR_PID)<,rc=$rc,ARGS=$@\") 2>&1 \
+  | tee -a $RR_LOG
+  echo \"$(date),#RRUN($RR_PID):rc=$rc Logfile: $RR_LOG\"
+  ls -l  $RR_LOG
+}
+```
+
+with this function, the script can be run as:
+
+```sh
+rrun exec/dummy/dummyRunner.R [options] ...
+```
+
+Examples:
+
+```sh
+
+./runtime.sh cli exec/dummy/dummyRunner.R --help
+./runtime.sh cli exec/dummy/dummyRunner.R -v
+
+rrun exec/dummy/dummyRunner.R -q alice bob
+
+```
+
 ---
 
 "
 c_desc_doc <- "
-demo script for simple \"hello world\" package function call.
 
-In aduition, some environment info are show in output:
+DESCRIPTION
+
+Demo script for simple \"hello world\" package function call.
+
+In addition, some environment info are show in output logfile:
    - system HW summary (taken by inxi command)
    - dependency packages availabe with versions
    - R sessionInfo() output
+To avoid diagnostics, run the script with the `-q,--quiet` option.
 
+
+To show last log ('q' for exit) run the command:
+
+```sh
+less -SRX $(ls logs/%prog* -t | head -n1)
+```
 
 "
 c_trailer_doc <- "
 
-NOTE:
+SEE ALSO:
+
    @Seealso: R/ioinit.R
    @Seealso: R/ioutils.R
 
@@ -69,7 +131,7 @@ parse_arguments <- function(argv = c()) {
   p <- OptionParser(prog = g_script_name, usage = c_usage_doc,
                     description = c_desc_doc, epilogue = c_trailer_doc)
   
-  p <- add_option(p, c("-v", "--verbose"), type = "integer", action = "store", default = 0,
+  p <- add_option(p, c("-v", "--verbose"), action = "store_true", default = FALSE,
                   help = "Increase verbosity (-v: debug, -vv: trace) [default %default]")
   
   p <- add_option(p, c("-q", "--quiet"), action = "store_true", default = FALSE,
@@ -91,20 +153,18 @@ parse_arguments <- function(argv = c()) {
 # =======================================
 
 show_dependencies <- function() {
-  pkgs <- list_dependencies()
-  print("{{{ Dependencies:\n")
-  print(pkgs)
-  print("}}}\n")
+  pkgs <- as.yml(list_dependencies())
+  log_info("Dependencies: [[\n\n\n{pkgs}\n]]\n")
 }
 
 show_session_info <- function() {
-  sx <- capture.output(sessionInfo())
-  log_info("Session info: [[\n\n\n{sx}\n]]\n")
+  sx <- as.yaml(get_session_info())
+  log_debug("Session info: [[\n\n\n{sx}\n]]\n")
 }
 
 show_diagnostics <- function() {
   args <- g_args
-  if (args$options$quiet) {
+  if (is_quiet(args)) {
     return(invisible(NULL))
   }
   show_dependencies()
@@ -118,13 +178,10 @@ show_diagnostics <- function() {
 # =======================================
 
 say_hello <- function(args = g_args) {
+
   hello_msg <- dmy_hello()
-
-  print("#hello.msg: ", hello_msg)
-  hello_out <- capture.output(print("#hello.out: ", hello_msg))
-
-  log_info("say_hello -- { hello_out }")
-
+  log_info("say_hello -- { hello_msg }")
+  
 }
 
 
@@ -168,12 +225,12 @@ run_init <- function(argv = c()) {
 
 #' Script failure
 run_fail <- function(rc = 1, ex = NULL, msg = "_undefined error_") {
-  fail_script(g_script_name, rc = rc, ex = ex, msg = msg)
+  fail_script(rc = rc, ex = ex, msg = msg)
 }
 
 #' Script complention
 run_exit <- function(rc = 0, msg = "success.") {
-  exit_script(g_script_name, rc = rc, msg = msg)
+  exit_script(rc = rc, msg = msg)
 }
 
 # //////////////////////////////////////////////////////////////////

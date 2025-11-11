@@ -488,16 +488,17 @@ build-image/${BLD_WORKER}: build-image/${BLD_RUNTIME}
 
 # ---(bare)------------------------------------------------
 
+# -p ${RUN_PORT_A_EXT}:${RUN_PORT_A_INT} \
+# -p ${RUN_PORT_B_EXT}:${RUN_PORT_B_INT} \
+# -p ${RUN_PORT_C_EXT}:${RUN_PORT_C_INT} \
+# -p ${RUN_PORT_D_EXT}:${RUN_PORT_D_INT} \
+
 run/shell:
 	@echo "CLI: shell ${RUNTIME_ARGS}"
 	@export _passw_=$$(cat ~/.rup/*); set -x; \
 	$(DOCKER)  run \
 		--rm \
 		${DOCKER_RUNTIME_OPTIONS} \
-		-p ${RUN_PORT_A_EXT}:${RUN_PORT_A_INT} \
-		-p ${RUN_PORT_B_EXT}:${RUN_PORT_B_INT} \
-		-p ${RUN_PORT_C_EXT}:${RUN_PORT_C_INT} \
-		-p ${RUN_PORT_D_EXT}:${RUN_PORT_D_INT} \
 		-v ${HOME_DIR}:${RUN_USER_HOME}:Z  \
 		-v ~/work:${RUN_USER_HOME}/work:Z  \
 		-v ~/data:${RUN_USER_HOME}/data:Z  \

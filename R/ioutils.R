@@ -207,6 +207,35 @@ list_dependencies <- function() {
   return(pkgs)
 }
 
+#' get system information
+#' @returns list of system information
+get_system_info <- function() {
+  cpu_info <- NA
+  # Try to run inxi command
+  tryCatch({
+    cpu_info_raw <- system("inxi -C", intern = TRUE, ignore.stderr = TRUE)
+    cpu_info <- paste(cpu_info, collapse = "\n")
+  }, error = function(e) {
+    warning("Could not retrieve CPU info (inxi not available)")
+  })
+  result <- list(
+    cpu_info = cpu_info,
+    r_version = R.version.string,
+    r_platform = R.version$platform
+  )
+  return(result)
+}
+
+
+#' get system information
+#' @returns list session info
+get_session_info <- function() {
+  session_info <- capture.output(sessionInfo())
+  result <- list(
+    session_info = session_info
+  )
+  return(result)
+}
 
 
 # ////////////////////////////////////////////////////////////////////////////
