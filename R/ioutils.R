@@ -45,10 +45,10 @@ format_elapsed <- function(elpsed_millis) {
 
 # ---(diagnostics)---------------------------------------------
 
-#' retrieve all installed packages with versions
-#'
-#' @return dataframe of packages and versions
-#' @export
+## retrieve all installed packages with versions
+##
+## @return dataframe of packages and versions
+## @export
 list_dependencies <- function() {
 
   pkgs <- data.frame()
@@ -61,8 +61,8 @@ list_dependencies <- function() {
   return(pkgs)
 }
 
-#' get system information
-#' @returns list of system information
+## get system information
+## @returns list of system information
 get_system_info <- function() {
   cpu_info <- NA
   # Try to run inxi command
@@ -81,10 +81,10 @@ get_system_info <- function() {
 }
 
 
-#' get system information
-#' @returns list session info
+## get system information
+## @returns list session info
 get_session_info <- function() {
-  session_info <- capture.output(sessionInfo())
+  session_info <- capture.output(utils::sessionInfo())
   result <- list(
     session_info = session_info
   )

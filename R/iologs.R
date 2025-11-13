@@ -20,16 +20,7 @@
 
 # ---(conditional logging)---------------------------------------------
 
-#' retrieve an optional argument fron the named list of parsed arguments.
-#' if missing, the value is retrieved fron system environment with "X_ARG_" prefix
-#' and uppercase name. If efalt value is nyumeric, this value is converted
-#' as numeric from string.
-#'
-#' @param args parsed arguments as a named list
-#' @param level verbosity level
-#' @return TRUE if verbosity is greater or equal level
-#' @export
-is_verbose <- function(args, level = 1) {
+init_opt_verbose <- function(args, level = 1) {
   verbose <-args_get(args, "verbose", 0)
 
   if (is.logical(verbose)) {
@@ -37,21 +28,42 @@ is_verbose <- function(args, level = 1) {
   }
 
   if (!(is.numeric(verbose))) {
-    return(FALSE)
+    verbose <- 0
   }
+  set_verbose(verbose)
+}
+
+set_verbose <- function(verbose = 1) {
+  prev <- get_verbose()
+  options("o_verbose" = verbose)
+  prev
+}
+
+get_verbose <- function() {
+  result <- getOption("o_verbose", 0)
+  return(result)
+}
+
+is_verbose <- function(level = 1) {
+  verbose = get_verbose()
   result <- ifelse(verbose >= level, TRUE, FALSE)
   return(result)
 }
 
-#' retrieve an optional argument fron the named list of parsed arguments.
-#' if missing, the value is retrieved fron system environment with "X_ARG_" prefix
-#' and uppercase name. If efalt value is nyumeric, this value is converted
-#' as numeric from string.
-#'
-#' @param args parsed arguments as a named list
-#' @return TRUE if quiet option set
-#' @export
-is_quiet <- function(args) {
+get_verbose_level <- function(verbose = get_verbose()) {
+  result <- switch(verbose + 6, 
+                   logger::OFF,      # verbose = -5
+                   logger::FATAL, 
+                   logger::ERROR, 
+                   logger::WARN,
+                   logger::SUCCESS,
+                   logger::INFO,     # verbose = 0
+                   logger::DEBUG,    # verbose = 1
+                   logger::TRACE)
+  
+}
+
+init_opt_quiet <- function(args) {
   quiet <-args_get(args, "quiet", FALSE)
   if (!(is.logical(quiet))) {
     return(FALSE)
@@ -59,15 +71,31 @@ is_quiet <- function(args) {
   return(quiet)
 }
 
+set_quiet <- function(quiet = TRUE) {
+  prev <- is_quiet()
+  options("o_quiet" = quiet)
+  prev
+}
 
+is_quiet <- function() {
+  result <- (getOption("o_quiet", FALSE) == TRUE)
+  return(result)
+}
+
+
+init_logging_options <- function(args) {
+  init_opt_verbose(args)
+  init_opt_quiet(args)
+}
+  
 # ---(startup diagnostics)---------------------------------------------
 
-#' Log system information
-#' @param name script name
-#' @param args parsed args as a named list
-init_script_show_system_info <- function(name = "script", args = list()) {
+## Log system information
+## @param name script name
+## @param args parsed args as a named list
+init_main_show_system_info <- function(name = "script", args = list()) {
   
-  if (!(is_verbose(args))) {
+  if (!(is_verbose())) {
     return(invisible(NULL))
   }  
   
@@ -80,10 +108,10 @@ init_script_show_system_info <- function(name = "script", args = list()) {
   
 }
 
-#' Log system information
-#' @param name script name
-#' @param args parsed args as a named list
-init_script_show_arguments <- function(name = "script", args = list()) {
+## Log system information
+## @param name script name
+## @param args parsed args as a named list
+init_main_show_arguments <- function(name = "script", args = list()) {
   args_wrap = list(script = list(name = name, args = args))
   args_yaml <- as.yaml(args_wrap)
   message(sprintf("=== Script Arguments === \n\n%s\n\n", args_yaml))
@@ -94,7 +122,7 @@ init_script_show_arguments <- function(name = "script", args = list()) {
 mark_log_init <- function(name = NULL, args = list()) {
 
   script_name <- ifelse(is.null(name), getOption("o_script_name","script"), name)
-  timestamp <- getOption("o_timestamp","?(timestamp)") 
+  timestamp <- getOption("o_run_timestamp","?(timestamp)") 
   log_dir <- getOption("o_log_dir","?(log_dir)") 
   log_file <- getOption("o_log_file","?(log_file)") 
   log_threshold <- getOption("o_log_threshold","?(log_threshold)") 
@@ -111,8 +139,8 @@ mark_log_exit <- function(rc = 0, msg = "success.") {
 
   script_name <- getOption("o_script_name")
 
-  start_time <- getOption("o_start_time")
-  end_time <- getOption("o_endtime")
+  start_time <- getOption("o_run_start_time")
+  end_time <- getOption("o_run_endtime")
 
   timestamp <- format(end_time, "%Y%m%d-%H%M%S")
   elapsed_millis <- end_time - start_time
@@ -127,12 +155,12 @@ mark_log_fail <- function(rc = 1, ex = NULL, msg = "_undefined error_") {
 
   script_name <- getOption("o_script_name")
 
-  start_time <- getOption("o_start_time")
-  end_time <- getOption("o_endtime")
+  start_time <- getOption("o_run_start_time")
+  end_time <- getOption("o_run_end_time")
 
   timestamp <- format(end_time, "%Y%m%d-%H%M%S")
-  elapsed_millis <- end_time - start_time
-  duration <- format_elapsed(elapsed_millis)
+  elapsed_millis <- difftime(end_time, start_time, units = "secs")
+  duration <- format_elapsed(as.numeric(elapsed_millis)*1000)
 
   # Mark Log Fail
   tryCatch({
@@ -164,29 +192,56 @@ mark_log_fail <- function(rc = 1, ex = NULL, msg = "_undefined error_") {
 
 }
 
+mark_log_quit <- function(rc = 0, msg = "terminated.") {
+  quit_msg <- sprintf("QUIT: (rc=%d) %s",rc,msg) 
+  if (rc == 0) {
+    logger::log_success(quit_msg)
+  } else {
+    logger::log_fatal(quit_msg)
+  }
+  return(quit_msg)
+}
+
+mark_log_stop <- function(rc = 0, msg = "terminated.") {
+  stop_msg <- sprintf("STOP: (rc=%d) %s",rc,msg)
+  if (is_verbose()) {
+    if (rc == 0) {
+      logger::log_success(stop_msg)
+    } else {
+      logger::log_fatal(stop_msg)
+    }
+  }
+  return(stop_msg)
+}
+
+mark_log_halt <- function(rc = 0, ex = NULL, msg = "terminated.") {
+  em <- ifelse(is.null(ex), "NULL", as.character(ex))
+  halt_msg <- sprintf("HALT: (rc=%d) %s -- ex=%s",rc,msg,em)
+  traceback()  
+  return(halt_msg)
+}
+
+
+
 # ---(`logger` setup)---------------------------------------------
 
 # Registration hooks for standard R message functions
-init_script_hook_logging <- function() {
-  if (any(sapply(
-    globalCallingHandlers()[names(globalCallingHandlers()) == "message"],
-    attr,
-    which = "implements"
-  ) == "log_messages")) {
-    return(invisible(NULL))
-  }  
+init_main_hook_logging <- function() {
+  # warning: must be called out from a tryCatch block
   logger::log_messages()
   logger::log_warnings()
   logger::log_errors()
   return(invisible(NULL))
 }
 
-#' Initialize logging facility provided by 'logger' package
-#' @param name script name
-#' @param args parsed args as a named list
-init_script_setup_logging <- function(name = NULL, args = list()) {
+## Initialize logging facility provided by 'logger' package
+## @param name script name
+## @param args parsed args as a named list
+init_main_setup_logging <- function(name = NULL, args = list()) {
 
   script_name <- ifelse(is.null(name), getOption("o_script_name","script"), name)
+  
+  init_logging_options(args)
 
   # Get log directory from environment or default
   log_dir <- dirname(io_logs("logfile.log"))
@@ -195,17 +250,12 @@ init_script_setup_logging <- function(name = NULL, args = list()) {
   }
   options("o_log_dir"=log_dir)
 
-  verbose <- args_get(args, "verbose", 0)
-  # Create log file with timestamp
-  start_time <- Sys.time()
-  options("o_start_time"=start_time)
-
-  timestamp <- format(start_time, "%Y%m%d-%H%M%S")
-  options("o_timestamp"=timestamp)
+  start_time <- getOption("o_run_start_time")
+  timestamp <- getOption("o_run_timestamp")
 
   log_prefix <- sprintf("%s-%s", script_name, timestamp)
   log_file <- file.path(log_dir, sprintf("%s.log", log_prefix))
-  log_threshold <- if (verbose >= 1) logger::DEBUG else logger::INFO
+  log_threshold <- get_verbose_level()
   options("o_log_prefix"=log_prefix)
   options("o_log_dir"=log_dir)
   options("o_log_file"=log_file)
@@ -217,9 +267,6 @@ init_script_setup_logging <- function(name = NULL, args = list()) {
   logger::log_layout(logger::layout_glue_colors)
   logger::log_formatter(logger::formatter_glue_or_sprintf)
   
-  # Inject hooks in base logging
-  init_script_hook_logging()
-
   # Mark Log Start
   mark_log_init(name = script_name, args = args)
 
@@ -236,12 +283,12 @@ failsafe_setup_logging <- function() {
 
 # ////////////////////////////////////////////////////////////////////////////
 
-#' Log system information
-#' @param name script name
-#' @param args parsed args as a named list
+## Log system information
+## @param name script name
+## @param args parsed args as a named list
 init_script_show_system_info <- function(name = "script", args = list()) {
   
-  if (!(is_verbose(args))) {
+  if (!(is_verbose())) {
     return(invisible(NULL))
   }  
   
@@ -254,9 +301,9 @@ init_script_show_system_info <- function(name = "script", args = list()) {
   
 }
 
-#' Log system information
-#' @param name script name
-#' @param args parsed args as a named list
+## Log system information
+## @param name script name
+## @param args parsed args as a named list
 init_script_show_arguments <- function(name = "script", args = list()) {
   args_wrap = list(script = list(name = name, args = args))
   args_yaml <- as.yaml(args_wrap)

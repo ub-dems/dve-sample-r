@@ -3,7 +3,7 @@
 ##
 # runner script example
 #
-rm(list = ls())
+#rm(list = ls())
 devtools::load_all(".")
 
 require(dvesimpler)
@@ -119,6 +119,18 @@ g_log_prefix <- NULL
 g_start_time <- NULL
 g_rnd_seed <- NULL
 
+#' store options in globals 
+set_globals <- function(argv = c()) {
+
+  assign("g_args", args, envir = .GlobalEnv)
+  assign("g_run_start_time", getOption("o_run_start_time"), envir = .GlobalEnv)
+  assign("g_log_dir", getOption("o_log_dir"), envir = .GlobalEnv)
+  assign("g_log_prefix", getOption("o_log_prefix"), envir = .GlobalEnv)
+  assign("g_rng_seed", getOption("o_rng_seed"), envir = .GlobalEnv)
+
+  return(args)
+
+}
 
 # =======================================
 # Housekeeping Phase
@@ -128,23 +140,23 @@ g_rnd_seed <- NULL
 #' Parse command-line arguments
 parse_arguments <- function(argv = c()) {
 
-  p <- OptionParser(prog = g_script_name, usage = c_usage_doc,
-                    description = c_desc_doc, epilogue = c_trailer_doc)
+  p <- make_std_option_parser(prog = g_script_name, usage = c_usage_doc,
+                              description = c_desc_doc, epilogue = c_trailer_doc)
   
-  p <- add_option(p, c("-v", "--verbose"), action = "store_true", default = FALSE,
-                  help = "Increase verbosity (-v: debug, -vv: trace) [default %default]")
-  
-  p <- add_option(p, c("-q", "--quiet"), action = "store_true", default = FALSE,
-                  help = "Suppress diagnostic output [default %default]")
-  
-  p <- add_option(p, c("-u", "--seed"), type = "integer", default = 0,
-                  help = "Random seed for reproducibility (0 = random) [default %default]")
+  p <- add_option(p, c("-s", "--salutation"), default = "Hi",
+                  help = "Salutation in greetings [default %default]")
+
+  p <- add_option(p, c("-n", "--n-points"), type = "integer", default = 0,
+                  help = "Number of trailing points for greetings [default %default]")
+
+  p <- add_std_options(p)
 
   args <- parse_args(p, args = argv,
                      positional_arguments = TRUE,
                      convert_hyphens_to_underscores = TRUE)
   return(args)
 }
+
 
 # //////////////////////////////////////////////////////////////////
 
@@ -164,7 +176,7 @@ show_session_info <- function() {
 
 show_diagnostics <- function() {
   args <- g_args
-  if (is_quiet(args)) {
+  if (is_quiet()) {
     return(invisible(NULL))
   }
   show_dependencies()
@@ -187,13 +199,16 @@ say_hello <- function(args = g_args) {
 
 say_hi_to_all <- function(args = g_args) {
 
+  salutation <- args$options$salutation
+  trailer <- replicate(args$options$salutation$n_points,"!")
+
   if (length(args$args) == 0) { # positional arguments
     return(2)
   }
 
   for (who in args$args) {
-    hi_msg <- dmy_hello(salutation = "Hi", who = who)
-    print("#hi.msg: ", hi_msg)
+    hi_msg <- dmy_hello(salutation = salutation, who = who)
+    print("#hi.msg: ", hi_msg, trailer)
   }
 
   return(0)
@@ -208,50 +223,25 @@ task <- function(args = g_args) {
 
 # //////////////////////////////////////////////////////////////////
 
-#' Script initialization
-run_init <- function(argv = c()) {
-  args <- parse_arguments(argv)
-  assign("g_args", args, envir = .GlobalEnv)
-  init_script(g_script_name, args = args)
-
-  assign("g_start_time", getOption("o_start_time"), envir = .GlobalEnv)
-  assign("g_log_dir", getOption("o_log_dir"), envir = .GlobalEnv)
-  assign("g_log_prefix", getOption("o_log_prefix"), envir = .GlobalEnv)
-  assign("g_seed", getOption("o_rnd_seed"), envir = .GlobalEnv)
-
-  return(args)
-
-}
-
-#' Script failure
-run_fail <- function(rc = 1, ex = NULL, msg = "_undefined error_") {
-  fail_script(rc = rc, ex = ex, msg = msg)
-}
-
-#' Script complention
-run_exit <- function(rc = 0, msg = "success.") {
-  exit_script(rc = rc, msg = msg)
-}
-
-# //////////////////////////////////////////////////////////////////
-
 main <- function(argv = commandArgs(trailingOnly=TRUE)) {
 
-  args <- run_init(argv = argv)
-  rc <- 0 
-  tryCatch({
-    log_info('#> start: %s', paste(argv,sep = " "))
-    print(elapsed <- system.time({ rc <- task(args = args)  }))
-    log_success('#< end(%d): %s', rc, summary(elapsed))
+  args <- parse_arguments(argv)
+  init_main(g_script_name, args = args)
+  
+  rc <- tryCatch({
+    set_globals()
+    run_task(function() {
+      task(args)
+    }, argv = argv)
   }, error = function(ex) {
-    run_fail(rc = 1, ex = ex, msg = "#FAILED!")
+    fail_main(rc = 1, ex = ex, msg = "#FAILED!")
   })
-  run_exit(rc, msg = "#success.")
-  rc
-
+  exit_main(rc, msg = "#success.")
 }
 
 # Execute main function if script is run directly
 if (sys.nframe() == 0) {
-  main()
+  enter_script()
+  rc <- main()
+  exit_script(rc = rc)
 }

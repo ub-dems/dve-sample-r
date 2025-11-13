@@ -195,11 +195,11 @@ io_exec <- function(path = "", name = "", create_path = FALSE) {
 
 # ---(`target` wrapprs)---------------------------------------------
 
-#' convert filename to filedescriptor with access timestamp
-#'
-#' @param fn String filename
-#' @return fd
-#' @export
+## convert filename to filedescriptor with access timestamp
+##
+## @param fn String filename
+## @return fd
+## @export
 as.IOfd <- function(fn) {
   tm <- Sys.time()
   ts <- strftime(tm, "%Y-%m-%dT%H:%M:%S%z", usetz = TRUE)
@@ -207,11 +207,11 @@ as.IOfd <- function(fn) {
   return(fd)
 }
 
-#' extract filename from filedesciptor
-#'
-#' @param fd IOfd descriptor
-#' @return fn
-#' @export
+## extract filename from filedesciptor
+##
+## @param fd IOfd descriptor
+## @return fn
+## @export
 as.IOfn <- function(fd) {
   fn <- fd$fn
   return(fn)
