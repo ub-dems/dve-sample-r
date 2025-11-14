@@ -103,6 +103,8 @@ c_trailer_doc <- "
 SEE ALSO:
 
    @Seealso: R/ioinit.R
+   @Seealso: R/iologs.R
+   @Seealso: R/iopath.R
    @Seealso: R/ioutils.R
 
 "

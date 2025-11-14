@@ -1,0 +1,90 @@
+Tue Sep 30 06:22:20 PM CEST 2025
+root
+System:
+  Host: b3bd15d23c17 Kernel: 6.11.0-1018-azure arch: x86_64 bits: 64
+  Console: pty pts/0 Distro: Ubuntu 24.04.1 LTS (Noble Numbat)
+Error 45: Error opening file: /sys/class/dmi/id/board_serial 
+Error: Permission denied
+Error 45: Error opening file: /sys/class/dmi/id/product_serial 
+Error: Permission denied
+Machine:
+  Type: Desktop Mobo: Microsoft model: Virtual Machine v: 7.0 serial: N/A
+    BIOS: American Megatrends v: 090008 date: 12/07/2018
+CPU:
+  Info: 8-core model: AMD EPYC 7V12 bits: 64 type: MCP cache: L2: 4 MiB
+  Speed (MHz): avg: 3123 min/max: N/A cores: 1: 3227 2: 3196 3: 3224 4: 3227
+    5: 3234 6: 3211 7: 2445 8: 3223
+  Flags: 3dnowprefetch abm adx aes aperfmperf apic arat avx avx2 bmi1 bmi2
+    clflush clflushopt clwb clzero cmov cmp_legacy constant_tsc cpuid
+    cr8_legacy cx16 cx8 de extd_apicid f16c fma fpu fsgsbase fxsr fxsr_opt ht
+    hypervisor lahf_lm lm mca mce misalignsse mmx mmxext movbe msr mtrr
+    nonstop_tsc nopl nx osvw pae pat pclmulqdq pdpe1gb perfctr_core pge pni
+    popcnt pse pse36 rdpid rdpru rdrand rdseed rdtscp rep_good sep sha_ni
+    smap smep ssbd sse sse2 sse4_1 sse4_2 sse4a ssse3 syscall topoext tsc
+    tsc_known_freq tsc_reliable umip vme vmmcall xgetbv1 xsave xsavec
+    xsaveerptr xsaveopt xsaves
+Graphics:
+  Device-1: Microsoft Hyper-V virtual VGA driver: hyperv_fb v: kernel
+  Device-2: NVIDIA TU104GL [Tesla T4] driver: nvidia v: 575.57.08
+  Display: server: No display server data found. Headless machine?
+    resolution: <missing: xdpyinfo/xrandr>
+  API: N/A Message: No display API data available.
+Architecture:                         x86_64
+CPU op-mode(s):                       32-bit, 64-bit
+Address sizes:                        48 bits physical, 48 bits virtual
+Byte Order:                           Little Endian
+CPU(s):                               8
+On-line CPU(s) list:                  0-7
+Vendor ID:                            AuthenticAMD
+Model name:                           AMD EPYC 7V12 64-Core Processor
+CPU family:                           23
+Model:                                49
+Thread(s) per core:                   1
+Core(s) per socket:                   8
+Socket(s):                            1
+Stepping:                             0
+BogoMIPS:                             4890.90
+Flags:                                fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt pdpe1gb rdtscp lm constant_tsc rep_good nopl tsc_reliable nonstop_tsc cpuid extd_apicid aperfmperf tsc_known_freq pni pclmulqdq ssse3 fma cx16 sse4_1 sse4_2 movbe popcnt aes xsave avx f16c rdrand hypervisor lahf_lm cmp_legacy cr8_legacy abm sse4a misalignsse 3dnowprefetch osvw topoext perfctr_core ssbd vmmcall fsgsbase bmi1 avx2 smep bmi2 rdseed adx smap clflushopt clwb sha_ni xsaveopt xsavec xgetbv1 xsaves clzero xsaveerptr rdpru arat umip rdpid
+Hypervisor vendor:                    Microsoft
+Virtualization type:                  full
+L1d cache:                            256 KiB (8 instances)
+L1i cache:                            256 KiB (8 instances)
+L2 cache:                             4 MiB (8 instances)
+L3 cache:                             16 MiB (1 instance)
+NUMA node(s):                         1
+NUMA node0 CPU(s):                    0-7
+Vulnerability Gather data sampling:   Not affected
+Vulnerability Itlb multihit:          Not affected
+Vulnerability L1tf:                   Not affected
+Vulnerability Mds:                    Not affected
+Vulnerability Meltdown:               Not affected
+Vulnerability Mmio stale data:        Not affected
+Vulnerability Reg file data sampling: Not affected
+Vulnerability Retbleed:               Mitigation; untrained return thunk; SMT disabled
+Vulnerability Spec rstack overflow:   Vulnerable: Safe RET, no microcode
+Vulnerability Spec store bypass:      Mitigation; Speculative Store Bypass disabled via prctl
+Vulnerability Spectre v1:             Mitigation; usercopy/swapgs barriers and __user pointer sanitization
+Vulnerability Spectre v2:             Mitigation; Retpolines; STIBP disabled; RSB filling; PBRSB-eIBRS Not affected; BHI Not affected
+Vulnerability Srbds:                  Not affected
+Vulnerability Tsx async abort:        Not affected
+#NO_CPUPOWER
+Tue Sep 30 18:22:21 2025       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 575.57.08              Driver Version: 575.57.08      CUDA Version: 12.9     |
+|-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  Tesla T4                       On  |   00000001:00:00.0 Off |                  Off |
+| N/A   32C    P8             13W /   70W |       0MiB /  16384MiB |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+                                                                                         
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+
