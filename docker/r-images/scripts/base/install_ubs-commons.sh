@@ -125,10 +125,10 @@ function install_commons_latex() {
 		texlive-luatex \
 		texlive-xetex \
                 pandoc \
-                pandoc-filter-diagram \
                 pandoc-plantuml-filter \
                 pandoc-citeproc-preamble
 
+        #       pandoc-filter-diagram \
 
 	#    tlmgr install \
 	#        unicode-math
