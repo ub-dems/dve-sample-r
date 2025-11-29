@@ -118,12 +118,17 @@ function install_commons_latex() {
 	apt_install \
 		texlive \
 		texlive-fonts-recommended \
-		texlive-latex-extra \
+		texlive-latex-recommended \
 		texlive-bibtex-extra \
 		texlive-lang-english \
 		texlive-lang-italian \
 		texlive-luatex \
-		texlive-xetex
+		texlive-xetex \
+                pandoc \
+                pandoc-filter-diagram \
+                pandoc-plantuml-filter \
+                pandoc-citeproc-preamble
+
 
 	#    tlmgr install \
 	#        unicode-math
