@@ -126,7 +126,8 @@ function install_commons_latex() {
 		texlive-xetex \
                 pandoc \
                 pandoc-plantuml-filter \
-                pandoc-citeproc-preamble
+                pandoc-citeproc-preamble \
+                fonts-jetbrains-mono
 
         #       pandoc-filter-diagram \
 
