@@ -897,6 +897,8 @@ do_py_jupyter_build() {
           jlpm add --dev  \
                bash-language-server \
                dockerfile-language-server-nodejs \
+               markdownlint \
+               markdownlint-cli2 \
                pyright \
                sql-language-server \
                typescript-language-server \
@@ -904,6 +906,7 @@ do_py_jupyter_build() {
                vscode-css-languageserver-bin \
                vscode-html-languageserver-bin \
                vscode-json-languageserver-bin \
+               vscode-markdown-languageserver \
                yaml-language-server
           
           info "jupyter ./package.json created"
