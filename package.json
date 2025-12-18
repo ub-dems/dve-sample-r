@@ -2,16 +2,18 @@
   "name": "dve-sample-r",
   "packageManager": "yarn@3.5.0",
   "devDependencies": {
-    "bash-language-server": "^5.4.2",
-    "dockerfile-language-server-nodejs": "^0.13.0",
-    "markdownlint-cli2": ">0.20.0",
-    "pyright": "^1.1.390",
+    "bash-language-server": "^5.6.0",
+    "dockerfile-language-server-nodejs": "^0.15.0",
+    "markdownlint": "^0.40.0",
+    "markdownlint-cli2": "^0.20.0",
+    "pyright": "^1.1.407",
     "sql-language-server": "^1.7.1",
-    "typescript-language-server": "^4.3.3",
+    "typescript-language-server": "^5.1.3",
     "unified-language-server": "^4.0.1",
     "vscode-css-languageserver-bin": "^1.4.0",
     "vscode-html-languageserver-bin": "^1.4.0",
     "vscode-json-languageserver-bin": "^1.0.1",
-    "yaml-language-server": "^1.15.0"
+    "vscode-markdown-languageserver": "^0.5.0-alpha.12",
+    "yaml-language-server": "^1.19.2"
   }
 }
