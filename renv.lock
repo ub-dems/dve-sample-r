@@ -75,18 +75,19 @@
     },
     "Rcpp": {
       "Package": "Rcpp",
-      "Version": "1.1.0",
+      "Version": "1.1.1",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
+        "R",
         "methods",
         "utils"
       ],
-      "Hash": "0d3d8867aa41b0d9ad113b50c169ecb2"
+      "Hash": "60df6f11cbeffbf9d50ad0852867f6b6"
     },
     "RcppArmadillo": {
       "Package": "RcppArmadillo",
-      "Version": "15.0.2-2",
+      "Version": "15.2.3-1",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
@@ -96,7 +97,7 @@
         "stats",
         "utils"
       ],
-      "Hash": "58f3d2b5e2b8d44756c2d21e24b719e9"
+      "Hash": "180d6ae1fc15b124e1ea2ea95555d385"
     },
     "RcppGSL": {
       "Package": "RcppGSL",
@@ -471,13 +472,13 @@
     },
     "evaluate": {
       "Package": "evaluate",
-      "Version": "1.0.3",
+      "Version": "1.0.5",
       "Source": "Repository",
-      "Repository": "RSPM",
+      "Repository": "CRAN",
       "Requirements": [
         "R"
       ],
-      "Hash": "e9651417729bbe7472e32b5027370e79"
+      "Hash": "94cf2c54237f6841cee68e3ba4ab5a14"
     },
     "farver": {
       "Package": "farver",
@@ -580,7 +581,7 @@
     },
     "ggplot2": {
       "Package": "ggplot2",
-      "Version": "4.0.0",
+      "Version": "4.0.1",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
@@ -598,7 +599,7 @@
         "vctrs",
         "withr"
       ],
-      "Hash": "3b4625a157bcbd82b937fcb3acdd2d85"
+      "Hash": "1bfa14b2a1668b3569dafb0478b2636b"
     },
     "glue": {
       "Package": "glue",
@@ -812,17 +813,17 @@
     },
     "jsonlite": {
       "Package": "jsonlite",
-      "Version": "1.9.1",
+      "Version": "2.0.0",
       "Source": "Repository",
-      "Repository": "RSPM",
+      "Repository": "CRAN",
       "Requirements": [
         "methods"
       ],
-      "Hash": "c72fbb0e7ee73ea7497ffeebe44f0d91"
+      "Hash": "b0776f526d36d8bd4a3344a88fe165c4"
     },
     "knitr": {
       "Package": "knitr",
-      "Version": "1.50",
+      "Version": "1.51",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
@@ -834,7 +835,7 @@
         "xfun",
         "yaml"
       ],
-      "Hash": "5a07d8ec459d7b80bd4acca5f4a6e062"
+      "Hash": "27682babb50f03b6eb7939ea69ec79ca"
     },
     "labeling": {
       "Package": "labeling",
@@ -982,7 +983,7 @@
     },
     "parallelly": {
       "Package": "parallelly",
-      "Version": "1.45.1",
+      "Version": "1.46.1",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
@@ -990,7 +991,7 @@
         "tools",
         "utils"
       ],
-      "Hash": "1e127bc944e0c1ec7c0297d685917dfe"
+      "Hash": "f4d2d1926bcb9a9384193bd7fea39fe3"
     },
     "pillar": {
       "Package": "pillar",
@@ -1130,9 +1131,9 @@
     },
     "readr": {
       "Package": "readr",
-      "Version": "2.1.5",
+      "Version": "2.1.6",
       "Source": "Repository",
-      "Repository": "RSPM",
+      "Repository": "CRAN",
       "Requirements": [
         "R",
         "R6",
@@ -1149,7 +1150,7 @@
         "utils",
         "vroom"
       ],
-      "Hash": "9de96463d2117f6ac49980577939dfb3"
+      "Hash": "141ebcec1bf55707751c7956a34d93db"
     },
     "readxl": {
       "Package": "readxl",
@@ -1217,7 +1218,7 @@
     },
     "reticulate": {
       "Package": "reticulate",
-      "Version": "1.44.0",
+      "Version": "1.44.1",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
@@ -1235,7 +1236,7 @@
         "utils",
         "withr"
       ],
-      "Hash": "97f045d0d37199b818b3e5985d7b7874"
+      "Hash": "4f6fff54515fc38387a4f33258e76312"
     },
     "rlang": {
       "Package": "rlang",
@@ -1663,10 +1664,10 @@
     },
     "yaml": {
       "Package": "yaml",
-      "Version": "2.3.10",
+      "Version": "2.3.12",
       "Source": "Repository",
-      "Repository": "RSPM",
-      "Hash": "51dab85c6c98e50a18d7551e9d49f76c"
+      "Repository": "CRAN",
+      "Hash": "7cd77cb32abd9220d744307e9fc94ffb"
     }
   }
 }

@@ -42,6 +42,10 @@ Suggests:
     ggplot2,
     ggraph,
     igraph,
+    languageserver,
+    vscDebugger,
+    httpgd,
+    gitcreds,
     microbenchmark,
     pacs,
     processx,
@@ -60,6 +64,8 @@ Suggests:
     RcppEigen
 LinkingTo: Rcpp, RcppArmadillo, RcppParallel, RcppGSL
 SystemRequirements: C++17, GNU Scientific Library (GSL) (>= 2.0)
+Remotes: ManuelHentschel/vscDebugger,
+    nx10/httpgd
 VignetteBuilder: 
     knitr
 Encoding: UTF-8

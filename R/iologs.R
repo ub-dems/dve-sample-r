@@ -140,7 +140,7 @@ mark_log_exit <- function(rc = 0, msg = "success.") {
   script_name <- getOption("o_script_name")
 
   start_time <- getOption("o_run_start_time")
-  end_time <- getOption("o_run_endtime")
+  end_time <- getOption("o_run_end_time")
 
   timestamp <- format(end_time, "%Y%m%d-%H%M%S")
   elapsed_millis <- end_time - start_time

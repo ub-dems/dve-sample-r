@@ -30,20 +30,39 @@ with_digits <- function(f, digits = 3) {
   return(result)
 }
 
-format_elapsed <- function(elpsed_millis) {
-  ms <- elpsed_millis %% 1000
-  elapsed_sec <- floor(elpsed_millis / 1000)
+format_elapsed <- function(elpsed_time) {
+  elapsed_sec <- as.numeric(elpsed_time, unit="secs")
   ss <- elapsed_sec %% 60
   mn <- floor(elapsed_sec / 60) %% 60
   hh <- floor(elapsed_sec / 3600)
   result <- paste0(sprintf("%02.f", hh), ":",
                    sprintf("%02.f", mn), ":",
-                   sprintf("%02.f", ss), ".",
-                   sprintf("%03.f", ms))
+                   sprintf("%02.f", ss))
+  return(result)
+}
+
+# ---(capture)---------------------------------------------
+
+out_capture <- function(..., prefix="\n", suffix="\n") {
+  # see also: rlang::enquos(), rlang::eval_tidy()
+  ocap <- eval(substitute(utils::capture.output(...)), parent.frame())
+  ostr <- paste(ocap, collapse = "\n")
+  result <- paste0(prefix, ostr, suffix)
   return(result)
 }
 
 # ---(diagnostics)---------------------------------------------
+
+## retrieve renv diagnostic info
+##
+## @return output of renv::diagnostics
+## @export
+get_diagnostics <- function() {
+  out_diag <- out_capture(renv::diagnostics())
+  return(out_diag)
+}
+
+
 
 ## retrieve all installed packages with versions
 ##

@@ -12,6 +12,8 @@ require(dvesimpler)
 suppressPackageStartupMessages({
   library(logger)
   library(optparse)
+  library(yaml)
+  library(knitr)
 })
 
 # =======================================
@@ -85,9 +87,12 @@ DESCRIPTION
 Demo script for simple \"hello world\" package function call.
 
 In addition, some environment info are show in output logfile:
+
    - system HW summary (taken by inxi command)
    - dependency packages availabe with versions
    - R sessionInfo() output
+   - renv::dignostics(), only with verbose option (-v)
+   
 To avoid diagnostics, run the script with the `-q,--quiet` option.
 
 
@@ -166,9 +171,17 @@ parse_arguments <- function(argv = c()) {
 # Diagnostic Info
 # =======================================
 
+show_diagnostics <- function() {
+  if (!is_verbose()) {
+    return(invisible(NULL))
+  }
+  diag <- get_diagnostics()
+  logger::log_debug("Diagnostics: [[\n\n\n{diag}\n]]\n")
+}
+
 show_dependencies <- function() {
-  pkgs <- as.yml(list_dependencies())
-  log_info("Dependencies: [[\n\n\n{pkgs}\n]]\n")
+  pkgs <- paste(kable(list_dependencies()), collapse = "\n")
+  log_info("Dependencies: [[\n\n{pkgs}\n\n]]\n")
 }
 
 show_session_info <- function() {
@@ -176,13 +189,14 @@ show_session_info <- function() {
   log_debug("Session info: [[\n\n\n{sx}\n]]\n")
 }
 
-show_diagnostics <- function() {
+show_system_info <- function() {
   args <- g_args
   if (is_quiet()) {
     return(invisible(NULL))
   }
   show_dependencies()
   show_session_info()
+  show_diagnostics()
   invisible(NULL)
 }
 
@@ -202,7 +216,7 @@ say_hello <- function(args = g_args) {
 say_hi_to_all <- function(args = g_args) {
 
   salutation <- args$options$salutation
-  trailer <- replicate(args$options$salutation$n_points,"!")
+  trailer <- paste(replicate(args$options$n_points,"👋"), collapse = "")
 
   if (length(args$args) == 0) { # positional arguments
     return(2)
@@ -210,7 +224,7 @@ say_hi_to_all <- function(args = g_args) {
 
   for (who in args$args) {
     hi_msg <- dmy_hello(salutation = salutation, who = who)
-    print("#hi.msg: ", hi_msg, trailer)
+    print(paste("hi.msg: ", hi_msg, trailer))
   }
 
   return(0)
@@ -218,7 +232,7 @@ say_hi_to_all <- function(args = g_args) {
 
 
 task <- function(args = g_args) {
-  show_diagnostics()
+  show_system_info()
   say_hello(args = args)
   say_hi_to_all(args = args)
 }
