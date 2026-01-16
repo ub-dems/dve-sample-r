@@ -3,7 +3,7 @@
 ##
 # runner script example
 #
-#rm(list = ls())
+
 devtools::load_all(".")
 
 require(dvesimpler)
@@ -135,7 +135,7 @@ set_globals <- function(argv = c()) {
   assign("g_log_prefix", getOption("o_log_prefix"), envir = .GlobalEnv)
   assign("g_rng_seed", getOption("o_rng_seed"), envir = .GlobalEnv)
 
-  return(args)
+  args
 
 }
 
@@ -148,20 +148,22 @@ set_globals <- function(argv = c()) {
 parse_arguments <- function(argv = c()) {
 
   p <- make_std_option_parser(prog = g_script_name, usage = c_usage_doc,
-                              description = c_desc_doc, epilogue = c_trailer_doc)
-  
+                              description = c_desc_doc,
+                              epilogue = c_trailer_doc)
+
   p <- add_option(p, c("-s", "--salutation"), default = "Hi",
                   help = "Salutation in greetings [default %default]")
 
-  p <- add_option(p, c("-n", "--n-points"), type = "integer", default = 0,
-                  help = "Number of trailing points for greetings [default %default]")
+  p <- add_option(p, c("-n", "--n-points"),
+                  type = "integer", default = 0,
+                  help = "Number of emoji for greetings [default %default]")
 
   p <- add_std_options(p)
 
   args <- parse_args(p, args = argv,
                      positional_arguments = TRUE,
                      convert_hyphens_to_underscores = TRUE)
-  return(args)
+  args
 }
 
 
@@ -190,7 +192,6 @@ show_session_info <- function() {
 }
 
 show_system_info <- function() {
-  args <- g_args
   if (is_quiet()) {
     return(invisible(NULL))
   }
@@ -209,7 +210,7 @@ say_hello <- function(args = g_args) {
 
   hello_msg <- dmy_hello()
   log_info("say_hello -- { hello_msg }")
-  
+
 }
 
 
@@ -227,7 +228,7 @@ say_hi_to_all <- function(args = g_args) {
     print(paste("hi.msg: ", hi_msg, trailer))
   }
 
-  return(0)
+  0
 }
 
 
@@ -243,7 +244,7 @@ main <- function(argv = commandArgs(trailingOnly=TRUE)) {
 
   args <- parse_arguments(argv)
   init_main(g_script_name, args = args)
-  
+
   rc <- tryCatch({
     set_globals()
     run_task(function() {
