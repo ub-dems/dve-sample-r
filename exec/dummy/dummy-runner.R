@@ -24,13 +24,13 @@ c_script_name <- "dummy-runner"
 
 c_usage_doc <- "
 
-  'runtime' exec/dummy/%prog.R [options] ...
+  'runtime' exec/dummy/dummy-runner.R [options] ...
 
 In RStudio, the script can be run directly, always from project root,
 in console, or in terminal. 
 
 ```
-exec/dummy/dummyRunner.R [options] ...
+exec/dummy/dummy-runner.R [options] ...
 ```
 
 For long running scripts,
@@ -39,8 +39,8 @@ inside a tmux session, to avoid disconnection interruption.
 In this mode, 'runtime', from the project root, can be one of:
 
 ```sh
-./runtime.sh cli exec/dummy/dummyRunner.R [options] ...
-./runtime.sh sh  exec/dummy/dummyRunner.R [options] ...
+./runtime.sh cli exec/dummy/dummy-runner.R [options] ...
+./runtime.sh sh  exec/dummy/dummy-runner.R [options] ...
 ```
 
 In order to keep a complete log of script execution,
@@ -177,7 +177,7 @@ show_diagnostics <- function() {
   if (!is_verbose()) {
     return(invisible(NULL))
   }
-  diag <- get_diagnostics()
+  diag <- out_capture(renv::diagnostics())
   logger::log_debug("Diagnostics: [[\n\n\n{diag}\n]]\n")
 }
 
@@ -187,16 +187,22 @@ show_dependencies <- function() {
 }
 
 show_session_info <- function() {
-  sx <- as.yaml(get_session_info())
-  log_debug("Session info: [[\n\n\n{sx}\n]]\n")
+  sx_info <- as.yaml(get_session_info())
+  log_debug("Session info: [[\n\n\n{sx_info}\n]]\n")
 }
 
 show_system_info <- function() {
+  sys_info <- as.yaml(get_system_info())
+  log_debug("System info: [[\n\n\n{sys_info}\n]]\n")
+}
+
+show_env_info <- function() {
   if (is_quiet()) {
     return(invisible(NULL))
   }
-  show_dependencies()
+  show_system_info()
   show_session_info()
+  show_dependencies()
   show_diagnostics()
   invisible(NULL)
 }
@@ -233,7 +239,7 @@ say_hi_to_all <- function(args = g_args) {
 
 
 task <- function(args = g_args) {
-  show_system_info()
+  show_env_info()
   say_hello(args = args)
   say_hi_to_all(args = args)
 }

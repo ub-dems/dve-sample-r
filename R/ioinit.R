@@ -11,8 +11,9 @@
 # ////////////////////////////////////////////////////////////////////////////
 
 ## retrieve an optional argument fron the named list of parsed arguments.
-## if missing, the value is retrieved fron system environment with "X_ARG_" prefix
-## and uppercase name. If efalt value is nyumeric, this value is converted
+## if missing, the value is retrieved fron system environment 
+## with "X_ARG_" prefix and uppercase name.
+## If the value is nyumeric, this value is converted
 ## as numeric from string.
 ##
 ## @param args parsed arguments as a named list
@@ -34,11 +35,11 @@ args_get <- function(args, name, default = NA) {
       }
     }
   }
-  return(result)
+  result
 }
 
 reserve_options <- function(options, reserved) {
-  return(options)
+  options
 }
 
 add_std_options <- function(p, reserved = c()) {
@@ -72,9 +73,19 @@ make_std_option_parser <- function(prog = NULL, usage = "",
     description = description, epilogue = epilogue
   )
   if (std) {
-    p <- add_std_options(p, reserver = reserved)
+    p <- add_std_options(p)
   }
   return(p)
+}
+
+# ////////////////////////////////////////////////////////////////////////////
+
+rc_get <- function() {
+  options("o_rc")
+}
+
+rc_set <- function(rc = 0) {
+  options("o_rc" = rc)
 }
 
 
@@ -103,7 +114,7 @@ init_main_setup_rng <- function(name = "script", args = list(), seed = 0) {
   set.seed(seed)
   options("o_rng_seed" = seed)
   message(sprintf("Random SEED: %d   (start: %f)", seed, runif(1)))
-  return(seed)
+  seed
 }
 
 # ---(script execution mode)-------------------------------------------
@@ -114,7 +125,7 @@ set_script_mode <- function(script_mode = TRUE) {
 
 is_script_mode <- function() {
   result <- (getOption("o_script_mode", FALSE) == TRUE)
-  return(result)
+  result
 }
 
 halt_script <- function(rc = 0, ex = NULL, msg = "terminated.") {
@@ -186,7 +197,7 @@ init_main <- function(name = "script", args = list()) {
   # Inject hooks in base logging (outside a tryCatch block)
   init_main_hook_logging()
 
-  return(args)
+  args
 }
 
 ## exit script
@@ -198,7 +209,7 @@ exit_main <- function(rc = 0, msg = "success.") {
   exit_main_store_options(rc = rc, msg = msg)
   mark_log_exit(rc = rc, msg = msg)
 
-  return(rc)
+  rc
 }
 
 ## fail script
@@ -212,7 +223,7 @@ fail_main <- function(rc = 1, ex = NULL, msg = "_undefined error_") {
   stop_msg <- mark_log_fail(rc = rc, ex = ex, msg = msg)
 
   quit_script(rc = rc, msg = stop_msg) # no return
-  return(rc)
+  rc
 }
 
 # ---(run task)------------------------------------------------
@@ -224,7 +235,7 @@ run_task <- function(f, argv = c()) {
     rc <- f()
   })
   logger::log_info("#< end(%d): %s", rc, summary(elapsed))
-  return(rc)
+  rc
 }
 
 # ---(script control functions)-------------------------------------------

@@ -53,17 +53,6 @@ out_capture <- function(..., prefix="\n", suffix="\n") {
 
 # ---(diagnostics)---------------------------------------------
 
-## retrieve renv diagnostic info
-##
-## @return output of renv::diagnostics
-## @export
-get_diagnostics <- function() {
-  out_diag <- out_capture(renv::diagnostics())
-  return(out_diag)
-}
-
-
-
 ## retrieve all installed packages with versions
 ##
 ## @return dataframe of packages and versions
@@ -96,7 +85,7 @@ get_system_info <- function() {
     r_version = R.version.string,
     r_platform = R.version$platform
   )
-  return(result)
+  result
 }
 
 

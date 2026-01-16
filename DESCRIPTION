@@ -14,7 +14,7 @@ URL: https://www.unimib.it,
      https://gitlab.com/ub-dems-public/ds-labs/dve-sample-r
 BugReports: https://gitlab.com/ub-dems-public/ds-labs/dve-sample-r/-/issues
 Depends: 
-    R (>= 4.0.0)
+    R (>= 4.4.0)
 Imports:
     Rcpp,
     RcppArmadillo,
@@ -63,7 +63,7 @@ Suggests:
     RcppParallel,
     RcppEigen
 LinkingTo: Rcpp, RcppArmadillo, RcppParallel, RcppGSL
-SystemRequirements: C++17, GNU Scientific Library (GSL) (>= 2.0)
+SystemRequirements: GNU Scientific Library (GSL) (>= 2.0)
 Remotes: ManuelHentschel/vscDebugger,
     nx10/httpgd
 VignetteBuilder: 
@@ -73,3 +73,13 @@ LazyData: yes
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 Config/build/copy-method: link
+Collate: 
+    'RcppExports.R'
+    'dummy-fun.R'
+    'dummy-path.R'
+    'dummy-proc.R'
+    'dvesimpler-package.r'
+    'ioinit.R'
+    'iologs.R'
+    'iopath.R'
+    'ioutils.R'
