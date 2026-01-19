@@ -15,7 +15,7 @@ dmy_dd_out <- dmy_dd_net
 
 
 dmy_fn_net_pjme_hourly_z  <- \() dmy_dd_net("zip/PJME_hourly.csv.zip")
-dmy_fn_loc_pjme_hourly    <- function() { dmy_dd_loc("raw/PJME_hourly.csv") }
+dmy_fn_loc_pjme_hourly    <- \() dmy_dd_loc("raw/PJME_hourly.csv")
 dmy_fn_def_pjme_hourly_3y <- \() dmy_dd_def("raw/PJME_hourly-3y.csv")
 
 dmy_fn_tmp_pjme_hourly    <- \() dmy_dd_tmp("PJME_hourly.pdf")

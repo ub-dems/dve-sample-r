@@ -35,6 +35,8 @@
 # 
 # 
 #' @importFrom tidyverse tidyverse_conflicts
+#' @importFrom rlang .data
+#' @importFrom glue glue_data
 #' @importFrom grDevices pdf dev.off
 #' @importFrom readr read_csv write_csv cols col_datetime
 #' @importFrom dplyr filter

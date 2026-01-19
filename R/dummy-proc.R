@@ -69,7 +69,7 @@ dmy_p01_save_user_private_data <- function(pjme_hourly, from_date, to_date) {
 
   pjme_hourly_3y_tmp <- pjme_hourly |>
     dplyr::mutate(Date_only = as.Date(.data$Datetime)) |>
-    dplyr::filter(.data$Date_only >= start_dt, Date_only < end_dt)
+    dplyr::filter(.data$Date_only >= start_dt, .data$Date_only < end_dt)
 
   fn <- dmy_fn_def_pjme_hourly_3y()
   loginfo("# write_csv: %s", fn)

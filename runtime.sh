@@ -78,6 +78,7 @@ where "target" is
   shell            : runs interactive shell prompt
   bash args,...    : runs shell with args,...
   term             : attach interactive shell to running runtime
+  xterm            : attach interactive shell to running runtime (X client)
 
 
 Target aliases:
@@ -96,6 +97,7 @@ Target aliases:
    shell    => sh, prompt
    bash     => do, command
    term     => in, attach
+   xterm    => X, xattach
 
 
 EXAMPLES
@@ -328,6 +330,11 @@ case "${command}" in
         shift
         export LOG_ACTIVE='OFF'  
         target=runtime-term
+        ;;
+    X|xterm|xattach)
+        shift
+        export LOG_ACTIVE='OFF'  
+        target=runtime-xterm
         ;;
     edit|code)
         shift

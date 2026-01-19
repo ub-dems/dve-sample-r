@@ -661,12 +661,70 @@ run/clear:
 
 # ---(attach)----------------------------------------------
 
+# CONTAINER_ID=$(podman ps --filter "ancestor=rocker/geospatial" --format "{{.ID}}")
+# -security-opt label=disable \
+
 run/term:
         #@echo "CLI: term ${RUNTIME_ARGS}"
 	$(DOCKER)  exec \
 		-ti  \
 		$(shell ${DOCKER} ps | grep ${IMG_RUNTIME} | cut -d' ' -f1 ) \
 		'/bin/bash' ${RUNTIME_RSCRIPT_OPTS} ${RUNTIME_ARGS}
+
+run/xterm:
+        #@echo "CLI: xterm ${RUNTIME_ARGS}"
+	$(DOCKER)  exec \
+		-ti  \
+		-e DISPLAY=${DISPLAY} \
+		-v /tmp/.X11-unix:/tmp/.X11-unix:ro \
+		-v ${XAUTHORITY}:/root/.Xauthority:ro \
+		-e XAUTHORITY=/root/.Xauthority \
+		$(shell ${DOCKER} ps | grep ${IMG_RUNTIME} | cut -d' ' -f1 ) \
+		'/bin/bash' ${RUNTIME_RSCRIPT_OPTS} ${RUNTIME_ARGS}
+
+
+# xterm -title "RStudio Container Terminal" \
+#       -geometry 120x40 \
+#       -fa "DejaVu Sans Mono" \
+#       -fs 11 \
+#       -bg "#2E3440" \
+#       -fg "#D8DEE9"
+
+
+# RUN apt-get update && apt-get install -y \
+#     xterm \
+#     x11-apps \
+#     x11-utils \
+#     libx11-6 \
+#     libxext6 \
+#     libxrender1 \
+#     && rm -rf /var/lib/apt/lists/*
+
+
+# RUN apt-get update && apt-get install -y --no-install-recommends \
+#     xterm \
+#     x11-xserver-utils \
+#     xauth \
+#     ca-certificates \
+#  && apt-get clean \
+#  && rm -rf /var/lib/apt/lists/*
+
+# RUN apt-get update && \
+#     apt-get install -y --no-install-recommends \
+#         x11-apps \
+#         xauth \
+#         libx11-6 \
+#         libxext6 \
+#         libxrender1 \
+#         libxtst6 \
+#         && rm -rf /var/lib/apt/lists/*
+
+# # Extract auth cookie
+# xauth list | grep $(echo $DISPLAY | cut -d: -f2 | cut -d. -f1)
+
+# # Inside container, add the cookie
+# podman exec -it $CONTAINER_ID bash -c \
+#   "xauth add $(xauth list | grep $DISPLAY)"
 
 
 # ---(venv)------------------------------------------------

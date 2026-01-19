@@ -168,7 +168,7 @@ build-validate:
 .PHONY: runtime-upgrade runtime-setup runtime-status runtime-clear
 .PHONY: runtime-build
 .PHONY: runtime-rstudio runtime-lab runtime-notebook runtime-code
-.PHONY: runtime-command runtime-term runtime-help
+.PHONY: runtime-command runtime-term runtime-xterm runtime-help
 
 runtime-repl: # @HELP/runtime ...
 runtime-repl:
@@ -208,6 +208,10 @@ runtime-command:
 
 runtime-term: # @HELP/runtime ...
 runtime-term:
+	@cd ${IMG_MAKE_DIR} && $(MAKE) --silent $@
+
+runtime-xterm: # @HELP/runtime ...
+runtime-xterm:
 	@cd ${IMG_MAKE_DIR} && $(MAKE) --silent $@
 
 runtime-rstudio: # @HELP/runtime ...
