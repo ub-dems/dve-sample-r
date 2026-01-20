@@ -143,10 +143,58 @@ function install_utils_cran() {
 }
 
 
+function install_apps_emacs() {
+
+    [ "$Y_BASE_APPS_EMACS" = 1 ] || return 0
+    
+    apt_install \
+        emacs \
+        emacs-libvterm \
+        elpa-pdf-tools \
+        fonts-firacode
+    
+}
+
+function install_apps_cursor() {
+
+    [ "$Y_BASE_APPS_CURSOR" = 1 ] || return 0
+
+    # Add Cursor's GPG key
+    curl -fsSL https://downloads.cursor.com/keys/anysphere.asc \
+        | gpg --dearmor \
+        | sudo tee /etc/apt/keyrings/cursor.gpg > /dev/null
+
+    chmod 644 /etc/apt/keyrings/cursor.gpg
+
+    # Add the Cursor repository
+    echo "deb [arch=amd64,arm64 signed-by=/etc/apt/keyrings/cursor.gpg] https://downloads.cursor.com/aptrepo stable main" \
+        | sudo tee /etc/apt/sources.list.d/cursor.list > /dev/null
+
+    # Update and install
+    apt update
+    
+    apt_install \
+        cursor
+
+    
+}
+
+
 function install_utils() {
     
     install_utils_sys
     install_utils_cran
+    
+}
+
+
+
+
+
+function install_apps() {
+    
+    install_apps_emacs
+    install_apps_cursor
     
 }
 
@@ -190,6 +238,7 @@ function main() {
     setenv_rehash
 
     install_utils
+    install_apps
     setenv_rehash
 
     check_utils

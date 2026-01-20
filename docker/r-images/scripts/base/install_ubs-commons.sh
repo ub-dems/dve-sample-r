@@ -93,11 +93,27 @@ function apt_install() {
 	fi
 }
 
+function upgrade_commons_all() {
+
+    [ "$Y_BASE_COMMONS_UPGRADE" = 1 ] || return 0
+
+    # Update and install
+    apt-get update
+    
+    apt-get upgrade -y
+    apt-get autoremove -y
+    
+    apt_install \
+        ca-certificates
+
+}
+
 function install_commons_sys() {
 
-	[ "$Y_BASE_COMMONS_SYS" = 1 ] || return 0
+    [ "$Y_BASE_COMMONS_SYS" = 1 ] || return 0
 
 	apt_install \
+		gpg \
 		libgsl-dev \
 		libzmq3-dev \
 		libglpk-dev \
@@ -109,6 +125,24 @@ function install_commons_sys() {
 		inxi \
 		htop
 
+}
+
+function install_commons_xwindow() {
+
+	[ "$Y_BASE_COMMONS_X" = 1 ] || return 0
+
+	apt_install \
+		x11-apps \
+		x11-utils \
+		libx11-6 \
+		libxext6 \
+		libxrender1 \
+		xauth \
+		xsel \
+		xclip \
+                fonts-inconsolata \
+                rxvt-unicode \
+                xterm
 }
 
 function install_commons_latex() {
@@ -126,7 +160,6 @@ function install_commons_latex() {
 		texlive-xetex \
                 pandoc \
                 pandoc-plantuml-filter \
-                pandoc-citeproc-preamble \
                 fonts-jetbrains-mono
 
         #       pandoc-filter-diagram \
@@ -157,7 +190,9 @@ function install_commons_cran() {
 
 function install_commons() {
 
+	upgrade_commons_all
 	install_commons_sys
+	install_commons_xwindow
 	install_commons_latex
 	install_commons_cran
 
