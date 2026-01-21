@@ -1114,7 +1114,8 @@ do_renv_init() {
     [ -f ./renv/settings.json ] && mv ./renv/settings.json $X_SAVE_RENV_PRE
     [ -f ./renv/activate.R ]    && mv ./renv/activate.R    $X_SAVE_RENV_PRE
 
-    R -q -e 'renv::init(bare=TRUE, load=FALSE)' ; rc_renv_init=$?
+    #R -q -e 'renv::init(bare=TRUE, load=FALSE)' ; rc_renv_init=$?
+    R -q -e 'rspm::renv_init(bare=TRUE, load=FALSE)' ; rc_renv_init=$?
     
     case "$rc_renv_init" in
         0) info "=(do_renv_init):" "renv - init => ok" ;;

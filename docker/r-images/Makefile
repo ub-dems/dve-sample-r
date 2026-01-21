@@ -197,6 +197,22 @@ DOCKER_RUNTIME_OPTIONS := --ulimit=host --group-add keep-groups $(DOCKER_NVIDIA_
 #DOCKER_RUNTIME_OPTIONS := --ulimit=host --annotation run.oci.keep_original_groups=1 
 endif
 
+# ---(x)------------------------------------------------
+
+ifdef DISPLAY
+    XAUTHORITY ?= ${HOME}/.Xauthority
+    X_ENV_OPTIONS = \
+          -e DISPLAY=${DISPLAY} \
+	  -e XAUTHORITY=/root/.Xauthority
+    X_NETE_OPTIONS = \
+	  -v /tmp/.X11-unix:/tmp/.X11-unix:ro \
+	  -v ${XAUTHORITY}:/root/.Xauthority:ro
+else
+    X_NET_OPTIONS =
+    X_ENV_OPTIONS =
+endif
+X_RUNTIME_OPTIONS := $(X_ENV_OPTIONS) $(X_NET_OPTIONS)
+
 # ---(setup)------------------------------------------------
 
 SETUP_EXTRA_RUNTIME_OPTIONS := 
@@ -360,6 +376,8 @@ runtime-build: init run/build
 runtime-command: init run/command
 
 runtime-term: init run/term
+
+runtime-xterm: init run/xterm
 
 runtime-code: init run/code-server
 
@@ -652,6 +670,7 @@ run/clear:
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e X_AUTO_ENV=0  \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		${X_RUNTIME_OPTIONS} \
 		-ti  \
 		--name  \
 		${PRC_RUNTIME}.setup-$$PPID \
@@ -667,20 +686,22 @@ run/clear:
 run/term:
         #@echo "CLI: term ${RUNTIME_ARGS}"
 	$(DOCKER)  exec \
+		${X_ENV_OPTIONS} \
 		-ti  \
 		$(shell ${DOCKER} ps | grep ${IMG_RUNTIME} | cut -d' ' -f1 ) \
-		'/bin/bash' ${RUNTIME_RSCRIPT_OPTS} ${RUNTIME_ARGS}
+		'/bin/bash' ${RUNTIME_RSCRIPT_OPTS} ${RUNTIME_ARGS} || true
 
 run/xterm:
         #@echo "CLI: xterm ${RUNTIME_ARGS}"
+	@[ -n "${DISPLAY}" ] && echo "DISPLAY=${DISPLAY}"
+	export CONTAINER_ID="$$(${DOCKER} ps | grep ${IMG_RUNTIME} | cut -d' ' -f1 )"; \
 	$(DOCKER)  exec \
+		${X_ENV_OPTIONS} \
 		-ti  \
-		-e DISPLAY=${DISPLAY} \
-		-v /tmp/.X11-unix:/tmp/.X11-unix:ro \
-		-v ${XAUTHORITY}:/root/.Xauthority:ro \
-		-e XAUTHORITY=/root/.Xauthority \
-		$(shell ${DOCKER} ps | grep ${IMG_RUNTIME} | cut -d' ' -f1 ) \
-		'/bin/bash' ${RUNTIME_RSCRIPT_OPTS} ${RUNTIME_ARGS}
+		$${CONTAINER_ID} \
+		'/usr/bin/xterm' \
+		'-T'  "${IMG_RUNTIME}-$${CONTAINER_ID}" \
+		'-e' ${SHELL} ${RUNTIME_RSCRIPT_OPTS} ${RUNTIME_ARGS} || true
 
 
 # xterm -title "RStudio Container Terminal" \
@@ -752,6 +773,7 @@ run/r-repl:
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		${X_RUNTIME_OPTIONS} \
 		-ti  \
 		--name  \
 		${PRC_RUNTIME}.r-$$PPID \
@@ -783,6 +805,7 @@ run/rscript-cli:
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		${X_RUNTIME_OPTIONS} \
 		-ti  \
 		--name  \
 		${PRC_RUNTIME}.rs-$$PPID \
@@ -814,6 +837,7 @@ run/build:
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		${X_RUNTIME_OPTIONS} \
 		-ti  \
 		--name  \
 		${PRC_RUNTIME}.build-$$PPID \
@@ -845,6 +869,7 @@ run/command:
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		${X_RUNTIME_OPTIONS} \
 		--name  \
 		${PRC_RUNTIME}.do-$$PPID \
 		${IMG_RUNTIME} \
@@ -853,6 +878,7 @@ run/command:
 
 run/code-server:
 	@echo "CODE: server ${RUNTIME_ARGS}"
+	@[ -n "${DISPLAY}" ] && echo "DISPLAY=${DISPLAY}"
 	@export _passw_=$$(cat ~/.rup/*); \
 	$(DOCKER)  run \
 		--rm \
@@ -876,6 +902,7 @@ run/code-server:
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		${X_RUNTIME_OPTIONS} \
 		--name  \
 		${PRC_RUNTIME}.code-$$PPID \
 		${IMG_RUNTIME} \
@@ -885,6 +912,7 @@ run/code-server:
 
 run/jupyter-lab:
 	@echo "JUPYTER: lab ${RUNTIME_ARGS}"
+	@[ -n "${DISPLAY}" ] && echo "DISPLAY=${DISPLAY}"
 	@export _passw_=$$(cat ~/.rup/*); \
 	$(DOCKER)  run \
 		--rm \
@@ -908,6 +936,7 @@ run/jupyter-lab:
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		${X_RUNTIME_OPTIONS} \
 		--name  \
 		${PRC_RUNTIME}.lab-$$PPID \
 		${IMG_RUNTIME} \
@@ -916,6 +945,7 @@ run/jupyter-lab:
 
 run/jupyter-notebook:
 	@echo "JUPYTER: notebook ${RUNTIME_ARGS}"
+	@[ -n "${DISPLAY}" ] && echo "DISPLAY=${DISPLAY}"
 	@export _passw_=$$(cat ~/.rup/*); \
 	$(DOCKER)  run \
 		--rm \
@@ -939,6 +969,7 @@ run/jupyter-notebook:
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		${X_RUNTIME_OPTIONS} \
 		--name  \
 		${PRC_RUNTIME}.note-$$PPID \
 		${IMG_RUNTIME} \
@@ -959,6 +990,8 @@ run/rstudio-server:
 	@echo ""
 	@echo " X2Go:      chromium-browser http://localhost:${RUN_PORT_B_EXT}"
 	@echo " nomachine: firefox          http://localhost:${RUN_PORT_B_EXT}"
+	@echo ""
+	@[ -n "${DISPLAY}" ] && echo "DISPLAY=${DISPLAY}"
 	@echo ""
 	@export _passw_=$$(cat ~/.rup/*); \
 	$(DOCKER)  run \
@@ -984,6 +1017,7 @@ run/rstudio-server:
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		${X_RUNTIME_OPTIONS} \
 		--name  \
 		${PRC_RUNTIME}.rstudio-$$PPID \
 		${IMG_RUNTIME} \

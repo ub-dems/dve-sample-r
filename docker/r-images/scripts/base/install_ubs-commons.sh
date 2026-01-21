@@ -179,12 +179,15 @@ function install_commons_cran() {
 		renv \
 		devtools \
 		usethis \
+		gitcreds \
 		argparse \
 		cli \
 		here \
 		logging \
 		logger \
 		microbenchmark
+
+        Rscript -e 'remotes::install_github("cran4linux/rspm")'
 
 }
 

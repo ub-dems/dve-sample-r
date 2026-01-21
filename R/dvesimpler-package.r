@@ -24,7 +24,6 @@
 # 
 #' @importFrom here here
 #' @importFrom logger log_info
-#' @importFrom logging loginfo logdebug logerror getHandler
 #' @importFrom magrittr %>%
 #' @importFrom modules module export import
 #' @importFrom reticulate py_discover_config
