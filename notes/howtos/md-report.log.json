@@ -1,0 +1,249 @@
+[
+    {
+        "type": "LoadedResource",
+        "verbosity": "INFO",
+        "for": "/home/gp21012/work/vs/dve-sample-r/notes/style/md-report.tex",
+        "from": "/home/gp21012/work/vs/dve-sample-r/notes/style/md-report.tex"
+    },
+    {
+        "type": "RunningFilter",
+        "verbosity": "INFO",
+        "path": "/home/gp21012/work/vs/dve-sample-r/notes/style/md-report.lua"
+    },
+    {
+        "type": "FilterCompleted",
+        "verbosity": "INFO",
+        "path": "/home/gp21012/work/vs/dve-sample-r/notes/style/md-report.lua",
+        "milliseconds": "6"
+    },
+    {
+        "type": "LoadedResource",
+        "verbosity": "INFO",
+        "for": "img/dummy-rcpp-finder-20251031-185223-plot.png",
+        "from": "img/dummy-rcpp-finder-20251031-185223-plot.png"
+    },
+    {
+        "type": "BlockNotRendered",
+        "verbosity": "INFO",
+        "contents": {
+            "c": [
+                "html",
+                "<!-- {{{ #TAG: TODO:(toc) // -->\n"
+            ],
+            "t": "RawBlock"
+        }
+    },
+    {
+        "type": "BlockNotRendered",
+        "verbosity": "INFO",
+        "contents": {
+            "c": [
+                "html",
+                "<!-- markdownlint-disable MD012 -->\n"
+            ],
+            "t": "RawBlock"
+        }
+    },
+    {
+        "type": "BlockNotRendered",
+        "verbosity": "INFO",
+        "contents": {
+            "c": [
+                "html",
+                "<!-- markdownlint-disable MD025 -->\n"
+            ],
+            "t": "RawBlock"
+        }
+    },
+    {
+        "type": "BlockNotRendered",
+        "verbosity": "INFO",
+        "contents": {
+            "c": [
+                "html",
+                "<!-- markdownlint-disable MD033 -->\n"
+            ],
+            "t": "RawBlock"
+        }
+    },
+    {
+        "type": "BlockNotRendered",
+        "verbosity": "INFO",
+        "contents": {
+            "c": [
+                "html",
+                "<!-- markdownlint-disable MD051 -->\n"
+            ],
+            "t": "RawBlock"
+        }
+    },
+    {
+        "type": "BlockNotRendered",
+        "verbosity": "INFO",
+        "contents": {
+            "c": [
+                "html",
+                "<details>\n<summary></summary>\n"
+            ],
+            "t": "RawBlock"
+        }
+    },
+    {
+        "type": "BlockNotRendered",
+        "verbosity": "INFO",
+        "contents": {
+            "c": [
+                "html",
+                "</details>\n"
+            ],
+            "t": "RawBlock"
+        }
+    },
+    {
+        "type": "BlockNotRendered",
+        "verbosity": "INFO",
+        "contents": {
+            "c": [
+                "html",
+                "<details>\n<summary>[index]</summary>\n"
+            ],
+            "t": "RawBlock"
+        }
+    },
+    {
+        "type": "BlockNotRendered",
+        "verbosity": "INFO",
+        "contents": {
+            "c": [
+                "html",
+                "</details>\n<details>\n<summary></summary>\n"
+            ],
+            "t": "RawBlock"
+        }
+    },
+    {
+        "type": "BlockNotRendered",
+        "verbosity": "INFO",
+        "contents": {
+            "c": [
+                "html",
+                "</details>\n"
+            ],
+            "t": "RawBlock"
+        }
+    },
+    {
+        "type": "BlockNotRendered",
+        "verbosity": "INFO",
+        "contents": {
+            "c": [
+                "html",
+                "<!-- ::}}} \\\\ %0. -->\n"
+            ],
+            "t": "RawBlock"
+        }
+    },
+    {
+        "type": "BlockNotRendered",
+        "verbosity": "INFO",
+        "contents": {
+            "c": [
+                "html",
+                "<!-- ::{{{ #RCPP: Q:7.0 - RcppParallel code // -->\n"
+            ],
+            "t": "RawBlock"
+        }
+    },
+    {
+        "type": "BlockNotRendered",
+        "verbosity": "INFO",
+        "contents": {
+            "c": [
+                "html",
+                "<details>\n<summary></summary>\n"
+            ],
+            "t": "RawBlock"
+        }
+    },
+    {
+        "type": "BlockNotRendered",
+        "verbosity": "INFO",
+        "contents": {
+            "c": [
+                "html",
+                "</details>\n"
+            ],
+            "t": "RawBlock"
+        }
+    },
+    {
+        "type": "InlineNotRendered",
+        "verbosity": "INFO",
+        "contents": {
+            "c": [
+                "html",
+                "<script-name>"
+            ],
+            "t": "RawInline"
+        }
+    },
+    {
+        "type": "InlineNotRendered",
+        "verbosity": "INFO",
+        "contents": {
+            "c": [
+                "html",
+                "<sec-timestamp>"
+            ],
+            "t": "RawInline"
+        }
+    },
+    {
+        "type": "InlineNotRendered",
+        "verbosity": "INFO",
+        "contents": {
+            "c": [
+                "html",
+                "<exec-mode>"
+            ],
+            "t": "RawInline"
+        }
+    },
+    {
+        "type": "InlineNotRendered",
+        "verbosity": "INFO",
+        "contents": {
+            "c": [
+                "html",
+                "<sec-timestamp>"
+            ],
+            "t": "RawInline"
+        }
+    },
+    {
+        "type": "BlockNotRendered",
+        "verbosity": "INFO",
+        "contents": {
+            "c": [
+                "html",
+                "<!--  LocalWords:  STL pathfinding namespace mutex undirected geo lin\n<!--  LocalWords:  RcppParallel Howto VibeCoding sqr sqrt datalab TSV\n<!--  LocalWords:  Bicocca enum coeff RStudio dataframe HPC foreach\n<!--  LocalWords:  doParallel parallelly quartile microbenchmark YAML\n<!--  LocalWords:  dataframes pseudocode\n -->\n"
+            ],
+            "t": "RawBlock"
+        }
+    },
+    {
+        "type": "MissingCharacter",
+        "verbosity": "WARNING",
+        "message": "There is no ⇧ (U+21E7) (U+21E7) in font [XCharter-Roman.otf]:mode=no"
+    },
+    {
+        "type": "MissingCharacter",
+        "verbosity": "WARNING",
+        "message": "There is no ⇧ (U+21E7) (U+21E7) in font [XCharter-Roman.otf]:mode=no"
+    },
+    {
+        "type": "MissingCharacter",
+        "verbosity": "WARNING",
+        "message": "There is no ⇧ (U+21E7) (U+21E7) in font [XCharter-Roman.otf]:mode=no"
+    }
+]

@@ -1,50 +1,81 @@
---- 
-title: "RcppParallel example implementation"
-subtitle: RcppParallel A* search VibeCoding implementation
-vim: set foldmethod=marker
-author: "datalab@unimib.it"
-date: "2025-10-27"
-output:
-  pdf_document:
-    toc: true
-    toc_depth: 3
-    latex_engine: lualatex
-    extra_dependencies:
-      hyperref:
-      - unicode=true
-      - breaklinks=true
-      lmodern: null
-documentclass: report
-classoption:
-- a4paper
-- 10pt
-header-includes: "\\usepackage{unicode-math}"
 ---
-# ::{{{ #RCPP: TOC - RcppParallel Contents //
-[🠴](Rcpp-HOWTO.md)
+title: RcppParallel A* search VibeCoding implementation
+subtitle: R/C++ Development HOWTOs
+# {{{ // %+
+
+keywords: [GEN, Rcpp, HOWTO, VibeCoding, RcppParallel, A-star]
+abstract: |
+  TODO:(abstract)
+
+  ...
+
+doctype: md-report
+
+# }}} // %+
+---
+<!-- {{{ #TAG: TODO:(toc) // -->
+
+<!-- markdownlint-disable MD012 -->
+<!-- markdownlint-disable MD025 -->
+<!-- markdownlint-disable MD033 -->
+<!-- markdownlint-disable MD051 -->
+
+!["A* Pathfinding" fastest route](img/dummy-rcpp-finder-20251031-185223-plot.png)
 
 # TOC
+
 > RcppParallel A* search VibeCoding implementation - Contents
 
 1. [Q:7.0 - RcppParallel A* search VibeCoding implementation](#Q1)
    - see: [Parallel A* Search Algorithm with RcppParallel (Claude)](#a1-claude)
    - see: [Enhanced Prompt For LLM (Vertex)](#a1-vertex)
 
----------
+<details>
+<summary></summary>
+
+```{=latex}
+\begin{comment}
+```
+
+</details>
+
+---
+
+|                   |                        |
+|-------------------|------------------------|
+| [<<<<](README.md) | [PDF](TODO:(file).pdf) |
+
+---
+
+<details>
+<summary>[index]</summary>
+
 [[_TOC_]]
 
-# ::}}} \\ %+.
-# ::{{{ #RCPP: Q:7.0 - RcppParallel code //
+</details>
+<details>
+<summary></summary>
 
-<a id="Q7" name="Q7" class="anchor"></a>
+```{=latex}
+\end{comment}
+```
 
+</details>
 
-# Q:7.0 - RcppParallel A* search VibeCoding implementation
+<!-- ::}}} \\ %0. -->
+<!-- ::{{{ #RCPP: Q:7.0 - RcppParallel code // -->
 
-[⌃](#toc)
+# Q:1
+
+## Q:1 - **RcppParallel A* search VibeCoding implementation**
+
+[⇧](#toc)
+
 
 ## System Hints
-<system>
+
+>>> [!tip]
+
 
 Think Hard.
 
@@ -62,7 +93,8 @@ formatted following the Google C++ style guide, and be moderately but
 well-documented, following Roxygen2 CRAN standards. Include a minimal
 invocation example under 'notrun' tags.
 
-All source files must contain two comment lines at the top (after the "she-bang" line, for scripts) with this template expanded:
+All source files must contain two comment lines at the top (after the
+"she-bang" line, for scripts) with this template expanded:
 
 if C++,
 ```cpp
@@ -123,7 +155,16 @@ platform.
 As a stylistic note, also discuss every alternative from an idiomatic and
 pragmatic point of view.
 
-</system>
+>>>
+
+<details>
+<summary></summary>
+
+```{=latex}
+\newpage
+```
+
+</details>
 
 
 Your task is to produce an interesting use-case example for the
@@ -249,17 +290,20 @@ implementation example of sequential and parallel approaches
 to the A* pathfinding algorithm.
 
 This source will contain two groups of C++ functions, "seq" and
-"par", with the specifications below, delimited by XML
-`*-finder-specification` tags. These can be tested to verify how
-different implementation alternatives affect runtime performance,
-depending on the input size.
+"par", with the specifications below, in headings:
 
-Both specifications inherit a shared set of specifications, delimited
-by the XML tag `common-finder-specification`.
+- [seq-finder-specification](#seq-finder-specification)
+- [par-finder-specification](#par-finder-specification)
 
-### "common" function specification
+These can be tested to verify how different implementation
+alternatives affect runtime performance, depending on the input size.
 
-<common-finder-specification>
+Both specifications inherit a shared set of specifications, defined in
+heading:
+
+- [common-finder-specification](#common-finder-specification)
+
+### common-finder-specification
 
 - Use the C++ STL and `Rcpp`/`RcppArmadillo` data types.
 - Use similar data structures for graph representation in both implementations.
@@ -289,13 +333,8 @@ by the XML tag `common-finder-specification`.
  distance between vertices and can be used to compute an admissible
  heuristic for search optimization.
 
-</common-finder-specification>
 
-
-
-### "seq" function group specification
-
-<seq-finder-specification>
+### seq-finder-specification
 
 The "seq" group of functions provides a "sequential" (single-CPU core)
 implementation of the A* pathfinding algorithm.
@@ -306,12 +345,9 @@ The main functions are:
 - `dmy_astar_seq_finder`, R-callable.
 - `dmy_astar_seq_finder_impl`, internal, with `arma::mat` types.
 
-</seq-finder-specification>[^3]
 
 
-### "par" function group specification
-
-<par-finder-specification>
+### par-finder-specification
 
 The "par" group of functions provides a "parallel" (single machine,
 multiple CPU cores) implementation of the A* pathfinding algorithm.
@@ -327,7 +363,6 @@ The main functions are:
 - `dmy_astar_par_finder`, R-callable.
 - `dmy_astar_par_finder_impl`, internal, with `arma::mat` types.
 
-</par-finder-specification>[^3]
 
 
 
@@ -339,52 +374,56 @@ The R test script `./exec/dummySearch/dummy-rcpp-finder.r` is used to
 drive the search algorithm and verify the performance advantage of the
 parallel version. This script should accept several command-line
 arguments, which are not mandatory and have sensible defaults, as described below.
-The script specification is placed below, delimited by the XML
-`test-script-specification` tags.
+The script specification is placed below, in heading:
+
+- [test-script-specification](#test-script-specification)
 
 
-### R Test Script Specification
-
-<test-script-specification>
+### test-script-specification
 
 - The script is composed of 4 parts, performed in sequence:
 
 #### 1. Housekeeping Phase
 
-- Command-line arguments are parsed as described below, delimited by the XML `test-script-arguments-specification` tag.
-- The logging facility is initialized as described below, delimited by the XML `test-script-logging-specification` tag.
-- The R runtime environment is configured with C++ source linking, as described below, delimited by the XML `test-script-runtime-specification` tag.
+- Command-line arguments are parsed as described below, in heading:
+    - [test-script-arguments-specification](#test-script-arguments-specification)
+- The logging facility is initialized as described below, in heading:
+    - [test-script-logging-specification](#test-script-logging-specification)
+- The R runtime environment is configured with C++ source linking, as described below, in heading:
+    - [test-script-runtime-specification](#test-script-runtime-specification)
 
 
 #### 2. Preparation Phase
 
-- A random graph is generated and embedded in a wider object of S3 class `space_graph_test`, as described below, delimited by the XML `sample-graph-specification` tag.
+- A random graph is generated and embedded in a wider object of S3 class `space_graph_test`, as described below, in heading:
+    - [sample-graph-specification](#sample-graph-specification)
 - After generation, a set of graph summary statistics is computed, attached to the working `space_graph_test` object, and logged at the `info` level.
 
 
 #### 3. Search Execution Phase
 
-- The search functions (`dmy_astar_seq_finder`, `dmy_astar_par_finder`) are called with different execution modes as described below, delimited by the XML `test-script-execution-modes-specification` tag.
+- The search functions (`dmy_astar_seq_finder`, `dmy_astar_par_finder`) are called with different execution modes as described below, in heading:
+    - [test-script-execution-modes-specification](#test-script-execution-modes-specification)
 - The resulting path is applied to the internal `igraph` model as vertex and edge attributes.
 
 
 #### 4. Reporting Phase
 
-- If required by the `show_plot` option, a PDF plot of the graph is produced, as specified below, delimited by the XML `graph-plot-script-specification` tag.
-- If required by the `save_data` option, a set of outputs is produced, as specified below, delimited by the XML `save-data-script-specification` tag.
+- If required by the `show_plot` option, a PDF plot of the graph is produced, as specified below, in heading:
+    - [graph-plot-script-specification](#graph-plot-script-specification)
+- If required by the `save_data` option, a set of outputs is produced, as specified below, , in heading:
+    - [save-data-script-specification](#save-data-script-specification)
 
-</test-script-specification>
 
 
-### Script Command Line Arguments
+### test-script-arguments-specification
 
-<test-script-arguments-specification>
+Script command-line arguments:
+
 - Argument parsing must use a standard argument parser, provided by the `argparse` package.
 - The parsed command-line arguments must be logged at the info level during script initialization.
-- The list of command-line arguments, with their types, defaults, and enumeration constants, are described below, delimited by the XML `test-script-cli-arguments` tag.
-</test-script-arguments-specification>
+- The list of command-line arguments, with their types, defaults, and enumeration constants, are described below.
 
-<test-script-cli-arguments>
 #### Generic arguments
 
 - `help`:   (option: -h|--help, type: boolean, default:`false`) - Prints script usage info and command-line argument descriptions. Execution is skipped.
@@ -419,26 +458,22 @@ The script specification is placed below, delimited by the XML
 - `save_data`:  (option: -s|--save, type: boolean, default:`false`) - "Save Data", enables report production for result data and sample graph statistics.
 - `export_raw`: (option: -f|--export-graph, type: boolean, default:`false`) - "Export Graph", enables dataframe export of the sample graph's internal `igraph` model in TSV format.
 
-</test-script-cli-arguments>
 
-### Script Logging Specification
+### test-script-logging-specification
 
-<test-script-logging-specification>
 - Script output should go to stdout and be logged to a file using standard `logger` facilities.
 - The log directory will also be used for storing benchmark results and plots.
 - The log directory path will be taken from the environment variable `P_LOGS_DIR`, with `logs` as the default.
 - The log directory should be created if it does not exist.
-- The log filename should have the prefix "<script-name>-<sec-timestamp>" with a '.log' extension.
-- The "<sec-timestamp>" part is composed of the script's start time, formatted as localtime in "YYYYMMDD-hhmmss" format.
+- The log filename should have the prefix `<script-name>-<sec-timestamp>` with a '.log' extension.
+- The `<sec-timestamp>` part is composed of the script's start time, formatted as localtime in "YYYYMMDD-hhmmss" format.
 - The script's preparation and execution phases should be logged at the info level (arguments, benchmark invocation, final summary), while the final report section should be logged at the "debug" level (verbose>=1).
 - All log artifacts should contain the test type and a localtime timestamp suffix as part of the filename.
 - During script initialization, log: 1. the script arguments, 2. the full path of the log directory, and 3. the output of the system command: `inxi -C`.
-</test-script-logging-specification>
 
 
-### Script Runtime Specification
+### test-script-runtime-specification
 
-<test-script-runtime-specification>
 - During runtime setup, the random number generator will be initialized deterministically:
   - If the `rnd_seed` argument is not specified (i.e., is equal to `0`), it will be generated as a random integer via `as.integer(runif(1)*2e9)`.
   - The random number generator is then initialized with this "seed" value.
@@ -448,13 +483,12 @@ The script specification is placed below, delimited by the XML
  - A `dummy_finder.cpp` file in the same directory as the `dummy-rcpp-finder.r` script, if this path can be determined.
  - A `dummy_finder.cpp` file in the current working directory.
  - A `dummy_finder.cpp` file in the `./exec/dummySearch` directory, if the script is run from the project root.
-</test-script-runtime-specification>
 
 
 
-### Sample Graph Generation
+### sample-graph-specification
 
-<sample-graph-specification>
+Sample Graph Generation:
 
 - *Important*: All graphs considered are "undirected graphs";
  i.e., every transformation must preserve symmetry in the "adjacency matrix" of edge weights.
@@ -510,13 +544,12 @@ The script specification is placed below, delimited by the XML
  - For every edge, a `congestion` value will be sampled from a random exponential distribution with mean `cong_rate`.
  - For every edge, the edge `weight` will be recalculated by the `setup_edge` utility function, using the new `congestion` value and the existing `distance` edge attribute.
  - The rationale here is that `congestion` models "traffic intensity," which causes delays proportional to distance in a "fastest" path search where `distance` is the heuristic.
-</sample-graph-specification>
 
 
 
-### Script Execution Modes
+### test-script-execution-modes-specification
 
-<test-script-execution-modes-specification>
+Script Execution Modes:
 
 - The script function `run_path_search` will take a `space_graph_test` object as input and return the same object, modified by the `apply_result_path` function.
 - The `run_path_search` function will dispatch the search to a `run_path_search_{nil|all|par|seq|bench}` function based on the `exec_mode` command-line argument.
@@ -561,18 +594,17 @@ The script specification is placed below, delimited by the XML
  - `path_c_rate`: The value of `elapsed_time / path_complexity` (or `NA` if the path is empty).
 - The `apply_result_path` function, after evaluation, will log all `stats` summaries at the info level.
 
-</test-script-execution-modes-specification>
 
 
 
+### graph-plot-script-specification
 
-### Graph Plot Specification
-
-<graph-plot-script-specification>
+Graph Plot Specification:
 
 - In the script's "Reporting Phase," after execution, a plot of the graph will be generated and exported as a PDF file.
 - Plot generation is enabled only if the `show_plot` command-line option is specified.
-- The exported PDF output should go to the logging directory, with the same file name prefix rules as described in the `test-script-logging-specification` XML tag.
+- The exported PDF output should go to the logging directory, with the same file name prefix rules as described in heading:
+    - [test-script-logging-specification](#test-script-logging-specification)
 - The exported PDF output filename should have the suffix `-plot.pdf`.
 - The plot is generated by the function `plot_sample_graph`, which receives the `space_graph_test` object returned by the `run_path_search` function.
 - The image size and orientation for the PDF plot export use `image_size` (e.g., `A4`) and `image_orient` (`P`: Portrait, `L`: Landscape).
@@ -610,15 +642,15 @@ The script specification is placed below, delimited by the XML
      ...
 ```
 
-</graph-plot-script-specification>
 
-### Script Output Generation
+### save-data-script-specification
 
-<save-data-script-specification>
+Script Output Generation:
 
 - In the script's "Reporting Phase," after execution, a set of report files will be generated, depending on command-line arguments.
 - Export generation is enabled only if the `save_data` command-line option is specified.
-- The exported output files should go to the logging directory, with the same file name prefix rules as described in the `test-script-logging-specification` XML tag.
+- The exported output files should go to the logging directory, with the same file name prefix rules as described in heading:
+    - [test-script-logging-specification](#test-script-logging-specification)
 - The exported data is generated by the function `save_sample_data`, which receives the `space_graph_test` object returned by `run_path_search`.
 - The `save_sample_data` function will dispatch output generation to several specific functions: `save_sample_info`, `save_bench_report`, and `save_graph_data`.
 - The `save_sample_info` function generates a summary information file in YAML format.
@@ -650,7 +682,6 @@ The script specification is placed below, delimited by the XML
   - A dataframe export in tab-separated format (TSV) (suffix: `nodes.tsv`) of all `igraph` model vertex data with attributes.
   - A dataframe export in tab-separated format (TSV) (suffix: `edges.tsv`) of all `igraph` model edge data with attributes.
 
-</save-data-script-specification>
 
 
 
@@ -844,18 +875,19 @@ if (sys.nframe() == 0) {
 -------------------------------------------------------------------------------------------
 -------------------------------------------------------------------------------------------
 # A:1 (Vertex)
-> Enhanced Prompt For LLM
+
+[⇧](#toc) **_Enhanced Prompt For LLM_**
 
 ## Prompt Enhancement Query
 
-<system> 
+>>> [!tip]
 
 You are an experienced R programmer with extensive knowledge of using
 Rcpp C++ sources in R packages. Your task is to enhnce a prompt
 oriented to generate an implemenation of an algorithm described in a
 detailed way.
 
-</system>
+>>>
 
 Provide an enhanced VibeCoding prompt, to be submitted to "Claude" and "Gemini" LLMs,
 in order to generate a correct implementation of the algorithm described.
@@ -866,7 +898,7 @@ In enhancement consider the following criteria:
 clearer and more fluent form, if needed.
 
 2. Preserve, as possible, semantic annotations in original markdown
-structure and XML annotation tags.
+structure
 
 3. Analyse logical requirements and provide, at end, a list of
    possible integration for under specified specifications.
@@ -972,7 +1004,9 @@ The prompt to enhance follows, delimited with 5 `---` horizontal lines.
 -------------------------------------------------------------------------------------------
 -------------------------------------------------------------------------------------------
 # A:1 (Claude)
-> Parallel A* Search Algorithm with RcppParallel
+
+[⇧](#toc) **_Parallel A* Search Algorithm with RcppParallel_**
+
 
 ## Introduction
 

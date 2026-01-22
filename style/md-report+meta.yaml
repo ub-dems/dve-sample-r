@@ -1,0 +1,9 @@
+---
+title: /todo(title-c)
+subtitle: /todo(subtitle-c)
+keywords: [documentation, template, pandoc, latex]
+author:
+- datalab@unimib.it
+date: \today
+lang: en-US
+---

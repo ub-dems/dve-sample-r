@@ -117,7 +117,7 @@ function install_commons_sys() {
 		libgsl-dev \
 		libzmq3-dev \
 		libglpk-dev \
-		libtinfo5 \
+		libncurses5-dev \
 		libtinfo6 \
 		default-libmysqlclient-dev \
 		parallel \
@@ -202,7 +202,7 @@ function prepare_commons_mounts() {
 
     mkdir -p /usr/local/share/emacs
     ln -s    /usr/local/.import/share/emacs/emacs-share/ \
-             /usr/local/share/emacs/emacs-share/
+             /usr/local/share/emacs/emacs-share/ || true
 
 
 }
