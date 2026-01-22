@@ -204,7 +204,7 @@ ifdef DISPLAY
     X_ENV_OPTIONS = \
           -e DISPLAY=${DISPLAY} \
 	  -e XAUTHORITY=/root/.Xauthority
-    X_NETE_OPTIONS = \
+    X_NET_OPTIONS = \
 	  -v /tmp/.X11-unix:/tmp/.X11-unix:ro \
 	  -v ${XAUTHORITY}:/root/.Xauthority:ro
 else
@@ -513,6 +513,7 @@ build-image/${BLD_WORKER}: build-image/${BLD_RUNTIME}
 
 run/shell:
 	@echo "CLI: shell ${RUNTIME_ARGS}"
+	@[ -n "${DISPLAY}" ] && echo "DISPLAY=${DISPLAY}"
 	@export _passw_=$$(cat ~/.rup/*); set -x; \
 	$(DOCKER)  run \
 		--rm \
@@ -522,6 +523,10 @@ run/shell:
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
 		-v ~/data:${HOME}/data:Z  \
 		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
+		-v ~/.:${RUN_USER_HOME}/.import:Z  \
+		-v /usr/local:/usr/local/.import:Z  \
+		-v /opt:/opt/.import:Z  \
+		-v /data/opt/local:/data/opt/local:Z  \
 		-v /store/local:/store/local:Z  \
 		-v /store/share:/store/share  \
 		-v /user:/user  \
@@ -535,12 +540,14 @@ run/shell:
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		${X_RUNTIME_OPTIONS} \
 		-ti  \
 		--name  \
 		${PRC_RUNTIME}.sh-$$PPID \
 		${IMG_RUNTIME} \
 		'/bin/bash' ${RUNTIME_RSCRIPT_OPTS} ${RUNTIME_ARGS}
 
+# ---(setup)------------------------------------------------
 
 run/status:
 	@echo "CLI: status ${RUNTIME_ARGS}"
@@ -553,6 +560,10 @@ run/status:
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
 		-v ~/data:${HOME}/data:Z  \
 		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
+		-v ~/.:${RUN_USER_HOME}/.import:Z  \
+		-v /usr/local:/usr/local/.import:Z  \
+		-v /opt:/opt/.import:Z  \
+		-v /data/opt/local:/data/opt/local:Z  \
 		-v /store/local:/store/local:Z  \
 		-v /store/share:/store/share  \
 		-v /user:/user  \
@@ -594,6 +605,10 @@ run/setup:
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
 		-v ~/data:${HOME}/data:Z  \
 		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
+		-v ~/.:${RUN_USER_HOME}/.import:Z  \
+		-v /usr/local:/usr/local/.import:Z  \
+		-v /opt:/opt/.import:Z  \
+		-v /data/opt/local:/data/opt/local:Z  \
 		-v /store/local:/store/local:Z  \
 		-v /store/share:/store/share  \
 		-v /user:/user  \
@@ -625,6 +640,10 @@ run/upgrade:
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
 		-v ~/data:${HOME}/data:Z  \
 		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
+		-v ~/.:${RUN_USER_HOME}/.import:Z  \
+		-v /usr/local:/usr/local/.import:Z  \
+		-v /opt:/opt/.import:Z  \
+		-v /data/opt/local:/data/opt/local:Z  \
 		-v /store/local:/store/local:Z  \
 		-v /store/share:/store/share  \
 		-v /user:/user  \
@@ -656,6 +675,10 @@ run/clear:
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
 		-v ~/data:${HOME}/data:Z  \
 		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
+		-v ~/.:${RUN_USER_HOME}/.import:Z  \
+		-v /usr/local:/usr/local/.import:Z  \
+		-v /opt:/opt/.import:Z  \
+		-v /data/opt/local:/data/opt/local:Z  \
 		-v /store/local:/store/local:Z  \
 		-v /store/share:/store/share  \
 		-v /user:/user  \
@@ -685,6 +708,7 @@ run/clear:
 
 run/term:
         #@echo "CLI: term ${RUNTIME_ARGS}"
+	@[ -n "${DISPLAY}" ] && echo "DISPLAY=${DISPLAY}"
 	$(DOCKER)  exec \
 		${X_ENV_OPTIONS} \
 		-ti  \
@@ -694,14 +718,14 @@ run/term:
 run/xterm:
         #@echo "CLI: xterm ${RUNTIME_ARGS}"
 	@[ -n "${DISPLAY}" ] && echo "DISPLAY=${DISPLAY}"
-	export CONTAINER_ID="$$(${DOCKER} ps | grep ${IMG_RUNTIME} | cut -d' ' -f1 )"; \
+	export CONTAINER_ID="$$(${DOCKER} ps | grep ${IMG_RUNTIME} | cut -d' ' -f1 )"; set -x; \
 	$(DOCKER)  exec \
 		${X_ENV_OPTIONS} \
 		-ti  \
 		$${CONTAINER_ID} \
 		'/usr/bin/xterm' \
 		'-T'  "${IMG_RUNTIME}-$${CONTAINER_ID}" \
-		'-e' ${SHELL} ${RUNTIME_RSCRIPT_OPTS} ${RUNTIME_ARGS} || true
+		'-e' $${SHELL} ${RUNTIME_RSCRIPT_OPTS} ${RUNTIME_ARGS} &
 
 
 # xterm -title "RStudio Container Terminal" \
@@ -760,6 +784,10 @@ run/r-repl:
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
 		-v ~/data:${HOME}/data:Z  \
 		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
+		-v ~/.:${RUN_USER_HOME}/.import:Z  \
+		-v /usr/local:/usr/local/.import:Z  \
+		-v /opt:/opt/.import:Z  \
+		-v /data/opt/local:/data/opt/local:Z  \
 		-v /store/local:/store/local:Z  \
 		-v /store/share:/store/share  \
 		-v /user:/user  \
@@ -792,6 +820,10 @@ run/rscript-cli:
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
 		-v ~/data:${HOME}/data:Z  \
 		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
+		-v ~/.:${RUN_USER_HOME}/.import:Z  \
+		-v /usr/local:/usr/local/.import:Z  \
+		-v /opt:/opt/.import:Z  \
+		-v /data/opt/local:/data/opt/local:Z  \
 		-v /store/local:/store/local:Z  \
 		-v /store/share:/store/share  \
 		-v /user:/user  \
@@ -824,6 +856,10 @@ run/build:
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
 		-v ~/data:${HOME}/data:Z  \
 		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
+		-v ~/.:${RUN_USER_HOME}/.import:Z  \
+		-v /usr/local:/usr/local/.import:Z  \
+		-v /opt:/opt/.import:Z  \
+		-v /data/opt/local:/data/opt/local:Z  \
 		-v /store/local:/store/local:Z  \
 		-v /store/share:/store/share  \
 		-v /user:/user  \
@@ -856,6 +892,10 @@ run/command:
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
 		-v ~/data:${HOME}/data:Z  \
 		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
+		-v ~/.:${RUN_USER_HOME}/.import:Z  \
+		-v /usr/local:/usr/local/.import:Z  \
+		-v /opt:/opt/.import:Z  \
+		-v /data/opt/local:/data/opt/local:Z  \
 		-v /store/local:/store/local:Z  \
 		-v /store/share:/store/share  \
 		-v /user:/user  \
@@ -889,6 +929,10 @@ run/code-server:
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
 		-v ~/data:${HOME}/data:Z  \
 		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
+		-v ~/.:${RUN_USER_HOME}/.import:Z  \
+		-v /usr/local:/usr/local/.import:Z  \
+		-v /opt:/opt/.import:Z  \
+		-v /data/opt/local:/data/opt/local:Z  \
 		-v /store/local:/store/local:Z  \
 		-v /store/share:/store/share  \
 		-v /user:/user  \
@@ -923,6 +967,10 @@ run/jupyter-lab:
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
 		-v ~/data:${HOME}/data:Z  \
 		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
+		-v ~/.:${RUN_USER_HOME}/.import:Z  \
+		-v /usr/local:/usr/local/.import:Z  \
+		-v /opt:/opt/.import:Z  \
+		-v /data/opt/local:/data/opt/local:Z  \
 		-v /store/local:/store/local:Z  \
 		-v /store/share:/store/share  \
 		-v /user:/user  \
@@ -956,6 +1004,10 @@ run/jupyter-notebook:
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
 		-v ~/data:${HOME}/data:Z  \
 		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
+		-v ~/.:${RUN_USER_HOME}/.import:Z  \
+		-v /usr/local:/usr/local/.import:Z  \
+		-v /opt:/opt/.import:Z  \
+		-v /data/opt/local:/data/opt/local:Z  \
 		-v /store/local:/store/local:Z  \
 		-v /store/share:/store/share  \
 		-v /user:/user  \
@@ -1003,6 +1055,10 @@ run/rstudio-server:
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
 		-v ~/data:${HOME}/data:Z  \
 		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
+		-v ~/.:${RUN_USER_HOME}/.import:Z  \
+		-v /usr/local:/usr/local/.import:Z  \
+		-v /opt:/opt/.import:Z  \
+		-v /data/opt/local:/data/opt/local:Z  \
 		-v /store/local:/store/local:Z  \
 		-v /store/share:/store/share  \
 		-v /user:/user  \

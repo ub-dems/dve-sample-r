@@ -117,6 +117,8 @@ function install_commons_sys() {
 		libgsl-dev \
 		libzmq3-dev \
 		libglpk-dev \
+		libtinfo5 \
+		libtinfo6 \
 		default-libmysqlclient-dev \
 		parallel \
 		hwloc \
@@ -191,6 +193,20 @@ function install_commons_cran() {
 
 }
 
+function prepare_commons_mounts() {
+
+    [ "$Y_BASE_COMMONS_MOUNTS" = 1 ] || return 0
+
+    mkdir -p /data/opt/local
+    ln -s    /data/opt/local /opt/local
+
+    mkdir -p /usr/local/share/emacs
+    ln -s    /usr/local/.import/share/emacs/emacs-share/ \
+             /usr/local/share/emacs/emacs-share/
+
+
+}
+
 function install_commons() {
 
 	upgrade_commons_all
@@ -198,6 +214,7 @@ function install_commons() {
 	install_commons_xwindow
 	install_commons_latex
 	install_commons_cran
+	prepare_commons_mounts
 
 }
 
