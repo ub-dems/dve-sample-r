@@ -201,8 +201,8 @@ function prepare_commons_mounts() {
     ln -s    /data/opt/local /opt/local
 
     mkdir -p /usr/local/share/emacs
-    ln -s    /usr/local/.import/share/emacs/emacs-share/ \
-             /usr/local/share/emacs/emacs-share/ || true
+    ln -s    /usr/local/.import/share/emacs/emacs-share \
+             /usr/local/share/emacs/emacs-share || true
 
 
 }

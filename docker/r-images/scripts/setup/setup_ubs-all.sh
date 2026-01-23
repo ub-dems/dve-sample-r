@@ -5,7 +5,9 @@
 
 ## build ARGs
 # set -e
-source ${Y_BUILD_CONF:-/etc/build.conf}
+set -x
+source ${X_BUILD_CONF:-$Y_BUILD_CONF}
+set +x
 
 NCPUS=${NCPUS:--1}
 
@@ -635,6 +637,148 @@ deactivate () {
 
 
 
+
+# ////////////////////////////////////////////////////////////////////////
+
+do_us_init() {
+
+    log ">(do_us_init):" "us - init directories, ..."
+
+    [ -d ~/.local/bin ] || mkdir -p ~/.local/bin
+
+    log "<(do_us_init):"  "us - init directories, ..."
+    
+}
+
+
+do_us_xdg() {
+
+    [ "$Y_US_HOME_XDG" = 1 ] || return 0
+    
+    log ">(do_us_xdg):" "us - xdg directories, ..."
+
+    # share XDG directories
+    xdg_dirs=("Desktop" "Documents" "Downloads" "Pictures")
+
+    for xdg_dir in "${xdg_dirs[@]}"; do
+        [ -e ~/$xdg_dir ] || \
+            [ -e ~/.import/$xdg_dir ] && \
+                ln -sr  ~/.import/$xdg_dir ./$xdg_dir
+    done
+
+    log "<(do_us_xdg):"  "us - xgd directories, done."
+    
+}
+
+
+do_us_ssh() {
+
+    [ "$Y_US_HOME_SSH" = 1 ] || return 0
+    
+    log ">(do_us_ssh):" "us - ssh config, ..."
+
+    [ -d ~/.ssh ] || \
+        warn "?(do_us_ssh):" "us - TODO(ssh config), ..."
+
+    log "<(do_us_ssh):"  "us - ssh config, done"
+    
+}
+
+do_us_git() {
+
+    [ "$Y_US_HOME_GIT" = 1 ] || return 0
+    
+    log ">(do_us_git):" "us - git config, ..."
+
+    git_files=(".gitconfig" ".git-credentials")
+
+    for git_file in "${git_files[@]}"; do
+        [ -e ~/$git_file ] || \
+            [ -e ~/.import/$git_file ] && \
+                cp -pv  ~/.import/$git_file ~/$git_file
+    done
+    
+    log "<(do_us_git):"  "us - git config, done"
+    
+}
+
+do_us_bash() {
+
+    [ "$Y_US_HOME_BASH" = 1 ] || return 0
+    
+    log ">(do_us_bash):" "us - bash config, ..."
+
+    bash_files=(".bash_aliases" ".aliases")
+
+    for bash_file in "${bash_files[@]}"; do
+        [ -e ~/$bash_file ] || \
+            [ -e ~/.import/$bash_file ] && \
+                cp -pv  ~/.import/$bash_file ~/$bash_file
+    done
+    
+    log "<(do_us_bash):"  "us - bash config, done"
+    
+}
+
+do_us_zsh() {
+
+    [ "$Y_US_HOME_ZSH" = 1 ] || return 0
+    
+    log ">(do_us_zsh):" "us - zsh config, ..."
+
+    zsh_files=(".zprofile" ".zshrc" ".zshenv" ".zsh_aliases" ".zlogin" ".zsetup" ".aliases")
+
+    for zsh_file in "${zsh_files[@]}"; do
+        [ -e ~/$zsh_file ] || \
+            [ -e ~/.import/$zsh_file ] && \
+                cp -pv  ~/.import/$zsh_file ~/$zsh_file
+    done
+    
+    [ -e ~/.oh-my-zsh ] || \
+        [ -e ~/.import/.oh-my-zsh ] && \
+            ln -sr ~/.import/.oh-my-zsh ~/.oh-my-zsh
+
+    log "<(do_us_zsh):"  "us - zsh config, done"
+    
+}
+
+do_us_emacs() {
+
+    [ "$Y_US_HOME_EMACS" = 1 ] || return 0
+    
+    log ">(do_us_emacs):" "us - emacs config, ..."
+
+    [ -e ~/.emacs-site ] || \
+        [ -e /usr/local/share/emacs/emacs-share ] && \
+            ln -s /usr/local/share/emacs/emacs-share ~/.emacs-site
+            
+    [ -e ~/.emacs ] || \
+        [ -e ~/.import/.emacs ] && \
+            cp -pv  ~/.import/.emacs ~/.emacs
+            
+    [ -e ~/.emacs ]  || \
+        [ -e ~/.emacs-site/site-start.el ] && \
+            ln -sr  ~/.emacs-site/site-start.el ~/.emacs-start.el
+            
+    [ -e ~/.emacs.d ] || \
+        [ -e ~/.import/.emacs.d ] && \
+            ln -sr ~/.import/.emacs.d ~/.emacs.d
+
+    log "<(do_us_emacs):"  "us - emacs config, done"
+    
+}
+
+do_us_cursor() {
+
+    [ "$Y_US_HOME_CURSOR" = 1 ] || return 0
+    
+    log ">(do_us_cursor):" "us - cursor config, ..."
+
+    warn "?(do_us_cursor):" "us - TODO(cursor config), ..."
+
+    log "<(do_us_cursor):"  "us - cursor config, done"
+    
+}
 
 # ////////////////////////////////////////////////////////////////////////
 
@@ -1399,6 +1543,12 @@ parse_args_run() {
 
     set -x
     
+    RUN_US_HOME_SSH=0
+    RUN_US_HOME_GIT=0
+    RUN_US_HOME_BASH=0
+    RUN_US_HOME_ZSH=0
+    RUN_US_HOME_EMACS=0
+    RUN_US_HOME_CURSOR=0
     RUN_PY_CLEAR=0
     RUN_PY_RESET=0
     RUN_PY_VENV=0
@@ -1415,6 +1565,7 @@ parse_args_run() {
     X_ALL_MODE=1
     X_PYTHON_MODE=0
     X_R_MODE=0
+    X_US_MODE=0
     cmds=""
 
     while [ $# -gt 0 ]; do
@@ -1435,6 +1586,12 @@ parse_args_run() {
                 ;;
             
             --all)
+                RUN_US_HOME_SSH=1
+                RUN_US_HOME_GIT=1
+                RUN_US_HOME_BASH=1
+                RUN_US_HOME_ZSH=1
+                RUN_US_HOME_EMACS=1
+                RUN_US_HOME_CURSOR=1
                 RUN_PY_VENV=1
                 RUN_PY_INSTALL=1
                 RUN_PY_BIND=1
@@ -1452,6 +1609,18 @@ parse_args_run() {
                 RUN_PY_SHOW=1
                 RUN_RE_SHOW=1
                 cmds="$cmds --status"
+                ;;
+            
+            --home)
+                X_ALL_MODE:='0'
+                X_US_MODE:='1'
+                RUN_US_HOME_SSH=1
+                RUN_US_HOME_GIT=1
+                RUN_US_HOME_BASH=1
+                RUN_US_HOME_ZSH=1
+                RUN_US_HOME_EMACS=1
+                RUN_US_HOME_CURSOR=1
+                cmds="$cmds --home"
                 ;;
             
             --python|-P)
@@ -1540,15 +1709,44 @@ parse_args_run() {
             ;;
     esac
 
+    US_OPTS=""
+    US_OPTS="$US_OPTS:$Y_US_ANY_SUPPORT"
+    
+    case "$US_OPTS" in
+        :0:*|:*:0:*|:*:*:0)
+            RUN_US_HOME_SSH=0
+            RUN_US_HOME_GIT=0
+            RUN_US_HOME_BASH=0
+            RUN_US_HOME_ZSH=0
+            RUN_US_HOME_EMACS=0
+            RUN_US_HOME_CURSOR=0
+            ;;
+        *)
+            ;;
+    esac
+
     case "$X_ALL_MODE" in
         1)
             X_PYTHON_MODE="1"
             X_R_MODE="1"
+            X_US_MODE="1"
             X_CODE_MODE="1"
             ;;
         *)  ;;
     esac
 
+
+    case "$X_US_MODE" in
+        0)
+            RUN_US_HOME_SSH=0
+            RUN_US_HOME_GIT=0
+            RUN_US_HOME_BASH=0
+            RUN_US_HOME_ZSH=0
+            RUN_US_HOME_EMACS=0
+            RUN_US_HOME_CURSOR=0
+            ;;
+        *)  ;;
+    esac
 
     case "$X_PYTHON_MODE" in
         0)
@@ -1585,6 +1783,13 @@ parse_args_run() {
     debug "#(args): {\n $(set | sort | grep -e ^PY_OPTS -e ^RE_OPTS -e ^RUN_  -e ^X_  -e ^Y_ ) \n} ###"
     dump  "#(args): {\n $(set | sort | grep -e ^PY_OPTS -e ^RE_OPTS -e ^RUN_  -e ^X_  -e ^Y_ ) \n} ###"
 
+    env_defined RUN_US_HOME_SSH
+    env_defined RUN_US_HOME_GIT
+    env_defined RUN_US_HOME_BASH
+    env_defined RUN_US_HOME_ZSH
+    env_defined RUN_US_HOME_EMACS
+    env_defined RUN_US_HOME_CURSOR
+    
     env_defined RUN_PY_CLEAR
     env_defined RUN_PY_RESET
     env_defined RUN_PY_INSTALL
@@ -1613,11 +1818,47 @@ main_run() {
 
     #check_is_remote
 
+    do_us_init
     do_py_init
     do_renv_init
     
     log ">(main.run):" "args:$args -- cmds: $cmds, ..."
     
+    if [ "$RUN_US_XDG" = '1' ]; then
+        do_us_xdg $@
+        rc_exit $?
+    fi
+
+    if [ "$RUN_US_SSH" = '1' ]; then
+        do_us_ssh $@
+        rc_exit $?
+    fi
+
+    if [ "$RUN_US_GIT" = '1' ]; then
+        do_us_git $@
+        rc_exit $?
+    fi
+
+    if [ "$RUN_US_BASH" = '1' ]; then
+        do_us_bash $@
+        rc_exit $?
+    fi
+
+    if [ "$RUN_US_ZSH" = '1' ]; then
+        do_us_zsh $@
+        rc_exit $?
+    fi
+
+    if [ "$RUN_US_EMACS" = '1' ]; then
+        do_us_emacs $@
+        rc_exit $?
+    fi
+
+    if [ "$RUN_US_CURSOR" = '1' ]; then
+        do_us_cursor $@
+        rc_exit $?
+    fi
+
     if [ "$RUN_PY_CLEAR" = '1' ]; then
         do_py_clear $@
         rc_exit $?

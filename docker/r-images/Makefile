@@ -36,6 +36,7 @@ MAKEFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
 MAKE_DIR := $(patsubst %/,%,$(dir $(MAKEFILE_PATH)))
 ROOT_DIR := $(shell (cd ${MAKE_DIR} && git rev-parse --show-toplevel))
 WORK_DIR := $(patsubst ${HOME}/%,./%,${ROOT_DIR})
+CONF_DIR := $(patsubst ${ROOT_DIR}/%,./%,${MAKE_DIR})
 MAKEFILE_FOLDER := $(notdir ${MAKE_DIR})
 
 WORKER_DIR := '/worker'
@@ -109,6 +110,13 @@ RG_PUBLIC ?= "docker.io"
 PRC_RUNTIME ?= "run-${ID_PROJECT}"
 PRC_WORKER ?= "wrk-${ID_PROJECT}"
 
+
+# ---(BUILD CONFIG)------------------------------------------------
+
+Y_BUILD_CONF ?= /etc/build.conf
+X_BUILD_CONF ?= ${CONF_DIR}/build.conf
+Y_RUNTIME_CONF ?= /etc/runtime.conf
+X_RUNTIME_CONF ?= ${CONF_DIR}/runtime.conf
 
 # ---(PYTHON)------------------------------------------------
 
@@ -537,6 +545,8 @@ run/shell:
 		-e USERID=${RUN_USER_UID} \
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
+		-e X_BUILD_CONF="${X_BUILD_CONF}" \
+		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
@@ -574,6 +584,8 @@ run/status:
 		-e USERID=${RUN_USER_UID} \
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
+		-e X_BUILD_CONF="${X_BUILD_CONF}" \
+		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e X_AUTO_ENV=0  \
@@ -619,6 +631,8 @@ run/setup:
 		-e USERID=${RUN_USER_UID} \
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
+		-e X_BUILD_CONF="${X_BUILD_CONF}" \
+		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e X_AUTO_ENV=0  \
@@ -654,6 +668,8 @@ run/upgrade:
 		-e USERID=${RUN_USER_UID} \
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
+		-e X_BUILD_CONF="${X_BUILD_CONF}" \
+		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e X_AUTO_ENV=0  \
@@ -689,6 +705,8 @@ run/clear:
 		-e USERID=${RUN_USER_UID} \
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
+		-e X_BUILD_CONF="${X_BUILD_CONF}" \
+		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e X_AUTO_ENV=0  \
@@ -798,6 +816,8 @@ run/r-repl:
 		-e USERID=${RUN_USER_UID} \
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
+		-e X_BUILD_CONF="${X_BUILD_CONF}" \
+		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
@@ -834,6 +854,8 @@ run/rscript-cli:
 		-e USERID=${RUN_USER_UID} \
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
+		-e X_BUILD_CONF="${X_BUILD_CONF}" \
+		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
@@ -870,6 +892,8 @@ run/build:
 		-e USERID=${RUN_USER_UID} \
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
+		-e X_BUILD_CONF="${X_BUILD_CONF}" \
+		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
@@ -906,6 +930,8 @@ run/command:
 		-e USERID=${RUN_USER_UID} \
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
+		-e X_BUILD_CONF="${X_BUILD_CONF}" \
+		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
@@ -943,6 +969,8 @@ run/code-server:
 		-e USERID=${RUN_USER_UID} \
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
+		-e X_BUILD_CONF="${X_BUILD_CONF}" \
+		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
@@ -981,6 +1009,8 @@ run/jupyter-lab:
 		-e USERID=${RUN_USER_UID} \
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
+		-e X_BUILD_CONF="${X_BUILD_CONF}" \
+		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
@@ -1018,6 +1048,8 @@ run/jupyter-notebook:
 		-e USERID=${RUN_USER_UID} \
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
+		-e X_BUILD_CONF="${X_BUILD_CONF}" \
+		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
@@ -1070,6 +1102,8 @@ run/rstudio-server:
 		-e USERID=${RUN_USER_UID} \
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
+		-e X_BUILD_CONF="${X_BUILD_CONF}" \
+		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \

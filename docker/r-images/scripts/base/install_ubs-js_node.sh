@@ -239,6 +239,19 @@ function install_node() {
 }
 
 
+function install_pkgs() {
+
+    [ "$Y_JS_NODE_PKGS" = 1 ] || return 0
+
+
+    # installs markdown linter
+
+    npm install -g markdownlint-cli2
+
+
+}
+
+
 
 function clean_up() {
     :
@@ -262,12 +275,12 @@ function main() {
 
     setenv_rehash    
     
+    install_pkgs "$@"
     check_node "$@"
 
     clean_up
 
     info "> script($0) -- DONE."
-    
 
 }
 

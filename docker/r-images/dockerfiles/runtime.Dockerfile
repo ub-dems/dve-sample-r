@@ -23,5 +23,9 @@ ENV IMG_TYPE run
 
 COPY scripts/runtime /rocker_scripts
 #COPY scripts/setup   /rocker_scripts
+COPY runtime.conf   /etc/runtime.conf
+ARG  Y_RUNTIME_CONF=/etc/runtime.conf
+ENV  X_RUNTIME_CONF=$Y_RUNTIME_CONF
+
 
 RUN /rocker_scripts/install_ubs-runtime.sh

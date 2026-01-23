@@ -59,6 +59,8 @@ ARG  Y_KBD_LAYOUT_SET=it
 COPY scripts/base /rocker_scripts
 COPY build.conf   /etc/build.conf
 ARG  Y_BUILD_CONF=/etc/build.conf
+ENV  X_BUILD_CONF=$Y_BUILD_CONF
+
 
 ARG  Y_DEBUG_ENV=0
 ENV  X_DEBUG_ENV=$Y_DEBUG_ENV
@@ -69,6 +71,10 @@ RUN /rocker_scripts/init_ubs-userconf.sh
 # commons
 RUN /rocker_scripts/install_ubs-commons.sh
 RUN /rocker_scripts/install_ubs-utils.sh
+
+# emacs support
+
+ENV NO_AT_BRIDGE=1
 
 # python support
 
