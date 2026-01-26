@@ -75,6 +75,8 @@ where "target" is
   setup ...        : runs poetry/renv install inside runtime
   status ...       : runs poetry/renv status inside runtime
   build ...        : runs ./build.sh with arguments inside runtime
+  environ ...      : imports user environment
+  profile ...      : edit user environment
   shell            : runs interactive shell prompt
   bash args,...    : runs shell with args,...
   term             : attach interactive shell to running runtime
@@ -91,6 +93,8 @@ Target aliases:
    cli      => rscript, Rscript
    upgrade  => lock, snapshot
    clear    => zap
+   environ  => home
+   profile  => rc
    setup    => lib, install
    status   => deps, show
    build    => bld, build.sh
@@ -317,9 +321,17 @@ case "${command}" in
         shift
         target=runtime-setup
         ;;
-    deps|show|status)
+    lib|install|setup)
         shift
-        target=runtime-status
+        target=runtime-setup
+        ;;
+    home|environ)
+        shift
+        target=runtime-environ
+        ;;
+    rc|profile)
+        shift
+        target=runtime-profile
         ;;
     do|command)
         shift

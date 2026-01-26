@@ -13,6 +13,10 @@
 
 #{{{ [ VARS.* ] /////////////////////////////////////////////////////////////////
 
+# ---(debug)------------------------------------------------
+
+VERBOSE = 1
+
 # ---(shell)------------------------------------------------
 
 SHELL = /bin/bash
@@ -207,14 +211,21 @@ endif
 
 # ---(x)------------------------------------------------
 
+X_X ?= 0
+
+ifeq (${X_X},1)
 ifdef DISPLAY
     XAUTHORITY ?= ${HOME}/.Xauthority
     X_ENV_OPTIONS = \
-          -e DISPLAY=${DISPLAY} \
+          -e DISPLAY \
 	  -e XAUTHORITY=/root/.Xauthority
     X_NET_OPTIONS = \
 	  -v /tmp/.X11-unix:/tmp/.X11-unix:ro \
 	  -v ${XAUTHORITY}:/root/.Xauthority:ro
+else
+    X_NET_OPTIONS =
+    X_ENV_OPTIONS =
+endif
 else
     X_NET_OPTIONS =
     X_ENV_OPTIONS =
@@ -234,6 +245,16 @@ RUNTIME_SETUP_OPTS := $(SETUP_INSTALL_RUNTIME_OPTIONS)
 RUNTIME_UPGRADE_OPTS := $(SETUP_UPGRADE_RUNTIME_OPTIONS)
 RUNTIME_CLEAR_OPTS := $(SETUP_CLEAR_RUNTIME_OPTIONS)
 RUNTIME_STATUS_OPTS := $(SETUP_STATUS_RUNTIME_OPTIONS)
+
+# ---(environ)------------------------------------------------
+
+ENVIRON_EXTRA_RUNTIME_OPTIONS := 
+ENVIRON_DEFAULT_RUNTIME_OPTIONS := $(ENVIRON_EXTRA_RUNTIME_OPTIONS) 
+ENVIRON_IMPORT_RUNTIME_OPTIONS := --environ $(ENVIRON_DEFAULT_RUNTIME_OPTIONS) --all
+ENVIRON_PROFILE_RUNTIME_OPTIONS := $(ENVIRON_DEFAULT_RUNTIME_OPTIONS)
+
+RUNTIME_ENVIRON_OPTS := $(ENVIRON_IMPORT_RUNTIME_OPTIONS)
+RUNTIME_PROFILE_OPTS := $(ENVIRON_PROFILE_RUNTIME_OPTIONS)
 
 # ---(setup)------------------------------------------------
 
@@ -379,6 +400,10 @@ runtime-setup: init run/setup
 
 runtime-status: init run/status
 
+runtime-environ: init run/environ
+
+runtime-profile: init run/profile
+
 runtime-build: init run/build
 
 runtime-command: init run/command
@@ -521,7 +546,7 @@ build-image/${BLD_WORKER}: build-image/${BLD_RUNTIME}
 
 run/shell:
 	@echo "CLI: shell ${RUNTIME_ARGS}"
-	@[ -n "${DISPLAY}" ] && echo "DISPLAY=${DISPLAY}"
+	@[ "${X_X}" = 1 ] && [ -n "${DISPLAY}" ] && echo "DISPLAY=${DISPLAY}" || true
 	@export _passw_=$$(cat ~/.rup/*); set -x; \
 	$(DOCKER)  run \
 		--rm \
@@ -531,10 +556,10 @@ run/shell:
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
 		-v ~/data:${HOME}/data:Z  \
 		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
-		-v ~/.:${RUN_USER_HOME}/.import:Z  \
-		-v /usr/local:/usr/local/.import:Z  \
+		-v /usr/local:/usr/local/.import:Z,ro  \
 		-v /opt:/opt/.import:Z  \
 		-v /data/opt/local:/data/opt/local:Z  \
+		-v /etc/terminfo:/etc/terminfo:Z  \
 		-v /store/local:/store/local:Z  \
 		-v /store/share:/store/share  \
 		-v /user:/user  \
@@ -555,7 +580,7 @@ run/shell:
 		--name  \
 		${PRC_RUNTIME}.sh-$$PPID \
 		${IMG_RUNTIME} \
-		'/bin/bash' ${RUNTIME_RSCRIPT_OPTS} ${RUNTIME_ARGS}
+		'/bin/bash' ${RUNTIME_RSCRIPT_OPTS} ${RUNTIME_ARGS} || true
 
 # ---(setup)------------------------------------------------
 
@@ -570,8 +595,7 @@ run/status:
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
 		-v ~/data:${HOME}/data:Z  \
 		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
-		-v ~/.:${RUN_USER_HOME}/.import:Z  \
-		-v /usr/local:/usr/local/.import:Z  \
+		-v /usr/local:/usr/local/.import:Z,ro  \
 		-v /opt:/opt/.import:Z  \
 		-v /data/opt/local:/data/opt/local:Z  \
 		-v /store/local:/store/local:Z  \
@@ -617,8 +641,7 @@ run/setup:
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
 		-v ~/data:${HOME}/data:Z  \
 		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
-		-v ~/.:${RUN_USER_HOME}/.import:Z  \
-		-v /usr/local:/usr/local/.import:Z  \
+		-v /usr/local:/usr/local/.import:Z,ro  \
 		-v /opt:/opt/.import:Z  \
 		-v /data/opt/local:/data/opt/local:Z  \
 		-v /store/local:/store/local:Z  \
@@ -654,8 +677,7 @@ run/upgrade:
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
 		-v ~/data:${HOME}/data:Z  \
 		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
-		-v ~/.:${RUN_USER_HOME}/.import:Z  \
-		-v /usr/local:/usr/local/.import:Z  \
+		-v /usr/local:/usr/local/.import:Z,ro  \
 		-v /opt:/opt/.import:Z  \
 		-v /data/opt/local:/data/opt/local:Z  \
 		-v /store/local:/store/local:Z  \
@@ -691,8 +713,7 @@ run/clear:
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
 		-v ~/data:${HOME}/data:Z  \
 		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
-		-v ~/.:${RUN_USER_HOME}/.import:Z  \
-		-v /usr/local:/usr/local/.import:Z  \
+		-v /usr/local:/usr/local/.import:Z,ro  \
 		-v /opt:/opt/.import:Z  \
 		-v /data/opt/local:/data/opt/local:Z  \
 		-v /store/local:/store/local:Z  \
@@ -719,6 +740,84 @@ run/clear:
 		'./setup.sh' ${RUNTIME_CLEAR_OPTS} ${RUNTIME_ARGS}
 
 
+# ---(environ)------------------------------------------------
+
+run/environ:
+	@echo "CLI: environ ${RUNTIME_ARGS}"
+	@export _passw_=$$(cat ~/.rup/*); \
+	$(DOCKER)  run \
+		--rm \
+		${DOCKER_RUNTIME_OPTIONS} \
+		-v ${HOME_DIR}:${RUN_USER_HOME}:Z  \
+		-v ~/work:${RUN_USER_HOME}/work:Z  \
+		-v ~/data:${RUN_USER_HOME}/data:Z  \
+		-v ~/data:${HOME}/data:Z  \
+		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
+		-v ~/.:${RUN_USER_HOME}/.import:Z,ro  \
+		-v /usr/local:/usr/local/.import:Z,ro  \
+		-v /opt:/opt/.import:Z  \
+		-v /data/opt/local:/data/opt/local:Z  \
+		-v /store/local:/store/local:Z  \
+		-v /store/share:/store/share  \
+		-v /user:/user  \
+		-v /vol:/vol  \
+		-w ${RUN_USER_HOME}/${WORK_DIR}  \
+		-e PASSWORD=$$_passw_ \
+		-e USER=${RUN_USER_NAME} \
+		-e USERID=${RUN_USER_UID} \
+		-e GROUPID=${RUN_USER_GID} \
+		-e ROOT=true  \
+		-e X_BUILD_CONF="${X_BUILD_CONF}" \
+		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
+		-e X_DEBUG="${X_DEBUG:-0}" \
+		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
+		-e X_AUTO_ENV=0  \
+		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		-ti  \
+		--name  \
+		${PRC_RUNTIME}.setup-$$PPID \
+		${IMG_RUNTIME} \
+		'./setup.sh' ${RUNTIME_ENVIRON_OPTS} ${RUNTIME_ARGS}
+
+run/profile:
+	@echo "CLI: profile ${RUNTIME_ARGS}"
+	@[ "${X_X}" = 1 ] && [ -n "${DISPLAY}" ] && echo "DISPLAY=${DISPLAY}" || true
+	@export _passw_=$$(cat ~/.rup/*); set -x; \
+	$(DOCKER)  run \
+		--rm \
+		${DOCKER_RUNTIME_OPTIONS} \
+		-v ${HOME_DIR}:${RUN_USER_HOME}:Z  \
+		-v ~/work:${RUN_USER_HOME}/work:Z  \
+		-v ~/data:${RUN_USER_HOME}/data:Z  \
+		-v ~/data:${HOME}/data:Z  \
+		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
+		-v ~/.:${RUN_USER_HOME}/.import:Z  \
+		-v /usr/local:/usr/local/.import:Z  \
+		-v /opt:/opt/.import:Z  \
+		-v /data/opt/local:/data/opt/local:Z  \
+		-v /store/local:/store/local:Z  \
+		-v /store/share:/store/share  \
+		-v /user:/user  \
+		-v /vol:/vol  \
+		-w ${RUN_USER_HOME}/${WORK_DIR}  \
+		-e PASSWORD=$$_passw_ \
+		-e USER=${RUN_USER_NAME} \
+		-e USERID=${RUN_USER_UID} \
+		-e GROUPID=${RUN_USER_GID} \
+		-e ROOT=true  \
+		-e X_BUILD_CONF="${X_BUILD_CONF}" \
+		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
+		-e X_DEBUG="${X_DEBUG:-0}" \
+		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
+		-e X_AUTO_ENV=0  \
+		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		${X_RUNTIME_OPTIONS} \
+		-ti  \
+		--name  \
+		${PRC_RUNTIME}.setup-$$PPID \
+		${IMG_RUNTIME} \
+		'/bin/bash' ${RUNTIME_PROFILE_OPTS}  ${RUNTIME_ARGS} || true
+
 # ---(attach)----------------------------------------------
 
 # CONTAINER_ID=$(podman ps --filter "ancestor=rocker/geospatial" --format "{{.ID}}")
@@ -726,7 +825,7 @@ run/clear:
 
 run/term:
         #@echo "CLI: term ${RUNTIME_ARGS}"
-	@[ -n "${DISPLAY}" ] && echo "DISPLAY=${DISPLAY}"
+	@[ "${X_X}" = 1 ] && [ -n "${DISPLAY}" ] && echo "DISPLAY=${DISPLAY}" || true
 	$(DOCKER)  exec \
 		${X_ENV_OPTIONS} \
 		-ti  \
@@ -735,7 +834,7 @@ run/term:
 
 run/xterm:
         #@echo "CLI: xterm ${RUNTIME_ARGS}"
-	@[ -n "${DISPLAY}" ] && echo "DISPLAY=${DISPLAY}"
+	@[ "${X_X}" = 1 ] && [ -n "${DISPLAY}" ] && echo "DISPLAY=${DISPLAY}" || true
 	export CONTAINER_ID="$$(${DOCKER} ps | grep ${IMG_RUNTIME} | cut -d' ' -f1 )"; set -x; \
 	$(DOCKER)  exec \
 		${X_ENV_OPTIONS} \
@@ -793,6 +892,7 @@ run/xterm:
 # ---(venv)------------------------------------------------
 
 run/r-repl:
+	@[ "${X_X}" = 1 ] && [ -n "${DISPLAY}" ] && echo "DISPLAY=${DISPLAY}" || true
 	@export _passw_=$$(cat ~/.rup/*); \
 	$(DOCKER)  run \
 		--rm \
@@ -802,8 +902,7 @@ run/r-repl:
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
 		-v ~/data:${HOME}/data:Z  \
 		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
-		-v ~/.:${RUN_USER_HOME}/.import:Z  \
-		-v /usr/local:/usr/local/.import:Z  \
+		-v /usr/local:/usr/local/.import:Z,ro  \
 		-v /opt:/opt/.import:Z  \
 		-v /data/opt/local:/data/opt/local:Z  \
 		-v /store/local:/store/local:Z  \
@@ -840,8 +939,7 @@ run/rscript-cli:
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
 		-v ~/data:${HOME}/data:Z  \
 		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
-		-v ~/.:${RUN_USER_HOME}/.import:Z  \
-		-v /usr/local:/usr/local/.import:Z  \
+		-v /usr/local:/usr/local/.import:Z,ro  \
 		-v /opt:/opt/.import:Z  \
 		-v /data/opt/local:/data/opt/local:Z  \
 		-v /store/local:/store/local:Z  \
@@ -878,8 +976,7 @@ run/build:
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
 		-v ~/data:${HOME}/data:Z  \
 		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
-		-v ~/.:${RUN_USER_HOME}/.import:Z  \
-		-v /usr/local:/usr/local/.import:Z  \
+		-v /usr/local:/usr/local/.import:Z,ro  \
 		-v /opt:/opt/.import:Z  \
 		-v /data/opt/local:/data/opt/local:Z  \
 		-v /store/local:/store/local:Z  \
@@ -916,8 +1013,7 @@ run/command:
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
 		-v ~/data:${HOME}/data:Z  \
 		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
-		-v ~/.:${RUN_USER_HOME}/.import:Z  \
-		-v /usr/local:/usr/local/.import:Z  \
+		-v /usr/local:/usr/local/.import:Z,ro  \
 		-v /opt:/opt/.import:Z  \
 		-v /data/opt/local:/data/opt/local:Z  \
 		-v /store/local:/store/local:Z  \
@@ -944,7 +1040,7 @@ run/command:
 
 run/code-server:
 	@echo "CODE: server ${RUNTIME_ARGS}"
-	@[ -n "${DISPLAY}" ] && echo "DISPLAY=${DISPLAY}"
+	@[ "${X_X}" = 1 ] && [ -n "${DISPLAY}" ] && echo "DISPLAY=${DISPLAY}" || true
 	@export _passw_=$$(cat ~/.rup/*); \
 	$(DOCKER)  run \
 		--rm \
@@ -955,8 +1051,7 @@ run/code-server:
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
 		-v ~/data:${HOME}/data:Z  \
 		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
-		-v ~/.:${RUN_USER_HOME}/.import:Z  \
-		-v /usr/local:/usr/local/.import:Z  \
+		-v /usr/local:/usr/local/.import:Z,ro  \
 		-v /opt:/opt/.import:Z  \
 		-v /data/opt/local:/data/opt/local:Z  \
 		-v /store/local:/store/local:Z  \
@@ -984,7 +1079,7 @@ run/code-server:
 
 run/jupyter-lab:
 	@echo "JUPYTER: lab ${RUNTIME_ARGS}"
-	@[ -n "${DISPLAY}" ] && echo "DISPLAY=${DISPLAY}"
+	@[ "${X_X}" = 1 ] && [ -n "${DISPLAY}" ] && echo "DISPLAY=${DISPLAY}" || true
 	@export _passw_=$$(cat ~/.rup/*); \
 	$(DOCKER)  run \
 		--rm \
@@ -995,8 +1090,7 @@ run/jupyter-lab:
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
 		-v ~/data:${HOME}/data:Z  \
 		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
-		-v ~/.:${RUN_USER_HOME}/.import:Z  \
-		-v /usr/local:/usr/local/.import:Z  \
+		-v /usr/local:/usr/local/.import:Z,ro  \
 		-v /opt:/opt/.import:Z  \
 		-v /data/opt/local:/data/opt/local:Z  \
 		-v /store/local:/store/local:Z  \
@@ -1023,7 +1117,7 @@ run/jupyter-lab:
 
 run/jupyter-notebook:
 	@echo "JUPYTER: notebook ${RUNTIME_ARGS}"
-	@[ -n "${DISPLAY}" ] && echo "DISPLAY=${DISPLAY}"
+	@[ "${X_X}" = 1 ] && [ -n "${DISPLAY}" ] && echo "DISPLAY=${DISPLAY}" || true
 	@export _passw_=$$(cat ~/.rup/*); \
 	$(DOCKER)  run \
 		--rm \
@@ -1034,8 +1128,7 @@ run/jupyter-notebook:
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
 		-v ~/data:${HOME}/data:Z  \
 		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
-		-v ~/.:${RUN_USER_HOME}/.import:Z  \
-		-v /usr/local:/usr/local/.import:Z  \
+		-v /usr/local:/usr/local/.import:Z,ro  \
 		-v /opt:/opt/.import:Z  \
 		-v /data/opt/local:/data/opt/local:Z  \
 		-v /store/local:/store/local:Z  \
@@ -1075,7 +1168,7 @@ run/rstudio-server:
 	@echo " X2Go:      chromium-browser http://localhost:${RUN_PORT_B_EXT}"
 	@echo " nomachine: firefox          http://localhost:${RUN_PORT_B_EXT}"
 	@echo ""
-	@[ -n "${DISPLAY}" ] && echo "DISPLAY=${DISPLAY}"
+	@[ -n "${DISPLAY}" ] && echo "DISPLAY=${DISPLAY}   -   X_X=${X_X}"
 	@echo ""
 	@export _passw_=$$(cat ~/.rup/*); \
 	$(DOCKER)  run \
@@ -1087,8 +1180,7 @@ run/rstudio-server:
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
 		-v ~/data:${HOME}/data:Z  \
 		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
-		-v ~/.:${RUN_USER_HOME}/.import:Z  \
-		-v /usr/local:/usr/local/.import:Z  \
+		-v /usr/local:/usr/local/.import:Z,ro  \
 		-v /opt:/opt/.import:Z  \
 		-v /data/opt/local:/data/opt/local:Z  \
 		-v /store/local:/store/local:Z  \

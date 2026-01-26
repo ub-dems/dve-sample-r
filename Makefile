@@ -153,6 +153,12 @@ build-update:
 build-upgrade:
 	cd ${IMG_MAKE_DIR} && $(MAKE) $@
 
+build-environ:
+	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+
+build-profile:
+	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+
 
 # ---(inner check)------------------------------------------------
 
@@ -166,6 +172,7 @@ build-validate:
 
 .PHONY: runtime-repl runtime-cli runtime-shell
 .PHONY: runtime-upgrade runtime-setup runtime-status runtime-clear
+.PHONY: runtime-environ runtime-profile
 .PHONY: runtime-build
 .PHONY: runtime-rstudio runtime-lab runtime-notebook runtime-code
 .PHONY: runtime-command runtime-term runtime-xterm runtime-help
@@ -196,6 +203,14 @@ runtime-setup:
 
 runtime-status: # @HELP/runtime ...
 runtime-status:
+	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+
+runtime-environ: # @HELP/runtime ...
+runtime-environ:
+	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+
+runtime-profile: # @HELP/runtime ...
+runtime-profile:
 	cd ${IMG_MAKE_DIR} && $(MAKE) $@
 
 runtime-build: # @HELP/runtime ...
