@@ -841,6 +841,7 @@ run/xterm:
 		-ti  \
 		$${CONTAINER_ID} \
 		'/usr/bin/xterm' \
+		'-fn' '9x15' \
 		'-T'  "${IMG_RUNTIME}-$${CONTAINER_ID}" \
 		'-e' $${SHELL} ${RUNTIME_RSCRIPT_OPTS} ${RUNTIME_ARGS} &
 

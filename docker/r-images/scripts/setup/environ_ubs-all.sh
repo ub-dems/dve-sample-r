@@ -70,11 +70,11 @@ X_TS="$(date '+%s')"
 X_TM="$(date --rfc-3339=seconds)"
 
 #X_NAME="$(basename $X_SRC_SCRIPT .sh)"
-X_NAME="setup"
+X_NAME="environ"
 
 X_TEMP="/tmp/$(id -u)"
 X_WORK="$(pwd)"
-X_SAVB="./temp/_setup_"
+X_SAVB="./temp/_environ_"
 X_SAVE="${X_SAVB}/${X_TL}"
 X_LOGB="./logs/sys"
 X_LOGS="${X_LOGB}/${X_TL}"
@@ -126,7 +126,7 @@ dump_header_status() {
     cat <<EOF
 #vim: set foldmethod=marker:foldlevel=0
 ---
-title: "setup status - project environment"
+title: "environ status - user environment"
 project: "${REV_ID_PROJECT}"
 package: "${REV_ID_PACKAGE}"
 branch: "${REV_BRANCH_NAME}"
@@ -143,7 +143,7 @@ dump_global_status() {
 # {{{ --- [setup-globals] ----------------------------------
 
 ##
-# setup global status: ${args}.
+# environ global status: ${args}.
 #
 
 
@@ -657,14 +657,14 @@ do_us_xdg() {
     
     log ">(do_us_xdg):" "us - xdg directories, ..."
 
-    # share XDG directories
-    xdg_dirs=("Desktop" "Documents" "Downloads" "Pictures")
+    # # share XDG directories
+    # xdg_dirs=("Desktop" "Documents" "Downloads" "Pictures")
 
-    for xdg_dir in "${xdg_dirs[@]}"; do
-        [ -e ~/$xdg_dir ] || \
-            [ -e ~/.import/$xdg_dir ] && \
-                ln -sr  ~/.import/$xdg_dir ./$xdg_dir
-    done
+    # for xdg_dir in "${xdg_dirs[@]}"; do
+    #     [ -e ~/$xdg_dir ] || \
+    #         [ -e ~/.import/$xdg_dir ] && \
+    #             ln -sr  ~/.import/$xdg_dir ./$xdg_dir
+    # done
 
     log "<(do_us_xdg):"  "us - xgd directories, done."
     
@@ -726,7 +726,12 @@ do_us_zsh() {
     
     log ">(do_us_zsh):" "us - zsh config, ..."
 
-    zsh_files=(".zprofile" ".zshrc" ".zshenv" ".zsh_aliases" ".zlogin" ".zsetup" ".aliases")
+    [ -e ~/.oh-my-zsh ] || \
+        [ -e ~/.import/.oh-my-zsh ] && \
+            cp -pv  ~/.import/.zsetup ~/.zsetup && \
+            zsh ~/.zsetup < /dev/null 
+
+    zsh_files=(".zprofile" ".zshrc" ".zshenv" ".zsh_aliases" ".zlogin" ".aliases")
 
     for zsh_file in "${zsh_files[@]}"; do
         [ -e ~/$zsh_file ] || \
@@ -734,10 +739,6 @@ do_us_zsh() {
                 cp -pv  ~/.import/$zsh_file ~/$zsh_file
     done
     
-    [ -e ~/.oh-my-zsh ] || \
-        [ -e ~/.import/.oh-my-zsh ] && \
-            ln -sr ~/.import/.oh-my-zsh ~/.oh-my-zsh
-
     log "<(do_us_zsh):"  "us - zsh config, done"
     
 }
@@ -749,8 +750,8 @@ do_us_emacs() {
     log ">(do_us_emacs):" "us - emacs config, ..."
 
     [ -e ~/.emacs-site ] || \
-        [ -e /usr/local/share/emacs/emacs-share ] && \
-            ln -s /usr/local/share/emacs/emacs-share ~/.emacs-site
+        [ -e /usr/local/share/emacs/emacs-share/emacs-site ] && \
+            ln -s /usr/local/share/emacs/emacs-share/emacs-site ~/.emacs-site
             
     [ -e ~/.emacs ] || \
         [ -e ~/.import/.emacs ] && \
@@ -909,8 +910,8 @@ parse_args_run() {
 
     set +x
 
-    debug "#(args): {\n $(set | sort | grep -e ^PY_OPTS -e ^RE_OPTS -e ^RUN_  -e ^X_  -e ^Y_ ) \n} ###"
-    dump  "#(args): {\n $(set | sort | grep -e ^PY_OPTS -e ^RE_OPTS -e ^RUN_  -e ^X_  -e ^Y_ ) \n} ###"
+    debug "#(args): {\n $(set | sort | grep -e ^RUN_  -e ^X_  -e ^Y_ ) \n} ###"
+    dump  "#(args): {\n $(set | sort | grep -e ^RUN_  -e ^X_  -e ^Y_ ) \n} ###"
 
     env_defined RUN_US_HOME_SSH
     env_defined RUN_US_HOME_GIT
@@ -934,38 +935,40 @@ main_run() {
     do_us_init
     
     log ">(main.run):" "args:$args -- cmds: $cmds, ..."
+
+    set -x
     
-    if [ "$RUN_US_XDG" = '1' ]; then
+    if [ "$RUN_US_HOME_XDG" = '1' ]; then
         do_us_xdg $@
         rc_exit $?
     fi
 
-    if [ "$RUN_US_SSH" = '1' ]; then
+    if [ "$RUN_US_HOME_SSH" = '1' ]; then
         do_us_ssh $@
         rc_exit $?
     fi
 
-    if [ "$RUN_US_GIT" = '1' ]; then
+    if [ "$RUN_US_HOME_GIT" = '1' ]; then
         do_us_git $@
         rc_exit $?
     fi
 
-    if [ "$RUN_US_BASH" = '1' ]; then
+    if [ "$RUN_US_HOME_BASH" = '1' ]; then
         do_us_bash $@
         rc_exit $?
     fi
 
-    if [ "$RUN_US_ZSH" = '1' ]; then
+    if [ "$RUN_US_HOME_ZSH" = '1' ]; then
         do_us_zsh $@
         rc_exit $?
     fi
 
-    if [ "$RUN_US_EMACS" = '1' ]; then
+    if [ "$RUN_US_HOME_EMACS" = '1' ]; then
         do_us_emacs $@
         rc_exit $?
     fi
 
-    if [ "$RUN_US_CURSOR" = '1' ]; then
+    if [ "$RUN_US_HOME_CURSOR" = '1' ]; then
         do_us_cursor $@
         rc_exit $?
     fi
@@ -974,6 +977,8 @@ main_run() {
         do_py_clear $@
         rc_exit $?
     fi
+
+    set +x
 
     log "<(main.run):" "rc($exit_rc) -- cmds: $cmds, done."
     return $exit_rc
