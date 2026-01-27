@@ -151,8 +151,12 @@ LOGS_DIR ?= ${ROOT_DIR}/logs
 LOGB_DIR ?= ${ROOT_DIR}/logs/_build_/logs-${E_BUILD_TS}
 TEMP_DIR ?= ${ROOT_DIR}/temp
 
+
 BUILD_DIRS = ${TEMP_DIR} ${LOGS_DIR} ${LOGB_DIR} ${HOME_DIR} 
 CLEAN_DIRS = ${TEMP_DIR}
+
+XDG_DIRS = ~/Desktop ~/Documents ~/Downloads ~/Pictures
+
 
 # ---(progs)------------------------------------------------
 
@@ -231,6 +235,21 @@ else
     X_ENV_OPTIONS =
 endif
 X_RUNTIME_OPTIONS := $(X_ENV_OPTIONS) $(X_NET_OPTIONS)
+
+# ---(xdg)------------------------------------------------
+
+X_XDG_MOUNT ?= 0
+
+ifeq (${X_XDG_MOUNT},1)
+    X_XDG_MOUNT_OPTIONS = \
+	-v ~/Desktop:${RUN_USER_HOME}/Desktop:Z  \
+	-v ~/Documents:${RUN_USER_HOME}/Documents:Z  \
+	-v ~/Downloads:${RUN_USER_HOME}/Downloads:Z  \
+	-v ~/Pictures:${RUN_USER_HOME}/Pictures:Z
+else
+    X_XDG_MOUNT_OPTIONS =
+endif
+XDG_RUNTIME_OPTIONS := $(X_XDG_MOUNT_OPTIONS)
 
 # ---(setup)------------------------------------------------
 
@@ -467,9 +486,12 @@ worker-help:  help/worker
 
 .PHONY: init%
 
-init: $(BUILD_DIRS)
+init: $(BUILD_DIRS) $(XDG_DIRS)
 
 $(BUILD_DIRS):
+	@mkdir -p $@
+
+$(XDG_DIRS):
 	@mkdir -p $@
 
 # ---(clean)------------------------------------------------
@@ -921,6 +943,7 @@ run/r-repl:
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		${XDG_RUNTIME_OPTIONS} \
 		${X_RUNTIME_OPTIONS} \
 		-ti  \
 		--name  \
@@ -958,6 +981,7 @@ run/rscript-cli:
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		${XDG_RUNTIME_OPTIONS} \
 		${X_RUNTIME_OPTIONS} \
 		-ti  \
 		--name  \
@@ -995,6 +1019,7 @@ run/build:
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		${XDG_RUNTIME_OPTIONS} \
 		${X_RUNTIME_OPTIONS} \
 		-ti  \
 		--name  \
@@ -1032,6 +1057,7 @@ run/command:
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		${XDG_RUNTIME_OPTIONS} \
 		${X_RUNTIME_OPTIONS} \
 		--name  \
 		${PRC_RUNTIME}.do-$$PPID \
@@ -1070,6 +1096,7 @@ run/code-server:
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		${XDG_RUNTIME_OPTIONS} \
 		${X_RUNTIME_OPTIONS} \
 		--name  \
 		${PRC_RUNTIME}.code-$$PPID \
@@ -1109,6 +1136,7 @@ run/jupyter-lab:
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		${XDG_RUNTIME_OPTIONS} \
 		${X_RUNTIME_OPTIONS} \
 		--name  \
 		${PRC_RUNTIME}.lab-$$PPID \
@@ -1147,6 +1175,7 @@ run/jupyter-notebook:
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		${XDG_RUNTIME_OPTIONS} \
 		${X_RUNTIME_OPTIONS} \
 		--name  \
 		${PRC_RUNTIME}.note-$$PPID \
@@ -1200,6 +1229,7 @@ run/rstudio-server:
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		${XDG_RUNTIME_OPTIONS} \
 		${X_RUNTIME_OPTIONS} \
 		--name  \
 		${PRC_RUNTIME}.rstudio-$$PPID \

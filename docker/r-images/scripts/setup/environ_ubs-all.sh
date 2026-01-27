@@ -600,46 +600,6 @@ exit_main() {
 
 # ////////////////////////////////////////////////////////////////////////
 
-
-deactivate () {
-    # reset old environment variables
-    if [ -n "${_OLD_VIRTUAL_PATH:-}" ] ; then
-        PATH="${_OLD_VIRTUAL_PATH:-}"
-        export PATH
-        unset _OLD_VIRTUAL_PATH
-    fi
-    if [ -n "${_OLD_VIRTUAL_PYTHONHOME:-}" ] ; then
-        PYTHONHOME="${_OLD_VIRTUAL_PYTHONHOME:-}"
-        export PYTHONHOME
-        unset _OLD_VIRTUAL_PYTHONHOME
-    fi
-
-    # This should detect bash and zsh, which have a hash command that must
-    # be called to get it to forget past commands.  Without forgetting
-    # past commands the $PATH changes we made may not be respected
-    if [ -n "${BASH:-}" -o -n "${ZSH_VERSION:-}" ] ; then
-        hash -r 2> /dev/null
-    fi
-
-    if [ -n "${_OLD_VIRTUAL_PS1:-}" ] ; then
-        PS1="${_OLD_VIRTUAL_PS1:-}"
-        export PS1
-        unset _OLD_VIRTUAL_PS1
-    fi
-
-    unset VIRTUAL_ENV
-    unset VIRTUAL_ENV_PROMPT
-    if [ ! "${1:-}" = "nondestructive" ] ; then
-    # Self destruct!
-        unset -f deactivate
-    fi
-}
-
-
-
-
-# ////////////////////////////////////////////////////////////////////////
-
 do_us_init() {
 
     log ">(do_us_init):" "us - init directories, ..."
@@ -677,9 +637,26 @@ do_us_ssh() {
     
     log ">(do_us_ssh):" "us - ssh config, ..."
 
-    [ -d ~/.ssh ] || \
-        warn "?(do_us_ssh):" "us - TODO(ssh config), ..."
+    [ -d ~/.ssh ] && {
+        log ">(do_us_ssh)." "us - ~/.ssh present, skip"
+        return 0
+    }
 
+    echo 'y' | ssh-keygen -f ~/.ssh/id_rsa -P '' -t rsa -b 4096
+
+    ssh_keys=(~/.import/.ssh/id*)
+
+    for ssh_key in "${ssh_keys[@]}"; do
+        cp -pv  $ssh_key ~/.ssh
+    done
+    
+    ssh_files=(~/.import/.ssh/config ~/.import/.ssh/known_hosts)
+
+    for ssh_file in "${ssh_files[@]}"; do
+        [ -e $ssh_file ] && \
+            cp -pv  $ssh_file ~/.ssh
+    done
+    
     log "<(do_us_ssh):"  "us - ssh config, done"
     
 }
@@ -693,9 +670,11 @@ do_us_git() {
     git_files=(".gitconfig" ".git-credentials")
 
     for git_file in "${git_files[@]}"; do
-        [ -e ~/$git_file ] || \
+        [ -e ~/$git_file ] || { \
             [ -e ~/.import/$git_file ] && \
                 cp -pv  ~/.import/$git_file ~/$git_file
+        }
+            
     done
     
     log "<(do_us_git):"  "us - git config, done"
@@ -711,9 +690,10 @@ do_us_bash() {
     bash_files=(".bash_aliases" ".aliases")
 
     for bash_file in "${bash_files[@]}"; do
-        [ -e ~/$bash_file ] || \
+        [ -e ~/$bash_file ] || { \
             [ -e ~/.import/$bash_file ] && \
                 cp -pv  ~/.import/$bash_file ~/$bash_file
+        }
     done
     
     log "<(do_us_bash):"  "us - bash config, done"
@@ -726,17 +706,20 @@ do_us_zsh() {
     
     log ">(do_us_zsh):" "us - zsh config, ..."
 
-    [ -e ~/.oh-my-zsh ] || \
+    [ -e ~/.oh-my-zsh ] || { \
         [ -e ~/.import/.oh-my-zsh ] && \
             cp -pv  ~/.import/.zsetup ~/.zsetup && \
-            zsh ~/.zsetup < /dev/null 
+            zsh ~/.zsetup < /dev/null
+        }
+        
 
     zsh_files=(".zprofile" ".zshrc" ".zshenv" ".zsh_aliases" ".zlogin" ".aliases")
 
     for zsh_file in "${zsh_files[@]}"; do
-        [ -e ~/$zsh_file ] || \
+        [ -e ~/$zsh_file ] || { \
             [ -e ~/.import/$zsh_file ] && \
                 cp -pv  ~/.import/$zsh_file ~/$zsh_file
+        }
     done
     
     log "<(do_us_zsh):"  "us - zsh config, done"
@@ -749,21 +732,25 @@ do_us_emacs() {
     
     log ">(do_us_emacs):" "us - emacs config, ..."
 
-    [ -e ~/.emacs-site ] || \
+    [ -e ~/.emacs-site ] || { \
         [ -e /usr/local/share/emacs/emacs-share/emacs-site ] && \
             ln -s /usr/local/share/emacs/emacs-share/emacs-site ~/.emacs-site
+        }
             
-    [ -e ~/.emacs ] || \
+    [ -e ~/.emacs ] || { \
         [ -e ~/.import/.emacs ] && \
             cp -pv  ~/.import/.emacs ~/.emacs
+        }
             
-    [ -e ~/.emacs-start.el ]  || \
+    [ -e ~/.emacs-start.el ]  || { \
         [ -e ~/.emacs-site/site-start.el ] && \
-            ln -sr  ~/.emacs-site/site-start.el ~/.emacs-start.el
+            ln -sr  ~/.emacs-site/site-start.el ~/.emacs-start.el 
+        }
             
-    [ -e ~/.emacs.d ] || \
-        [ -e ~/.import/.emacs.d ] && \
-            cp -rpv ~/.import/.emacs.d ~/.emacs.d
+    [ -d ~/.emacs.d ] || { \
+        [ -d ~/.import/.emacs.d ] && \
+            cp -rpv ~/.import/.emacs.d ~/.emacs.d 
+        }
 
     log "<(do_us_emacs):"  "us - emacs config, done"
     
@@ -796,8 +783,6 @@ parse_args_run() {
     args="$@"
     log ">(args.run):" "$args"
 
-    set -x
-    
     RUN_US_HOME_SSH=0
     RUN_US_HOME_GIT=0
     RUN_US_HOME_BASH=0
@@ -908,8 +893,6 @@ parse_args_run() {
         *)  ;;
     esac
 
-    set +x
-
     debug "#(args): {\n $(set | sort | grep -e ^RUN_  -e ^X_  -e ^Y_ ) \n} ###"
     dump  "#(args): {\n $(set | sort | grep -e ^RUN_  -e ^X_  -e ^Y_ ) \n} ###"
 
@@ -936,8 +919,6 @@ main_run() {
     
     log ">(main.run):" "args:$args -- cmds: $cmds, ..."
 
-    set -x
-    
     if [ "$RUN_US_HOME_XDG" = '1' ]; then
         do_us_xdg $@
         rc_exit $?
@@ -977,8 +958,6 @@ main_run() {
         do_py_clear $@
         rc_exit $?
     fi
-
-    set +x
 
     log "<(main.run):" "rc($exit_rc) -- cmds: $cmds, done."
     return $exit_rc
