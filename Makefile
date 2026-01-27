@@ -54,6 +54,7 @@ all: init check test docs build
 
 test: # @HELP/base runs: `devtools::test()`
 test: init
+	${POETRY} run 'pytest' || true
 	${RSCRIPT} -e 'devtools::test()'
 
 
