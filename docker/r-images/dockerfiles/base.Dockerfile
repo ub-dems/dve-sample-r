@@ -76,6 +76,10 @@ RUN /rocker_scripts/install_ubs-utils.sh
 
 ENV NO_AT_BRIDGE=1
 
+# cursor support
+
+ENV CAN_LAUNCH_AS_ROOT=1
+
 # python support
 
 ENV VIRTUAL_ENV=/opt/venv

@@ -98,6 +98,8 @@ Target aliases:
    setup    => lib, install
    status   => deps, show
    build    => bld, build.sh
+   test     => pytest
+   check    => validate
    shell    => sh, prompt
    bash     => do, command
    term     => in, attach
@@ -308,6 +310,14 @@ case "${command}" in
     bld|build|build.sh)
         shift
         target=runtime-build
+        ;;
+    test|pytest)
+        shift
+        target=runtime-test
+        ;;
+    check|validate)
+        shift
+        target=runtime-check
         ;;
     clear|zap)
         shift

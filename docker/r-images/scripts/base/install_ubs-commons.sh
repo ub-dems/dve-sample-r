@@ -139,31 +139,65 @@ function install_commons_xwindow() {
 		libx11-6 \
 		libxext6 \
 		libxrender1 \
-		xauth \
+                fuse \
+                libfuse2 \
+                libdbus-glib-1-2 \
+                xserver-xephyr \
+                openbox \
+                xfonts-terminus \
+	        xauth \
 		xsel \
 		xclip \
-                fonts-inconsolata \
                 rxvt-unicode \
                 xterm
 }
+
+function install_commons_fonts() {
+
+	[ "$Y_BASE_COMMONS_FONTS" = 1 ] || return 0
+
+	apt_install \
+            fonts-roboto \
+            fonts-open-sans \
+            fonts-cascadia-code \
+            fonts-jetbrains-mono \
+            fonts-firacode \
+            fonts-inconsolata
+
+}
+
+
 
 function install_commons_latex() {
 
 	[ "$Y_BASE_COMMONS_LATEX" = 1 ] || return 0
 
 	apt_install \
-		texlive \
-		texlive-fonts-recommended \
-		texlive-latex-recommended \
-		texlive-bibtex-extra \
-		texlive-lang-english \
-		texlive-lang-italian \
-		texlive-luatex \
-		texlive-xetex \
-                pandoc \
-                pandoc-plantuml-filter \
-                fonts-jetbrains-mono
+	    texlive \
+	    texlive-fonts-recommended \
+	    texlive-latex-recommended \
+	    texlive-bibtex-extra \
+	    texlive-lang-english \
+	    texlive-lang-italian \
+	    texlive-luatex \
+	    texlive-xetex \
+            pandoc \
+            pandoc-plantuml-filter \
+            fonts-jetbrains-mono
 
+	apt_install \
+            hunspell \
+            hunspell-tools \
+            hunspell-en-gb \
+            hunspell-en-us \
+            hunspell-fr \
+            hunspell-es \
+            hunspell-it \
+            hyphen-en-us \
+            hyphen-it \
+            imagemagick
+
+        
         #       pandoc-filter-diagram \
 
 	#    tlmgr install \
@@ -212,6 +246,7 @@ function install_commons() {
 	upgrade_commons_all
 	install_commons_sys
 	install_commons_xwindow
+	install_commons_fonts
 	install_commons_latex
 	install_commons_cran
 	prepare_commons_mounts

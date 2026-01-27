@@ -388,7 +388,7 @@ dump_status() {
 exit_status() {
     
     dump_status
-    exit 0
+    exec ./build.sh status
 }
 
 # --------------------------------------------------------------

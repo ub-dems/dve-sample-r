@@ -151,6 +151,7 @@ function install_apps_emacs() {
         emacs \
         emacs-libvterm \
         elpa-pdf-tools \
+        libvterm-dev \
         fonts-firacode
     
 }

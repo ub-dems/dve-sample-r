@@ -37,6 +37,7 @@ CLEAN_DIRS = ${TEMP_DIR}
 
 SHELL := /bin/bash
 RSCRIPT := Rscript
+POETRY := poetry
 
 
 #}}} \\\
@@ -92,6 +93,11 @@ uninstall: # @HELP/base runs: `devtools::uninstall()`
 uninstall:
 	${RSCRIPT} -e 'devtools::uninstall()'
 
+status: # @HELP/base runs: `poetry show` and `renv::diagnostics()`
+status:
+	${POETRY} 'show'
+	${RSCRIPT} -e 'renv::diagnostics()'
+
 clean: # @HELP/base clean generated build files
 	rm -f src/*.o src/*.so src/*.dll
 
@@ -138,6 +144,19 @@ build-help: help/build
 
 #}}} \\\
 
+#{{{ [ AUTO.* ] /////////////////////////////////////////////////////////////////
+
+# ---(full)------------------------------------------------
+
+.PHONY: full full-help
+
+full: # @HELP/full project environment initializaion after checkout 
+full:  init build-setup runtime-setup build-environ runtime-test runtime-check  runtime-status
+
+full-help: help/full
+
+#}}} \\\
+
 #{{{ [ CONTAINERS.* ] /////////////////////////////////////////////////////////////////
 
 # ---(images)------------------------------------------------
@@ -171,7 +190,8 @@ build-validate:
 # ---(run)------------------------------------------------
 
 .PHONY: runtime-repl runtime-cli runtime-shell
-.PHONY: runtime-upgrade runtime-setup runtime-status runtime-clear
+.PHONY: runtime-upgrade runtime-setup runtime-clear
+.PHONY: runtime-test runtime-check runtime-status
 .PHONY: runtime-environ runtime-profile
 .PHONY: runtime-build
 .PHONY: runtime-rstudio runtime-lab runtime-notebook runtime-code
@@ -215,6 +235,14 @@ runtime-profile:
 
 runtime-build: # @HELP/runtime ...
 runtime-build:
+	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+
+runtime-test: # @HELP/runtime ...
+runtime-test:
+	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+
+runtime-check: # @HELP/runtime ...
+runtime-check:
 	cd ${IMG_MAKE_DIR} && $(MAKE) $@
 
 runtime-command: # @HELP/runtime ...
