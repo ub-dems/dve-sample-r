@@ -2,16 +2,14 @@
 name = "dve_sample_r"
 version = "2.0.0a1"
 description = "R Template Project with Podman and Jypyter Support"
-authors = [
-    {name = "Datalab DEMS", email = "datalab@unimib.it"}
-]
+authors = [{ name = "Datalab DEMS", email = "datalab@unimib.it" }]
 license = "GNU General Public License v3.0"
 readme = "README.md"
 documentation = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-r/-/wikis/home"
 homepage = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-r"
 repository = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-r.git"
 
-dynamic = [ "dependencies" ]
+dynamic = ["dependencies"]
 requires-python = "^3.12"
 
 [tool.poetry]
@@ -22,11 +20,11 @@ packages = [{ include = "*", from = "inst/python/src" }]
 include-package-data = true
 
 [tool.setuptools.package-data]
-res = [ "inst/python/resources/*", "inst/python/resources/*/*" ]
+res = ["inst/python/resources/*", "inst/python/resources/*/*"]
 
-[projct.scripts]
+[project.scripts]
 main = "dve.cli:main"
-demo = "vce.cli:main"
+hello = "dve.scripts.dummy.dummy_script:main"
 
 [tool.poetry.dependencies]
 python = "^3.12"
@@ -124,7 +122,7 @@ h5py = '*'
 # --- [sql] --------------------------------------
 SQLAlchemy = "*"
 
-mysql-connector-python = "*"
+#mysql-connector-python = "*"
 # requires: sudo apt install default-libmysqlclient-dev
 mysqlclient = "*"
 
@@ -213,19 +211,6 @@ more-itertools = "*"
 ### }}} // system
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 [tool.poetry.group.dev.dependencies]
 
 # {{{ JUPYTER: from https://docs.jupyter.org/en/latest/install.html
@@ -282,7 +267,6 @@ ipython-bg = "*"
 ### }}} // jupyter
 
 
-
 # {{{ TOOLS: 
 
 # --- [test] -----------------------------------
@@ -293,7 +277,7 @@ unittest2 = { version = "*" }
 #   pytest-spark = "*"
 #   pyspark-test = "*"
 #   chispa = "*"
-coverage= "*"
+coverage = "*"
 mock = "*"
 nose = "*"
 #codecov = "*"
@@ -327,7 +311,6 @@ py = "*"
 mypy = "*"
 
 ### }}} // misc
-
 
 
 # {{{ release:
@@ -368,37 +351,54 @@ url = "https://pypi.org/simple/"
 priority = "primary"
 
 
-
-
 [tool.poetry.dependencies.rootpath]
 git = "https://github.com/hute37/python-rootpath"
 branch = "stable"
 
-[tool.pytest.ini_options]
-minversion = "6.0"
-addopts = "-ra -q"
-testpaths = [
-    "tests",
-]
+# {{{ LSP:
+
+# --- [pyright] --------------------------------------
 
 # @see: https://github.com/microsoft/pyright/blob/main/docs/configuration.md
 [tool.pyright]
-include = ["src", "tests", "notebooks"]
-exclude = ["**/node_modules",
-    "**/__pycache__",
-    "docker",
-    "notes",
-    "data",
-    "logs",
-    "temp"
+include = ["inst/python/src", "tests/pytest", "notebooks"]
+exclude = [
+  "**/node_modules",
+  "**/__pycache__",
+  "docker",
+  "notes",
+  "data",
+  "logs",
+  "temp",
 ]
 ignore = ["build"]
 defineConstant = { DEBUG = true }
 #stubPath = "src/stubs"
 #venv = "env367"
-
+verboseOutput = true
 typeCheckingMode = "basic"
 reportMissingImports = true
+
+### }}} // lsp
+
+# {{{ TEST:
+
+# --- [pytest] --------------------------------------
+
+[tool.pytest.ini_options]
+pythonpath = [
+    "inst/python/src",
+    "tests/pytest"
+]
+testpaths = ["tests/pytest"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
+
+### }}} // test
+
+
 
 # {{{ FORMAT: 
 
@@ -469,7 +469,8 @@ select = [
   # pyflakes
   "F",
   # pycodestyle
-  "E", "W",
+  "E",
+  "W",
   # flake8-2020
   "YTT",
   # flake8-bugbear
@@ -517,11 +518,10 @@ select = [
   # flake8-slots
   "SLOT",
   # flake8-raise
-  "RSE"
+  "RSE",
 ]
 
-ignore = [
-]
+ignore = []
 
 # ignore = [
 #   ### Intentionally disabled
@@ -670,7 +670,6 @@ combine-as-imports = true
 split-on-trailing-commas = false
 
 
-
 # [tool.ruff.lint.flake8-tidy-imports.banned-api]
 # "urllib.request.urlopen".msg = "Use pandas.io.common.urlopen instead of urllib.request.urlopen"
 # # numpy.random is banned but np.random is not. Is this intentional?
@@ -709,14 +708,8 @@ docstring-code-format = true
 # {{{ BUILD: 
 
 [build-system]
-requires = [
-    "poetry-core>=2.0",
-    "setuptools",
-    "wheel",
-    "incremental",
-]
+requires = ["poetry-core>=2.0", "setuptools", "wheel", "incremental"]
 build-backend = "poetry.core.masonry.api"
 #build-backend = "setuptools.build_meta"
 
 ### }}} // build
-
