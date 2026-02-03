@@ -86,7 +86,6 @@ python = "^3.12"
 
 
 # {{{ TORCH: from https://pytorch.org/get-started/locally/
-
 ##torch = {version = "*"}
 ##torch = {version = "=2.5.*"}
 #@[nv]# torch = {version = "=2.5.*", source = "torch124"}

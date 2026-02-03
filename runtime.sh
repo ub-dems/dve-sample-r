@@ -90,6 +90,8 @@ Target aliases:
    notebook => note
    code     => edit
    repl     => r, R
+   python   => ipython
+   pyrun    => py
    cli      => rscript, Rscript
    upgrade  => lock, snapshot
    clear    => zap
@@ -170,7 +172,18 @@ R Script
 
 to run scripts from ./exec directory
 
+Python run
+-----------
 
+ ./runtime.sh py poetry install
+ ./runtime.sh py hello --help
+
+
+Python repl
+-----------
+
+ ./runtime.sh python
+ ./runtime.sh ipython
 
 
 =====
@@ -302,6 +315,14 @@ case "${command}" in
     cli|rscript|Rscript)
         shift
         target=runtime-cli
+        ;;
+    python|ipython)
+        shift
+        target=runtime-ipython
+        ;;
+    py|pyrun)
+        shift
+        target=runtime-pyrun
         ;;
     sh|shell|prompt)
         shift

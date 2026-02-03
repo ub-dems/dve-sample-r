@@ -191,6 +191,7 @@ build-validate:
 # ---(run)------------------------------------------------
 
 .PHONY: runtime-repl runtime-cli runtime-shell
+.PHONY: runtime-pyrun runtime-ipython
 .PHONY: runtime-upgrade runtime-setup runtime-clear
 .PHONY: runtime-test runtime-check runtime-status
 .PHONY: runtime-environ runtime-profile
@@ -204,6 +205,14 @@ runtime-repl:
 
 runtime-cli: # @HELP/runtime ...
 runtime-cli:
+	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+
+runtime-ipython: # @HELP/runtime ...
+runtime-ipython:
+	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+
+runtime-pyrun: # @HELP/runtime ...
+runtime-pyrun:
 	cd ${IMG_MAKE_DIR} && $(MAKE) $@
 
 runtime-shell: # @HELP/runtime ...

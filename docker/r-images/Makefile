@@ -158,6 +158,25 @@ CLEAN_DIRS = ${TEMP_DIR}
 XDG_DIRS = ~/Desktop ~/Documents ~/Downloads ~/Pictures
 
 
+# ---(venv)------------------------------------------------
+
+ifeq (${USE_PYTHON_UV},1)
+PYTHON_UV_MODE := true
+else
+PYTHON_POETRY_MODE := true
+endif
+
+ifdef PYTHON_POETRY_MODE
+PYVENV := poetry
+PYVENV_RUN := poetry run
+endif
+
+ifdef PYTHON_UV_MODE
+PYVENV := uv
+PYVENV_RUN := uv run
+endif
+
+
 # ---(progs)------------------------------------------------
 
 ifeq (${USE_DOCKER},1)
@@ -295,7 +314,25 @@ RSCRIPT_RUNTIME_OPTIONS := $(RSCRIPT_DEFAULT_RUNTIME_OPTIONS)
 RUNTIME_RSCRIPT_OPTS := $(RSCRIPT_RUNTIME_OPTIONS)
 
 
-# ---(codet)------------------------------------------------
+# ---(ipython)------------------------------------------------
+
+IPYTHON_EXTRA_RUNTIME_OPTIONS := 
+IPYTHON_DEFAULT_RUNTIME_OPTIONS := $(IPYTHON_EXTRA_RUNTIME_OPTIONS) 
+IPYTHON_RUNTIME_OPTIONS := $(IPYTHON_DEFAULT_RUNTIME_OPTIONS)
+
+RUNTIME_IPYTHON_OPTS := $(IPYTHON_RUNTIME_OPTIONS)
+
+
+# ---(pyrun)------------------------------------------------
+
+PYRUN_EXTRA_RUNTIME_OPTIONS := 
+PYRUN_DEFAULT_RUNTIME_OPTIONS := $(PYRUN_EXTRA_RUNTIME_OPTIONS) 
+PYRUN_RUNTIME_OPTIONS := $(PYRUN_DEFAULT_RUNTIME_OPTIONS)
+
+RUNTIME_PYRUN_OPTS := $(PYRUN_RUNTIME_OPTIONS)
+
+
+# ---(code)------------------------------------------------
 
 # --accept-server-license-terms
 CODE_EXTRA_RUNTIME_OPTIONS := 
@@ -410,6 +447,10 @@ runtime: init run/runtime
 runtime-repl: init run/r-repl
 
 runtime-cli: init run/rscript-cli
+
+runtime-ipython: init run/python-repl
+
+runtime-pyrun: init run/python-run
 
 runtime-shell: init run/shell
 
@@ -920,7 +961,7 @@ run/xterm:
 #   "xauth add $(xauth list | grep $DISPLAY)"
 
 
-# ---(venv)------------------------------------------------
+# ---(R)------------------------------------------------
 
 run/r-repl:
 	@[ "${X_X}" = 1 ] && [ -n "${DISPLAY}" ] && echo "DISPLAY=${DISPLAY}" || true
@@ -997,6 +1038,86 @@ run/rscript-cli:
 		${IMG_RUNTIME} \
 		${X_PY_RUN} \
 		'/usr/local/bin/Rscript' ${RUNTIME_RSCRIPT_OPTS} ${RUNTIME_ARGS}
+
+# ---(python)------------------------------------------------
+
+run/python-repl:
+	@[ "${X_X}" = 1 ] && [ -n "${DISPLAY}" ] && echo "DISPLAY=${DISPLAY}" || true
+	@export _passw_=$$(cat ~/.rup/*); \
+	$(DOCKER)  run \
+		--rm \
+		${DOCKER_RUNTIME_OPTIONS} \
+		-v ${HOME_DIR}:${RUN_USER_HOME}:Z  \
+		-v ~/work:${RUN_USER_HOME}/work:Z  \
+		-v ~/data:${RUN_USER_HOME}/data:Z  \
+		-v ~/data:${HOME}/data:Z  \
+		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
+		-v /usr/local:/usr/local/.import:Z,ro  \
+		-v /opt:/opt/.import:Z  \
+		-v /data/opt/local:/data/opt/local:Z  \
+		-v /store/local:/store/local:Z  \
+		-v /store/share:/store/share  \
+		-v /user:/user  \
+		-v /vol:/vol  \
+		-w ${RUN_USER_HOME}/${WORK_DIR}  \
+		-e PASSWORD=$$_passw_ \
+		-e USER=${RUN_USER_NAME} \
+		-e USERID=${RUN_USER_UID} \
+		-e GROUPID=${RUN_USER_GID} \
+		-e ROOT=true  \
+		-e X_BUILD_CONF="${X_BUILD_CONF}" \
+		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
+		-e X_DEBUG="${X_DEBUG:-0}" \
+		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
+		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		${XDG_RUNTIME_OPTIONS} \
+		${X_RUNTIME_OPTIONS} \
+		-ti  \
+		--name  \
+		${PRC_RUNTIME}.r-$$PPID \
+		${IMG_RUNTIME} \
+		${X_PY_RUN} \
+		${PYVENV_RUN} ${RUNTIME_IPYTHON_OPTS} ${RUNTIME_ARGS}
+
+run/python-run:
+	@echo "CLI: Rscript ${RUNTIME_ARGS}"
+	@export _passw_=$$(cat ~/.rup/*); \
+	$(DOCKER)  run \
+		--rm \
+		${DOCKER_RUNTIME_OPTIONS} \
+		-v ${HOME_DIR}:${RUN_USER_HOME}:Z  \
+		-v ~/work:${RUN_USER_HOME}/work:Z  \
+		-v ~/data:${RUN_USER_HOME}/data:Z  \
+		-v ~/data:${HOME}/data:Z  \
+		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
+		-v /usr/local:/usr/local/.import:Z,ro  \
+		-v /opt:/opt/.import:Z  \
+		-v /data/opt/local:/data/opt/local:Z  \
+		-v /store/local:/store/local:Z  \
+		-v /store/share:/store/share  \
+		-v /user:/user  \
+		-v /vol:/vol  \
+		-w ${RUN_USER_HOME}/${WORK_DIR}  \
+		-e PASSWORD=$$_passw_ \
+		-e USER=${RUN_USER_NAME} \
+		-e USERID=${RUN_USER_UID} \
+		-e GROUPID=${RUN_USER_GID} \
+		-e ROOT=true  \
+		-e X_BUILD_CONF="${X_BUILD_CONF}" \
+		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
+		-e X_DEBUG="${X_DEBUG:-0}" \
+		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
+		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		${XDG_RUNTIME_OPTIONS} \
+		${X_RUNTIME_OPTIONS} \
+		-ti  \
+		--name  \
+		${PRC_RUNTIME}.rs-$$PPID \
+		${IMG_RUNTIME} \
+		${X_PY_RUN} \
+		${PYVENV_RUN} ${RUNTIME_PYRUN_OPTS} ${RUNTIME_ARGS}
+
+# ---(setup)------------------------------------------------
 
 run/build:
 	@echo "CLI: build ${RUNTIME_ARGS}"
