@@ -5,7 +5,7 @@
 
 import logging
 import sys
-from argparse import ArgumentParser, Namespace
+from argparse import ArgumentParser, Namespace, RawTextHelpFormatter
 from datetime import datetime
 
 import dve.demo.dummy.greeter as dmy
@@ -29,8 +29,8 @@ TIME_START = datetime.now()
 ARGV_DEFAULT = [
     "--salutation",
     "Hello",
-    "--who",
-    "World",
+    # "--who",  # use argparse default
+    # "World",
     "--n-points",
     "3",
 ]
@@ -46,28 +46,51 @@ args = None
 
 
 def get_dummy_argparser(*argv, **kwargs) -> ArgumentParser:
-    parser = ArgumentParser(add_help=False, conflict_handler="resolve")
+    parser = ArgumentParser(
+        add_help=True,
+        conflict_handler="resolve",
+        formatter_class=RawTextHelpFormatter,
+        description="""
+
+    dummy_script: "Hello World" demo
+
+    - internally (./runtime.sh sh), run as:
+        poetry run hello [  -s Hi -w Moon -n 5 ]
+
+    - externally, run as:
+        ./runtime.sh py hello [  -s Hi -w Moon -n 5 ]
+
+    NOTE:
+        
+    - requires:
+        poetry install
+        
+    - externally:
+        ./runtime.sh sh poetry install    
+    
+    """,
+    )
 
     parser.add_argument(
         "--who",
         "-w",
         type=str,
         default="World",
-        help="Who in greetings [default %default]",
+        help="Who in greetings",
     )
     parser.add_argument(
         "--salutation",
         "-s",
         type=str,
         default="Hi",
-        help="Salutation in greetings [default %default]",
+        help="Salutation in greetings",
     )
     parser.add_argument(
         "--n-points",
         "-n",
         type=int,
         default=0,
-        help="Number of emoji for greetings [default %default]",
+        help="Number of emoji for greetings",
     )
     parser.add_argument(
         "--verbose",
