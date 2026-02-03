@@ -18,6 +18,6 @@ class Greeter:
     def get_greeting(self) -> Greeting:
         return self.greeting if self.greeting is not None else DEFAULT_GREETING
 
-    def get_message(self) -> str:
+    def get_message(self, num_points: int = 0) -> str:
         grt = self.get_greeting()
-        return f"{grt.salutation} {grt.who}!"
+        return f"{grt.salutation} {grt.who}! { "👋" * num_points}"

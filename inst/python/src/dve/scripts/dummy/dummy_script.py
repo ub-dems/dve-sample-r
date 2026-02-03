@@ -3,16 +3,15 @@
 
 # In[1]:
 
-import argparse
 import logging
 import sys
+from argparse import ArgumentParser, Namespace
 from datetime import datetime
 
 import dve.demo.dummy.greeter as dmy
 from vce.common.util.kernel import in_notebook
 
 # In[2]:
-
 
 # In[3]:
 
@@ -28,11 +27,12 @@ RC = 0
 TIME_START = datetime.now()
 
 ARGV_DEFAULT = [
-    "--jobname",
-    "_",
-    "--group",
-    "test",
-    "--filename",
+    "--salutation",
+    "Hello",
+    "--who",
+    "World",
+    "--n-points",
+    "3",
 ]
 
 ARGV_NOTEBOOK = ARGV_DEFAULT
@@ -45,20 +45,27 @@ args = None
 # In[4]:
 
 
-def get_dummy_argparser(*argv, **kwargs) -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(add_help=False, conflict_handler="resolve")
+def get_dummy_argparser(*argv, **kwargs) -> ArgumentParser:
+    parser = ArgumentParser(add_help=False, conflict_handler="resolve")
 
+    parser.add_argument(
+        "--who",
+        "-w",
+        type=str,
+        default="World",
+        help="Who in greetings [default %default]",
+    )
     parser.add_argument(
         "--salutation",
         "-s",
-        type="character",
+        type=str,
         default="Hi",
         help="Salutation in greetings [default %default]",
     )
     parser.add_argument(
         "--n-points",
         "-n",
-        type="integer",
+        type=int,
         default=0,
         help="Number of emoji for greetings [default %default]",
     )
@@ -87,12 +94,16 @@ def get_argv(argv: list[str] | None) -> list[str]:
 # In[5]:
 
 
-def run_worker():
+def run_worker(args: Namespace) -> int:
 
-    greeting = dmy.Greeting(who="_who_", salutation="_salutation_")
+    who: str = args.who
+    salutation: str = args.salutation
+    num_points: int = args.n_points
+
+    greeting = dmy.Greeting(who=who, salutation=salutation)
     greeter = dmy.Greeter(greeting)
 
-    message = greeter.get_message()
+    message = greeter.get_message(num_points)
 
     print(message)
 
@@ -106,21 +117,21 @@ def run_worker():
 # In[6]:
 
 
-def parse_args(argv, **kwargs):
+def parse_args(argv: list[str], **kwargs) -> Namespace:
     parser = get_dummy_argparser()
     result = parser.parse_args(argv, **kwargs)
     return result
 
 
-def exec(argv, xargs, **kwargs):
+def exec(args: Namespace) -> int:
     global RC
-    RC = run_worker()
+    RC = run_worker(args)
     return RC
 
 
-def main(argv, **kwargs):
+def main(argv: list[str] | None = None, **kwargs) -> int:
     global RC
-    global xargs
+    global args
 
     print(argv)
     print(__name__ + "main:" + str(argv))
@@ -128,8 +139,8 @@ def main(argv, **kwargs):
     argv = get_argv(argv)
 
     log.info(">> ### " + __name__ + ".main(argv=" + str(argv) + ")")
-    xargs = parse_args(argv=argv, **kwargs)
-    RC = exec(argv, xargs, **kwargs)
+    args = parse_args(argv=argv, **kwargs)
+    RC = exec(args)
 
     log.info("<< ###" + __name__ + ".main => (rc=" + str(RC) + ")")
     return RC
