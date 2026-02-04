@@ -332,6 +332,15 @@ PYRUN_RUNTIME_OPTIONS := $(PYRUN_DEFAULT_RUNTIME_OPTIONS)
 RUNTIME_PYRUN_OPTS := $(PYRUN_RUNTIME_OPTIONS)
 
 
+# ---(auto)------------------------------------------------
+
+AUTO_EXTRA_RUNTIME_OPTIONS := 
+AUTO_DEFAULT_RUNTIME_OPTIONS := $(AUTO_EXTRA_RUNTIME_OPTIONS) 
+AUTO_RUNTIME_OPTIONS := $(AUTO_DEFAULT_RUNTIME_OPTIONS)
+
+RUNTIME_AUTO_OPTS := "./starter.sh" $(AUTO_RUNTIME_OPTIONS)
+
+
 # ---(code)------------------------------------------------
 
 # --accept-server-license-terms
@@ -440,7 +449,7 @@ build-upgrade: build-update
 
 # ---(run)------------------------------------------------
 
-.PHONY: runtime runtime-repl runtime-cli runtime-rstudio
+.PHONY: runtime runtime-repl runtime-cli runtime-rstudio runtime-auto runtime-pyrun
 
 runtime: init run/runtime
 
@@ -451,6 +460,8 @@ runtime-cli: init run/rscript-cli
 runtime-ipython: init run/python-repl
 
 runtime-pyrun: init run/python-run
+
+runtime-auto: init run/auto-run
 
 runtime-shell: init run/shell
 
@@ -1116,6 +1127,47 @@ run/python-run:
 		${IMG_RUNTIME} \
 		${X_PY_RUN} \
 		${PYVENV_RUN} ${RUNTIME_PYRUN_OPTS} ${RUNTIME_ARGS}
+
+# ---(python)------------------------------------------------
+
+
+run/auto-run:
+	@echo "RUN: ./starter.sh ${RUNTIME_ARGS}"
+	@export _passw_=$$(cat ~/.rup/*); \
+	$(DOCKER)  run \
+		--rm \
+		${DOCKER_RUNTIME_OPTIONS} \
+		-v ${HOME_DIR}:${RUN_USER_HOME}:Z  \
+		-v ~/work:${RUN_USER_HOME}/work:Z  \
+		-v ~/data:${RUN_USER_HOME}/data:Z  \
+		-v ~/data:${HOME}/data:Z  \
+		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
+		-v /usr/local:/usr/local/.import:Z,ro  \
+		-v /opt:/opt/.import:Z  \
+		-v /data/opt/local:/data/opt/local:Z  \
+		-v /store/local:/store/local:Z  \
+		-v /store/share:/store/share  \
+		-v /user:/user  \
+		-v /vol:/vol  \
+		-w ${RUN_USER_HOME}/${WORK_DIR}  \
+		-e PASSWORD=$$_passw_ \
+		-e USER=${RUN_USER_NAME} \
+		-e USERID=${RUN_USER_UID} \
+		-e GROUPID=${RUN_USER_GID} \
+		-e ROOT=true  \
+		-e X_BUILD_CONF="${X_BUILD_CONF}" \
+		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
+		-e X_DEBUG="${X_DEBUG:-0}" \
+		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
+		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		${XDG_RUNTIME_OPTIONS} \
+		${X_RUNTIME_OPTIONS} \
+		-ti  \
+		--name  \
+		${PRC_RUNTIME}.rs-$$PPID \
+		${IMG_RUNTIME} \
+		${X_PY_RUN} \
+		${PYVENV_RUN} ${RUNTIME_AUTO_OPTS} ${RUNTIME_ARGS}
 
 # ---(setup)------------------------------------------------
 

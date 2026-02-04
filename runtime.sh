@@ -13,15 +13,19 @@ E_MAKE_FILE="${E_ROOT_DIR}/Makefile"
 #E_DOCKER_DIR="${E_ROOT_DIR}/docker/r-images"
 #E_MAKE_FILE="${E_DOCKER_DIR}/Makefile"
 
+#-----------------------------------------------------------
 set -a
 
 : ${E_CONF_DIR:="${E_ROOT_DIR}/docker/r-images"}
-: ${E_CONF_FILE:="${E_CONF_DIR}/runtime.conf"}
 : ${E_META_FILE:="${E_CONF_DIR}/project.conf"}
+: ${E_CONF_FILE:="${E_CONF_DIR}/runtime.conf"}
+: ${E_AUTO_FILE:="${E_CONF_DIR}/starter.conf"}
 
 [ -r "${E_META_FILE}" ] && source "${E_META_FILE}" || true
 [ -r "${E_CONF_FILE}" ] && source "${E_CONF_FILE}" || true
+[ -r "${E_AUTO_FILE}" ] && source "${E_AUTO_FILE}" || true
 
+#-----------------------------------------------------------
 
 : ${X_PRJ_KIND:="${X_DEF_KIND}"}
 
@@ -46,6 +50,7 @@ esac
 : ${X_DEBUG_ENV:="${X_DEF_DEBUG_ENV}"}
 
 set +a
+#-----------------------------------------------------------
 
 . $(dirname $0)/functions.sh
 
@@ -70,6 +75,11 @@ where "target" is
   code             : runs visual studio code server on port 28788
   repl             : runs interactive R console
   cli ...          : runs Rscript with arguments
+  python           : runs interactive ipython console
+  pyrun            : runs Python script with arguments
+  run              : runs default autoexec script
+  test             : runs all unit tests
+  check            : runs project lint checks
   clear ...        : clear all virtual environmnet and packages
   upgrade ...      : runs poetry/renv lock/snapshot inside runtime
   setup ...        : runs poetry/renv install inside runtime
@@ -93,6 +103,7 @@ Target aliases:
    python   => ipython
    pyrun    => py
    cli      => rscript, Rscript
+   run      => auto
    upgrade  => lock, snapshot
    clear    => zap
    environ  => home
@@ -166,9 +177,9 @@ then check 'getwd()' and exit 'q()'
 R Script
 ---------
 
- ./runtime.sh cli     exec/dummy_runner.R  
- ./runtime.sh rscript exec/dummy_runner.R  
- ./runtime.sh Rscript exec/dummy_runner.R  
+ ./runtime.sh cli     exec/dummy/dummy_runner.R  --help
+ ./runtime.sh rscript exec/dummy/dummy_runner.R  
+ ./runtime.sh Rscript exec/dummy/dummy_runner.R  
 
 to run scripts from ./exec directory
 
@@ -184,6 +195,12 @@ Python repl
 
  ./runtime.sh python
  ./runtime.sh ipython
+
+
+Autoexec (./starter.sh) run
+--------------------------
+
+ ./runtime.sh run ...
 
 
 =====
@@ -323,6 +340,10 @@ case "${command}" in
     py|pyrun)
         shift
         target=runtime-pyrun
+        ;;
+    auto|run)
+        shift
+        target=runtime-auto
         ;;
     sh|shell|prompt)
         shift

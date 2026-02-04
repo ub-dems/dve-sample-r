@@ -52,6 +52,12 @@ POETRY := poetry
 all: # @HELP/base make: "init,check,test,docs,build"  targets
 all: init check test docs build
 
+start: # @HELP/base runs: `poetry run ./start.sh`
+status:
+	${POETRY} 'run' './start.sh' 
+
+
+
 test: # @HELP/base runs: `devtools::test()`
 test: init
 	${POETRY} run 'pytest' || true
@@ -152,7 +158,13 @@ build-help: help/build
 .PHONY: full full-help
 
 full: # @HELP/full project environment initializaion after checkout 
-full:  init build-setup runtime-setup build-environ runtime-test runtime-check  runtime-status
+full:  init
+full:  build-setup
+full:  runtime-setup
+full:  build-environ
+full:  runtime-test
+full:  runtime-check
+full:  runtime-status
 
 full-help: help/full
 
@@ -192,6 +204,7 @@ build-validate:
 
 .PHONY: runtime-repl runtime-cli runtime-shell
 .PHONY: runtime-pyrun runtime-ipython
+.PHONY: runtime-auto
 .PHONY: runtime-upgrade runtime-setup runtime-clear
 .PHONY: runtime-test runtime-check runtime-status
 .PHONY: runtime-environ runtime-profile
@@ -213,6 +226,10 @@ runtime-ipython:
 
 runtime-pyrun: # @HELP/runtime ...
 runtime-pyrun:
+	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+
+runtime-auto: # @HELP/runtime ...
+runtime-auto:
 	cd ${IMG_MAKE_DIR} && $(MAKE) $@
 
 runtime-shell: # @HELP/runtime ...
