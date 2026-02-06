@@ -118,6 +118,10 @@ pandas-datareader = '*'
 openpyxl = '*'
 h5py = '*'
 
+# --- [data] -----------------------------------
+pyarrow = '*'
+polars = '*'
+
 # --- [sql] --------------------------------------
 SQLAlchemy = "*"
 
@@ -385,10 +389,7 @@ reportMissingImports = true
 # --- [pytest] --------------------------------------
 
 [tool.pytest.ini_options]
-pythonpath = [
-    "inst/python/src",
-    "tests/pytest"
-]
+pythonpath = ["inst/python/src", "tests/pytest"]
 testpaths = ["tests/pytest"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
@@ -396,7 +397,6 @@ python_functions = ["test_*"]
 addopts = "-v --tb=short"
 
 ### }}} // test
-
 
 
 # {{{ FORMAT: 

@@ -149,10 +149,12 @@ RUN_USER_HOME = /root
 HOME_DIR ?= ${ROOT_DIR}/home/user
 LOGS_DIR ?= ${ROOT_DIR}/logs
 LOGB_DIR ?= ${ROOT_DIR}/logs/_build_/logs-${E_BUILD_TS}
+LOGR_DIR ?= ${ROOT_DIR}/logs/_exec_
 TEMP_DIR ?= ${ROOT_DIR}/temp
 
+RUN_LOGFILE ?= ${LOGR_DIR}/run-${E_BUILD_TS}.log
 
-BUILD_DIRS = ${TEMP_DIR} ${LOGS_DIR} ${LOGB_DIR} ${HOME_DIR} 
+BUILD_DIRS = ${TEMP_DIR} ${LOGS_DIR} ${LOGB_DIR} ${LOGR_DIR} ${HOME_DIR} 
 CLEAN_DIRS = ${TEMP_DIR}
 
 XDG_DIRS = ~/Desktop ~/Documents ~/Downloads ~/Pictures
@@ -199,6 +201,15 @@ DOCKER_BUILD_OPTIONS := --rm
 DOCKER_BUILD_PULL := --pull
 
 
+# ---(gpu)------------------------------------------------
+
+# Check if nvidia-detector command exists and returns something other than "None"
+GPU_DETECT_CMD := nvidia-detector
+GPU_AVAILABLE := $(shell command -v $(GPU_DETECT_CMD) >/dev/null 2>&1 && \
+                         [ "$$($(GPU_DETECT_CMD))" != "None" ] && echo 1 || echo 0)
+
+ifeq ($(GPU_AVAILABLE),1)
+
 DOCKER_NVIDIA_TOOLKIT_CTK := /etc/cdi/nvidia.yaml
 
 ifneq ("$(wildcard $(DOCKER_NVIDIA_TOOLKIT_CTK))","")
@@ -225,6 +236,9 @@ endif
 
 DOCKER_NVIDIA_OPTIONS := $(DOCKER_NVIDIA_CTK_OPTIONS) $(DOCKER_NVIDIA_OCI_OPTIONS)
 
+else
+DOCKER_NVIDIA_OPTIONS =
+endif
 
 #DOCKER_RUNTIME_OPTIONS := --ulimit=host --group-add dsdata
 #DOCKER_RUNTIME_OPTIONS := --ulimit=host --group-add keep-groups --subgidname=dsuser
@@ -341,6 +355,15 @@ AUTO_RUNTIME_OPTIONS := $(AUTO_DEFAULT_RUNTIME_OPTIONS)
 RUNTIME_AUTO_OPTS := "./starter.sh" $(AUTO_RUNTIME_OPTIONS)
 
 
+# ---(cli)------------------------------------------------
+
+CLI_EXTRA_RUNTIME_OPTIONS := 
+CLI_DEFAULT_RUNTIME_OPTIONS := $(AUTO_EXTRA_RUNTIME_OPTIONS) 
+CLI_RUNTIME_OPTIONS := $(AUTO_DEFAULT_RUNTIME_OPTIONS)
+
+RUNTIME_CLI_OPTS := "bash" "-c" $(CLI_RUNTIME_OPTIONS)
+
+
 # ---(code)------------------------------------------------
 
 # --accept-server-license-terms
@@ -455,13 +478,15 @@ runtime: init run/runtime
 
 runtime-repl: init run/r-repl
 
-runtime-cli: init run/rscript-cli
+runtime-rs: init run/rscript-rs
 
 runtime-ipython: init run/python-repl
 
 runtime-pyrun: init run/python-run
 
-runtime-auto: init run/auto-run
+runtime-auto: init run/exec-auto
+
+runtime-cli: init run/exec-cli
 
 runtime-shell: init run/shell
 
@@ -1012,8 +1037,8 @@ run/r-repl:
 		${X_PY_RUN} \
 		'/usr/local/bin/R' ${RUNTIME_R_OPTS} ${RUNTIME_ARGS}
 
-run/rscript-cli:
-	@echo "CLI: Rscript ${RUNTIME_ARGS}"
+run/rscript-rs:
+	@echo "RS: Rscript ${RUNTIME_ARGS}"
 	@export _passw_=$$(cat ~/.rup/*); \
 	$(DOCKER)  run \
 		--rm \
@@ -1128,10 +1153,10 @@ run/python-run:
 		${X_PY_RUN} \
 		${PYVENV_RUN} ${RUNTIME_PYRUN_OPTS} ${RUNTIME_ARGS}
 
-# ---(python)------------------------------------------------
+# ---(exec)------------------------------------------------
 
 
-run/auto-run:
+run/exec-auto:
 	@echo "RUN: ./starter.sh ${RUNTIME_ARGS}"
 	@export _passw_=$$(cat ~/.rup/*); \
 	$(DOCKER)  run \
@@ -1167,7 +1192,49 @@ run/auto-run:
 		${PRC_RUNTIME}.rs-$$PPID \
 		${IMG_RUNTIME} \
 		${X_PY_RUN} \
-		${PYVENV_RUN} ${RUNTIME_AUTO_OPTS} ${RUNTIME_ARGS}
+		echo "### ${E_BUILD_TS} - AUTO: ${RUNTIME_ARGS}" &> ${RUN_LOGFILE} \
+		${PYVENV_RUN} ${RUNTIME_AUTO_OPTS} ${RUNTIME_ARGS} 2>&1 | tee -a ${RUN_LOGFILE}
+
+run/rscript-cli:
+	@echo "CLI: run ${RUNTIME_ARGS}"
+	@export _passw_=$$(cat ~/.rup/*); \
+	$(DOCKER)  run \
+		--rm \
+		${DOCKER_RUNTIME_OPTIONS} \
+		-v ${HOME_DIR}:${RUN_USER_HOME}:Z  \
+		-v ~/work:${RUN_USER_HOME}/work:Z  \
+		-v ~/data:${RUN_USER_HOME}/data:Z  \
+		-v ~/data:${HOME}/data:Z  \
+		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
+		-v /usr/local:/usr/local/.import:Z,ro  \
+		-v /opt:/opt/.import:Z  \
+		-v /data/opt/local:/data/opt/local:Z  \
+		-v /store/local:/store/local:Z  \
+		-v /store/share:/store/share  \
+		-v /user:/user  \
+		-v /vol:/vol  \
+		-w ${RUN_USER_HOME}/${WORK_DIR}  \
+		-e PASSWORD=$$_passw_ \
+		-e USER=${RUN_USER_NAME} \
+		-e USERID=${RUN_USER_UID} \
+		-e GROUPID=${RUN_USER_GID} \
+		-e ROOT=true  \
+		-e X_BUILD_CONF="${X_BUILD_CONF}" \
+		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
+		-e X_DEBUG="${X_DEBUG:-0}" \
+		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
+		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		${XDG_RUNTIME_OPTIONS} \
+		${X_RUNTIME_OPTIONS} \
+		-ti  \
+		--name  \
+		${PRC_RUNTIME}.rs-$$PPID \
+		${IMG_RUNTIME} \
+		${X_PY_RUN} \
+		echo "### ${E_BUILD_TS} - CLI: ${RUNTIME_ARGS}" &> ${RUN_LOGFILE} \
+		${PYVENV_RUN} ${RUNTIME_CLI_OPTS} ${RUNTIME_ARGS} 2>&1 | tee -a ${RUN_LOGFILE}
+
+
 
 # ---(setup)------------------------------------------------
 

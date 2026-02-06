@@ -53,7 +53,7 @@ all: # @HELP/base make: "init,check,test,docs,build"  targets
 all: init check test docs build
 
 start: # @HELP/base runs: `poetry run ./start.sh`
-status:
+start:
 	${POETRY} 'run' './start.sh' 
 
 
@@ -161,7 +161,7 @@ full: # @HELP/full project environment initializaion after checkout
 full:  init
 full:  build-setup
 full:  runtime-setup
-full:  build-environ
+full:  runtime-environ
 full:  runtime-test
 full:  runtime-check
 full:  runtime-status
@@ -202,9 +202,9 @@ build-validate:
 
 # ---(run)------------------------------------------------
 
-.PHONY: runtime-repl runtime-cli runtime-shell
+.PHONY: runtime-repl runtime-rs
 .PHONY: runtime-pyrun runtime-ipython
-.PHONY: runtime-auto
+.PHONY: runtime-auto runtime-cli runtime-shell
 .PHONY: runtime-upgrade runtime-setup runtime-clear
 .PHONY: runtime-test runtime-check runtime-status
 .PHONY: runtime-environ runtime-profile
@@ -216,8 +216,8 @@ runtime-repl: # @HELP/runtime ...
 runtime-repl:
 	cd ${IMG_MAKE_DIR} && $(MAKE) $@
 
-runtime-cli: # @HELP/runtime ...
-runtime-cli:
+runtime-rs: # @HELP/runtime ...
+runtime-rs:
 	cd ${IMG_MAKE_DIR} && $(MAKE) $@
 
 runtime-ipython: # @HELP/runtime ...
@@ -230,6 +230,10 @@ runtime-pyrun:
 
 runtime-auto: # @HELP/runtime ...
 runtime-auto:
+	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+
+runtime-cli: # @HELP/runtime ...
+runtime-cli:
 	cd ${IMG_MAKE_DIR} && $(MAKE) $@
 
 runtime-shell: # @HELP/runtime ...

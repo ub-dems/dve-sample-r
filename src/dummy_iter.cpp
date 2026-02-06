@@ -15,6 +15,8 @@
 
 #ifdef _OPENMP
 #include <omp.h>
+#else
+#error "_OPENMP undefined"
 #endif
 
 using namespace Rcpp;

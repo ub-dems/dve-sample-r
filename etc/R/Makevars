@@ -10,7 +10,7 @@
 
 CXX_STD = CXX17
 
-CXX17FLAGS = -g -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2 -g
+#CXX17FLAGS = -g -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2 -g
 
 CXX17FLAGS += -fno-omit-frame-pointer
 #CXX17FLAGS += -fsanitize=address,undefined
