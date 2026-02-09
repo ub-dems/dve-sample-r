@@ -199,6 +199,21 @@ function check_rust() {
     
 }
 
+function install_apps() {
+    
+    [ "$Y_RS_RUST_APPS" = 1 ] || return 0
+
+    echo "Instaling Rust applications ..."
+    
+    set -x
+
+    # cargo install alacritty
+    
+    set +x
+    
+}
+
+
 
 function install_rust() {
 

@@ -466,7 +466,8 @@ function install_pyenv_uv() {
 
     debug_pyenv "install_pyenv_uv::pre"
 
-    curl -LsSf https://astral.sh/uv/install.sh | sh
+    curl -LsSf https://astral.sh/uv/install.sh | \
+        env UV_INSTALL_DIR="/usr/local/bin" sh
 
     debug_pyenv "install_pyenv_uv::post"
     

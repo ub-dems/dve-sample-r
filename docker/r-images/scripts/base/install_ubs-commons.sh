@@ -148,6 +148,7 @@ function install_commons_xwindow() {
 	        xauth \
 		xsel \
 		xclip \
+                qterminal \
                 rxvt-unicode \
                 xterm
 }

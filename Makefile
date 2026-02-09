@@ -157,7 +157,7 @@ build-help: help/build
 
 .PHONY: full full-help
 
-full: # @HELP/full project environment initializaion after checkout 
+full: # @HELP/build project environment initializaion after checkout 
 full:  init
 full:  build-setup
 full:  runtime-setup
