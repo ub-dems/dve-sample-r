@@ -12,10 +12,10 @@
 -- @see: https://chat.deepseek.com/a/chat/s/087ffbc3-196f-4ee5-bf7d-5ae173567462
 -- -------------------------------------------------------------------------
 
--- local logging = require("logging")
+local logging = require("logging")
 
 function Meta(m)
-	-- logging.temp(">>> ", rawget(_G, "FORMAT"), "#/meta:", m)
+	logging.temp(">>> ", rawget(_G, "FORMAT"), "#/meta:", m)
 
 	-- if FORMAT ~= 'latex' then
 	--   return m
@@ -49,6 +49,6 @@ function Meta(m)
 	--   m.abstract = nil
 	-- end
 
-	-- logging.temp("<<< ", rawget(_G, "FORMAT"), "#/meta:", m)
+	logging.temp("<<< ", rawget(_G, "FORMAT"), "#/meta:", m)
 	return m
 end
