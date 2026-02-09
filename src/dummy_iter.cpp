@@ -4,8 +4,9 @@
 // This file is part of the Rcpp ecosystem performance optimization examples.
 // Licensed under GPL (>= 2)
 
-// [[Rcpp::plugins(cpp17)]]
-// [[Rcpp::plugins(openmp)]]
+// {{Rcpp::plugins(cpp17)}}   // unused, only for Rcpp::sourceCpp()
+// {{Rcpp::plugins(openmp)}}  // unused, only for Rcpp::sourceCpp()
+
 // [[Rcpp::depends(RcppArmadillo)]]
 
 #include <RcppArmadillo.h>

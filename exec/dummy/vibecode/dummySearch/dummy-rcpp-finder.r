@@ -174,7 +174,7 @@ link_cpp_source <- function() {
   search_paths <- c(
     if (!is.null(script_dir)) file.path(script_dir, "dummy_finder.cpp"),
     "dummy_finder.cpp",
-    "exec/dummySearch/dummy_finder.cpp"
+    "exec/dummy/vibecode/dummySearch/dummy_finder.cpp"
   )
   
   cpp_path <- NULL

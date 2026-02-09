@@ -54,6 +54,7 @@
 ^Project\.toml$
 ^\.projectile$
 ^pyproject\.toml$
+^\.pytest_cache$
 ^\.python-version$
 ^rcon$
 ^renv$

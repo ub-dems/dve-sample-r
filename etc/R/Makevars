@@ -8,9 +8,8 @@
 #CXXFLAGS = -g -O2 -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g
 # NOTE: Compilation used the following non-portable flag(s): ‘-Wdate-time’ ‘-Werror=format-security’ ‘-Wformat’""
 
-CXX_STD = CXX17
-
-#CXX17FLAGS = -g -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2 -g
+# CXX_STD = CXX17 => in ./src/Makevars
+CXX17FLAGS = -g -fPIC -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2 -g
 
 CXX17FLAGS += -fno-omit-frame-pointer
 #CXX17FLAGS += -fsanitize=address,undefined
@@ -22,13 +21,13 @@ CXX17LINKFLAGS += -flto=auto
 
 CXX17FLAGS += -march=native -mtune=native
 
-CXX17FLAGS += -Wno-ignored-attributes
+#CXX17FLAGS += -Wno-ignored-attributes
 
 
 # RcppEigen implicit support to avoid RcppArmdillo include clash
 # Seealso: ../notes/howtos/Rcpp-HOWTO-Q4-*.md
-EIG_CPPPATH := `$(R_HOME)/bin/Rscript -e "cat(system.file('include', package='RcppEigen'))"`
-CPPFLAGS += -I$(EIG_CPPPATH)
+# EIG_CPPPATH := `$(R_HOME)/bin/Rscript -e "cat(system.file('include', package='RcppEigen'))"`
+# CPPFLAGS += -I$(EIG_CPPPATH)
 
 # from ${R_HOME}/etc/Makeconf
 #CFLAGS = $(R CMD config CFLAGS)
