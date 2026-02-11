@@ -10,6 +10,7 @@
 -- @see: https://chatgpt.com/share/6939a036-8ba8-8012-819c-aac93afad04e
 -- @see: https://www.perplexity.ai/search/using-pandoc-to-convert-a-mark-Ob9r4V.rQsucZ69mwuNuiw#0
 -- @see: https://chat.deepseek.com/a/chat/s/087ffbc3-196f-4ee5-bf7d-5ae173567462
+-- @see: https://claude.ai/share/b28ceb6a-409e-4908-8519-4393d47a706e
 -- -------------------------------------------------------------------------
 
 local logging = require("logging")
@@ -17,38 +18,61 @@ local logging = require("logging")
 function Meta(m)
 	logging.temp(">>> ", rawget(_G, "FORMAT"), "#/meta:", m)
 
-	-- if FORMAT ~= 'latex' then
-	--   return m
-	-- end
+	if FORMAT ~= 'latex' then
+	  return m
+	end
 
-	-- -- 1. Handle Keywords
-	-- if m.keywords then
-	--   local kw_list = {}
-	--   -- Convert the list of keywords into a comma-separated string
-	--   for _, item in ipairs(m.keywords) do
-	--     table.insert(kw_list, pandoc.utils.stringify(item))
-	--   end
-	--   local kw_string = table.concat(kw_list, ", ")
+        -- 0. Get temp directory from metadata
+	local temp_dir = pandoc.utils.stringify(m.tempdir or "/tmp")
+	
+	-- Use FIXED filename in temp directory
+	local temp_file = temp_dir .. "/pandoc-meta-commands.tex"
+	
+	logging.temp(">>> Using temp file:", temp_file)
+        
+        local header_lines = {}
+        
+	-- 1. Handle Keywords
+	if m.keywords then
+	  local kw_list = {}
+	  -- Convert the list of keywords into a comma-separated string
+	  for _, item in ipairs(m.keywords) do
+	    table.insert(kw_list, pandoc.utils.stringify(item))
+	  end
+	  local kw_string = table.concat(kw_list, ", ")
 
-	--   -- Inject \keywords{...} into the header-includes
-	--   local kw_cmd = "\\keywords{" .. kw_string .. "}"
-	--   table.insert(m['header-includes'], pandoc.RawBlock('tex', kw_cmd))
-	-- end
+	  -- Inject \keywords{...} into the header-includes
+	  local kw_cmd = "\\keywords{" .. kw_string .. "}"
+          table.insert(header_lines, kw_cmd)
+          
+          logging.temp("+++ ", rawget(_G, "FORMAT"), "#/meta(kw):", kw_cmd)
+	end
 
-	-- -- 2. Handle Abstract
-	-- if m.abstract then
-	--   -- Convert the abstract AST (markdown) to LaTeX string
-	--   local abstract_tex = pandoc.write(pandoc.Pandoc(m.abstract), 'latex')
+	-- 2. Handle Abstract
+        if m.abstract then
 
-	--   -- Inject \abstract{...} into the header-includes
-	--   -- We use \renewcommand because the standard class might define it as an environment
-	--   local abs_cmd = "\\abstract{" .. abstract_tex .. "}"
-	--   table.insert(m['header-includes'], pandoc.RawBlock('tex', abs_cmd))
+           local abstract_tex = pandoc.write(pandoc.Pandoc(m.abstract), 'latex')
+           local abstract_cmd = "\\abstract{" .. abstract_tex .. "}"
+           table.insert(header_lines, abstract_cmd)
+           m.abstract = nil
+           
+        end
 
-	--   -- Clear the standard abstract so Pandoc doesn't print it again on page 2
-	--   m.abstract = nil
-	-- end
+          -- z. Write to the unique temp file
+        local f, err = io.open(temp_file, "w")
+        if f then
+           if #header_lines > 0 then
+              f:write(table.concat(header_lines, "\n") .. "\n")
+           else
+              f:write("% No metadata commands\n")
+           end
+           f:close()
+	  logging.temp("+++ Wrote to:", temp_file)
+	else
+	  logging.warning("!!! Could not write:", temp_file, err)
+	end
 
 	logging.temp("<<< ", rawget(_G, "FORMAT"), "#/meta:", m)
 	return m
 end
+

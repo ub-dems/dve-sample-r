@@ -38,6 +38,9 @@ LUA_FILTER   := $(STYLES_DIR)/md-report.lua
 TEX_TEMPLATE := $(STYLES_DIR)/md-template.tex
 
 
+LUA_PATH := $(STYLES_DIR):${LUA_PATH}
+
+
 # ------------------------------------------------------------------------
 # Format
 # ------------------------------------------------------------------------
@@ -73,6 +76,8 @@ GET_DOCTYPE = awk ' \
 PANDOC      := pandoc
 PDF_ENGINE  := lualatex
 
+
+
 PANDOC_FLAGS = \
 	${PANDOC_OPTS} \
         --standalone
@@ -105,6 +110,7 @@ EX_PANDOC_DEBUG = \
 	--verbose \
         --standalone
 
+
 CLEAN_OPTS := "-I" # rm options, ask once
 
 
@@ -117,17 +123,23 @@ CLEAN_OPTS := "-I" # rm options, ask once
 # Dependencies: the source .md file + the shared preamble
 
 %.pdf: %.md
+	$(eval TEMP_DIR := $(shell mktemp -d /tmp/pandoc-XXXXXX))
 	doctype=$$($(GET_DOCTYPE) $<) ; \
-	echo "### Building $@ from $< with $$doctype..." ;\
+	echo "### Building $@ from $< with $$doctype..." ; \
 	$(PANDOC) $(PANDOC_FLAGS) \
-		--defaults="$(STYLES_DIR)/$$doctype.yaml" \
+		--defaults="$(STYLES_DIR)/$$doctype.yaml"  \
+	        --metadata=tempdir=$(TEMP_DIR) \
+	        --pdf-engine-opt=-outdir=$(TEMP_DIR) \
 		"$<" -o "$@"
 
 %.tex: %.md
+	$(eval TEMP_DIR := $(shell mktemp -d /tmp/pandoc-XXXXXX))
 	doctype=$$($(GET_DOCTYPE) $<) ; \
-	echo "### Building $@ from $< with $$doctype..." ;\
+	echo "### Building $@ from $< with $$doctype..." ; \
 	$(PANDOC) $(PANDOC_DEBUG) --log=$(@:.tex=.log) \
 		--defaults="$(STYLES_DIR)/$$doctype.yaml" \
+	        --metadata=tempdir=$(TEMP_DIR) \
+	        --pdf-engine-opt=-outdir=$(TEMP_DIR) \
 		"$<" -o "$@"
 
 #}}} \\\

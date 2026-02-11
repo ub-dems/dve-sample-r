@@ -203,6 +203,169 @@
 % Cover
 % ------------------------------------------------------------------------
 
+%% Code grabbed from Overleaf Gallery:
+%% "Ludus Academik Journal Overleaf Template"
+%% @see: https://www.overleaf.com/latex/templates/ludus-academik-journal-overleaf-template/ygpnjwmxzgbj
+%% ludusofficial.cls
+%% LaTeX document class for LUDUS official publications
+%% Version 2.0 - Optimized typography based on artnodes specifications
+%% 2024-01-26
+
+
+%% Theme color system - enhanced contrast
+% Predefined theme colors (darker and more vivid)
+\definecolor{ludusblue}{RGB}{0,85,184}         % Deeper blue
+\definecolor{ludusred}{RGB}{200,30,30}         % Deeper red
+\definecolor{ludusgreen}{RGB}{0,130,100}       % Deeper green
+\definecolor{luduspurple}{RGB}{120,50,150}     % Deeper purple
+\definecolor{ludusorange}{RGB}{230,90,0}       % Deeper orange
+\definecolor{luduscyan}{RGB}{0,160,180}        % Deeper cyan
+
+% Default theme color
+\colorlet{themecolor}{ludusred}
+
+
+\makeatletter
+
+%% Document metadata
+\newcommand{\@journalname}{LUDUS}
+\newcommand{\@journalsubtitle}{Official Publication}
+\newcommand{\@journalurl}{https://ludusofficial.site/}
+\newcommand{\@institution}{ludus academik journal}
+\newcommand{\@conferencename}{}
+\newcommand{\@issuenumber}{}
+\newcommand{\@publicationyear}{2026}
+\newcommand{\@articletype}{GEN Report}
+% \@articletype already defined before option processing
+
+% Command definitions
+\newcommand{\journalname}[1]{\renewcommand{\@journalname}{#1}}
+\newcommand{\journalsubtitle}[1]{\renewcommand{\@journalsubtitle}{#1}}
+\newcommand{\journalurl}[1]{\renewcommand{\@journalurl}{#1}}
+\newcommand{\institution}[1]{\renewcommand{\@institution}{#1}}
+\newcommand{\conferencename}[1]{\renewcommand{\@conferencename}{#1}}
+\newcommand{\issuenumber}[1]{\renewcommand{\@issuenumber}{#1}}
+\newcommand{\publicationyear}[1]{\renewcommand{\@publicationyear}{#1}}
+\newcommand{\articletype}[1]{\renewcommand{\@articletype}{#1}}
+
+%% DOI
+\newcommand{\@articledoi}{}
+\newcommand{\articledoi}[1]{\renewcommand{\@articledoi}{#1}}
+
+
+\renewcommand{\maketitle}{
+  \begin{titlepage}
+
+
+    % Top horizontal bar (theme color) 3pt - full width
+    \noindent\textcolor{themecolor}{\rule{\textwidth}{3pt}}
+    \vspace{3mm}
+    
+    % Journal information - left-aligned, 8.5-9pt ARTICLE label
+    \noindent{\fontsize{8.5}{10.2}\selectfont\sffamily\bfseries\textcolor{darkgray}{\MakeUppercase{\@articletype}}}%
+    \ifdefempty{\@conferencename}{}{%
+        \quad|\quad{\fontsize{8.5}{10.2}\selectfont\sffamily\textcolor{darkgray}{\MakeUppercase{\@conferencename}}}%
+      }
+      \vspace{4mm}
+      
+      % Article title - left-aligned, 21pt
+      \noindent{\fontsize{21}{35}\selectfont\bfseries\sffamily\textcolor{themecolor}\@title}\par
+      \vspace{4mm}
+      
+      % Article subtitle - left-aligned, 18pt
+      \noindent{\fontsize{18}{35}\selectfont\bfseries\sffamily\textcolor{darkgray}\@subtitle}\par
+      \vspace{4mm}
+      
+      % Author - left-aligned, 11pt (name bolding controlled in tex file)
+      \noindent{\fontsize{11}{13.2}\selectfont\sffamily\@author}\par
+      \vspace{3mm}
+      
+      % DOI (if available)
+      \ifdefempty{\@articledoi}{}{%
+          \noindent{\fontsize{8.5}{10.2}\selectfont\sffamily\textcolor{darkgray}{DOI: \@articledoi}}\par
+          \vspace{2mm}
+        }
+        \vspace{3mm}
+        
+        % Abstract - full-width single column
+        \ifdefempty{\@abstract}{}{%
+            \noindent{\fontsize{11.5}{13.8}\selectfont\sffamily\bfseries\color{themecolor}Abstract}\par
+            \vspace{2mm}
+            {\fontsize{9}{10.35}\selectfont\sffamily\@abstract\par}
+            \vspace{4mm}
+          }
+          
+          % Keywords - full-width single column
+          \ifdefempty{\@keywords}{}{%
+              \noindent{\fontsize{9}{10.35}\selectfont\sffamily\textbf{Keywords:} \@keywords}\par
+              \vspace{3mm}
+            }
+            
+            % Bottom horizontal bar
+            \vspace{3mm}
+            \noindent\textcolor{lightgray}{\rule{\textwidth}{0.5pt}}
+            \vspace{5mm}
+
+
+
+
+
+    
+    \vfill
+  \end{titlepage}
+  \setcounter{page}{1}
+}
+
+\newcommand{\@keywords}{}
+\newcommand{\keywords}[1]{\renewcommand{\@keywords}{#1}}
+\newcommand{\@abstract}{}
+\renewcommand{\abstract}[1]{\renewcommand{\@abstract}{#1}}
+\newcommand{\@subtitle}{}
+\newcommand{\subtitle}[1]{\renewcommand{\@subtitle}{#1}}
+
+\makeatother
+
+% \makeatletter
+% \renewcommand{\maketitle}{
+%   \begin{titlepage}
+%     \centering
+%     \vspace*{2cm}
+    
+%     {\Huge\bfseries\sffamily\@title\par}
+%     \vspace{0.5cm}
+%     {\Large\itshape\sffamily\@subtitle\par}
+%     \vspace{2cm}
+    
+%     {\large\@author\par}
+%     \vspace{0.5cm}
+%     {\large\@date\par}
+%     \vspace{2cm}
+    
+%     \ifx\@keywords\@empty\else
+%       {\normalsize\textbf{Keywords:} \@keywords\par}
+%       \vspace{1cm}
+%     \fi
+    
+%     \ifx\@abstract\@empty\else
+%       \begin{minipage}{0.85\textwidth}
+%         {\normalsize\textbf{Abstract}\par}
+%         \vspace{0.3cm}
+%         {\small\@abstract\par}
+%       \end{minipage}
+%     \fi
+    
+%     \vfill
+%   \end{titlepage}
+%   \setcounter{page}{1}
+% }
+% \newcommand{\@keywords}{}
+% \newcommand{\keywords}[1]{\renewcommand{\@keywords}{#1}}
+% \newcommand{\@abstract}{}
+% \renewcommand{\abstract}[1]{\renewcommand{\@abstract}{#1}}
+% \newcommand{\@subtitle}{}
+% \newcommand{\subtitle}[1]{\renewcommand{\@subtitle}{#1}}
+% \makeatother
+
 
 % \ifdefined\HCode\else
 % \begin{titlepage}
@@ -252,47 +415,15 @@
 %   \end{titlepage}
 % }
 
+% Include filter-generated metadata commands
+% Fixed filename in current working directory (Pandoc's output-dir)
+\IfFileExists{pandoc-meta-commands.tex}{%
+  \input{pandoc-meta-commands.tex}%
+}{%
+  % File doesn't exist - this is OK if no keywords/abstract
+}
 
-% \makeatletter
-% \renewcommand{\maketitle}{
-%   \begin{titlepage}
-%     \centering
-%     \vspace*{2cm}
-    
-%     {\Huge\bfseries\sffamily\@title\par}
-%     \vspace{0.5cm}
-%     {\Large\itshape\sffamily\@subtitle\par}
-%     \vspace{2cm}
-    
-%     {\large\@author\par}
-%     \vspace{0.5cm}
-%     {\large\@date\par}
-%     \vspace{2cm}
-    
-%     \ifx\@keywords\@empty\else
-%       {\normalsize\textbf{Keywords:} \@keywords\par}
-%       \vspace{1cm}
-%     \fi
-    
-%     \ifx\@abstract\@empty\else
-%       \begin{minipage}{0.85\textwidth}
-%         {\normalsize\textbf{Abstract}\par}
-%         \vspace{0.3cm}
-%         {\small\@abstract\par}
-%       \end{minipage}
-%     \fi
-    
-%     \vfill
-%   \end{titlepage}
-%   \setcounter{page}{1}
-% }
-% \newcommand{\@keywords}{}
-% \newcommand{\keywords}[1]{\renewcommand{\@keywords}{#1}}
-% \newcommand{\@abstract}{}
-% \renewcommand{\abstract}[1]{\renewcommand{\@abstract}{#1}}
-% \newcommand{\@subtitle}{}
-% \newcommand{\subtitle}[1]{\renewcommand{\@subtitle}{#1}}
-% \makeatother
+
 
 % ---------------------------
 % Safety: ensure known Pandoc macros exist
