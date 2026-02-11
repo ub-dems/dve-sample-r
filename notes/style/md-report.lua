@@ -50,7 +50,6 @@ function Meta(m)
 
 	-- 2. Handle Abstract
         if m.abstract then
-
            local abstract_tex = pandoc.write(pandoc.Pandoc(m.abstract), 'latex')
            local abstract_cmd = "\\abstract{" .. abstract_tex .. "}"
            table.insert(header_lines, abstract_cmd)
@@ -58,11 +57,53 @@ function Meta(m)
            
         end
 
-          -- z. Write to the unique temp file
+	-- 3. Handle Category
+	if m.category then
+	  local cat_string = pandoc.write(pandoc.Pandoc(m.category), 'latex')
+	  local cat_cmd = "\\category{" .. cat_string .. "}"
+          table.insert(header_lines, cat_cmd)
+          logging.temp("+++ ", rawget(_G, "FORMAT"), "#/meta(cat):", cat_cmd)
+	end
+
+	-- 4. Documant Name
+	if m.directory then
+           local dir_string = pandoc.write(pandoc.Pandoc(m.directory), 'latex')
+	  local dir_cmd = "\\dirpath{" .. dir_string .. "}"
+          table.insert(header_lines, dir_cmd)
+          logging.temp("+++ ", rawget(_G, "FORMAT"), "#/meta(dir):", dir_cmd)
+	end
+
+	-- 5. Documant Name
+	if m.docname then
+          local doc_string = pandoc.write(pandoc.Pandoc(m.docname), 'latex')
+	  local doc_cmd = "\\docname{" .. doc_string .. "}"
+          table.insert(header_lines, doc_cmd)
+          logging.temp("+++ ", rawget(_G, "FORMAT"), "#/meta(doc):", doc_cmd)
+	end
+
+	-- 5. Project Name
+	if m.project then
+          local proj_string = pandoc.write(pandoc.Pandoc(m.project), 'latex')
+	  local proj_cmd = "\\project{" .. proj_string .. "}"
+          table.insert(header_lines, proj_cmd)
+          logging.temp("+++ ", rawget(_G, "FORMAT"), "#/meta(project):", proj_cmd)
+	end
+
+	-- 6. Base URL
+	if m.baseurl then
+          local url_string = pandoc.write(pandoc.Pandoc(m.baseurl), 'latex')
+	  local url_cmd = "\\projecturl{" .. url_string .. "}"
+          table.insert(header_lines, url_cmd)
+          logging.temp("+++ ", rawget(_G, "FORMAT"), "#/meta(baseurl):", url_cmd)
+	end
+
+        -- z. Write to the unique temp file
         local f, err = io.open(temp_file, "w")
         if f then
            if #header_lines > 0 then
-              f:write(table.concat(header_lines, "\n") .. "\n")
+              local header_text = table.concat(header_lines, "\n") .. "\n"
+              logging.temp("+++ Header Text:\n{{{\n", header_text, "\n}}}\n")
+              f:write(header_text)
            else
               f:write("% No metadata commands\n")
            end

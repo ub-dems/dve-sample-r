@@ -6,4 +6,8 @@ author:
  - datalab@unimib.it
 date: \today
 lang: en-US
+
+category: Misc
+baseurl: https://gitlab.com/ub-dems-public/ds-labs/dve-sample-r
+project: dve-sample-r
 ---

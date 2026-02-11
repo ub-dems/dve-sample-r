@@ -3,12 +3,18 @@ title: /todo(title)
 subtitle: /todo(subtitle)
 # ::{{{ // %+
 
-keywords: [documentation, template, pandoc, latex]
+category: LLM-Style
+keywords: [documentation, template, pandoc, latex, example]
 abstract: |
   /todo(abstract)
-  
-  ...
+  example document with extended abstract and multiple paragraphs.
 
+  this is for **bold** and _emphasis_ markdown formatting,
+  this is for inline `code` and math: $V = \frac{4}{3} \pi r^3$,
+  and this is for [pandoc lua filters](https://pandoc.org/lua-filters.html)
+  markdown links.
+
+directory: /notes/style
 doctype: md-report
 
 # ::}}} // %+

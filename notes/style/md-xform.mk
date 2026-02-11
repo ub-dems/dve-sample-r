@@ -129,6 +129,7 @@ CLEAN_OPTS := "-I" # rm options, ask once
 	$(PANDOC) $(PANDOC_FLAGS) \
 		--defaults="$(STYLES_DIR)/$$doctype.yaml"  \
 	        --metadata=tempdir=$(TEMP_DIR) \
+	        --metadata=docname="$@" \
 	        --pdf-engine-opt=-outdir=$(TEMP_DIR) \
 		"$<" -o "$@"
 
@@ -139,6 +140,7 @@ CLEAN_OPTS := "-I" # rm options, ask once
 	$(PANDOC) $(PANDOC_DEBUG) --log=$(@:.tex=.log) \
 		--defaults="$(STYLES_DIR)/$$doctype.yaml" \
 	        --metadata=tempdir=$(TEMP_DIR) \
+	        --metadata=docname="$@" \
 	        --pdf-engine-opt=-outdir=$(TEMP_DIR) \
 		"$<" -o "$@"
 

@@ -263,8 +263,8 @@
     
     % Journal information - left-aligned, 8.5-9pt ARTICLE label
     \noindent{\fontsize{8.5}{10.2}\selectfont\sffamily\bfseries\textcolor{darkgray}{\MakeUppercase{\@articletype}}}%
-    \ifdefempty{\@conferencename}{}{%
-        \quad|\quad{\fontsize{8.5}{10.2}\selectfont\sffamily\textcolor{darkgray}{\MakeUppercase{\@conferencename}}}%
+    \ifdefempty{\@category}{}{%
+        \quad|\quad{\fontsize{8.5}{10.2}\selectfont\sffamily\textcolor{darkgray}{\MakeUppercase{\@category}}}%
       }
       \vspace{4mm}
       
@@ -272,17 +272,38 @@
       \noindent{\fontsize{21}{35}\selectfont\bfseries\sffamily\textcolor{themecolor}\@title}\par
       \vspace{4mm}
       
-      % Article subtitle - left-aligned, 18pt
-      \noindent{\fontsize{18}{35}\selectfont\bfseries\sffamily\textcolor{darkgray}\@subtitle}\par
+      % Article subtitle - left-aligned, 16pt
+      \noindent{\fontsize{16}{35}\selectfont\bfseries\sffamily\textcolor{darkgray}\@subtitle}\par
       \vspace{4mm}
       
-      % Author - left-aligned, 11pt (name bolding controlled in tex file)
-      \noindent{\fontsize{11}{13.2}\selectfont\sffamily\@author}\par
+      % Author - left-aligned, 10pt (name bolding controlled in tex file)
+      \noindent{\fontsize{10}{13.2}\selectfont\sffamily\@author}\par
       \vspace{3mm}
       
+      % Document Name (if available)
+      \ifdefempty{\@docname}{}{%
+          \noindent{\fontsize{8.5}{10.2}\selectfont\sffamily\textcolor{darkgray}{Project: \@docname}}\par
+          \vspace{2mm}
+        }
+        \vspace{3mm}
+        
+      % Project (if available)
+      \ifdefempty{\@project}{}{%
+          \noindent{\fontsize{8.5}{10.2}\selectfont\sffamily\textcolor{darkgray}{Project: \@project}}\par
+          \vspace{2mm}
+        }
+        \vspace{3mm}
+        
       % DOI (if available)
       \ifdefempty{\@articledoi}{}{%
-          \noindent{\fontsize{8.5}{10.2}\selectfont\sffamily\textcolor{darkgray}{DOI: \@articledoi}}\par
+          \noindent{\fontsize{8.5}{10.2}\selectfont\sffamily\textcolor{darkgray}{URL: \@articledoi}}\par
+          \vspace{2mm}
+        }
+        \vspace{3mm}
+        
+      % Date (if available)
+      \ifdefempty{\@date}{}{%
+          \noindent{\fontsize{8.5}{10.2}\selectfont\sffamily\textcolor{darkgray}{Date: \@date}}\par
           \vspace{2mm}
         }
         \vspace{3mm}
@@ -316,104 +337,26 @@
   \setcounter{page}{1}
 }
 
+\newcommand{\@docname}{}
+\newcommand{\docname}[1]{\renewcommand{\@docname}{#1}}
+\newcommand{\@dirpath}{}
+\newcommand{\dirpath}[1]{\renewcommand{\@dirpath}{#1}}
+\newcommand{\@projecturl}{}
+\newcommand{\projecturl}[1]{\renewcommand{\@projecturl}{#1}}
+\newcommand{\@project}{}
+\newcommand{\project}[1]{\renewcommand{\@project}{#1}}
+\newcommand{\@category}{}
+\newcommand{\category}[1]{\renewcommand{\@category}{#1}}
 \newcommand{\@keywords}{}
 \newcommand{\keywords}[1]{\renewcommand{\@keywords}{#1}}
-\newcommand{\@abstract}{}
-\renewcommand{\abstract}[1]{\renewcommand{\@abstract}{#1}}
 \newcommand{\@subtitle}{}
 \newcommand{\subtitle}[1]{\renewcommand{\@subtitle}{#1}}
 
+\newcommand{\@abstract}{}
+\renewcommand{\abstract}[1]{\renewcommand{\@abstract}{#1}}
+
 \makeatother
 
-% \makeatletter
-% \renewcommand{\maketitle}{
-%   \begin{titlepage}
-%     \centering
-%     \vspace*{2cm}
-    
-%     {\Huge\bfseries\sffamily\@title\par}
-%     \vspace{0.5cm}
-%     {\Large\itshape\sffamily\@subtitle\par}
-%     \vspace{2cm}
-    
-%     {\large\@author\par}
-%     \vspace{0.5cm}
-%     {\large\@date\par}
-%     \vspace{2cm}
-    
-%     \ifx\@keywords\@empty\else
-%       {\normalsize\textbf{Keywords:} \@keywords\par}
-%       \vspace{1cm}
-%     \fi
-    
-%     \ifx\@abstract\@empty\else
-%       \begin{minipage}{0.85\textwidth}
-%         {\normalsize\textbf{Abstract}\par}
-%         \vspace{0.3cm}
-%         {\small\@abstract\par}
-%       \end{minipage}
-%     \fi
-    
-%     \vfill
-%   \end{titlepage}
-%   \setcounter{page}{1}
-% }
-% \newcommand{\@keywords}{}
-% \newcommand{\keywords}[1]{\renewcommand{\@keywords}{#1}}
-% \newcommand{\@abstract}{}
-% \renewcommand{\abstract}[1]{\renewcommand{\@abstract}{#1}}
-% \newcommand{\@subtitle}{}
-% \newcommand{\subtitle}[1]{\renewcommand{\@subtitle}{#1}}
-% \makeatother
-
-
-% \ifdefined\HCode\else
-% \begin{titlepage}
-%     \centering
-%     \vspace*{2cm}
-%     {\Huge\bfseries \@title\par}
-%     \vspace{0.5cm}
-%     {\Large \@subtitle\par}
-%     \vspace{2cm}
-%     {\large\bfseries \@author\par}
-%     \vspace{1cm}
-%     {\large \@date\par}
-%     \vspace{2cm}
-%     \textbf{Keywords:} \@keywords\par
-%     \vspace{2cm}
-%     \begin{abstract}
-%         \@abstract
-%     \end{abstract}
-%     \vfill
-%     \vspace*{1cm}
-% \end{titlepage}
-% \clearpage
-% \fi
-
-
-% \AtBeginDocument{
-%   \begin{titlepage}
-%     \centering
-%     {\huge\bfseries \thetitle \par}
-%     \vspace{0.8cm}
-%     {\Large \thesubtitle \par}
-%     \vspace{1.2cm}
-%     {\large \theauthor \par}
-%     \vspace{0.2cm}
-%     {\normalsize \thedate \par}
-%     \vfill
-%     \textbf{Keywords:} \\
-%     \begin{itemize}
-%     \foreach \x in \thekeywords {\item \x}
-%     \end{itemize}
-%     \vspace{1cm}
-%     \textbf{Abstract}\par
-%     \vspace{0.3cm}
-%     \begin{minipage}{0.9\textwidth}
-%     \theabstract
-%     \end{minipage}
-%   \end{titlepage}
-% }
 
 % Include filter-generated metadata commands
 % Fixed filename in current working directory (Pandoc's output-dir)
