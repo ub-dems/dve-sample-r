@@ -13,6 +13,7 @@
 
 STYLES_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
 STYLES_DIR := $(patsubst %/,%,$(dir $(STYLES_PATH)))
+ROOT_DIR := $(shell (cd ${STYLES_DIR} && git rev-parse --show-toplevel))
 
 
 # ------------------------------------------------------------------------
@@ -24,6 +25,20 @@ SOURCES ?= \
 
 OBJECTS := $(SOURCES:.md=.pdf)
 TEXOUTS := $(SOURCES:.md=.tex)
+
+
+
+# ------------------------------------------------------------------------
+# Base
+# ------------------------------------------------------------------------
+
+MAKEFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
+MAKE_DIR := $(patsubst %/,%,$(dir $(MAKEFILE_PATH)))
+ROOT_DIR := $(shell (cd ${MAKE_DIR} && git rev-parse --show-toplevel))
+WORK_DIR := $(patsubst ${HOME}/%,./%,${ROOT_DIR})
+CONF_DIR := $(patsubst ${ROOT_DIR}/%,./%,${MAKE_DIR})
+MAKEFILE_FOLDER := $(notdir ${MAKE_DIR})
+
 
 
 # ------------------------------------------------------------------------
@@ -124,22 +139,26 @@ CLEAN_OPTS := "-I" # rm options, ask once
 
 %.pdf: %.md
 	$(eval TEMP_DIR := $(shell mktemp -d /tmp/pandoc-XXXXXX))
+	$(eval DOCS_DIR := $(patsubst ${ROOT_DIR}/%,%,$(shell pwd)))
 	doctype=$$($(GET_DOCTYPE) $<) ; \
 	echo "### Building $@ from $< with $$doctype..." ; \
 	$(PANDOC) $(PANDOC_FLAGS) \
 		--defaults="$(STYLES_DIR)/$$doctype.yaml"  \
 	        --metadata=tempdir=$(TEMP_DIR) \
+	        --metadata=docsdir=$(DOCS_DIR) \
 	        --metadata=docname="$@" \
 	        --pdf-engine-opt=-outdir=$(TEMP_DIR) \
 		"$<" -o "$@"
 
 %.tex: %.md
 	$(eval TEMP_DIR := $(shell mktemp -d /tmp/pandoc-XXXXXX))
+	$(eval DOCS_DIR := $(patsubst ${ROOT_DIR}/%,%,$(shell pwd)))
 	doctype=$$($(GET_DOCTYPE) $<) ; \
 	echo "### Building $@ from $< with $$doctype..." ; \
 	$(PANDOC) $(PANDOC_DEBUG) --log=$(@:.tex=.log) \
 		--defaults="$(STYLES_DIR)/$$doctype.yaml" \
 	        --metadata=tempdir=$(TEMP_DIR) \
+	        --metadata=docsdir=$(DOCS_DIR) \
 	        --metadata=docname="$@" \
 	        --pdf-engine-opt=-outdir=$(TEMP_DIR) \
 		"$<" -o "$@"

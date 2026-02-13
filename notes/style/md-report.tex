@@ -280,34 +280,50 @@
       \noindent{\fontsize{10}{13.2}\selectfont\sffamily\@author}\par
       \vspace{3mm}
       
+      % Bottom horizontal bar
+      \vspace{3mm}
+      \noindent\textcolor{lightgray}{\rule{\textwidth}{0.5pt}}
+      \vspace{3mm}
+            
       % Document Name (if available)
       \ifdefempty{\@docname}{}{%
-          \noindent{\fontsize{8.5}{10.2}\selectfont\sffamily\textcolor{darkgray}{Project: \@docname}}\par
-          \vspace{2mm}
+          \noindent{\fontsize{8.5}{10.2}\selectfont\sffamily\textcolor{darkgray}{Document: \@docname}}\par
+          \vspace{1mm}
         }
-        \vspace{3mm}
+        \vspace{1mm}
         
       % Project (if available)
       \ifdefempty{\@project}{}{%
-          \noindent{\fontsize{8.5}{10.2}\selectfont\sffamily\textcolor{darkgray}{Project: \@project}}\par
-          \vspace{2mm}
+          \noindent{\fontsize{7.5}{8.2}\selectfont\sffamily\textcolor{darkgray}{Project: \@project}}\par
+          \vspace{1mm}
         }
-        \vspace{3mm}
+        \vspace{1mm}
         
-      % DOI (if available)
-      \ifdefempty{\@articledoi}{}{%
-          \noindent{\fontsize{8.5}{10.2}\selectfont\sffamily\textcolor{darkgray}{URL: \@articledoi}}\par
-          \vspace{2mm}
+      % URL (if available)
+      \ifdefempty{\@docsurl}{}{%
+          \noindent{\fontsize{7.5}{8.2}\selectfont\sffamily\textcolor{darkgray}{URL: \href{\@docsurl}{\@docsurl}}}\par
+          \vspace{1mm}
         }
-        \vspace{3mm}
+        \vspace{1mm}
         
       % Date (if available)
       \ifdefempty{\@date}{}{%
-          \noindent{\fontsize{8.5}{10.2}\selectfont\sffamily\textcolor{darkgray}{Date: \@date}}\par
-          \vspace{2mm}
+          \noindent{\fontsize{7.5}{8.2}\selectfont\sffamily\textcolor{darkgray}{Date: \@date}}\par
+          \vspace{1mm}
         }
         \vspace{3mm}
         
+          % Keywords - full-width single column
+          \ifdefempty{\@keywords}{}{%
+              \noindent{\fontsize{9}{10.35}\selectfont\sffamily\textbf{Keywords:} \@keywords}\par
+              \vspace{3mm}
+            }
+            
+            % Bottom horizontal bar
+            \vspace{3mm}
+            \noindent\textcolor{lightgray}{\rule{\textwidth}{0.5pt}}
+            \vspace{3mm}
+            
         % Abstract - full-width single column
         \ifdefempty{\@abstract}{}{%
             \noindent{\fontsize{11.5}{13.8}\selectfont\sffamily\bfseries\color{themecolor}Abstract}\par
@@ -316,12 +332,6 @@
             \vspace{4mm}
           }
           
-          % Keywords - full-width single column
-          \ifdefempty{\@keywords}{}{%
-              \noindent{\fontsize{9}{10.35}\selectfont\sffamily\textbf{Keywords:} \@keywords}\par
-              \vspace{3mm}
-            }
-            
             % Bottom horizontal bar
             \vspace{3mm}
             \noindent\textcolor{lightgray}{\rule{\textwidth}{0.5pt}}
@@ -337,10 +347,18 @@
   \setcounter{page}{1}
 }
 
+\newcommand{\@orgname}{}
+\newcommand{\orgname}[1]{\renewcommand{\@orgname}{#1}}
+\newcommand{\@orgsite}{}
+\newcommand{\orgsite}[1]{\renewcommand{\@orgsite}{#1}}
 \newcommand{\@docname}{}
 \newcommand{\docname}[1]{\renewcommand{\@docname}{#1}}
-\newcommand{\@dirpath}{}
-\newcommand{\dirpath}[1]{\renewcommand{\@dirpath}{#1}}
+\newcommand{\@docpath}{}
+\newcommand{\docpath}[1]{\renewcommand{\@docpath}{#1}}
+\newcommand{\@docsurl}{}
+\newcommand{\docsurl}[1]{\renewcommand{\@docsurl}{#1}}
+\newcommand{\@docurl}{}
+\newcommand{\docurl}[1]{\renewcommand{\@docurl}{#1}}
 \newcommand{\@projecturl}{}
 \newcommand{\projecturl}[1]{\renewcommand{\@projecturl}{#1}}
 \newcommand{\@project}{}

@@ -14,7 +14,6 @@ abstract: |
   and this is for [pandoc lua filters](https://pandoc.org/lua-filters.html)
   markdown links.
 
-directory: /notes/style
 doctype: md-report
 
 # ::}}} // %+

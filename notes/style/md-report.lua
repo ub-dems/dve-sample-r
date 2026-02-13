@@ -65,28 +65,36 @@ function Meta(m)
           logging.temp("+++ ", rawget(_G, "FORMAT"), "#/meta(cat):", cat_cmd)
 	end
 
-	-- 4. Documant Name
-	if m.directory then
-           local dir_string = pandoc.write(pandoc.Pandoc(m.directory), 'latex')
-	  local dir_cmd = "\\dirpath{" .. dir_string .. "}"
-          table.insert(header_lines, dir_cmd)
-          logging.temp("+++ ", rawget(_G, "FORMAT"), "#/meta(dir):", dir_cmd)
+	-- Organization Name
+	if m.orgname then
+          local orgname_string = pandoc.utils.stringify(m.orgname)
+	  local orgname_cmd = "\\orgname{" .. orgname_string .. "}"
+          table.insert(header_lines, orgname_cmd)
+          logging.temp("+++ ", rawget(_G, "FORMAT"), "#/meta(orgname):", orgname_cmd)
 	end
 
-	-- 5. Documant Name
-	if m.docname then
-          local doc_string = pandoc.write(pandoc.Pandoc(m.docname), 'latex')
-	  local doc_cmd = "\\docname{" .. doc_string .. "}"
-          table.insert(header_lines, doc_cmd)
-          logging.temp("+++ ", rawget(_G, "FORMAT"), "#/meta(doc):", doc_cmd)
+	-- Organization Site
+	if m.orgsite then
+          local orgsite_string = pandoc.write(pandoc.Pandoc(m.orgsite), 'latex')
+	  local orgsite_cmd = "\\orgsite{" .. orgsite_string .. "}"
+          table.insert(header_lines, orgsite_cmd)
+          logging.temp("+++ ", rawget(_G, "FORMAT"), "#/meta(orgsite):", orgsite_cmd)
 	end
 
-	-- 5. Project Name
+	-- 4. Project Name
 	if m.project then
           local proj_string = pandoc.write(pandoc.Pandoc(m.project), 'latex')
 	  local proj_cmd = "\\project{" .. proj_string .. "}"
           table.insert(header_lines, proj_cmd)
           logging.temp("+++ ", rawget(_G, "FORMAT"), "#/meta(project):", proj_cmd)
+	end
+
+	-- 5. Document Name
+	if m.docname then
+          local doc_string = pandoc.write(pandoc.Pandoc(m.docname), 'latex')
+	  local doc_cmd = "\\docname{" .. doc_string .. "}"
+          table.insert(header_lines, doc_cmd)
+          logging.temp("+++ ", rawget(_G, "FORMAT"), "#/meta(doc):", doc_cmd)
 	end
 
 	-- 6. Base URL
@@ -95,6 +103,43 @@ function Meta(m)
 	  local url_cmd = "\\projecturl{" .. url_string .. "}"
           table.insert(header_lines, url_cmd)
           logging.temp("+++ ", rawget(_G, "FORMAT"), "#/meta(baseurl):", url_cmd)
+	end
+
+	-- 7. Document Directory
+	if m.docsdir then
+          local dir_string = pandoc.write(pandoc.Pandoc(m.docsdir), 'latex')
+	  local dir_cmd = "\\docpath{" .. dir_string .. "}"
+          table.insert(header_lines, dir_cmd)
+          logging.temp("+++ ", rawget(_G, "FORMAT"), "#/meta(dir):", dir_cmd)
+	end
+
+	-- 8. Document Dir URL
+	if 1 == 1 then
+           local baseurl_string = ""
+           local docsdir_string = ""
+           local docname_string = ""
+           
+           if m.baseurl then
+              baseurl_string = pandoc.write(pandoc.Pandoc(m.baseurl), 'latex')  .. "/"
+           end
+           
+           if m.docsdir then
+              docsdir_string = pandoc.write(pandoc.Pandoc(m.docsdir), 'latex')  .. "/"
+           end
+        
+           if m.docname then
+              docname_string = pandoc.write(pandoc.Pandoc(m.docname), 'latex')
+           end
+           
+           local docsurl_string = baseurl_string .. docsdir_string
+           local docsurl_cmd = "\\docsurl{" .. docsurl_string .. "}"
+           table.insert(header_lines, docsurl_cmd)
+           logging.temp("+++ ", rawget(_G, "FORMAT"), "#/meta(docsurl):", docsurl_cmd)
+           
+           local docurl_string = baseurl_string .. docsdir_string .. docname_string
+           local docurl_cmd = "\\docurl{" .. docurl_string .. "}"
+           table.insert(header_lines, docurl_cmd)
+           logging.temp("+++ ", rawget(_G, "FORMAT"), "#/meta(docurl):", docurl_cmd)
 	end
 
         -- z. Write to the unique temp file
