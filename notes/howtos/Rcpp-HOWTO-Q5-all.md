@@ -5,7 +5,7 @@ subtitle: |
   RcppArmadillo, and OpenMP parallel computing primitives
 # {{{ // %+
 
-category: LLM-Style
+category: Rcpp-HOWTO
 keywords: [GEN, Rcpp, OpenMP, SIMD, RcppArmadillo, HPC, parallel-computing, vectorization, microbenchmark]
 abstract: |
   This document provides a comprehensive guide to implementing and
@@ -33,6 +33,8 @@ abstract: |
   AMD EPYC systems running on Microsoft Azure, with detailed discussion
   of parallelism versus vectorization trade-offs in HPC contexts.
 
+  ![](img/dummy-rcpp-bench-2025-09-30T182157-outer-bench.png)
+
 doctype: md-report
 
 # }}} // %+
@@ -56,6 +58,7 @@ doctype: md-report
    - see: [Rcpp Iterators Performance Optimization (Diffusion)](#a5-diffusion)
    - see: [Rcpp Iterators Performance Optimization (LeChat)](#a5-lechat)
    - see: [Rcpp Iterators Performance Optimization (Perplexity)](#a5-perplexity)
+3. [A:a - Appendix a - Iteration Benchmarks](#aa)
 
 <details>
 <summary></summary>
@@ -95,22 +98,6 @@ doctype: md-report
 # Q:5
 
 ## Q:5 - **R "VibeCoding" and Loop Optimization**
-
-[⇧](#toc)
-
-TODO:(q1-intro) ...
-
-
-<details>
-<summary></summary>
-
-```{=latex}
-\newpage
-```
-
-</details>
-
-## System Hints
 
 >>> [!tip]
 
@@ -5850,6 +5837,255 @@ performance while retaining package portability on CRAN.
 [^6]: [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html)
 
 <!-- }}} \\ %5. -->
+<!-- ::{{{ #TAG: TODO:(aa-section) // -->
+<details>
+<summary></summary>
+
+```{=latex}
+\newpage
+\clearpage
+\appendix
+```
+
+</details>
+
+# A:a
+
+## A:a - **_Rcpp Iteration Benchmark_**
+
+[⇧](#toc)
+
+## Microbencmark Results
+
+### Benchmark Plot
+
+![Rcpp Itaration Benchmark](img/dummy-rcpp-bench-2025-09-30T182157-outer-bench.png)
+
+
+### Execution Log
+
+```text
+2025-09-30 18:21:57.957108 [INFO] === Rcpp Performance Benchmark Started ===
+2025-09-30 18:21:57.959162 [INFO] Script: dummy-rcpp-bench
+2025-09-30 18:21:57.959985 [INFO] Arguments: list(input_sizes = c("100", "1000", "10000"), profile = FALSE,      samples = 10L, save = TRUE, test = "outer", verbose = 0L)
+2025-09-30 18:21:57.979425 [INFO] === Benchmark Configuration ===
+2025-09-30 18:21:57.980335 [INFO] Test Type: outer
+2025-09-30 18:21:57.981092 [INFO] Input Sizes: 100, 1000, 10000
+2025-09-30 18:21:57.981827 [INFO] Sample Size: 10
+2025-09-30 18:21:57.982588 [INFO] Verbosity: 0
+2025-09-30 18:21:57.983364 [INFO] Profile: FALSE
+2025-09-30 18:21:57.984147 [INFO] Save Data: TRUE
+2025-09-30 18:21:57.984859 [INFO] Log Directory: /root/work/vs/dve-sample-r/logs
+2025-09-30 18:21:58.547922 [INFO] System: x86_64-pc-linux-gnu
+2025-09-30 18:21:58.549049 [INFO] R Version: R version 4.4.3 (2025-02-28)
+2025-09-30 18:21:58.549806 [INFO] CPU Info: CPU: |   Info: 8-core model: AMD EPYC 7V12 bits: 64 type: MCP cache: L2: 4 MiB |   Speed (MHz): avg: 3165 min/max: N/A cores: 1: 3206 2: 3214 3: 3232 4: 3112 |     5: 3241 6: 3098 7: 3188 8: 3031
+2025-09-30 18:21:58.561115 [INFO] Starting outer product function benchmarks
+2025-09-30 18:21:58.56215 [INFO] Functions: dmy_pf_outer_c_style, dmy_pf_outer_cpp_iter, dmy_pf_outer_armadillo, dmy_pf_outer_r_base, dmy_pf_outer_omp_collapse, dmy_pf_outer_omp_simd
+2025-09-30 18:21:58.562957 [INFO] Benchmarking outer functions with input size: 100
+2025-09-30 18:21:58.796428 [INFO] Benchmarking outer functions with input size: 1000
+2025-09-30 18:21:59.847336 [INFO] Benchmarking outer functions with input size: 10000
+2025-09-30 18:22:20.230602 [INFO] Benchmark plot saved: /root/work/vs/dve-sample-r/logs/dummy-rcpp-bench-2025-09-30T182157-outer-bench.png
+2025-09-30 18:22:23.544478 [INFO] === Benchmark Summary ===
+2025-09-30 18:22:23.551833 [INFO] Average performance ranking (fastest to slowest):
+2025-09-30 18:22:23.552659 [INFO] 1. r_base: 39.781 ms
+2025-09-30 18:22:23.553503 [INFO] 2. omp_simd: 58.961 ms
+2025-09-30 18:22:23.554318 [INFO] 3. omp_collapse: 64.969 ms
+2025-09-30 18:22:23.555114 [INFO] 4. armadillo: 86.285 ms
+2025-09-30 18:22:23.555911 [INFO] 5. c_style: 180.176 ms
+2025-09-30 18:22:23.556695 [INFO] 6. cpp_iter: 204.498 ms
+2025-09-30 18:22:23.557498 [INFO] === Benchmark Completed Successfully ===
+
+```
+
+### Benchmark Data
+
+
+| expr                      | time      | input_size | test_type | timestamp         | function_label |
+|---------------------------|-----------|------------|-----------|-------------------|----------------|
+| dmy_pf_outer_omp_simd     | 1123997   | 100        | outer     | 2025-09-30T182157 | omp_simd       |
+| dmy_pf_outer_r_base       | 411274    | 100        | outer     | 2025-09-30T182157 | r_base         |
+| dmy_pf_outer_c_style      | 53539     | 100        | outer     | 2025-09-30T182157 | c_style        |
+| dmy_pf_outer_r_base       | 22793     | 100        | outer     | 2025-09-30T182157 | r_base         |
+| dmy_pf_outer_c_style      | 48360     | 100        | outer     | 2025-09-30T182157 | c_style        |
+| dmy_pf_outer_cpp_iter     | 60602     | 100        | outer     | 2025-09-30T182157 | cpp_iter       |
+| dmy_pf_outer_omp_collapse | 32841     | 100        | outer     | 2025-09-30T182157 | omp_collapse   |
+| dmy_pf_outer_cpp_iter     | 58920     | 100        | outer     | 2025-09-30T182157 | cpp_iter       |
+| dmy_pf_outer_c_style      | 46757     | 100        | outer     | 2025-09-30T182157 | c_style        |
+| dmy_pf_outer_cpp_iter     | 59080     | 100        | outer     | 2025-09-30T182157 | cpp_iter       |
+| dmy_pf_outer_armadillo    | 27611     | 100        | outer     | 2025-09-30T182157 | armadillo      |
+| dmy_pf_outer_r_base       | 19356     | 100        | outer     | 2025-09-30T182157 | r_base         |
+| dmy_pf_outer_armadillo    | 23263     | 100        | outer     | 2025-09-30T182157 | armadillo      |
+| dmy_pf_outer_c_style      | 42980     | 100        | outer     | 2025-09-30T182157 | c_style        |
+| dmy_pf_outer_c_style      | 47037     | 100        | outer     | 2025-09-30T182157 | c_style        |
+| dmy_pf_outer_omp_collapse | 46326     | 100        | outer     | 2025-09-30T182157 | omp_collapse   |
+| dmy_pf_outer_omp_collapse | 26639     | 100        | outer     | 2025-09-30T182157 | omp_collapse   |
+| dmy_pf_outer_c_style      | 46797     | 100        | outer     | 2025-09-30T182157 | c_style        |
+| dmy_pf_outer_cpp_iter     | 58218     | 100        | outer     | 2025-09-30T182157 | cpp_iter       |
+| dmy_pf_outer_omp_simd     | 26018     | 100        | outer     | 2025-09-30T182157 | omp_simd       |
+| dmy_pf_outer_armadillo    | 23735     | 100        | outer     | 2025-09-30T182157 | armadillo      |
+| dmy_pf_outer_omp_collapse | 27280     | 100        | outer     | 2025-09-30T182157 | omp_collapse   |
+| dmy_pf_outer_cpp_iter     | 55223     | 100        | outer     | 2025-09-30T182157 | cpp_iter       |
+| dmy_pf_outer_cpp_iter     | 58058     | 100        | outer     | 2025-09-30T182157 | cpp_iter       |
+| dmy_pf_outer_r_base       | 21630     | 100        | outer     | 2025-09-30T182157 | r_base         |
+| dmy_pf_outer_armadillo    | 24225     | 100        | outer     | 2025-09-30T182157 | armadillo      |
+| dmy_pf_outer_omp_collapse | 23404     | 100        | outer     | 2025-09-30T182157 | omp_collapse   |
+| dmy_pf_outer_cpp_iter     | 58158     | 100        | outer     | 2025-09-30T182157 | cpp_iter       |
+| dmy_pf_outer_omp_simd     | 23263     | 100        | outer     | 2025-09-30T182157 | omp_simd       |
+| dmy_pf_outer_cpp_iter     | 58549     | 100        | outer     | 2025-09-30T182157 | cpp_iter       |
+| dmy_pf_outer_r_base       | 20598     | 100        | outer     | 2025-09-30T182157 | r_base         |
+| dmy_pf_outer_omp_simd     | 23153     | 100        | outer     | 2025-09-30T182157 | omp_simd       |
+| dmy_pf_outer_omp_collapse | 26480     | 100        | outer     | 2025-09-30T182157 | omp_collapse   |
+| dmy_pf_outer_omp_simd     | 25948     | 100        | outer     | 2025-09-30T182157 | omp_simd       |
+| dmy_pf_outer_armadillo    | 26619     | 100        | outer     | 2025-09-30T182157 | armadillo      |
+| dmy_pf_outer_r_base       | 20769     | 100        | outer     | 2025-09-30T182157 | r_base         |
+| dmy_pf_outer_c_style      | 46276     | 100        | outer     | 2025-09-30T182157 | c_style        |
+| dmy_pf_outer_r_base       | 18214     | 100        | outer     | 2025-09-30T182157 | r_base         |
+| dmy_pf_outer_omp_collapse | 24345     | 100        | outer     | 2025-09-30T182157 | omp_collapse   |
+| dmy_pf_outer_c_style      | 68367     | 100        | outer     | 2025-09-30T182157 | c_style        |
+| dmy_pf_outer_omp_collapse | 61174     | 100        | outer     | 2025-09-30T182157 | omp_collapse   |
+| dmy_pf_outer_armadillo    | 99425     | 100        | outer     | 2025-09-30T182157 | armadillo      |
+| dmy_pf_outer_omp_collapse | 20578     | 100        | outer     | 2025-09-30T182157 | omp_collapse   |
+| dmy_pf_outer_cpp_iter     | 90228     | 100        | outer     | 2025-09-30T182157 | cpp_iter       |
+| dmy_pf_outer_armadillo    | 81812     | 100        | outer     | 2025-09-30T182157 | armadillo      |
+| dmy_pf_outer_armadillo    | 54371     | 100        | outer     | 2025-09-30T182157 | armadillo      |
+| dmy_pf_outer_armadillo    | 46256     | 100        | outer     | 2025-09-30T182157 | armadillo      |
+| dmy_pf_outer_omp_simd     | 17903     | 100        | outer     | 2025-09-30T182157 | omp_simd       |
+| dmy_pf_outer_omp_simd     | 57897     | 100        | outer     | 2025-09-30T182157 | omp_simd       |
+| dmy_pf_outer_c_style      | 62196     | 100        | outer     | 2025-09-30T182157 | c_style        |
+| dmy_pf_outer_r_base       | 57347     | 100        | outer     | 2025-09-30T182157 | r_base         |
+| dmy_pf_outer_omp_simd     | 55793     | 100        | outer     | 2025-09-30T182157 | omp_simd       |
+| dmy_pf_outer_c_style      | 70952     | 100        | outer     | 2025-09-30T182157 | c_style        |
+| dmy_pf_outer_omp_simd     | 56064     | 100        | outer     | 2025-09-30T182157 | omp_simd       |
+| dmy_pf_outer_omp_simd     | 57738     | 100        | outer     | 2025-09-30T182157 | omp_simd       |
+| dmy_pf_outer_omp_collapse | 54511     | 100        | outer     | 2025-09-30T182157 | omp_collapse   |
+| dmy_pf_outer_armadillo    | 88745     | 100        | outer     | 2025-09-30T182157 | armadillo      |
+| dmy_pf_outer_cpp_iter     | 53990     | 100        | outer     | 2025-09-30T182157 | cpp_iter       |
+| dmy_pf_outer_r_base       | 64179     | 100        | outer     | 2025-09-30T182157 | r_base         |
+| dmy_pf_outer_r_base       | 53670     | 100        | outer     | 2025-09-30T182157 | r_base         |
+| dmy_pf_outer_omp_collapse | 2606139   | 1000       | outer     | 2025-09-30T182157 | omp_collapse   |
+| dmy_pf_outer_cpp_iter     | 6410963   | 1000       | outer     | 2025-09-30T182157 | cpp_iter       |
+| dmy_pf_outer_armadillo    | 7815512   | 1000       | outer     | 2025-09-30T182157 | armadillo      |
+| dmy_pf_outer_armadillo    | 5755636   | 1000       | outer     | 2025-09-30T182157 | armadillo      |
+| dmy_pf_outer_omp_simd     | 3301419   | 1000       | outer     | 2025-09-30T182157 | omp_simd       |
+| dmy_pf_outer_r_base       | 9282896   | 1000       | outer     | 2025-09-30T182157 | r_base         |
+| dmy_pf_outer_r_base       | 10231067  | 1000       | outer     | 2025-09-30T182157 | r_base         |
+| dmy_pf_outer_c_style      | 4978895   | 1000       | outer     | 2025-09-30T182157 | c_style        |
+| dmy_pf_outer_c_style      | 5669968   | 1000       | outer     | 2025-09-30T182157 | c_style        |
+| dmy_pf_outer_omp_simd     | 5996775   | 1000       | outer     | 2025-09-30T182157 | omp_simd       |
+| dmy_pf_outer_r_base       | 22348557  | 1000       | outer     | 2025-09-30T182157 | r_base         |
+| dmy_pf_outer_c_style      | 4662948   | 1000       | outer     | 2025-09-30T182157 | c_style        |
+| dmy_pf_outer_cpp_iter     | 7324640   | 1000       | outer     | 2025-09-30T182157 | cpp_iter       |
+| dmy_pf_outer_r_base       | 9135813   | 1000       | outer     | 2025-09-30T182157 | r_base         |
+| dmy_pf_outer_c_style      | 10634887  | 1000       | outer     | 2025-09-30T182157 | c_style        |
+| dmy_pf_outer_omp_collapse | 13208786  | 1000       | outer     | 2025-09-30T182157 | omp_collapse   |
+| dmy_pf_outer_armadillo    | 10839557  | 1000       | outer     | 2025-09-30T182157 | armadillo      |
+| dmy_pf_outer_r_base       | 19208797  | 1000       | outer     | 2025-09-30T182157 | r_base         |
+| dmy_pf_outer_omp_collapse | 38077532  | 1000       | outer     | 2025-09-30T182157 | omp_collapse   |
+| dmy_pf_outer_armadillo    | 7574304   | 1000       | outer     | 2025-09-30T182157 | armadillo      |
+| dmy_pf_outer_omp_collapse | 19794524  | 1000       | outer     | 2025-09-30T182157 | omp_collapse   |
+| dmy_pf_outer_cpp_iter     | 6275603   | 1000       | outer     | 2025-09-30T182157 | cpp_iter       |
+| dmy_pf_outer_armadillo    | 31530435  | 1000       | outer     | 2025-09-30T182157 | armadillo      |
+| dmy_pf_outer_omp_collapse | 12293808  | 1000       | outer     | 2025-09-30T182157 | omp_collapse   |
+| dmy_pf_outer_omp_simd     | 45919343  | 1000       | outer     | 2025-09-30T182157 | omp_simd       |
+| dmy_pf_outer_cpp_iter     | 27615437  | 1000       | outer     | 2025-09-30T182157 | cpp_iter       |
+| dmy_pf_outer_r_base       | 6895824   | 1000       | outer     | 2025-09-30T182157 | r_base         |
+| dmy_pf_outer_armadillo    | 10962926  | 1000       | outer     | 2025-09-30T182157 | armadillo      |
+| dmy_pf_outer_omp_collapse | 18993688  | 1000       | outer     | 2025-09-30T182157 | omp_collapse   |
+| dmy_pf_outer_c_style      | 5025472   | 1000       | outer     | 2025-09-30T182157 | c_style        |
+| dmy_pf_outer_cpp_iter     | 50160478  | 1000       | outer     | 2025-09-30T182157 | cpp_iter       |
+| dmy_pf_outer_cpp_iter     | 6394814   | 1000       | outer     | 2025-09-30T182157 | cpp_iter       |
+| dmy_pf_outer_omp_simd     | 27681458  | 1000       | outer     | 2025-09-30T182157 | omp_simd       |
+| dmy_pf_outer_omp_simd     | 2133411   | 1000       | outer     | 2025-09-30T182157 | omp_simd       |
+| dmy_pf_outer_omp_simd     | 3588484   | 1000       | outer     | 2025-09-30T182157 | omp_simd       |
+| dmy_pf_outer_c_style      | 12847626  | 1000       | outer     | 2025-09-30T182157 | c_style        |
+| dmy_pf_outer_armadillo    | 5763141   | 1000       | outer     | 2025-09-30T182157 | armadillo      |
+| dmy_pf_outer_c_style      | 17403495  | 1000       | outer     | 2025-09-30T182157 | c_style        |
+| dmy_pf_outer_omp_collapse | 4095815   | 1000       | outer     | 2025-09-30T182157 | omp_collapse   |
+| dmy_pf_outer_armadillo    | 12763219  | 1000       | outer     | 2025-09-30T182157 | armadillo      |
+| dmy_pf_outer_r_base       | 10601364  | 1000       | outer     | 2025-09-30T182157 | r_base         |
+| dmy_pf_outer_r_base       | 3654406   | 1000       | outer     | 2025-09-30T182157 | r_base         |
+| dmy_pf_outer_c_style      | 17346830  | 1000       | outer     | 2025-09-30T182157 | c_style        |
+| dmy_pf_outer_c_style      | 5122302   | 1000       | outer     | 2025-09-30T182157 | c_style        |
+| dmy_pf_outer_omp_collapse | 13725866  | 1000       | outer     | 2025-09-30T182157 | omp_collapse   |
+| dmy_pf_outer_omp_simd     | 12188021  | 1000       | outer     | 2025-09-30T182157 | omp_simd       |
+| dmy_pf_outer_armadillo    | 11656794  | 1000       | outer     | 2025-09-30T182157 | armadillo      |
+| dmy_pf_outer_r_base       | 20019463  | 1000       | outer     | 2025-09-30T182157 | r_base         |
+| dmy_pf_outer_armadillo    | 4349236   | 1000       | outer     | 2025-09-30T182157 | armadillo      |
+| dmy_pf_outer_cpp_iter     | 5394257   | 1000       | outer     | 2025-09-30T182157 | cpp_iter       |
+| dmy_pf_outer_omp_simd     | 19041507  | 1000       | outer     | 2025-09-30T182157 | omp_simd       |
+| dmy_pf_outer_cpp_iter     | 21269984  | 1000       | outer     | 2025-09-30T182157 | cpp_iter       |
+| dmy_pf_outer_r_base       | 35639455  | 1000       | outer     | 2025-09-30T182157 | r_base         |
+| dmy_pf_outer_omp_simd     | 50579416  | 1000       | outer     | 2025-09-30T182157 | omp_simd       |
+| dmy_pf_outer_omp_collapse | 19928323  | 1000       | outer     | 2025-09-30T182157 | omp_collapse   |
+| dmy_pf_outer_c_style      | 11729810  | 1000       | outer     | 2025-09-30T182157 | c_style        |
+| dmy_pf_outer_omp_collapse | 27509399  | 1000       | outer     | 2025-09-30T182157 | omp_collapse   |
+| dmy_pf_outer_omp_simd     | 7757224   | 1000       | outer     | 2025-09-30T182157 | omp_simd       |
+| dmy_pf_outer_cpp_iter     | 6203378   | 1000       | outer     | 2025-09-30T182157 | cpp_iter       |
+| dmy_pf_outer_cpp_iter     | 11269585  | 1000       | outer     | 2025-09-30T182157 | cpp_iter       |
+| dmy_pf_outer_c_style      | 704986680 | 10000      | outer     | 2025-09-30T182157 | c_style        |
+| dmy_pf_outer_omp_simd     | 163829689 | 10000      | outer     | 2025-09-30T182157 | omp_simd       |
+| dmy_pf_outer_c_style      | 539523317 | 10000      | outer     | 2025-09-30T182157 | c_style        |
+| dmy_pf_outer_r_base       | 284391018 | 10000      | outer     | 2025-09-30T182157 | r_base         |
+| dmy_pf_outer_c_style      | 530185188 | 10000      | outer     | 2025-09-30T182157 | c_style        |
+| dmy_pf_outer_c_style      | 526449271 | 10000      | outer     | 2025-09-30T182157 | c_style        |
+| dmy_pf_outer_c_style      | 529545190 | 10000      | outer     | 2025-09-30T182157 | c_style        |
+| dmy_pf_outer_omp_simd     | 160650927 | 10000      | outer     | 2025-09-30T182157 | omp_simd       |
+| dmy_pf_outer_cpp_iter     | 605091554 | 10000      | outer     | 2025-09-30T182157 | cpp_iter       |
+| dmy_pf_outer_cpp_iter     | 602755016 | 10000      | outer     | 2025-09-30T182157 | cpp_iter       |
+| dmy_pf_outer_cpp_iter     | 601979095 | 10000      | outer     | 2025-09-30T182157 | cpp_iter       |
+| dmy_pf_outer_armadillo    | 242773472 | 10000      | outer     | 2025-09-30T182157 | armadillo      |
+| dmy_pf_outer_omp_simd     | 163539801 | 10000      | outer     | 2025-09-30T182157 | omp_simd       |
+| dmy_pf_outer_omp_collapse | 169527689 | 10000      | outer     | 2025-09-30T182157 | omp_collapse   |
+| dmy_pf_outer_r_base       | 112019729 | 10000      | outer     | 2025-09-30T182157 | r_base         |
+| dmy_pf_outer_cpp_iter     | 605568009 | 10000      | outer     | 2025-09-30T182157 | cpp_iter       |
+| dmy_pf_outer_omp_simd     | 166876156 | 10000      | outer     | 2025-09-30T182157 | omp_simd       |
+| dmy_pf_outer_armadillo    | 249527632 | 10000      | outer     | 2025-09-30T182157 | armadillo      |
+| dmy_pf_outer_omp_collapse | 179497773 | 10000      | outer     | 2025-09-30T182157 | omp_collapse   |
+| dmy_pf_outer_cpp_iter     | 606151954 | 10000      | outer     | 2025-09-30T182157 | cpp_iter       |
+| dmy_pf_outer_omp_simd     | 166861468 | 10000      | outer     | 2025-09-30T182157 | omp_simd       |
+| dmy_pf_outer_r_base       | 109028254 | 10000      | outer     | 2025-09-30T182157 | r_base         |
+| dmy_pf_outer_cpp_iter     | 619357795 | 10000      | outer     | 2025-09-30T182157 | cpp_iter       |
+| dmy_pf_outer_armadillo    | 247651329 | 10000      | outer     | 2025-09-30T182157 | armadillo      |
+| dmy_pf_outer_armadillo    | 266788924 | 10000      | outer     | 2025-09-30T182157 | armadillo      |
+| dmy_pf_outer_omp_collapse | 205363850 | 10000      | outer     | 2025-09-30T182157 | omp_collapse   |
+| dmy_pf_outer_armadillo    | 263036305 | 10000      | outer     | 2025-09-30T182157 | armadillo      |
+| dmy_pf_outer_r_base       | 103513354 | 10000      | outer     | 2025-09-30T182157 | r_base         |
+| dmy_pf_outer_armadillo    | 246601510 | 10000      | outer     | 2025-09-30T182157 | armadillo      |
+| dmy_pf_outer_r_base       | 108660761 | 10000      | outer     | 2025-09-30T182157 | r_base         |
+| dmy_pf_outer_armadillo    | 266426751 | 10000      | outer     | 2025-09-30T182157 | armadillo      |
+| dmy_pf_outer_c_style      | 532920828 | 10000      | outer     | 2025-09-30T182157 | c_style        |
+| dmy_pf_outer_omp_simd     | 194646240 | 10000      | outer     | 2025-09-30T182157 | omp_simd       |
+| dmy_pf_outer_omp_simd     | 211363855 | 10000      | outer     | 2025-09-30T182157 | omp_simd       |
+| dmy_pf_outer_omp_simd     | 185919191 | 10000      | outer     | 2025-09-30T182157 | omp_simd       |
+| dmy_pf_outer_cpp_iter     | 606982917 | 10000      | outer     | 2025-09-30T182157 | cpp_iter       |
+| dmy_pf_outer_omp_simd     | 164028628 | 10000      | outer     | 2025-09-30T182157 | omp_simd       |
+| dmy_pf_outer_armadillo    | 248732115 | 10000      | outer     | 2025-09-30T182157 | armadillo      |
+| dmy_pf_outer_c_style      | 539363390 | 10000      | outer     | 2025-09-30T182157 | c_style        |
+| dmy_pf_outer_c_style      | 549495514 | 10000      | outer     | 2025-09-30T182157 | c_style        |
+| dmy_pf_outer_omp_collapse | 172139579 | 10000      | outer     | 2025-09-30T182157 | omp_collapse   |
+| dmy_pf_outer_r_base       | 108778440 | 10000      | outer     | 2025-09-30T182157 | r_base         |
+| dmy_pf_outer_r_base       | 113778364 | 10000      | outer     | 2025-09-30T182157 | r_base         |
+| dmy_pf_outer_cpp_iter     | 826643131 | 10000      | outer     | 2025-09-30T182157 | cpp_iter       |
+| dmy_pf_outer_r_base       | 123173599 | 10000      | outer     | 2025-09-30T182157 | r_base         |
+| dmy_pf_outer_armadillo    | 259074109 | 10000      | outer     | 2025-09-30T182157 | armadillo      |
+| dmy_pf_outer_cpp_iter     | 612897759 | 10000      | outer     | 2025-09-30T182157 | cpp_iter       |
+| dmy_pf_outer_omp_collapse | 177541730 | 10000      | outer     | 2025-09-30T182157 | omp_collapse   |
+| dmy_pf_outer_armadillo    | 249456221 | 10000      | outer     | 2025-09-30T182157 | armadillo      |
+| dmy_pf_outer_c_style      | 526038809 | 10000      | outer     | 2025-09-30T182157 | c_style        |
+| dmy_pf_outer_cpp_iter     | 775758029 | 10000      | outer     | 2025-09-30T182157 | cpp_iter       |
+| dmy_pf_outer_omp_simd     | 175332437 | 10000      | outer     | 2025-09-30T182157 | omp_simd       |
+| dmy_pf_outer_c_style      | 531734606 | 10000      | outer     | 2025-09-30T182157 | c_style        |
+| dmy_pf_outer_r_base       | 107782992 | 10000      | outer     | 2025-09-30T182157 | r_base         |
+| dmy_pf_outer_omp_collapse | 180733666 | 10000      | outer     | 2025-09-30T182157 | omp_collapse   |
+| dmy_pf_outer_omp_collapse | 175527049 | 10000      | outer     | 2025-09-30T182157 | omp_collapse   |
+| dmy_pf_outer_r_base       | 107430647 | 10000      | outer     | 2025-09-30T182157 | r_base         |
+| dmy_pf_outer_omp_collapse | 194214909 | 10000      | outer     | 2025-09-30T182157 | omp_collapse   |
+| dmy_pf_outer_omp_collapse | 176841379 | 10000      | outer     | 2025-09-30T182157 | omp_collapse   |
+| dmy_pf_outer_omp_collapse | 180508870 | 10000      | outer     | 2025-09-30T182157 | omp_collapse   |
+
+
+
+<!-- }}} \\ %a. -->
 <!-- {{{ // %*
 LocalWords:  GitLab CommonMark GFM GLFM YAML
 vim: set foldmethod=marker :

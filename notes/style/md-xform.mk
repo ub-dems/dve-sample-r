@@ -53,7 +53,7 @@ LUA_FILTER   := $(STYLES_DIR)/md-report.lua
 TEX_TEMPLATE := $(STYLES_DIR)/md-template.tex
 
 
-LUA_PATH := $(STYLES_DIR):${LUA_PATH}
+LUA_PATH := $(STYLES_DIR)/?.lua;${LUA_PATH};;
 
 
 # ------------------------------------------------------------------------
@@ -142,6 +142,7 @@ CLEAN_OPTS := "-I" # rm options, ask once
 	$(eval DOCS_DIR := $(patsubst ${ROOT_DIR}/%,%,$(shell pwd)))
 	doctype=$$($(GET_DOCTYPE) $<) ; \
 	echo "### Building $@ from $< with $$doctype..." ; \
+	LUA_PATH="$(LUA_PATH)" \
 	$(PANDOC) $(PANDOC_FLAGS) \
 		--defaults="$(STYLES_DIR)/$$doctype.yaml"  \
 	        --metadata=tempdir=$(TEMP_DIR) \
@@ -155,6 +156,7 @@ CLEAN_OPTS := "-I" # rm options, ask once
 	$(eval DOCS_DIR := $(patsubst ${ROOT_DIR}/%,%,$(shell pwd)))
 	doctype=$$($(GET_DOCTYPE) $<) ; \
 	echo "### Building $@ from $< with $$doctype..." ; \
+	LUA_PATH="$(LUA_PATH)" \
 	$(PANDOC) $(PANDOC_DEBUG) --log=$(@:.tex=.log) \
 		--defaults="$(STYLES_DIR)/$$doctype.yaml" \
 	        --metadata=tempdir=$(TEMP_DIR) \
