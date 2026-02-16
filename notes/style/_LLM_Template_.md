@@ -3,6 +3,7 @@ title: TODO:(title)
 subtitle: TODO:(subtitle)
 # {{{ // %+
 
+category: LLM-Style
 keywords: [GEN, TODO:(keywords)]
 abstract: |
   TODO:(abstract)
@@ -35,6 +36,13 @@ doctype: md-report
    - see: [TODO:(a2-ref-chatgpt) (ChatGPT)](#a2-chatgpt)
    - see: [TODO:(a2-ref-perplexity) (Perplexity)](#a2-perplexity)
    - see: [TODO:(a2-ref-deepseek) (DeepSeek)](#a2-deepseek)
+3. [A:a - TODO:(appendix-a)](#aa)
+4. [A:b - Q1: Prompt distiller](#ab)
+   - see: [Q1: Prompt distiller (Claude)](#ab-claude)
+   - see: [Q1: Prompt distiller (Gemini)](#ab-gemini)
+   - see: [Q1: Prompt distiller (ChatGPT)](#ab-chatgpt)
+   - see: [Q1: Prompt distiller (Perplexity)](#ab-perplexity)
+   - see: [Q1: Prompt distiller (DeepSeek)](#ab-deepseek)
 
 <details>
 <summary></summary>
