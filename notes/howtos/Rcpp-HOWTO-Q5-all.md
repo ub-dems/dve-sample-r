@@ -1,33 +1,120 @@
---- 
-title: 'RCPP: Loop Optimization with OpenMP/SIMD'
-subtitle: R/C++ "VibeCoding" (basic) and Loop Optimization
-author: "datalab@unimib.it"
-vim: set foldmethod=marker
-date: "2025-10-27"
-output:
-  html_document:
-    toc: true
-    toc_depth: '3'
-    df_print: paged
-  pdf_document:
-    toc: true
-    toc_depth: 3
-    latex_engine: lualatex
-    extra_dependencies:
-      hyperref:
-      - unicode=true
-      - breaklinks=true
-      lmodern: null
-documentclass: report
-classoption:
-- a4paper
-- 10pt
-header-includes: \newcommand{\dontrun}[1]{#1}
 ---
-# ::{{{ #RCPP: Loop Optimization with OpenMP/SIMD -- R VibeCoding (basic) //
-# Q:5 - R "VibeCoding" and Loop Optimization
+title: Rcpp Loop Optimization with OpenMP and SIMD Vectorization
+subtitle: |
+  Performance evaluation of C++ iteration strategies for R using Rcpp,
+  RcppArmadillo, and OpenMP parallel computing primitives
+# {{{ // %+
 
-<system>
+category: LLM-Style
+keywords: [GEN, Rcpp, OpenMP, SIMD, RcppArmadillo, HPC, parallel-computing, vectorization, microbenchmark]
+abstract: |
+  This document provides a comprehensive guide to implementing and
+  benchmarking different C++ iteration strategies within the Rcpp
+  ecosystem. It explores performance trade-offs between sequential,
+  parallel, and vectorized approaches for fundamental computational
+  patterns including vector summation and outer product operations.
+  
+  The guide presents complete implementations of sum and outer product
+  functions using C-style loops, C++ STL iterators, OpenMP
+  parallelization directives, SIMD vectorization, and RcppArmadillo
+  library functions. A sophisticated microbenchmark testing framework
+  with command-line interface enables systematic performance evaluation
+  across variable input sizes and provides automated visualization of
+  results.
+  
+  Key topics include OpenMP directive usage (parallel, for, collapse,
+  simd, reduction), BLAS/LAPACK integration, architecture-specific
+  compiler optimizations, and CRAN compliance considerations. The
+  document also discusses GPU computing alternatives, memory bandwidth
+  limitations on modern NUMA architectures, and practical configuration
+  guidelines for R package development with native code dependencies.
+  
+  Performance characteristics are analyzed for 32-core Intel XEON and
+  AMD EPYC systems running on Microsoft Azure, with detailed discussion
+  of parallelism versus vectorization trade-offs in HPC contexts.
+
+doctype: md-report
+
+# }}} // %+
+---
+<!-- {{{ #TAG: TODO:(toc) // -->
+
+<!-- markdownlint-disable MD012 -->
+<!-- markdownlint-disable MD025 -->
+<!-- markdownlint-disable MD033 -->
+<!-- markdownlint-disable MD051 -->
+
+
+# TOC
+
+1. [Q:5 - R "VibeCoding" and Loop Optimization](#q5)
+   - see: [Rcpp Iterators Performance Optimization (Claude)](#a5-claude)
+   - see: [Rcpp Iterators Performance Optimization (Gemini)](#a5-gemini)
+   - see: [Rcpp iterators performance optimization (ChatGPT)](#a5-chatgpt)
+   - see: [Rcpp Iterators Performance Optimization (DeepSeek)](#a5-deepseek)
+   - see: [Rcpp Iterators Performance Optimization (Kimi)](#a5-kimi)
+   - see: [Rcpp Iterators Performance Optimization (Diffusion)](#a5-diffusion)
+   - see: [Rcpp Iterators Performance Optimization (LeChat)](#a5-lechat)
+   - see: [Rcpp Iterators Performance Optimization (Perplexity)](#a5-perplexity)
+
+<details>
+<summary></summary>
+
+```{=latex}
+\begin{comment}
+```
+
+</details>
+
+---
+
+|                   |                              |
+|-------------------|------------------------------|
+| [<<<<](README.md) | [PDF](Rcpp-HOWTO-Q5-all.pdf) |
+
+---
+
+<details>
+<summary>[index]</summary>
+
+[[_TOC_]]
+
+</details>
+<details>
+<summary></summary>
+
+```{=latex}
+\end{comment}
+```
+
+</details>
+
+<!-- ::}}} \\ %0. -->
+<!-- ::{{{ Q5: #RCPP: Loop Optimization with OpenMP/SIMD -- R VibeCoding (basic) // -->
+
+# Q:5
+
+## Q:5 - **R "VibeCoding" and Loop Optimization**
+
+[⇧](#toc)
+
+TODO:(q1-intro) ...
+
+
+<details>
+<summary></summary>
+
+```{=latex}
+\newpage
+```
+
+</details>
+
+## System Hints
+
+>>> [!tip]
+
+### Role
 
 You are an expert R and C++ developer.
 
@@ -57,11 +144,13 @@ platform.
 As a stylistic note, discuss also every alternative from language
 idiomaic and pragmaic point of view.
 
-</system>
+>>>
+
+## Objective
 
 
-
-Your task is to produce two source to be included in a `Rcpp` and `RcppArmadillo` enabled R package project:
+Your task is to produce two source to be included in a `Rcpp` and
+`RcppArmadillo` enabled R package project:
 
 - a C++ source: `./src/dummy_iter.cpp`
 - a R script:   `./exec/dummy-rcpp-bench.r`
@@ -74,21 +163,26 @@ The C++ source: `./src/dummy_iter.cpp`, used to provide an
 implementation example of different approaches in vector iteration.
 
 In this source will be placed two group of C++ functions "sum" and
-"outer", with the following specifications, delimited in XML
-`*-test-specification` tags, that can be testes to verify how
-different implementation alternatives affect runtime performance,
-depending on the input size. In the test, also standard R library
-functions should be included, as a performance reference.
+"outer", with the following specifications, defined in headings:
+
+- [sum-test-specification](#sum-test-specification)
+- [outer-test-specification](#outer-test-specification)
+
+that can be testes to verify how different implementation alternatives
+affect runtime performance, depending on the input size. In the test,
+also standard R library functions should be included, as a performance
+reference.
 
 In addition, a small group of logging support functions, R callable,
 will be used for conditional function tracing. The trace output will
 be activated only if test script "verbose" invocation argument is set
 to maximum level (verbosity >= 3). C++ logging support specification
-follows, delimited in XML `cpp-trace-support-specification` tag.
+follows, defined in heading:
 
-### "sum" function group specification
+- [cpp-trace-support-specification](#cpp-trace-support-specification)
 
-<sum-test-specification>
+
+### sum-test-specification
 
 The "sum" gruup of functions compute the sum of a numeric input vector.
 
@@ -103,40 +197,39 @@ The list of implementation alternatives should consider:
 
 Add further examples if appropriate.
 
-All the functions must be R callable, and start with name prefix `dmy_pf_sum_` with a short, but clear, suffix name
+All the functions must be R callable, and start with name prefix
+`dmy_pf_sum_` with a short, but clear, suffix name
 
-</sum-test-specification>
 
 
-### "outer" function group specification
+### outer-test-specification
 
-<outer-test-specification>
+The "outer" group of functions compute the outer product (tensor
+product) of a pair of input vectors.
 
-The "outer" group of functions compute the outer product (tensor product) of a pair of input vectors.
-
-In the tests, a random vector of the specifiled input size will be passed as both arguments.
+In the tests, a random vector of the specifiled input size will be
+passed as both arguments.
 
 The list of implementation alternatives should consider:
 
 - C-style nested `for` with manual index increment.
 - C++-style nested `for` with STL idiomatic range iterators.
-- on OpenMP nested `parallel for collapse` for parallel execution with loop linearization
-- on OpenMP `parallel for; parellel simd` for parallel execution of the outer loop mixed with vectorization of inner loop
+- on OpenMP nested `parallel for collapse` for parallel execution with
+  loop linearization
+- on OpenMP `parallel for; parellel simd` for parallel execution of
+  the outer loop mixed with vectorization of inner loop
 - some RcppArmadillo library function
-- the R `base::outer`, called from C++ code, inkoked as `base::outer(v,v,"*")`
+- the R `base::outer`, called from C++ code, inkoked as
+  `base::outer(v,v,"*")`
 
 Add further examples if appropriate.
 
-All the functions must be R callable, and start with name prefix `dmy_pf_outer_` with a short, but clear, suffix name
-
-</outer-test-specification>
-
+All the functions must be R callable, and start with name prefix
+`dmy_pf_outer_` with a short, but clear, suffix name
 
 All examples must be R callable.
 
-### C++ trace logging support functions
-
-<cpp-trace-support-specification>
+### cpp-trace-support-specification
 
 - this functions provide a way to trace messages to be output to stdout/stderr using `Rcpp::cout`, `Rcpp::cerr` channels
 - a function: `dmy_pf_log_set_level`, called by the R test
@@ -155,7 +248,8 @@ All examples must be R callable.
   avoid floading the stderr with too many messages in case of repeted
   inviction. Performance should be minimal.  The could be implemented
   with a `stl::set` to check repeated invocations.
-- a function: `dmy_pf_log_reset`, that clears the repeted invocation condition, reenabling trace output.
+- a function: `dmy_pf_log_reset`, that clears the repeted invocation
+  condition, reenabling trace output.
 - a macro `V_LOG`, that takes a message string argument, that traslate
   to a call `dmy_pf_log_out` with `__FILE__`, `__LINE__` filled.
 - a macro `V_TRACE`, that takes a message string argument, that
@@ -171,24 +265,30 @@ s = base::sum(v)
 V_TRACE("base::sum, done.")
 ```
 
-</cpp-trace-support-specification>
+
+## R script: `./exec/dummy-rcpp-bench.r`
+
+R script for looping alternative benchmarks, with variable input size:
+`./exec/dummy-rcpp-bench.r`
+
+A microbenchmark R test script must be provided to verify the
+performance advantage of the parallel version.  This script should
+accepts several command-line arguments, not mandatory, with sensible
+defaults, as described bolow.  The script specification is placed
+below, described in heading:
+
+- [test-script-specification](#test-script-specification)
 
 
+Add a comment about the choice of the `./exec` directory as a CRAN
+compliant position where to store package support sctipts, able to
+call package R code, but also callable, via "system" call, from
+internal package code.
 
-## R script for looping alternative benchmarks, with variable input size: `./exec/dummy-rcpp-bench.r`
+### test-script-specification
 
-
-A microbenchmark R test script must be provided to verify the performance advantage of the parallel version.
-This script should accepts several command-line arguments, not mandatory, with sensible defaults, as described bolow.
-The script specification is placed below, delimited in XML `test-script-specification` tags.
-Add a comment about the choice of the `./exec` directory as a CRAN compliant position where to store package support sctipts,
-able to call package R code, but also callable, via "system" call, from internal package code.
-
-### Benckmark Script Specification
-
-<test-script-specification>
-
-- the script admits the command line arguments, descibed below, delimited in XML `test-script-cli-arguments` tags.
+- the script admits the command line arguments, descibed below, describerd in header:
+  - [test-script-cli-arguments](#test-script-cli-arguments)
 - the argument parsing must use a standard argument parser, provided by some library facility.
 - the script output should go to stdout and logged to a file, using standard logging facilities.
 - the log directory will be used also for storing benchmark results and plots
@@ -206,14 +306,13 @@ able to call package R code, but also callable, via "system" call, from internal
 - every script invocation should prodice a log file, a CSV file with summaries of the `microbenchmark` results and generate graphic dump of the summary plot.
 - if, in addition, the "Save Data" argument is specified also the
   output should be generated, following specification below, delimited
-  in `save-data-script-specification` XML tag.
+  in heading:
+  
+ - [save-data-script-specification](#save-data-script-specification)
 
-</test-script-specification>
 
 
-### Script Output Generation
-
-<save-data-script-specification>
+### save-data-script-specification
 
 - all the outputs should go in the logging directory: fron environment `${P_LOGS_DIR:-'logs'}`, created if missing, as described above.
 - all the output filenames should start with this prefix: "<script-name>-<sec-timestamp>-<test-type>-" with a variable suffix.
@@ -225,11 +324,8 @@ able to call package R code, but also callable, via "system" call, from internal
    - a textual system info report (suffix: `info.log`) with the output of system commands: `date; whoami; inxi  -CfGMS;  lscpu; cpupower frequency-info; nvidia-smi || echo '#NOGPU'`.
    - a tab separated export (TSV) (suffix: `data.tsv`) with microbenchmark data export with additional columns: 'test_type", "timestamp", "function_label", "input_size"
 
-</save-data-script-specification>
 
-### Script Command Line Arguments
-
-<test-script-cli-arguments>
+### test-script-cli-arguments
 
 #### generic arguments
 
@@ -245,7 +341,8 @@ able to call package R code, but also callable, via "system" call, from internal
 - "Save Data"     (option: -s|--save) - boolean value to produce the dump of result data and system information reports as specified below.
 - "Input Size" (positional, for many values) - to specify the dimension of the input vectors for tests (with default to the sequence "10 100 1000")
 
-</test-script-cli-arguments>
+
+### Additional notes
 
 As a final section, add a short guide that decribes the minimal steps
 required to configure the R package project, based on `renv` (in
@@ -435,17 +532,16 @@ CXXFLAGS = ... -march=native
 
 ```
 
+# A:5 (Claude)
 
+[⇧](#toc) **_Rcpp Iterators Performance Optimization_**
 
+- [Rcpp Iterators Performance Optimization](https://claude.ai/public/artifacts/dcd049f0-762c-405e-9be3-f0c1a21a747b)
 
--------------------------------------------------------------------------------------------
--------------------------------------------------------------------------------------------
--------------------------------------------------------------------------------------------
-# A:3 (Claude)
-> * [Rcpp Iterators Performance Optimization](https://claude.ai/public/artifacts/dcd049f0-762c-405e-9be3-f0c1a21a747b)
 ## Rcpp Iterators Performance Optimization - Contents
 
-I've created a comprehensive guide for Rcpp ecosystem performance optimization that includes:
+I've created a comprehensive guide for Rcpp ecosystem performance
+optimization that includes:
 
 ### Key Features Delivered:
 
@@ -1595,11 +1691,11 @@ identify optimal strategies for your specific use case.
 
 
 
--------------------------------------------------------------------------------------------
--------------------------------------------------------------------------------------------
--------------------------------------------------------------------------------------------
-# A:3 (Gemini)
-> * [# Rcpp Iterators Performance Optimization](https://aistudio.google.com/app/prompts?state=%7B%22ids%22:%5B%221z5JbP25SdVLeFFSgX3OqlZUsJuGu9ao2%22%5D,%22action%22:%22open%22,%22userId%22:%22101040866152128307883%22,%22resourceKeys%22:%7B%7D%7D&usp=sharing)
+# A:5 (Gemini)
+
+[⇧](#toc) **_Rcpp Iterators Performance Optimization_**
+
+- [Rcpp Iterators Performance Optimization](https://aistudio.google.com/app/prompts?state=%7B%22ids%22:%5B%221z5JbP25SdVLeFFSgX3OqlZUsJuGu9ao2%22%5D,%22action%22:%22open%22,%22userId%22:%22101040866152128307883%22,%22resourceKeys%22:%7B%7D%7D&usp=sharing)
 
 This document provides a comprehensive guide to optimizing vector and
 matrix operations in R by leveraging the Rcpp ecosystem. We will
@@ -2391,13 +2487,13 @@ CXX11FLAGS += -O3 -march=native -mtune=native
 
 
 
--------------------------------------------------------------------------------------------
--------------------------------------------------------------------------------------------
--------------------------------------------------------------------------------------------
-# A:3 (ChatGPT)
-> * [Rcpp iterators performance optimization — `dummy_iter` example](https://chatgpt.com/share/68b5c7df-61c4-8012-80bd-f5dceaafba00)
+# A:5 (ChatGPT)
 
-**Abstract.**
+[⇧](#toc) **_Rcpp iterators performance optimization_**
+
+- [Rcpp iterators performance optimization — `dummy_iter` example](https://chatgpt.com/share/68b5c7df-61c4-8012-80bd-f5dceaafba00)
+
+## Overview
 
 This document provides a compact, CRAN-friendly example showing
 several iteration strategies in C++/Rcpp and RcppArmadillo for the
@@ -3217,11 +3313,11 @@ Which would you prefer next?
 
 
 
--------------------------------------------------------------------------------------------
--------------------------------------------------------------------------------------------
--------------------------------------------------------------------------------------------
-# A:3 (DeepSeek)
-> * [Rcpp Iterators Performance Optimization](https://chat.deepseek.com/a/chat/s/597e4d30-da32-4796-877f-d4e708524a0d)
+# A:5 (DeepSeek)
+
+[⇧](#toc) **_Rcpp Iterators Performance Optimization_**
+
+- [Rcpp Iterators Performance Optimization](https://chat.deepseek.com/a/chat/s/597e4d30-da32-4796-877f-d4e708524a0d)
 
 ## Introduction
 
@@ -3572,11 +3668,11 @@ On a 32-core HyperThreaded system:
 
 
 
--------------------------------------------------------------------------------------------
--------------------------------------------------------------------------------------------
--------------------------------------------------------------------------------------------
-# A:3 (Kimi)
-> * [Rcpp iterators performance optimization](https://www.kimi.com/chat/d2qrugsqdqet5adm8nu0)
+# A:5 (Kimi)
+
+[⇧](#toc) **_Rcpp iterators performance optimization_**
+
+- [Rcpp iterators performance optimization](https://www.kimi.com/chat/d2qrugsqdqet5adm8nu0)
 
 This document provides a comprehensive guide to implementing and
 benchmarking high-performance C++ functions using Rcpp and
@@ -4261,13 +4357,21 @@ renv::snapshot(type = "explicit")
 [^6]: [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html)
 [^7]: [cuBLAS vs OpenBLAS Performance Comparison](https://developer.nvidia.com/blog/cublas-performance-improvements/)
 
--------------------------------------------------------------------------------------------
--------------------------------------------------------------------------------------------
--------------------------------------------------------------------------------------------
-# A:3 (Diffusion)
+
+
+# A:5 (Diffusion)
+
+[⇧](#toc) **_Rcpp iterarors performance optimization_**
+
 > Rcpp iterarors performance optimization
 
-This document provides example C++ sources and an R script for benchmarking different iteration strategies within the Rcpp ecosystem. It focuses on comparing C-style loops, C++-style iterators, OpenMP parallelization, and RcppArmadillo functions for vector summation and outer product operations. The goal is to illustrate performance trade-offs and provide best practices for Rcpp package development, including CRAN considerations.
+This document provides example C++ sources and an R script for
+benchmarking different iteration strategies within the Rcpp
+ecosystem. It focuses on comparing C-style loops, C++-style iterators,
+OpenMP parallelization, and RcppArmadillo functions for vector
+summation and outer product operations. The goal is to illustrate
+performance trade-offs and provide best practices for Rcpp package
+development, including CRAN considerations.
 
 ## Introduction
 
@@ -4626,11 +4730,11 @@ cat("Benchmark finished.\n")
 ```
 
 
--------------------------------------------------------------------------------------------
--------------------------------------------------------------------------------------------
--------------------------------------------------------------------------------------------
-# A:3 (LeChat)
-> * [Rcpp Iterators Performance Optimization: A Comparative Study](https://chat.mistral.ai/chat/e36afa9f-8a10-4d97-b567-6f1712315ea1)
+# A:5 (LeChat)
+
+[⇧](#toc) **_Rcpp Iterators Performance Optimization: A Comparative Study_**
+
+- [Rcpp Iterators Performance Optimization: A Comparative Study](https://chat.mistral.ai/chat/e36afa9f-8a10-4d97-b567-6f1712315ea1)
 
 This document provides a comparative analysis of different iteration
 and parallelization strategies in C++ for R package development, using
@@ -5114,11 +5218,13 @@ CXXFLAGS = -O3 -march=native -mtune=native
 [^5]: [CRAN Task View: High-Performance and Parallel Computing with R](https://cran.r-project.org/web/views/HighPerformanceComputing.html)
 [^6]: [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html)
 
--------------------------------------------------------------------------------------------
--------------------------------------------------------------------------------------------
--------------------------------------------------------------------------------------------
-# A:3 (Perplexity)
-> * [Rcpp Iterators Performance Optimization](https://www.perplexity.ai/search/system-you-are-an-expert-r-and-HSR7U07pSxyfCTX84CL9.g)
+
+
+# A:5 (Perplexity)
+
+[⇧](#toc) **_Rcpp Iterators Performance Optimization_**
+
+- [Rcpp Iterators Performance Optimization](https://www.perplexity.ai/search/system-you-are-an-expert-r-and-HSR7U07pSxyfCTX84CL9.g)
 
 This document provides a comprehensive overview of **iteration
 strategies** and **performance optimization** techniques in C++ code
@@ -5743,8 +5849,8 @@ performance while retaining package portability on CRAN.
 [^5]: [CRAN Task View: High-Performance and Parallel Computing with R](https://cran.r-project.org/web/views/HighPerformanceComputing.html)
 [^6]: [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html)
 
-
--------------------------------------------------------------------------------------------
--------------------------------------------------------------------------------------------
--------------------------------------------------------------------------------------------
-# ::}}} \\ %3.
+<!-- }}} \\ %5. -->
+<!-- {{{ // %*
+LocalWords:  GitLab CommonMark GFM GLFM YAML
+vim: set foldmethod=marker :
+}}} // %* -->
