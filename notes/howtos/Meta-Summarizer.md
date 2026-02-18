@@ -399,7 +399,25 @@ In particular, ignore:
 
 > Generate 3 responses to this prompt, each with their probability.
 
-### Output Format
+### Markdown Output Format
+
+- Reply in clear formatted "GitLab Flavored Markdown (GLFM)" Markdown,
+with precise (lint) validation:
+  - codeblock delimiters ``` placed atline start). Avoid codeblock nesting.
+  - use _underscore markup_ for emphasys
+  - prefer nested headings to text markup with asterisks
+  - use only "dash" for unordered lists, with correct indentation
+  - insert appropriate blank line separation after headings, list and codeblocks
+
+- Ignore document formatting markup, like:
+  - <details><summary> HTML blocks
+  - {=latex} codeblocks
+  - [!tip] [!note] block quotes
+  - code folding tags ("three curly braces pairs")
+  - internal links: e.g. [⇧]
+
+
+### Output Structure
 
 - Present your analysis and critique first.
 - Output the final, polished version of the prompt at the very end.

@@ -85,34 +85,41 @@ doctype: md-report
 
 [⇧](#toc)
 
-TODO:(q1-intro) ...
-
-
-<details>
-<summary></summary>
-
-```{=latex}
-\newpage
-```
-
-</details>
-
-## System Hints
-
 >>> [!tip]
 
-### Role
+## Role
 
 TODO:(q1-role) ...
 
-### Context
+## Context
 
 TODO:(q1-context) ...
 
+>>>
+
+## Objective
+
+TODO:(q1-prompt) ...
+
+
+
+
+## Output Format
 
 - Reply in clear formatted "GitLab Flavored Markdown (GLFM)" Markdown,
-with precise (lint) validation (codeblock delimiters ``` placed at
-line start). Avoid codeblock nesting.
+with precise (lint) validation:
+  - codeblock delimiters ``` placed atline start). Avoid codeblock nesting.
+  - use _underscore markup_ for emphasys
+  - prefer nested headings to text markup with asterisks
+  - use only "dash" for unordered lists, with correct indentation
+  - insert appropriate blank line separation after headings, list and codeblocks
+
+- Ignore document formatting markup, like:
+  - <details><summary> HTML blocks
+  - {=latex} codeblocks
+  - [!tip] [!note] block quotes
+  - code folding tags ("three curly braces pairs")
+  - internal links: e.g. [⇧]
 
 - At the end, provide, as Markdown footnotes, a list of references to
 online documentation resources, linked to answer text where
@@ -121,24 +128,6 @@ document, prefix references with the string "rf-".
 
 - Add any additional important information not explicitly required in
 an "Additional Notes" section.
-
->>>
-
-<details>
-<summary></summary>
-
-```{=latex}
-\newpage
-```
-
-</details>
-
-## Question Prompt
-
-### Objective
-
-TODO:(q1-prompt) ...
-
 
 
 <details>
