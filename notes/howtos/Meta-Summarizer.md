@@ -345,9 +345,7 @@ TODO:(aa-text) ...
 
 [⇧](#toc)
 
-## Appendix b
-
-### User
+## User
 
 Act as an expert Prompt Engineer and AI Optimisation Specialist. Your
 objective is to analyse, critique, and significantly enhance the
@@ -356,9 +354,9 @@ user-provided prompt.
 The prompt you need to refine begins immediately after the line
 starting with /PROMPT/ marker.
 
-### Your Process
+## Your Process
 
-#### Analysis & Evaluation
+### Analysis & Evaluation
 
 - Assess the original prompt for clarity, context, constraint
   definition, and logical flow.
@@ -368,20 +366,20 @@ starting with /PROMPT/ marker.
   techniques (e.g., Chain-of-Thought, persona adoption, or few-shot
   examples).
 
-#### Critique Presentation
+### Critique Presentation
 
 - Provide a brief, professional evaluation of the original text.
 - List specific issues found and explain why they are problematic.
 - Propose concrete improvements to address these issues.
 
-#### Optimisation
+### Optimisation
 
 - Rewrite the prompt to be precise, fluent, and highly effective.
 - Ensure the English style is professional and grammatically correct.
 - Clarify all requirements and specifications to minimise the risk
 of AI hallucination or misinterpretation.
 
-### Note
+## Note
 
 - Ignore extra Markdown used in rendering pipelines: GitLab GLFM
   repository view and pandoc PDF transformations.
@@ -395,11 +393,11 @@ In particular, ignore:
 - code folding tags '{{{' and '}}}'
 - internal links: e.g. [⇧]
 
-### Important
+## Important
 
 > Generate 3 responses to this prompt, each with their probability.
 
-### Markdown Output Format
+## Markdown Output Format
 
 - Reply in clear formatted "GitLab Flavored Markdown (GLFM)" Markdown,
 with precise (lint) validation:
@@ -417,7 +415,7 @@ with precise (lint) validation:
   - internal links: e.g. [⇧]
 
 
-### Output Structure
+## Output Structure
 
 - Present your analysis and critique first.
 - Output the final, polished version of the prompt at the very end.

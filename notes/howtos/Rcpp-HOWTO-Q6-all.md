@@ -85,192 +85,168 @@ doctype: md-report
 
 [⇧](#toc)
 
->>> [!tip]
-
 ## Role
 
-You are an expert R and C++ developer.
+You are an expert R and C++ developer specialising in high-performance
+computing and parallel programming.
 
-All examples should be compact, clear, and focused on a small set of relevant features of a single package.
+All code examples must be compact, clear, and focused on a
+well-defined subset of features from a single package. Code must be
+performant, using either implicit parallelism and vectorisation via
+OpenMP or SIMD intrinsics, or library-based interfaces to multitasking
+and multiprocessing OS facilities — selected to best fit the use case.
 
-The code should be very performant, using alternatively, implicit parallelism and vectorization via OpenMP/SIMD intrinsics, or via library-based interfaces to multitasking and multiprocessing OS facilities.
 
 ## Context
 
-- The examples will be integrated in a CRAN compliant R package: `dve-sample-r`
-- The package,, based on `renv` (in "explicit" mode) already includes `Rcpp`, `RcppArmadillo`
+- All examples will be integrated in a CRAN-compliant R package named
+  `dve-sample-r`.
+- The package is based on `renv` in _explicit_ mode and already
+  includes `Rcpp` and `RcppArmadillo`.
 
->>>
 
 ## Objective
 
-Your task is to prepare an introduction to parallelism in R development with examples in R and C++ with standard library support.
+Prepare a structured tutorial introducing parallelism in R
+development, with examples written in both R and C++ using standard
+library support.
 
-The tutorial must include an interesting use-case example for the `RcppParallel` package,
-focusing on `parallelFor` and `parallelReduce` functions.
+The tutorial must include a single, _inspiring_ use-case example for
+the `RcppParallel` package, demonstrating both `parallelFor` and
+`parallelReduce` in a way that is _natural_ to the algorithm — not a
+forced API demonstration. The chosen example must make meaningful use
+of both primitives.
 
-The example should also be "inspiring", based on an interesting use case or algorithm that is worth reading,
-and not just a library API demo.
+Provide a simple implementation of a practical, inspiring use case: 
 
-Possible examples of interesting use case could be:
+- _"Biological Sequence Comparison (Smith-Waterman or Hamming-based distance matrix calculation) on random DNA fragments"_
 
-- a minimal toy implementation of an A* heuristic search algorithm, applied to a random generated graph
-- a path search algorithm for random maze escaping
-- a pay toll queue traffic simulation with different service points, with metrics on waiting and idle times
-- a biologiacal sequence comparison on random DNA fragments of predefined lenght
+This choice is motivated for its clear mapping to parallel reduction and map-reduce patterns.
 
-Only one implementation example shoud be proveded, chosen on the above list or with a better different solution.
+The test R script must use `foreach` parallelism to run benchmark
+trials in parallel, collecting results for summary aggregation.
 
-The test R script shoud use `foreach` parallelism to run tests in parallel, collecting result for summary aggregation.
-
-Different allocation policies for vcpu core allocation among R script
-and parallel C++ should be discussed, describing prons and cons in
-terms of total workload optimization.
-
+Different CPU-core allocation policies — distributing cores between
+the R `foreach` workers and the inner `RcppParallel` thread pool —
+must be discussed, including the relevant configuration functions
+(`RcppParallel::setThreadOptions`, `doParallel::registerDoParallel`,
+`parallel::makeCluster`) and the trade-offs in total workload
+optimisation.
 
 
 ## Specifications
 
-All C++ examples must be R callable.
+### C++ Code Requirements
 
-An R test script must be provided to run the C++ code, with performance metrics evaluated for different input sizes.
-
-This script should accepts several command-line arguments, not mandatory, with sensible defaults, as described bolow.
-The argument parsing must use a standard argument parser, provided by some library facility and implements the requirement described in the heading:
-
-- [test-script-cli-arguments](#test-script-cli-arguments)
-
-As a final section, prepare a "R parallelism quick start" guide that
-decribes the minimal steps required to include `foreach/parallelly`
-and `RcppParallel` in a R package project, based on `renv` (in
-"explicit" configuration mode), that already include supports for
-`Rcpp` and `RcppArmadillo`.
-
-In particular, provide code modification for `DESCRIPTION` and
-`./src/Makevars`. 
-
-Include also a note for "SIMD" support in `~/.R/Makevars`, like adding
-a `-march=native` in `CXXFLAGS` variable. 
-
-For package installation, discuss possible OS system library
-dependencies and `TinyThread` library distribution. Show basic `renv`
-command sequence for installation: `renv::install()` and
-`renv::snapshot()`.
+- All C++ functions must be callable from R via `Rcpp`.
+- Entry-point functions must be exportable as package C++ API, with
+  headers auto-generated by `roxygen2` placed under `inst/include`.
+- Source files must reside under `src/`.
+- Code must follow the _Google C++ Style Guide_ and be moderately but
+  clearly documented.
+- Both `parallelFor` and `parallelReduce` from `RcppParallel` must be
+  used; their roles must arise naturally from the algorithm structure.
 
 
-### test-script-cli-arguments
+### R Script Requirements
 
-#### Generic arguments
-
-- `help`:   (option: -h|--help, type: boolean, default:`false`) - Prints script usage info and command-line argument descriptions. Execution is skipped.
-- `verbose`:  (option: -v|--verbose, mode: count, type: integer, default:`0`) - "Verbose", can be repeated (`-v`, `-vv`), to set the logging level (`0`:info, `1`:debug).
-- `rnd_seed`: (option: -u|--seed, type: integer, default:`0`) - "Random Seed", for deterministic random sequence initialization.
-
-#### Common arguments
-
-- `save_data`  (option: -s|--save) - boolean value to require the dump of the randon input and tast results over an external (text or json) file for further analysys or plotting.
-- `input_size` (positional, for many values) - cardinality of input domain fot the example model (e.g., number of nodes of a graph, DNS fragment lenght, number of service points)
-
-#### Additional arguments
-
-Additional arguments, all with sensible defautls, may be introduced, depending on example chosen. For instance:
-
-- `graph_density` (option: -g|--density) - graph density (e.g., rate of links over nodes, with 1.0 means full connected, 0.0 full isolated)
-- `arrival_rate`  (option: -r|--rate) - traffic arrival rate on pay toll
-- `sequence_similarity`  (option: -c|--cross) - number of random crossovers between sequences
+- The test script must reside under `exec/` and be directly executable
+  with a `Rscript` shebang line.
+- `library()` calls must suppress warning messages.
+- Command-line argument parsing must use a standard R argument-parsing
+  library (e.g., `argparse` or `optparse`) and implement all arguments
+  listed in the [CLI Arguments](#cli-arguments) section below.
 
 
+### CLI Arguments
 
+#### Generic Arguments
+
+- `help`: option `-h`/`--help`, boolean, default `FALSE` — prints usage and exits without execution.
+- `verbose`: option `-v`/`--verbose`, boolean, default `FALSE` — sets logging level (`FALSE` = info, `TRUE` = debug).
+- `rnd_seed`: option `-u`/`--seed`, integer, default `0` — initialises the random number generator for deterministic output.
+
+#### Common Arguments
+
+- `save_data`: option `-s`/`--save`, boolean — when set, dumps random input data and results to an external file (text or JSON) for further analysis or plotting.
+- `input_size`: positional, multiple values — specifies the cardinality of the input domain (e.g. DNA fragment length).
+
+#### Algorithm-Specific Arguments
+
+Include additional arguments with sensible defaults as required by the chosen example. Examples:
+
+- `graph_density`: option `-g`/`--density` — ratio of edges to nodes (0.0 = fully isolated, 1.0 = fully connected).
+- `arrival_rate`: option `-r`/`--rate` — traffic arrival rate for toll simulation.
+- `sequence_similarity`: option `-c`/`--cross` — number of random crossover events between sequences.
+
+---
 
 ## Deliverables
 
-Here's a breakdown of what you need to deliver:
+Deliver the following, in order:
 
-1.  **Markdown Structure:**
-    -   Use clear headings and subheadings to organize the content.
-    -   Provide a brief introduction to the A* search algorithm.
-    -   Explain the use of `RcppParallel` in the context of the example proposed.
-    -   Explain the use of `foreach/parallely` in the context of the example proposed.
-    -   Include footnotes for references to online resources (e.g., documentation for the packages, A* algorithm explanation).
+1. **Tutorial Narrative** — Introduce the chosen algorithm, explain
+   why it is a good fit for `RcppParallel`, and explain how
+   `foreach`/`parallelly` is used in the test harness.
 
-2.  **C++ Code:**
-    -   Implement the parallel version of the example proposed.
-    -   Use `parallelFor` and `parallelReduce` from `RcppParallel`
-    -   Provide clear and concise comments to explain the code.
+2. **C++ Implementation** — Parallel implementation of the chosen
+   example using `parallelFor` and `parallelReduce`. Include concise
+   inline comments.
 
-3.  **R Callable Functions:**
-    -   Implement the driver logic for parallel execution of the C++ functions for the different input sizes.
-    -   Collect and summarize results and performance metrics (elapsed times).
-    -   Use `foreach/parallely` for parallel executiom
+3. **R Test Script** — Driver script under `exec/` that calls the C++
+   functions for varying input sizes, collects elapsed times and
+   result metrics, and runs trials in parallel using `foreach`.
 
-4.  **Concurrency Issues:**
-    -   Provide all syncronization promitives to avoid concurrency issues
-    -   Prefer funcional message passing paradigm versus monitors and semaphore locking
-    -   Introduce mutex around (no-wait) critical sections when required
+4. **Concurrency Discussion** — Identify potential race conditions in
+   the implementation and document the synchronisation strategy
+   used. Prefer a functional, message-passing approach; use mutexes
+   only around non-blocking critical sections when strictly necessary.
 
-4.  **Multiple Worker Node Variant:**
-    -   Discuss the R script modifications to run examples on multi-node cluster
-    -   Consider internode connectivity, focusing on `ssh`, `mpi` and `zmq` for control and data communication
+5. **Multi-Node Variant Discussion** _(discussion only — no code
+   required)_ — Describe the R script modifications needed to
+   distribute work across a multi-node cluster, with a focus on `ssh`,
+   `MPI`, and `ZMQ` for control and data transport.
 
-6.  **RcppParallel Quick Start guide:**
-    -   Describe miniman package configuration required for RcppParallel dependency.
-    -   Only if required, show `apt` commands to install required OS system library dependencies.
-    -   Show `renv` commands required for installation.
+6. **RcppParallel Quick Start Guide** — Describe the minimum package
+   configuration steps:
+   - Required modifications to `DESCRIPTION` and `src/Makevars`.
+   - A note on enabling SIMD support via `-march=native` in
+     `~/.R/Makevars`, including the expected `R CMD check` warning and
+     why it is acceptable locally.
+   - Any required OS-level library dependencies, with `apt` install
+     commands where applicable.
+   - Notes on TinyThread vs. TBB backend selection.
+   - The `renv` installation sequence: `renv::install()` followed by
+     `renv::snapshot()`.
 
+## Package Constraints
 
-## Code Format
-
-
+- The package must be CRAN-compliant and pass `R CMD check`.
+- The only admitted warning is the one produced by `-march=native` in
+  a local `~/.R/Makevars` — this must _not_ appear in `src/Makevars`.
+- Follow `tidyverse` style conventions for all R code.
 
 ## Output Format
 
-### R Package Contraints
+- Reply in well-formed _GitLab Flavoured Markdown (GLFM)_ with strict
+  lint compliance:
+  - Fenced code block delimiters (` ``` `) must begin at column 0; do
+    not nest code blocks.
+  - Use `_underscore_` markup for emphasis.
+  - Prefer nested headings over bold text for structure.
+  - Use only `-` (dash) for unordered lists, with correct indentation.
+  - Insert a blank line after every heading, list block, and code
+    block.
+- At the end of the document, provide a `## References` section with
+  Markdown footnotes (prefixed `rf-`) linked inline to relevant
+  passages, covering package documentation and algorithm references.
+- Add an `## Additional Notes` section for any important information
+  not explicitly required above.
+- Ignore all rendering-pipeline markup present in this prompt:
+  `<details><summary>` HTML blocks, `{=latex}` code blocks,
+  `[!tip]`/`[!note]` block quotes, code-folding tags (three braces pairs),
+  and internal cross-reference links.
 
-- The R package must adhere to CRAN guidelines, integrated by `tidyverse` best practices.
-- The R package must support `R CMD check`
-- The only warning admitted is about a `-march=native` option, placed on local `~/.R/Makevars`
-
-### R Output Format
-
-- The R script must be placed under the `exec` directory
-- The R script must be directly executable, with a "she-bang" line for `Rscript` invocation.
-- The `library` dependencies, placed in the inital part of the script must suppress warning messages.
-
-### C++ Output Format
-
-- the C++ code follows `Rcpp` package guidelines
-- the entry point example function must be exportable as package C++ api
-- the code must be placed under `src` directory.
-- the C++ api, automatically generated by `roxygen2`, must be placed under `inst/include` directory.
-- the C++ code must follow the Google C++ style guide
-- the code must be moderately but well documented.
-
-
-
-### Markdown Output Format
-
-- Reply in clear formatted "GitLab Flavored Markdown (GLFM)" Markdown,
-with precise (lint) validation:
-  - codeblock delimiters ``` placed atline start). Avoid codeblock nesting.
-  - use _underscore markup_ for emphasys
-  - prefer nested headings to text markup with asterisks
-  - use only "dash" for unordered lists, with correct indentation
-  - insert appropriate blank line separation after headings, list and codeblocks
-
-- Ignore document formatting markup, like:
-  - <details><summary> HTML blocks
-  - {=latex} codeblocks
-  - [!tip] [!note] block quotes
-  - code folding tags ("three curly braces pairs")
-  - internal links: e.g. [⇧]
-
-- At the end, provide, as Markdown footnotes, a list of references to
-online documentation resources, linked to answer text where
-appropriate. To avoid reference clashing with other part of the
-document, prefix references with the string "rf-".
-
-- Add any additional important information not explicitly required in
-an "Additional Notes" section.
 
 
 
