@@ -115,6 +115,7 @@ function install_commons_sys() {
 	apt_install \
 		gpg \
 		libgsl-dev \
+		libtbb-dev \
 		libzmq3-dev \
 		libglpk-dev \
 		libncurses5-dev \

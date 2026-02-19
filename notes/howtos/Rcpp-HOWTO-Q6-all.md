@@ -840,7 +840,7 @@ sudo apt install libtbb-dev
 | NUMA-aware   | no                   | yes (TBB 2021+)              |
 | Best for     | ≤ 8 cores, portable  | ≥ 16 cores, server workloads |
 
-Select TBB at runtime with `RcppParallel::setThreadOptions(backend ="tbb")` 
+Select TBB at runtime with `RcppParallel::setThreadOptions(backend ="tbb")`
 or at compile time by defining `RCPP_PARALLEL_USE_TBB=1`.
 
 ### `renv` installation sequence
@@ -862,19 +862,12 @@ renv::snapshot()
 
 ## References
 
-[^ac-rcppparallel]: RcppParallel package documentation — _Writing Parallel Programs with RcppParallel_. <https://rcppcore.github.io/RcppParallel/>
 
-[^ac-hamming]: Hamming, R. W. (1950). _Error Detecting and Error Correcting Codes_. Bell System Technical Journal, 29(2), 147–160.
 
-[^ac-tbb]: Intel oneAPI Threading Building Blocks documentation. <https://oneapi-src.github.io/oneTBB/>
 
-[^ac-doparallel]: Microsoft / Revolution Analytics. _doParallel: Foreach Parallel Adaptor for the 'parallel' Package_. <https://CRAN.R-project.org/package=doParallel>
 
-[^ac-logger]: Daróczi, G. _logger: A Lightweight, Modern and Flexible Logging Utility_. <https://CRAN.R-project.org/package=logger>
 
-[^ac-renv]: Ushey, K. _renv: Project Environments_. <https://rstudio.github.io/renv/>
 
-[^ac-google-cpp]: Google LLC. _Google C++ Style Guide_. <https://google.github.io/styleguide/cppguide.html>
 
 ---
 
@@ -933,10 +926,10 @@ While R provides high-level parallel functions, `RcppParallel` allows
 us to move the heavy lifting to C++ using Intel TBB (Threading
 Building Blocks). We utilize two primary patterns:
 
-* **parallelFor**: Maps the distance calculation across the matrix
+- **parallelFor**: Maps the distance calculation across the matrix
   rows. Each thread handles a subset of the sequences, ensuring all
   CPU cores are saturated.
-* **parallelReduce**: Aggregates the results. After computing
+- **parallelReduce**: Aggregates the results. After computing
   distances, we often need a global metric, such as the "Total Genetic
   Divergence." Instead of using a global variable with a mutex (which
   causes contention), `parallelReduce` allows each thread to sum its
@@ -1179,9 +1172,10 @@ transition from `doParallel` to `future` or `pbdMPI`.
    that this is non-portable; this is expected and acceptable for
    local performance tuning, but must be removed before submitting to
    CRAN.
-   
+
 4. **Dependencies**: On Debian/Ubuntu, ensure TBB is available:
-  - `sudo apt-get install libtbb-dev`
+
+- `sudo apt-get install libtbb-dev`
 
 
 
@@ -1216,35 +1210,1360 @@ renv::snapshot()
 
 # A:1 (ChatGPT)
 
-[⇧](#toc) **_TODO:(a1-ref-chatgpt)_**
+[⇧](#toc) **_Parallel Biological Sequence Comparison in R and C++_**
 
-TODO:(a1-chatgpt) ...
+## Overview /t
 
-# A:1 (Perplexity)
+This tutorial introduces _nested parallelism_ in R package development using:
 
-[⇧](#toc) **_TODO:(a1-ref-perplexity)_**
+- `RcppParallel` for intra-task shared-memory parallelism (C++)
+- `foreach` + `doParallel` for inter-task parallelism (R)
 
-TODO:(a1-perplexity) ...
+The motivating example is:
 
-## Q:1.2 (Perplexity)
+> _Pairwise Hamming distance matrix computation for random DNA fragments_
 
-[⇧](#toc) **_(=> continue)_**
+This example is ideal because:
 
-TODO:(q1.2-perplexity) ...
+- The outer loop over sequence pairs is embarrassingly parallel → `parallelFor`
+- The inner per-sequence character comparison is a reduction → `parallelReduce`
+- The benchmark harness is embarrassingly parallel across trials → `foreach`
+
+The algorithm naturally expresses a _map–reduce_ pattern without artificial API usage.
 
 ---
 
-## A:1.2 (Perplexity)
+## 1. Tutorial Narrative
 
-[⇧](#toc) **_(=> continue)_**
+### 1.1 Problem Definition
 
-TODO:(a1.2-perplexity) ...
+Given:
+
+- `N` DNA fragments
+- each fragment length `L`
+
+Compute the symmetric `N × N` matrix:
+
+$$
+D_{ij} = \sum_{k=1}^{L} \mathbf{1}(S_i[k] \ne S_j[k])
+$$
+
+This is:
+
+- CPU-bound
+- memory-contiguous
+- reduction-heavy
+- symmetric
+
+Perfect for:
+
+- `parallelFor` over upper-triangular index space
+- `parallelReduce` inside each pairwise comparison
+
+---
+
+### 1.2 Why This Fits `RcppParallel`
+
+- _parallelFor_ distributes independent pair computations.
+- _parallelReduce_ accumulates mismatch counts per character position.
+- No shared mutable state.
+- No locks required.
+- Deterministic output.
+
+This mirrors many bioinformatics kernels used in real pipelines.
+
+---
+
+### 1.3 Nested Parallelism Strategy
+
+We separate concerns:
+
+| Layer            | Parallelism           | Tool           |
+| ---------------- | --------------------- | -------------- |
+| C++ kernel       | shared-memory threads | `RcppParallel` |
+| Benchmark trials | process-level         | `foreach`      |
+
+This enables experimentation with core allocation strategies.
+
+---
+
+## 2. C++ Implementation /t
+
+Location:
+
+```text
+src/hamming_parallel.cpp
+```
+
+This file uses both `parallelFor` and `parallelReduce`.
+
+```cpp
+#include <Rcpp.h>
+#include <RcppParallel.h>
+
+using namespace Rcpp;
+using namespace RcppParallel;
+
+// ------------------------------------------------------------
+// Hamming reduction worker (parallelReduce)
+// ------------------------------------------------------------
+struct HammingReduce : public Worker {
+  const RVector<int> x_;
+  const RVector<int> y_;
+  int sum_;
+
+  HammingReduce(const IntegerVector& x,
+                const IntegerVector& y)
+      : x_(x), y_(y), sum_(0) {}
+
+  HammingReduce(const HammingReduce& other, Split)
+      : x_(other.x_), y_(other.y_), sum_(0) {}
+
+  void operator()(std::size_t begin,
+                  std::size_t end) {
+    int local = 0;
+    for (std::size_t i = begin; i < end; ++i) {
+      local += (x_[i] != y_[i]);
+    }
+    sum_ += local;
+  }
+
+  void join(const HammingReduce& rhs) {
+    sum_ += rhs.sum_;
+  }
+};
+
+// ------------------------------------------------------------
+// Distance matrix worker (parallelFor)
+// ------------------------------------------------------------
+struct DistanceMatrixWorker : public Worker {
+  const RMatrix<int> seq_;
+  RMatrix<int> dist_;
+  const std::size_t n_;
+  const std::size_t L_;
+
+  DistanceMatrixWorker(const IntegerMatrix& seq,
+                       IntegerMatrix& dist)
+      : seq_(seq),
+        dist_(dist),
+        n_(seq.nrow()),
+        L_(seq.ncol()) {}
+
+  void operator()(std::size_t begin,
+                  std::size_t end) {
+
+    for (std::size_t idx = begin; idx < end; ++idx) {
+      std::size_t i = idx / n_;
+      std::size_t j = idx % n_;
+
+      if (j <= i)
+        continue;
+
+      IntegerVector xi = seq_.row(i);
+      IntegerVector xj = seq_.row(j);
+
+      HammingReduce reducer(xi, xj);
+      parallelReduce(0, L_, reducer);
+
+      int d = reducer.sum_;
+      dist_(i, j) = d;
+      dist_(j, i) = d;
+    }
+  }
+};
+
+// [[Rcpp::export]]
+IntegerMatrix hamming_distance_matrix(IntegerMatrix sequences) {
+  std::size_t n = sequences.nrow();
+
+  IntegerMatrix dist(n, n);
+
+  DistanceMatrixWorker worker(sequences, dist);
+
+  parallelFor(0, n * n, worker);
+
+  return dist;
+}
+```
+
+---
+
+### Header Export
+
+Add:
+
+```r
+#' @useDynLib dve.sample.r, .registration = TRUE
+#' @importFrom Rcpp sourceCpp
+NULL
+```
+
+Run:
+
+```r
+Rcpp::compileAttributes()
+```
+
+Headers are placed under:
+
+```text
+inst/include/
+```
+
+---
+
+## 3. R Test Script (`exec/benchmark-hamming.R`)
+
+```r
+#!/usr/bin/env Rscript
+
+suppressPackageStartupMessages({
+  library(optparse)
+  library(logger)
+  library(glue)
+  library(foreach)
+  library(doParallel)
+  library(RcppParallel)
+  library(dve.sample.r)
+})
+
+# ------------------------------------------------------------
+# Argument parsing
+# ------------------------------------------------------------
+option_list <- list(
+  make_option(c("-v", "--verbose"), action = "store_true",
+              default = FALSE),
+  make_option(c("-u", "--seed"), type = "integer",
+              default = 0),
+  make_option(c("-s", "--save"), action = "store_true",
+              default = FALSE),
+  make_option(c("-w", "--workers"), type = "integer",
+              default = 2),
+  make_option(c("-t", "--threads"), type = "integer",
+              default = 2)
+)
+
+parser <- OptionParser(option_list = option_list)
+args <- parse_args(parser, positional_arguments = TRUE)
+
+input_sizes <- as.integer(args$args)
+
+# ------------------------------------------------------------
+# Logging
+# ------------------------------------------------------------
+log_dir <- Sys.getenv("P_LOGS_DIR", "logs")
+dir.create(log_dir, showWarnings = FALSE, recursive = TRUE)
+
+ts <- format(Sys.time(), "%Y%m%d-%H%M%S")
+log_file <- file.path(log_dir,
+  glue("benchmark-hamming-{ts}.log"))
+
+log_appender(appender_tee(log_file))
+log_layout(layout_glue_colors)
+
+log_info("Arguments: {capture.output(str(args))}")
+log_info("Log directory: {normalizePath(log_dir)}")
+log_info("CPU info: {system('inxi -C', intern = TRUE)}")
+
+set.seed(args$options$seed)
+
+# ------------------------------------------------------------
+# Parallel setup
+# ------------------------------------------------------------
+cl <- parallel::makeCluster(args$options$workers)
+doParallel::registerDoParallel(cl)
+
+RcppParallel::setThreadOptions(
+  numThreads = args$options$threads
+)
+
+# ------------------------------------------------------------
+# Benchmark
+# ------------------------------------------------------------
+results <- foreach(
+  n = input_sizes,
+  .combine = rbind,
+  .packages = "dve.sample.r"
+) %dopar% {
+
+  L <- 200L
+
+  seq <- matrix(
+    sample(0:3, n * L, replace = TRUE),
+    nrow = n
+  )
+
+  t0 <- Sys.time()
+  d <- hamming_distance_matrix(seq)
+  elapsed <- as.numeric(Sys.time() - t0,
+                        units = "secs")
+
+  data.frame(
+    n = n,
+    L = L,
+    elapsed = elapsed,
+    mean_dist = mean(d)
+  )
+}
+
+log_info("Summary:")
+print(results)
+
+if (args$options$verbose)
+  log_debug("{capture.output(print(results))}")
+
+parallel::stopCluster(cl)
+```
+
+---
+
+## 4. Concurrency Discussion /t
+
+### 4.1 Race Conditions
+
+Potential hazards:
+
+- Writing symmetric entries `dist(i,j)` and `dist(j,i)`
+- Reduction accumulation
+
+#### Why Safe?
+
+- Each `(i,j)` pair computed once
+- Symmetric write happens in same thread
+- No two threads write same cell
+- Reduction uses per-worker copies + `join`
+
+No mutex required.
+
+---
+
+### 4.2 Oversubscription Risk
+
+If:
+
+- `workers = 8`
+- `threads = 8`
+
+On an 8-core machine → 64 threads.
+
+This degrades performance.
+
+---
+
+### 4.3 Core Allocation Strategies
+
+#### Strategy A: Outer Parallelism Only
+
+```text
+workers = cores
+threads = 1
+```
+
+Best when tasks are large.
+
+#### Strategy B: Inner Parallelism Only
+
+```text
+workers = 1
+threads = cores
+```
+
+Best for single large matrix.
+
+#### Strategy C: Hybrid
+
+```text
+workers = 2
+threads = cores / 2
+```
+
+Often optimal.
+
+---
+
+## 5. Multi-Node Variant (Discussion)
+
+To scale beyond shared memory:
+
+### 5.1 SSH Clusters
+
+Use:
+
+- `parallel::makeCluster(c("node1","node2"), type="PSOCK")`
+
+Data must be serialized and exported.
+
+---
+
+### 5.2 MPI
+
+Use:
+
+- `Rmpi`
+- `pbdMPI`
+
+Distance blocks distributed across ranks.
+
+---
+
+### 5.3 ZeroMQ (ZMQ)
+
+Use:
+
+- `future`
+- `future.batchtools`
+- `clustermq`
+
+Controller sends `(i,j)` blocks as messages.
+
+Message-passing preferred over shared state.
+
+---
+
+## 6. RcppParallel Quick Start Guide /t
+
+### 6.1 DESCRIPTION
+
+```text
+Imports:
+    Rcpp,
+    RcppParallel
+
+LinkingTo:
+    Rcpp,
+    RcppParallel
+```
+
+---
+
+### 6.2 src/Makevars
+
+```make
+PKG_CXXFLAGS += -DRCPP_PARALLEL_USE_TBB=1
+PKG_LIBS += $(SHLIB_OPENMP_CXXFLAGS)
+```
+
+_Do not add `-march=native` here._
+
+---
+
+### 6.3 Enabling SIMD Locally
+
+In:
+
+```text
+~/.R/Makevars
+```
+
+Add:
+
+```make
+CXXFLAGS += -march=native -O3
+```
+
+CRAN warning during `R CMD check` is acceptable locally because:
+
+- Not committed
+- Not part of package sources
+
+---
+
+### 6.4 Install Dependencies (Ubuntu)
+
+```bash
+sudo apt install libtbb-dev
+```
+
+---
+
+### 6.5 Backend: TinyThread vs TBB
+
+- Default: TBB
+- Fallback: TinyThread (no external dependency)
+- TBB recommended for performance and work-stealing
+
+---
+
+### 6.6 renv Workflow
+
+```r
+renv::install("RcppParallel")
+renv::snapshot()
+```
+
+---
+
+## 7. References /t
+
+- [at-1]: RcppParallel documentation
+- [at-2]: Intel Threading Building Blocks design
+- [at-3]: Hamming distance definition
+- [at-4]: foreach CRAN vignette
+- [at-5]: Writing R Extensions manual
+
+---
+
+## Additional Notes /t
+
+- The algorithm is deterministic.
+- Suitable for SIMD auto-vectorisation.
+- Scales linearly until memory bandwidth saturation.
+- Easily extendable to Smith–Waterman using banded DP with block partitioning.
+- CRAN compliance preserved.
+
+# A:1 (Perplexity)
+
+[⇧](#toc) **_RcppParallel Tutorial_**
+
+## 1. Tutorial Narrative /p
+
+This tutorial uses a _Hamming distance matrix_ over random DNA
+fragments as the running example. Each fragment is a short sequence
+over the alphabet \(\{A, C, G, T\}\), and we want the full pairwise
+distance matrix for \(N\) sequences of length \(L\), where the Hamming
+distance is the number of mismatched bases at corresponding
+positions. [pmc.ncbi.nlm.nih](https://pmc.ncbi.nlm.nih.gov/articles/PMC8419822/)
+
+This is an excellent fit for `RcppParallel` because:
+
+- The distance matrix is embarrassingly parallel across sequence pairs
+  (outer loop).
+- Each distance computation is a small, tight inner loop suitable for
+  SIMD and cache-friendly iteration.
+- We can naturally express:
+  - `parallelFor`: to distribute rows (or blocks of rows) of the
+    distance matrix across threads.
+  - `parallelReduce`: to compute global statistics (e.g. sum, min,
+    max, histogram) over all distances without manual
+    locking. [rcppcore.github](https://rcppcore.github.io/RcppParallel/)
+
+In addition, the tutorial shows how to orchestrate multiple benchmark
+trials in parallel _from R_ using `foreach` and `doParallel`, on top
+of the intra-trial C++ parallelism from
+`RcppParallel`. [privefl.github](https://privefl.github.io/blog/a-guide-to-parallelism-in-r/)
+
+### Parallel structure
+
+We adopt the following structure:
+
+- Inner C++ kernel (per trial):
+  - `parallelFor`: computes all pairwise Hamming distances between
+    sequences, filling an \(N \times N\) matrix.
+  - `parallelReduce`: traverses the matrix and accumulates global
+    metrics such as:
+    - Total distance sum (for average distance).
+    - Maximum distance.
+    - A simple histogram over distances.
+- Outer R harness:
+  - Uses `foreach` + `%dopar%` with `doParallel` to run multiple
+    independent trials (e.g. different input sizes or seeds) in
+    parallel.
+  - Each trial calls the exported Rcpp function, which internally uses
+    `RcppParallel`.
+  - Results (timings and aggregated stats) are combined and optionally
+    saved.
+
+This yields a realistic nested parallel pattern:
+
+- R level: embarrassingly parallel trials across cores or nodes.
+- C++ level: shared-memory parallelism with `RcppParallel` within each trial.
+
+## 2. C++ Implementation (Rcpp + RcppParallel)
+
+Below is a compact implementation for the core task placed under
+`src/`, with the corresponding package header generated under
+`inst/include/`. It uses:
+
+- `parallelFor` to compute the distance matrix.
+- `parallelReduce` to compute global summary metrics from the matrix.
+- `RcppParallel::RMatrix` for thread-safe access to R matrices. [dannyjameswilliams.co](https://dannyjameswilliams.co.uk/portfolios/sc2/parallelrcpp/)
+
+### `src/dna_hamming.cpp`
+
+```cpp
+// src/dna_hamming.cpp
+#include <Rcpp.h>
+#include <RcppParallel.h>
+
+using Rcpp::IntegerMatrix;
+using Rcpp::List;
+using Rcpp::NumericVector;
+using Rcpp::StringVector;
+using Rcpp::as;
+using Rcpp::stop;
+using RcppParallel::RMatrix;
+using RcppParallel::parallelFor;
+using RcppParallel::parallelReduce;
+using RcppParallel::Worker;
+
+namespace dve_sample_r {
+
+// Simple utility: map 'A','C','G','T' to small ints (0-3).
+inline int EncodeBase(char c) {
+  switch (c) {
+    case 'A': return 0;
+    case 'C': return 1;
+    case 'G': return 2;
+    case 'T': return 3;
+    default:  return 0;  // fall back (input is random DNA)
+  }
+}
+
+// Convert character matrix (N x L) to integer codes.
+IntegerMatrix EncodeDna(const StringVector& seqs) {
+  const int n = seqs.size();
+  if (n == 0) {
+    return IntegerMatrix(0, 0);
+  }
+  const int L = seqs[0].size();
+  IntegerMatrix encoded(n, L);
+  for (int i = 0; i < n; ++i) {
+    const Rcpp::String s = seqs[i];
+    if (s.size() != L) {
+      stop("All sequences must have equal length.");
+    }
+    const char* ptr = s.get_cstring();
+    for (int j = 0; j < L; ++j) {
+      encoded(i, j) = EncodeBase(ptr[j]);
+    }
+  }
+  return encoded;
+}
+
+// Worker for parallelFor: compute Hamming distances for matrix rows.
+class HammingMatrixWorker : public Worker {
+ public:
+  HammingMatrixWorker(const IntegerMatrix& encoded,
+                      RMatrix<int> distances)
+      : encoded_(encoded), distances_(distances),
+        n_(encoded.nrow()), L_(encoded.ncol()) {}
+
+  void operator()(std::size_t begin, std::size_t end) {
+    for (std::size_t i = begin; i < end; ++i) {
+      for (int j = 0; j < n_; ++j) {
+        int d = 0;
+        const int* seq_i = &encoded_(i, 0);
+        const int* seq_j = &encoded_(j, 0);
+        for (int k = 0; k < L_; ++k) {
+          d += (seq_i[k] != seq_j[k]);
+        }
+        distances_(i, j) = d;
+      }
+    }
+  }
+
+ private:
+  const IntegerMatrix& encoded_;
+  RMatrix<int> distances_;
+  const int n_;
+  const int L_;
+};
+
+// Struct for parallelReduce: aggregate distance statistics.
+struct DistanceStats : public Worker {
+  RMatrix<int> distances;
+  std::int64_t sum;
+  int max_val;
+  std::vector<std::int64_t> hist;  // histogram over distance values
+
+  DistanceStats(RMatrix<int> distances, int max_distance)
+      : distances(distances),
+        sum(0),
+        max_val(0),
+        hist(static_cast<std::size_t>(max_distance + 1), 0) {}
+
+  DistanceStats(const DistanceStats& other, RcppParallel::Split)
+      : distances(other.distances),
+        sum(0),
+        max_val(0),
+        hist(other.hist.size(), 0) {}
+
+  void operator()(std::size_t begin, std::size_t end) {
+    const int nrow = distances.nrow();
+    const int ncol = distances.ncol();
+    const std::size_t total = static_cast<std::size_t>(nrow) * ncol;
+    if (end > total) {
+      end = total;
+    }
+    for (std::size_t idx = begin; idx < end; ++idx) {
+      const int i = static_cast<int>(idx / ncol);
+      const int j = static_cast<int>(idx % ncol);
+      const int d = distances(i, j);
+      sum += d;
+      if (d > max_val) {
+        max_val = d;
+      }
+      if (d >= 0 && static_cast<std::size_t>(d) < hist.size()) {
+        ++hist[static_cast<std::size_t>(d)];
+      }
+    }
+  }
+
+  void join(const DistanceStats& rhs) {
+    sum += rhs.sum;
+    if (rhs.max_val > max_val) {
+      max_val = rhs.max_val;
+    }
+    const std::size_t m = hist.size();
+    for (std::size_t i = 0; i < m; ++i) {
+      hist[i] += rhs.hist[i];
+    }
+  }
+};
+
+// [[Rcpp::export]]
+List hamming_distance_matrix_parallel(const StringVector& seqs,
+                                      const int max_distance = -1) {
+  IntegerMatrix encoded = EncodeDna(seqs);
+  const int n = encoded.nrow();
+  const int L = encoded.ncol();
+
+  if (n == 0 || L == 0) {
+    return List::create(
+        Rcpp::Named("dist") = IntegerMatrix(0, 0),
+        Rcpp::Named("sum") = 0.0,
+        Rcpp::Named("max") = 0L,
+        Rcpp::Named("mean") = Rcpp::NumericVector::create(NA_REAL),
+        Rcpp::Named("hist") = IntegerVector()
+    );
+  }
+
+  IntegerMatrix dist_mat(n, n);
+  RMatrix<int> dist_view(dist_mat);
+
+  HammingMatrixWorker worker(encoded, dist_view);
+  parallelFor(0, n, worker);
+
+  const int max_possible = L;
+  const int hist_max = (max_distance > 0 && max_distance <= max_possible)
+                           ? max_distance
+                           : max_possible;
+  DistanceStats stats(dist_view, hist_max);
+  const std::size_t total = static_cast<std::size_t>(n) * n;
+  parallelReduce(static_cast<std::size_t>(0), total, stats);
+
+  const double mean = static_cast<double>(stats.sum) /
+                      static_cast<double>(total);
+
+  IntegerVector hist_vec(stats.hist.size());
+  for (std::size_t i = 0; i < stats.hist.size(); ++i) {
+    hist_vec[static_cast<R_xlen_t>(i)] =
+        static_cast<int>(stats.hist[i]);
+  }
+
+  return List::create(
+      Rcpp::Named("dist") = dist_mat,
+      Rcpp::Named("sum") = static_cast<double>(stats.sum),
+      Rcpp::Named("max") = stats.max_val,
+      Rcpp::Named("mean") = mean,
+      Rcpp::Named("hist") = hist_vec,
+      Rcpp::Named("seq_count") = n,
+      Rcpp::Named("seq_length") = L
+  );
+}
+
+}  // namespace dve_sample_r
+```
+
+### `inst/include/dve-sample-r.h`
+
+This header will be generated by `roxygen2` from the Rcpp exports, but
+for clarity, the external signature is:
+
+```cpp
+// inst/include/dve-sample-r.h
+#ifndef DVE_SAMPLE_R_H_
+#define DVE_SAMPLE_R_H_
+
+#include <Rcpp.h>
+
+namespace dve_sample_r {
+
+Rcpp::List hamming_distance_matrix_parallel(
+    const Rcpp::StringVector& seqs,
+    const int max_distance = -1);
+
+}  // namespace dve_sample_r
+
+#endif  // DVE_SAMPLE_R_H_
+```
+
+In practice, you can ask `Rcpp::compileAttributes()` to generate the
+`.h` and the `.cpp` `RcppExports` glue. [cran.r-project](https://cran.r-project.org/package=RcppParallel)
+
+## 3. R Test Script (`exec/`)
+
+The driver script:
+
+- Parses CLI arguments via `optparse`.
+- Configures logging using `logger` and `glue`.
+- Uses `foreach` + `doParallel` to run trials in parallel.
+- Calls the C++ function for each trial, measuring elapsed times.
+- Demonstrates different core-allocation policies by exposing:
+  - Number of `foreach` workers (cluster size).
+  - Number of `RcppParallel` threads.
+- Optionally saves inputs and outputs per trial.
+
+Assume file: `exec/dna_hamming_benchmark.R`.
+
+```r
+#!/usr/bin/env Rscript
+
+suppressPackageStartupMessages(library(optparse))
+suppressPackageStartupMessages(library(logger))
+suppressPackageStartupMessages(library(glue))
+suppressPackageStartupMessages(library(foreach))
+suppressPackageStartupMessages(library(doParallel))
+suppressPackageStartupMessages(library(jsonlite))
+suppressPackageStartupMessages(library(dve.sample.r))
+
+# ---- CLI argument parsing ------------------------------------------------
+
+option_list <- list(
+  make_option(
+    c("-v", "--verbose"),
+    action = "store_true",
+    default = FALSE,
+    help = "Enable verbose (debug) logging."
+  ),
+  make_option(
+    c("-u", "--seed"),
+    type = "integer",
+    default = 0L,
+    help = "Random seed for reproducibility."
+  ),
+  make_option(
+    c("-s", "--save"),
+    action = "store_true",
+    default = FALSE,
+    help = "Save input data and results as JSON."
+  ),
+  make_option(
+    c("-n", "--nseq"),
+    type = "integer",
+    default = 500L,
+    help = "Number of DNA sequences per trial."
+  ),
+  make_option(
+    c("-t", "--trials"),
+    type = "integer",
+    default = 5L,
+    help = "Number of benchmark trials."
+  ),
+  make_option(
+    c("-w", "--workers"),
+    type = "integer",
+    default = 0L,
+    help = "Number of foreach workers (0 = detect)."
+  ),
+  make_option(
+    c("-p", "--threads"),
+    type = "integer",
+    default = 0L,
+    help = "Number of RcppParallel threads (0 = default)."
+  ),
+  make_option(
+    c("-c", "--cross"),
+    type = "integer",
+    default = 0L,
+    help = "Number of random crossover events between sequences (0 = none)."
+  )
+)
+
+parser <- OptionParser(
+  usage = "%prog [options] input_size...",
+  option_list = option_list
+)
+
+args <- parse_args(parser, positional_arguments = TRUE)
+opts <- args$options
+input_sizes <- as.integer(args$args)
+
+if (length(input_sizes) == 0L) {
+  print_help(parser)
+  quit(status = 1L)
+}
+
+# ---- Logging setup -------------------------------------------------------
+
+script_name <- basename(sub("\\.R$", "", commandArgs(trailingOnly = FALSE)[1L]))
+log_dir <- Sys.getenv("P_LOGS_DIR", unset = "logs")
+if (!dir.exists(log_dir)) {
+  dir.create(log_dir, recursive = TRUE, showWarnings = FALSE)
+}
+
+timestamp <- format(Sys.time(), "%Y%m%d-%H%M%S")
+log_file <- file.path(log_dir, glue("{script_name}-{timestamp}.log"))
+
+log_threshold <- if (isTRUE(opts$verbose)) {
+  log_threshold(DEBUG)
+} else {
+  log_threshold(INFO)
+}
+
+log_appender(appender_tee(log_file))
+
+test_type <- "dna_hamming"
+
+log_info("Starting {test_type} benchmark.")
+log_info("Log directory: {normalizePath(log_dir)}")
+log_info("Arguments: {paste(capture.output(str(opts)), collapse = ' ')}")
+log_info("Input sizes: {paste(input_sizes, collapse = ', ')}")
+
+inxi_out <- tryCatch(system("inxi -C", intern = TRUE), error = function(e) NA_character_)
+log_info("inxi -C output:\n{paste(inxi_out, collapse = '\n')}")
+
+# ---- Parallel backends configuration ------------------------------------
+
+if (opts$workers <= 0L) {
+  opts$workers <- max(1L, parallel::detectCores() - 1L)
+}
+
+cl <- parallel::makeCluster(opts$workers)
+doParallel::registerDoParallel(cl)
+
+if (opts$threads > 0L) {
+  RcppParallel::setThreadOptions(numThreads = opts$threads)
+}
+
+log_info("Configured {opts$workers} foreach workers, {opts$threads} RcppParallel threads (0 = default).")
+
+# ---- DNA sequence generation --------------------------------------------
+
+generate_dna_sequences <- function(nseq, length, crossovers, seed) {
+  set.seed(seed)
+  bases <- c("A", "C", "G", "T")
+  mat <- matrix(
+    sample(bases, nseq * length, replace = TRUE),
+    nrow = nseq,
+    ncol = length
+  )
+  if (crossovers > 0L && nseq >= 2L) {
+    for (k in seq_len(crossovers)) {
+      i <- sample.int(nseq, 2L)
+      cut <- sample.int(length - 1L, 1L)
+      tmp <- mat[i[1L], (cut + 1L):length]
+      mat[i[1L], (cut + 1L):length] <- mat[i[2L], (cut + 1L):length]
+      mat[i[2L], (cut + 1L):length] <- tmp
+    }
+  }
+  seqs <- apply(mat, 1L, paste0, collapse = "")
+  seqs
+}
+
+# ---- Benchmark core ------------------------------------------------------
+
+run_single_trial <- function(nseq, seqlen, crossovers, base_seed) {
+  trial_seed <- base_seed + as.integer(nseq + seqlen + crossovers)
+  seqs <- generate_dna_sequences(nseq, seqlen, crossovers, trial_seed)
+
+  t_start <- proc.time()[["elapsed"]]
+  res <- dve.sample.r::hamming_distance_matrix_parallel(
+    seqs = seqs,
+    max_distance = seqlen
+  )
+  t_elapsed <- proc.time()[["elapsed"]] - t_start
+
+  list(
+    nseq = nseq,
+    seqlen = seqlen,
+    crossovers = crossovers,
+    elapsed = t_elapsed,
+    sum = res$sum,
+    max = res$max,
+    mean = res$mean,
+    hist = res$hist
+  )
+}
+
+# ---- Foreach benchmark loop ---------------------------------------------
+
+results <- foreach(
+  i = seq_along(input_sizes),
+  .combine = "rbind",
+  .packages = c("dve.sample.r")
+) %dopar% {
+  seqlen <- input_sizes[i]
+  trial_results <- vector("list", opts$trials)
+  for (k in seq_len(opts$trials)) {
+    trial_results[[k]] <- run_single_trial(
+      nseq = opts$nseq,
+      seqlen = seqlen,
+      crossovers = opts$cross,
+      base_seed = opts$seed + k
+    )
+  }
+  for (k in seq_along(trial_results)) {
+    tr <- trial_results[[k]]
+    cat(glue(
+      "[worker {Sys.getpid()}] len={seqlen} trial={k} elapsed={tr$elapsed}\n"
+    ))
+  }
+  do.call(
+    what = rbind,
+    args = lapply(seq_along(trial_results), function(k) {
+      tr <- trial_results[[k]]
+      data.frame(
+        seqlen = tr$seqlen,
+        trial = k,
+        elapsed = tr$elapsed,
+        nseq = tr$nseq,
+        crossovers = tr$crossovers,
+        sum = tr$sum,
+        max = tr$max,
+        mean = tr$mean,
+        stringsAsFactors = FALSE
+      )
+    })
+  )
+}
+
+parallel::stopCluster(cl)
+
+# ---- Aggregation and reporting ------------------------------------------
+
+summary_df <- aggregate(
+  elapsed ~ seqlen,
+  data = results,
+  FUN = function(x) c(
+    mean = mean(x),
+    sd = sd(x),
+    min = min(x),
+    max = max(x)
+  )
+)
+
+summary_df <- do.call(
+  rbind,
+  lapply(seq_len(nrow(summary_df)), function(i) {
+    data.frame(
+      seqlen = summary_df$seqlen[i],
+      mean = summary_df$elapsed[i, "mean"],
+      sd = summary_df$elapsed[i, "sd"],
+      min = summary_df$elapsed[i, "min"],
+      max = summary_df$elapsed[i, "max"],
+      stringsAsFactors = FALSE
+    )
+  })
+)
+
+log_info("Benchmark summary (per length):")
+log_info("\n{capture.output(print(summary_df)) |> paste(collapse = '\n')}")
+
+if (isTRUE(opts$verbose)) {
+  log_debug("Full results:")
+  log_debug("\n{capture.output(str(results)) |> paste(collapse = '\n')}")
+}
+
+if (isTRUE(opts$save)) {
+  out_prefix <- file.path(
+    log_dir,
+    glue("{test_type}-{timestamp}")
+  )
+  results_file <- glue("{out_prefix}-results.json")
+  write_json(
+    list(
+      options = opts,
+      input_sizes = input_sizes,
+      results = results
+    ),
+    path = results_file,
+    pretty = TRUE,
+    auto_unbox = TRUE
+  )
+  log_info("Saved benchmark results to: {results_file}")
+}
+
+log_info("Completed {test_type} benchmark.")
+```
+
+This script satisfies:
+
+- Rscript shebang and location under `exec/`.
+- Logging to stdout and file with timestamped name and `P_LOGS_DIR` default. [perceptive-analytics](https://www.perceptive-analytics.com/implementing-parallel-processing-r/)
+- `foreach` + `%dopar%` parallelism for trials.
+- Per-trial use of the `RcppParallel` implementation.
+
+## 4. Concurrency Discussion /p
+
+### Natural parallel decomposition
+
+At the algorithm level, each Hamming distance computation between
+sequence \(i\) and \(j\) is independent. We exploit this in two
+layers:
+
+- `parallelFor` splits the outer index \(i\) (rows of the distance
+  matrix) into disjoint ranges `[begin,
+  end)`. [rcppcore.github](https://rcppcore.github.io/RcppParallel/)
+  - Each worker writes to a distinct stripe of the matrix, so no two
+    threads write to the same element.
+  - Reads from the encoded sequences matrix are read-only, so they are
+    safe to share.
+- `parallelReduce` iterates over a flattened index space \(0, \dots,
+  N^2 - 1\), aggregating statistics:
+  - Each `DistanceStats` object maintains _thread-local_ accumulators
+    (`sum`, `max_val`, `hist`).
+  - In the `join` method, partial results are combined without
+    contention because joining happens in a controlled, tree-like
+    fashion. [r-bloggers](https://www.r-bloggers.com/2014/06/summing-a-vector-in-parallel-with-rcppparallel/)
+
+### Avoiding race conditions
+
+Potential race conditions and our strategy:
+
+- Shared write access to the distance matrix:
+  - Each thread only writes `distances_(i, j)` for `i` in its assigned
+    range; no overlap between threads.
+  - Therefore, no locks or atomics are needed.
+- Aggregating global statistics:
+  - `parallelReduce` is designed precisely to avoid races by using
+    local copies and a `join`
+    operation. [r-bloggers](https://www.r-bloggers.com/2014/06/summing-a-vector-in-parallel-with-rcppparallel/)
+  - No explicit mutex is required.
+- R objects and memory:
+  - We only construct R objects _before_ entering parallel regions
+    (`IntegerMatrix encoded`, `IntegerMatrix dist_mat`).
+  - Inside `Worker` methods, we use `RMatrix` views, which are
+    thread-safe accessors to existing R
+    storage. [dannyjameswilliams.co](https://dannyjameswilliams.co.uk/portfolios/sc2/parallelrcpp/)
+
+This design follows a functional, message-passing style:
+
+- Each thread computes on its own slice and accumulates local state.
+- Only immutable shared data is read concurrently.
+- Merging happens explicitly via `join`, avoiding ad hoc locking.
+
+### Nested parallelism and oversubscription
+
+The R script may:
+
+- Run several trials in parallel via `foreach` workers.
+- Each worker may use multiple `RcppParallel` threads.
+
+This nested parallelism can oversubscribe CPU cores if:
+
+- `workers * threads > physical_cores`.
+
+We mitigate and expose this with configuration options:
+
+- `--workers`: controls the number of R-level worker processes.
+- `--threads`: passed to `RcppParallel::setThreadOptions(numThreads =  ...)`
+  to bound the C++ thread pool size. [cran.r-project](https://cran.r-project.org/package=RcppParallel)
+
+A typical policy on a machine with \(C\) cores:
+
+- _Outer parallelism dominant_: set `workers = C`, `threads = 1`.
+- _Inner parallelism dominant_: set `workers = 1`, `threads = C`.
+- _Balanced_: choose `workers * threads ≈ C` (e.g. `workers = 2`, `threads = C / 2`).
+
+The optimal policy depends on relative overheads of R process startup,
+data generation, and C++ kernel runtime. For CPU-bound kernels with
+low per-trial overhead, letting `RcppParallel` use most cores and
+keeping `foreach` sequential often performs best. [privefl.github](https://privefl.github.io/blog/a-guide-to-parallelism-in-r/)
+
+## 5. Multi-Node Variant Discussion (No Code)
+
+To extend this benchmark across a multi-node cluster, the main changes are in the R harness:
+
+### SSH-based orchestration
+
+Using `parallel::makeCluster` with `type = "PSOCK"` and host names:
+
+- Define a host list with the desired number of nodes (e.g. from a scheduler).
+- Use something like:
+
+  - `parallel::makeCluster(c("node1", "node2"), type = "PSOCK", rshcmd = "ssh")`.
+
+- Ensure passwordless SSH and consistent R library paths on all nodes.
+- Register the cluster with `doParallel::registerDoParallel(cl)` and
+  keep the C++ code as is.
+
+Data (input sizes, parameters) is small, so passing them as R objects
+through the PSOCK connections is sufficient. Results are collected
+back to the master via `foreach`’s `.combine`
+mechanism. [perceptive-analytics](https://www.perceptive-analytics.com/implementing-parallel-processing-r/)
+
+### MPI-based orchestration
+
+Using a package like `doMPI`:
+
+- Replace `doParallel` backend with `doMPI::registerDoMPI`.
+- Launch R under `mpirun` or the scheduler’s MPI launcher.
+- `foreach` workers map to MPI ranks; communication is handled by MPI.
+
+This is more scalable when the number of workers is large, and it can
+provide better fault tolerance and integration with batch schedulers.
+The C++ code doesn’t change; only the backend and cluster setup differ. [privefl.github](https://privefl.github.io/blog/a-guide-to-parallelism-in-r/)
+
+### ZeroMQ (ZMQ) control and data transport
+
+For more flexible topologies or dynamic workloads, you can:
+
+- Use packages like `rzmq` or higher-level frameworks that wrap ZeroMQ.
+- Implement a controller process that:
+  - Distributes parameter sets (e.g. `input_size`, `seed`) to workers
+    via PUSH/PULL or REQ/REP sockets.
+  - Collects results as workers finish.
+
+This pattern decouples:
+
+- Control flow (the master decides which job goes where).
+- Data transport (ZeroMQ sockets over TCP).
+- Computation (each worker runs the same R script, calling the `RcppParallel` kernel).
+
+It is especially useful in heterogeneous clusters or cloud
+environments where nodes join and leave dynamically.
+
+### Serialization and data locality
+
+Across nodes, data transfer costs must be considered:
+
+- Inputs: randomly generated DNA sequences can be generated _on the worker_ given a seed, so only seeds and parameters need to be transmitted.
+- Outputs: only summary statistics and small samples of the distance matrix should be returned; full matrices can be large.
+
+Therefore:
+
+- Keep the Hamming kernel local to each node.
+- Use message-passing to send seeds and configuration, not raw matrices.
+
+## 6. RcppParallel Quick Start Guide /p
+
+### DESCRIPTION
+
+Add `RcppParallel` to `LinkingTo` and `Imports`:
+
+```text
+Imports:
+    Rcpp,
+    RcppParallel
+LinkingTo:
+    Rcpp,
+    RcppArmadillo,
+    RcppParallel
+SystemRequirements: GNU make
+```
+
+If you export C++ functions via `Rcpp`, also ensure:
+
+```text
+Depends:
+    R (>= 4.0)
+```
+
+`RcppParallel`’s CRAN page documents the `LinkingTo` and `Imports`
+roles. [cran.r-project](https://cran.r-project.org/package=RcppParallel)
+
+### src/Makevars
+
+You do _not_ enable `-march=native` here to keep CRAN-compliant builds
+portable. A minimal `Makevars` using the macros exposed by
+`RcppParallel` can look like:
+
+```make
+PKG_CXXFLAGS = $(SHLIB_CXXFLAGS) $(RCPP_PARALLEL_CXXFLAGS)
+PKG_LIBS = $(SHLIB_LIBADD) $(RCPP_PARALLEL_LIBS)
+```
+
+These macros are defined by `RcppParallel` and ensure the correct backend
+(TinyThread or TBB) is linked. [cran.r-project](https://cran.r-project.org/package=RcppParallel)
+
+### Local SIMD via `~/.R/Makevars`
+
+For local development, you can enable SIMD and architecture-specific optimisations with:
+
+```make
+CXXFLAGS += -O3 -march=native
+CFLAGS   += -O3 -march=native
+```
+
+Placing this in `~/.R/Makevars` affects local compilation but not CRAN
+builds, because CRAN compilers ignore user-level flags. You may see a
+warning similar to “-march=native may cause portability issues”; this
+is acceptable for local benchmarking but must not appear in
+`src/Makevars` to avoid check failures on CRAN. [dannyjameswilliams.co](https://dannyjameswilliams.co.uk/portfolios/sc2/parallelrcpp/)
+
+### OS-level dependencies
+
+On Debian/Ubuntu, installing system libraries for `RcppParallel` and build tools typically requires:
+
+```sh
+sudo apt-get update
+sudo apt-get install -y r-base-dev build-essential \
+    libtbb-dev
+```
+
+`RcppParallel` can use Intel TBB where available, and `libtbb-dev` provides
+the necessary headers and libraries. [cran.r-project](https://cran.r-project.org/package=RcppParallel)
+
+### TinyThread vs. TBB backend
+
+`RcppParallel` supports two backends:
+
+- TinyThread:
+  - Small header-only C++11 thread library bundled with `RcppParallel`.
+  - Used when TBB is not available.
+  - Portable but may scale less well on large core counts.
+- TBB (Threading Building Blocks):
+  - More sophisticated task scheduler.
+  - Preferred when `libtbb` is available and detected at compile time. [dannyjameswilliams.co](https://dannyjameswilliams.co.uk/portfolios/sc2/parallelrcpp/)
+
+Selection is automatic based on your build environment:
+
+- If TBB is present, `RcppParallel` builds against it.
+- Otherwise, it falls back to TinyThread.
+
+You can inspect which backend is used via `RcppParallel::defaultNumThreads()`
+and diagnostic messages in the package documentation. [cran.r-project](https://cran.r-project.org/package=RcppParallel)
+
+### renv sequence
+
+For `dve-sample-r` in explicit mode:
+
+1. Install dependencies into the project library:
+
+   ```r
+   renv::install(c("Rcpp", "RcppArmadillo", "RcppParallel",
+                   "optparse", "logger", "glue",
+                   "foreach", "doParallel", "jsonlite"))
+   ```
+
+2. Snapshot the environment:
+
+   ```r
+   renv::snapshot(prompt = FALSE)
+   ```
+
+This records exact versions and ensures reproducible builds for the package
+and the `exec/` benchmark script. [perceptive-analytics](https://www.perceptive-analytics.com/implementing-parallel-processing-r/)
+
+## References /p
+
+- [^ap-rcppparallel-doc] RcppParallel CRAN reference manual and website, including `parallelFor`, `parallelReduce`, `RVector`, `RMatrix`, and build configuration notes. [rcppcore.github](https://rcppcore.github.io/RcppParallel/)
+- [^ap-parallelrcpp] Articles and blog posts describing basic `RcppParallel` usage and OpenMP/TBB considerations. [r-bloggers](https://www.r-bloggers.com/2014/06/summing-a-vector-in-parallel-with-rcppparallel/)
+- [^ap-r-parallelism] Guides to parallelism in R, covering `foreach`, `doParallel`, and cluster backends. [privefl.github](https://privefl.github.io/blog/a-guide-to-parallelism-in-r/)
+- [^ap-swhamming] Literature on parallel sequence alignment, including Smith–Waterman and Hamming-distance-based approaches. [pmc.ncbi.nlm.nih](https://pmc.ncbi.nlm.nih.gov/articles/PMC3852983/)
+
+## Additional Notes /p
+
+- For performance profiling, consider using `microbenchmark` in R for
+  fine-grained timings on individual kernels, and system tools such as
+  `perf` or `vtune` at the OS level.
+- When scaling the benchmark, monitor memory usage: the distance
+  matrix is \(O(N^2)\) in storage, so large `nseq` values should be
+  accompanied by summary-only output rather than full matrix
+  retention.
 
 # A:1 (DeepSeek)
 
 [⇧](#toc) **_TODO:(a1-ref-deepseek)_**
 
 TODO:(a1-deepseek) ...
+
+# A:1 (Mistral)
+
+[⇧](#toc) **_TODO:(a1-ref-mistral)_**
+
+TODO:(a1-mistral) ...
 
 <!-- }}} \\ %1. -->
 <!-- {{{ // %*
