@@ -117,11 +117,13 @@ the `RcppParallel` package, demonstrating both `parallelFor` and
 forced API demonstration. The chosen example must make meaningful use
 of both primitives.
 
-Provide a simple implementation of a practical, inspiring use case: 
+Provide a simple implementation of a practical, inspiring use case:
 
-- _"Biological Sequence Comparison (Smith-Waterman or Hamming-based distance matrix calculation) on random DNA fragments"_
+- _"Biological Sequence Comparison (Smith-Waterman or Hamming-based
+  distance matrix calculation) on random DNA fragments"_
 
-This choice is motivated for its clear mapping to parallel reduction and map-reduce patterns.
+This choice is motivated for its clear mapping to parallel reduction
+and map-reduce patterns.
 
 The test R script must use `foreach` parallelism to run benchmark
 trials in parallel, collecting results for summary aggregation.
@@ -156,6 +158,10 @@ optimisation.
 - Command-line argument parsing must use a standard R argument-parsing
   library (e.g., `argparse` or `optparse`) and implement all arguments
   listed in the [CLI Arguments](#cli-arguments) section below.
+- The script must report parsed arguments, execution trace, and
+  detailed result dump with a logging channel, folloging specification
+  described below, in heading:
+  - [test-script-logging-specification](#test-script-logging-specification)
 
 
 ### CLI Arguments
@@ -178,6 +184,21 @@ Include additional arguments with sensible defaults as required by the chosen ex
 - `graph_density`: option `-g`/`--density` — ratio of edges to nodes (0.0 = fully isolated, 1.0 = fully connected).
 - `arrival_rate`: option `-r`/`--rate` — traffic arrival rate for toll simulation.
 - `sequence_similarity`: option `-c`/`--cross` — number of random crossover events between sequences.
+
+
+### test-script-logging-specification
+
+- Script output should go to stdout and be logged to a file using standard `logger` facilities.
+- Log message formatting can use `glue` package facilities.
+- The log directory will also be used for storing benchmark results and plots.
+- The log directory path will be taken from the environment variable `P_LOGS_DIR`, with `logs` as the default.
+- The log directory should be created if it does not exist.
+- The log filename should have the prefix `<script-name>-<sec-timestamp>` with a '.log' extension.
+- The `<sec-timestamp>` part is composed of the script's start time, formatted as localtime in "YYYYMMDD-hhmmss" format.
+- The script's preparation and execution phases should be logged at the info level (arguments, benchmark invocation, final summary), while the final report section should be logged at the "debug" level (verbose>=1).
+- All log artifacts should contain the test type and a localtime timestamp suffix as part of the filename.
+- During script initialization, log: 1. the script arguments, 2. the full path of the log directory, and 3. the output of the system command: `inxi -C`.
+
 
 ---
 
@@ -252,9 +273,639 @@ Deliver the following, in order:
 
 # A:1 (Claude)
 
-[⇧](#toc) **_TODO:(a1-ref-claude)_**
+[⇧](#toc) **_Parallel DNA Sequence Comparison with RcppParallel_**
 
-TODO:(a1-claude) ...
+
+## Tutorial Narrative
+
+DNA sequence analysis is a canonical workload in bioinformatics: given
+_N_ short nucleotide fragments, compute a pairwise distance matrix of
+dimension _N × N_. Two natural primitives emerge immediately from the
+problem structure:
+
+- **`parallelFor`** — each row _i_ of the distance matrix is
+independent; rows can be computed concurrently without any shared
+  mutable state.
+- **`parallelReduce`** — the minimum edit score across all pairs (the
+  "closest pair" statistic) is a classic reduction: commutative,
+  associative, and embarrassingly splittable.
+
+We use a simplified Hamming distance (mismatches per aligned position)
+rather than full Smith-Waterman to keep the tutorial focused on the
+parallel primitives rather than the DP recurrence. The algorithm maps
+cleanly: filling the upper triangle of the matrix is a `parallelFor`
+over rows; finding the globally most-similar pair is a
+`parallelReduce` over the filled matrix.
+
+The R test harness uses `foreach` with a `doParallel` backend to
+launch multiple independent benchmark _trials_ (varying input sizes or
+repetitions) as outer parallel workers. Each worker calls into the C++
+layer, which spawns its own RcppParallel thread pool. This two-level
+hierarchy is the central tension discussed in the concurrency section.
+
+---
+
+## 1. C++ Implementation
+
+### `src/dna_distance.h`
+
+```cpp
+// dna_distance.h — Exported C++ API header (auto-placed under inst/include
+// by roxygen2 LinkingTo mechanism).
+//
+// Declares the parallel Hamming distance matrix worker and the parallel
+// minimum-pair reduction worker, both callable from R via Rcpp.
+
+#pragma once
+
+#include <RcppArmadillo.h>
+#include <RcppParallel.h>
+#include <string>
+#include <vector>
+
+namespace dve {
+
+// Fills the upper triangle of a symmetric N×N distance matrix in parallel.
+// Each element [i,j] holds the normalised Hamming distance in [0,1].
+struct HammingMatrixWorker : public RcppParallel::Worker {
+  const std::vector<std::string>& seqs;  // input sequences (read-only)
+  RcppParallel::RMatrix<double> mat;     // output matrix (row-parallel writes)
+  const std::size_t len;                 // sequence length (uniform)
+
+  HammingMatrixWorker(const std::vector<std::string>& seqs,
+                      Rcpp::NumericMatrix mat, std::size_t len)
+      : seqs(seqs), mat(mat), len(len) {}
+
+  // Called by the thread pool: computes all [i, j>i] distances for row i.
+  void operator()(std::size_t begin, std::size_t end) override;
+};
+
+// Finds the pair (i,j) with the minimum distance via parallel reduction.
+struct MinPairReducer : public RcppParallel::Reducer {
+  const RcppParallel::RMatrix<double>& mat;
+  double min_dist;
+  int min_i, min_j;
+
+  explicit MinPairReducer(const RcppParallel::RMatrix<double>& mat)
+      : mat(mat), min_dist(1.0 + 1e-9), min_i(-1), min_j(-1) {}
+
+  // Split constructor required by Intel TBB / TinyThread split protocol.
+  MinPairReducer(const MinPairReducer& other, RcppParallel::Split)
+      : mat(other.mat), min_dist(1.0 + 1e-9), min_i(-1), min_j(-1) {}
+
+  void operator()(std::size_t begin, std::size_t end) override;
+
+  // Merge sibling reducer results; keep the globally smaller distance.
+  void join(const MinPairReducer& rhs) {
+    if (rhs.min_dist < min_dist) {
+      min_dist = rhs.min_dist;
+      min_i    = rhs.min_i;
+      min_j    = rhs.min_j;
+    }
+  }
+};
+
+}  // namespace dve
+```
+
+### `src/dna_distance.cpp`
+
+```cpp
+// dna_distance.cpp — Parallel Hamming distance matrix and minimum-pair
+// reduction, implemented with RcppParallel primitives.
+//
+// Google C++ Style Guide; clang-format width 88.
+
+#include "dna_distance.h"
+#include <Rcpp.h>
+#include <RcppParallel.h>
+#include <algorithm>
+#include <cstddef>
+#include <string>
+#include <vector>
+
+using namespace Rcpp;
+using namespace RcppParallel;
+
+// ---------------------------------------------------------------------------
+// HammingMatrixWorker::operator()
+// ---------------------------------------------------------------------------
+// Runs in a thread assigned the half-open row range [begin, end).
+// Writes only to columns j > i in row i — no two threads share a cell.
+void dve::HammingMatrixWorker::operator()(std::size_t begin,
+                                          std::size_t end) {
+  const std::size_t n = seqs.size();
+  for (std::size_t i = begin; i < end; ++i) {
+    for (std::size_t j = i + 1; j < n; ++j) {
+      std::size_t mismatches = 0;
+      const auto& a = seqs[i];
+      const auto& b = seqs[j];
+      // Inner loop is auto-vectorisable (SIMD) when compiled with -O2.
+      for (std::size_t k = 0; k < len; ++k) {
+        mismatches += (a[k] != b[k]) ? 1u : 0u;
+      }
+      const double d = static_cast<double>(mismatches) / static_cast<double>(len);
+      mat(i, j) = d;
+      mat(j, i) = d;  // symmetric fill; j-row write is safe — j > i, unique cell
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// MinPairReducer::operator()
+// ---------------------------------------------------------------------------
+// Scans the upper triangle of rows [begin, end) looking for a new minimum.
+void dve::MinPairReducer::operator()(std::size_t begin, std::size_t end) {
+  const std::size_t n = mat.nrow();
+  for (std::size_t i = begin; i < end; ++i) {
+    for (std::size_t j = i + 1; j < n; ++j) {
+      const double d = mat(i, j);
+      if (d < min_dist) {
+        min_dist = d;
+        min_i    = static_cast<int>(i);
+        min_j    = static_cast<int>(j);
+      }
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// R-callable entry points
+// ---------------------------------------------------------------------------
+
+//' Compute a pairwise Hamming distance matrix for DNA sequences in parallel.
+//'
+//' @param sequences A character vector of equal-length DNA strings.
+//' @param num_threads Number of RcppParallel worker threads (0 = auto).
+//' @return A symmetric numeric matrix of normalised Hamming distances.
+//' @export
+// [[Rcpp::export]]
+NumericMatrix hamming_distance_matrix(const std::vector<std::string>& sequences,
+                                      int num_threads = 0) {
+  const std::size_t n   = sequences.size();
+  const std::size_t len = sequences.empty() ? 0u : sequences[0].size();
+
+  if (num_threads > 0) {
+    RcppParallel::setThreadOptions(num_threads);
+  }
+
+  NumericMatrix mat(n, n);  // zero-initialised; diagonal stays 0.0
+
+  dve::HammingMatrixWorker worker(sequences, mat, len);
+  RcppParallel::parallelFor(0, n, worker);
+
+  return mat;
+}
+
+//' Find the most-similar sequence pair via parallel reduction.
+//'
+//' Operates on the matrix produced by \code{hamming_distance_matrix}.
+//'
+//' @param mat A symmetric numeric distance matrix.
+//' @return A named list: \code{dist}, \code{i}, \code{j} (1-based indices).
+//' @export
+// [[Rcpp::export]]
+List find_closest_pair(NumericMatrix mat) {
+  RMatrix<double> rmat(mat);
+  dve::MinPairReducer reducer(rmat);
+  RcppParallel::parallelReduce(0, static_cast<std::size_t>(mat.nrow()), reducer);
+
+  return List::create(
+      Named("dist") = reducer.min_dist,
+      Named("i")    = reducer.min_i + 1,   // convert to 1-based
+      Named("j")    = reducer.min_j + 1);
+}
+```
+
+---
+
+## 2. R Test Script
+
+### `exec/dna_benchmark.R`
+
+```r
+#!/usr/bin/env Rscript
+# exec/dna_benchmark.R — Benchmark driver for parallel Hamming distance matrix.
+#
+# Runs benchmark trials across input sizes using foreach outer parallelism;
+# each trial calls into the RcppParallel C++ layer.
+#
+# Usage:
+#   Rscript exec/dna_benchmark.R [options] <input_size> [<input_size> ...]
+
+# ── Package loading ──────────────────────────────────────────────────────────
+suppressWarnings({
+  library(argparse)
+  library(logger)
+  library(glue)
+  library(foreach)
+  library(doParallel)
+  library(parallel)
+  library(RcppParallel)
+  library(dve.sample.r)   # the host package
+})
+
+# ── Script metadata ──────────────────────────────────────────────────────────
+script_name  <- "dna_benchmark"
+start_time   <- Sys.time()
+ts_suffix    <- format(start_time, "%Y%m%d-%H%M%S")
+
+# ── Log directory ────────────────────────────────────────────────────────────
+log_dir <- Sys.getenv("P_LOGS_DIR", unset = "logs")
+if (!dir.exists(log_dir)) dir.create(log_dir, recursive = TRUE)
+log_file <- file.path(log_dir, glue("{script_name}-{ts_suffix}.log"))
+
+log_appender(appender_tee(log_file))   # stdout + file
+log_threshold(INFO)                    # default; raised to DEBUG if --verbose
+
+# ── Argument parsing ─────────────────────────────────────────────────────────
+parser <- ArgumentParser(description = "Parallel Hamming distance benchmark")
+
+parser$add_argument("-v", "--verbose",
+  action = "store_true", default = FALSE,
+  help   = "Enable debug-level logging [default: FALSE]")
+
+parser$add_argument("-u", "--seed",
+  type    = "integer", default = 0L, dest = "rnd_seed",
+  help    = "RNG seed for reproducibility [default: 0]")
+
+parser$add_argument("-s", "--save",
+  action = "store_true", default = FALSE, dest = "save_data",
+  help   = "Dump input data and results to JSON")
+
+parser$add_argument("-n", "--num-sequences",
+  type    = "integer", default = 200L, dest = "num_sequences",
+  help    = "Number of DNA sequences per trial [default: 200]")
+
+parser$add_argument("-c", "--cross",
+  type    = "integer", default = 0L, dest = "sequence_similarity",
+  help    = "Number of crossover events between sequences [default: 0]")
+
+parser$add_argument("-w", "--foreach-workers",
+  type    = "integer", default = 2L, dest = "foreach_workers",
+  help    = "Outer foreach parallel workers [default: 2]")
+
+parser$add_argument("-t", "--rcpp-threads",
+  type    = "integer", default = 2L, dest = "rcpp_threads",
+  help    = "Inner RcppParallel thread count per worker [default: 2]")
+
+parser$add_argument("input_size",
+  type  = "integer", nargs = "+",
+  help  = "One or more sequence lengths (positional)")
+
+args <- parser$parse_args()
+
+# ── Apply verbose flag ───────────────────────────────────────────────────────
+if (args$verbose) log_threshold(DEBUG)
+
+# ── Log initialisation block ─────────────────────────────────────────────────
+log_info(glue("Script        : {script_name}"))
+log_info(glue("Log directory : {normalizePath(log_dir)}"))
+log_info(glue("Parsed args   : seed={args$rnd_seed}, sizes={toString(args$input_size)}, \\
+               foreach_workers={args$foreach_workers}, rcpp_threads={args$rcpp_threads}, \\
+               num_sequences={args$num_sequences}, crossovers={args$sequence_similarity}"))
+
+# System CPU topology
+cpu_info <- tryCatch(system("inxi -C", intern = TRUE), error = function(e) "(inxi not available)")
+log_info(glue("System CPU:\n{paste(cpu_info, collapse = '\n')}"))
+
+# ── Helpers ───────────────────────────────────────────────────────────────────
+
+#' Generate a random DNA sequence of a given length.
+random_dna <- function(len, seed = NULL) {
+  if (!is.null(seed)) set.seed(seed)
+  paste(sample(c("A", "C", "G", "T"), len, replace = TRUE), collapse = "")
+}
+
+#' Apply crossover events between two sequences (single-point swap).
+crossover <- function(a, b, n_events) {
+  if (n_events == 0L) return(a)
+  len   <- nchar(a)
+  chars <- strsplit(a, "")[[1L]]
+  bchrs <- strsplit(b, "")[[1L]]
+  for (i in seq_len(n_events)) {
+    pos        <- sample.int(len - 1L, 1L)
+    tail_a     <- chars[(pos + 1L):len]
+    chars[(pos + 1L):len] <- bchrs[(pos + 1L):len]
+    bchrs[(pos + 1L):len] <- tail_a
+  }
+  paste(chars, collapse = "")
+}
+
+#' Generate a panel of DNA sequences with optional crossovers.
+make_sequences <- function(n, len, n_cross, seed) {
+  set.seed(seed)
+  seqs <- replicate(n, random_dna(len))
+  if (n_cross > 0L && n >= 2L) {
+    seqs[1L] <- crossover(seqs[1L], seqs[2L], n_cross)
+  }
+  seqs
+}
+
+# ── Parallel setup ───────────────────────────────────────────────────────────
+total_cores     <- parallel::detectCores(logical = FALSE)
+foreach_workers <- min(args$foreach_workers, total_cores)
+rcpp_threads    <- args$rcpp_threads
+
+log_info(glue("Physical cores detected : {total_cores}"))
+log_info(glue("foreach workers         : {foreach_workers}"))
+log_info(glue("RcppParallel threads    : {rcpp_threads} (per worker)"))
+log_info(glue("Total thread pressure   : {foreach_workers * rcpp_threads} \\
+               (ideal ≤ {total_cores})"))
+
+cl <- parallel::makeCluster(foreach_workers, type = "PSOCK")
+doParallel::registerDoParallel(cl)
+
+# Export variables required inside foreach workers.
+parallel::clusterExport(cl, varlist = c("make_sequences", "random_dna",
+                                        "crossover", "rcpp_threads"),
+                        envir = environment())
+parallel::clusterEvalQ(cl, {
+  suppressWarnings(library(RcppParallel))
+  suppressWarnings(library(dve.sample.r))
+  RcppParallel::setThreadOptions(rcpp_threads)
+})
+
+# ── Benchmark trials ─────────────────────────────────────────────────────────
+log_info("Starting benchmark trials ...")
+
+trial_grid <- expand.grid(
+  seq_len = args$input_size,
+  trial   = seq_len(3L)   # three repetitions per size for stable timing
+)
+
+results <- foreach(
+  row       = iterators::iter(trial_grid, by = "row"),
+  .combine  = rbind,
+  .packages = c("dve.sample.r", "RcppParallel")
+) %dopar% {
+  seq_len_val <- row$seq_len
+  trial_idx   <- row$trial
+  seed_val    <- args$rnd_seed + trial_idx
+
+  seqs <- make_sequences(args$num_sequences, seq_len_val,
+                         args$sequence_similarity, seed_val)
+
+  t0  <- proc.time()[["elapsed"]]
+  mat <- hamming_distance_matrix(seqs, num_threads = rcpp_threads)
+  t1  <- proc.time()[["elapsed"]]
+
+  closest <- find_closest_pair(mat)
+
+  data.frame(
+    seq_len    = seq_len_val,
+    trial      = trial_idx,
+    elapsed_s  = t1 - t0,
+    min_dist   = closest$dist,
+    pair_i     = closest$i,
+    pair_j     = closest$j,
+    stringsAsFactors = FALSE
+  )
+}
+
+parallel::stopCluster(cl)
+
+# ── Summary ──────────────────────────────────────────────────────────────────
+summary_tbl <- aggregate(elapsed_s ~ seq_len, data = results, FUN = mean)
+names(summary_tbl)[2L] <- "mean_elapsed_s"
+
+log_info("=== Benchmark Summary ===")
+for (i in seq_len(nrow(summary_tbl))) {
+  log_info(glue("  seq_len={summary_tbl$seq_len[i]}  \\
+                 mean_elapsed={round(summary_tbl$mean_elapsed_s[i], 4)}s"))
+}
+
+log_debug("=== Full Results ===")
+for (i in seq_len(nrow(results))) {
+  r <- results[i, ]
+  log_debug(glue("  seq_len={r$seq_len} trial={r$trial} elapsed={round(r$elapsed_s,4)}s \\
+                  min_dist={round(r$min_dist,4)} pair=({r$pair_i},{r$pair_j})"))
+}
+
+# ── Optional data dump ───────────────────────────────────────────────────────
+if (args$save_data) {
+  out_path <- file.path(log_dir, glue("{script_name}-{ts_suffix}-results.json"))
+  jsonlite::write_json(results, out_path, pretty = TRUE)
+  log_info(glue("Results saved to: {out_path}"))
+}
+
+log_info("Done.")
+```
+
+---
+
+## 3. Concurrency Discussion
+
+### Thread safety in `HammingMatrixWorker`
+
+The matrix fill is safe without any mutex because the work partition
+is _row-disjoint_: `parallelFor` assigns non-overlapping row ranges
+`[begin, end)` to each thread. Thread _t_ writes to cells `(i, j)` and
+`(j, i)` for all `j > i` in its assigned rows. The symmetric write
+`mat(j, i)` writes into row _j_, which may be outside thread _t_'s
+_assigned_ range — however, it writes into a cell that no other thread
+will ever write, because the only thread that would write `mat(j, i)`
+via the upper-triangle loop would be thread _t'_ assigned row _j_, and
+that thread only processes `k > j`, never `k = i < j`. The write
+pattern is therefore guaranteed non-overlapping across threads, and no
+synchronisation is required.
+
+`RMatrix<double>` (the RcppParallel wrapper) prevents accidental R GC
+entanglement; direct `double*` arithmetic is used internally.
+
+### Thread safety in `MinPairReducer`
+
+`parallelReduce` guarantees that each reducer instance is accessed by
+exactly one thread at a time. The `join()` method is called
+sequentially by the runtime to merge sibling subtask results; it never
+races with `operator()`. Local minimum tracking within `operator()` is
+purely stack-local and requires no synchronisation.
+
+### Functional, message-passing character
+
+Both workers are _value types_ that own their local state and
+communicate results only through the structured `join()` protocol
+mandated by the RcppParallel API. This is effectively message-passing
+without explicit channels: the runtime acts as the message bus.
+
+### Race-free crossover in R
+
+The R-side `crossover()` helper operates on local copies of character
+vectors; the `make_sequences()` function is called inside each
+`foreach` worker in a separate R process (PSOCK cluster), so there is
+no shared mutable state at the R level either.
+
+### Two-level thread pressure
+
+The principal operational risk is _thread over-subscription_: if
+`foreach_workers × rcpp_threads > physical_cores`, the OS will
+time-slice threads, causing cache-line contention and context-switch
+overhead. The logged warning line (`Total thread pressure: X (ideal ≤
+Y)`) makes this visible at runtime. A safe default for _P_ physical
+cores is `foreach_workers = 2, rcpp_threads = P/2`.
+
+---
+
+## 4. Multi-Node Variant Discussion
+
+### SSH-based distribution
+
+Replace `parallel::makeCluster(N, type = "PSOCK")` with
+`parallel::makeCluster(c("node1", "node2", ...), type = "PSOCK")`. R
+spawns worker processes over SSH using `Rscript`; the package must be
+installed on every node. Network latency makes this suitable only when
+trial granularity is large (sequence lengths > 10 000, many
+sequences).
+
+### MPI-based distribution
+
+Use `Rmpi` with `doMPI::registerDoMPI`. Launch the script with `mpirun
+-np W Rscript exec/dna_benchmark.R ...`. MPI provides low-latency
+collective operations and is the right choice when the result matrix
+itself must be aggregated across nodes (e.g. distributed distance
+matrix rows). Data serialisation uses R's native serialisation or
+`pbdMPI` raw-buffer transfers.
+
+### ZMQ-based distribution
+
+`pbdZMQ` or the `clustermq` package allow a push/pull task queue
+pattern. A single coordinator process pushes trial descriptors onto a
+`PUSH` socket; worker processes on remote nodes pull tasks, execute
+trials, and `PUSH` results back to a `PULL` collector. This is the
+most fault-tolerant topology (workers can join and leave dynamically)
+and avoids the SSH-per-worker connection setup of PSOCK
+clusters. `clustermq` with a `scheduler = "slurm"` backend requires
+only changing one `registerDoParallel` call.
+
+### Data transport consideration
+
+In all multi-node cases the DNA sequences (character vectors) must be
+serialised and transmitted. For large _N_ and long sequences,
+pre-generating sequences on each worker (using the shared RNG seed)
+avoids transmitting the input entirely — only the scalar trial
+descriptor (size, seed, crossover count) need travel over the network.
+
+---
+
+## 5. RcppParallel Quick-Start Guide
+
+### `DESCRIPTION` additions
+
+```text
+Imports:
+    RcppParallel
+LinkingTo:
+    Rcpp,
+    RcppArmadillo,
+    RcppParallel
+SystemRequirements: GNU make
+```
+
+### `src/Makevars`
+
+```makefile
+## Link against the RcppParallel thread library (TinyThread or TBB).
+PKG_LIBS   += $(shell "${R_HOME}/bin/Rscript" -e "RcppParallel::RcppParallelLibs()")
+PKG_CXXFLAGS += $(shell "${R_HOME}/bin/Rscript" -e "RcppParallel::CxxFlags()")
+```
+
+Do _not_ add `-march=native` here; it produces a `R CMD check`
+NOTE/WARNING that blocks CRAN submission.
+
+### SIMD support in `~/.R/Makevars` (local developer machine only)
+
+```makefile
+CXXFLAGS = -O2 -march=native
+```
+
+This flag allows the compiler to emit AVX2 / AVX-512 vectorised code
+for the inner Hamming loop. `R CMD check --as-cran` will warn that the
+binary is not portable; this is expected and acceptable for local
+development and benchmarking. Never commit this to `src/Makevars`.
+
+### OS-level dependencies (Ubuntu / Debian)
+
+```bash
+# TinyThread is header-only and bundled with RcppParallel — no extra apt package.
+# For TBB backend (optional, higher throughput on many-core systems):
+sudo apt install libtbb-dev
+```
+
+### TinyThread vs. TBB backend
+
+| Property     | TinyThread (default) | Intel TBB                    |
+|--------------|----------------------|------------------------------|
+| Installation | bundled, zero-config | `libtbb-dev` required        |
+| Scheduler    | static work-stealing | dynamic work-stealing        |
+| NUMA-aware   | no                   | yes (TBB 2021+)              |
+| Best for     | ≤ 8 cores, portable  | ≥ 16 cores, server workloads |
+
+Select TBB at runtime with `RcppParallel::setThreadOptions(backend ="tbb")` 
+or at compile time by defining `RCPP_PARALLEL_USE_TBB=1`.
+
+### `renv` installation sequence
+
+```r
+# Run from the package root with renv in explicit mode.
+renv::install("RcppParallel")
+renv::install("doParallel")
+renv::install("foreach")
+renv::install("iterators")
+renv::install("logger")
+renv::install("argparse")
+renv::install("glue")
+renv::install("jsonlite")
+renv::snapshot()
+```
+
+---
+
+## References
+
+[^ac-rcppparallel]: RcppParallel package documentation — _Writing Parallel Programs with RcppParallel_. <https://rcppcore.github.io/RcppParallel/>
+
+[^ac-hamming]: Hamming, R. W. (1950). _Error Detecting and Error Correcting Codes_. Bell System Technical Journal, 29(2), 147–160.
+
+[^ac-tbb]: Intel oneAPI Threading Building Blocks documentation. <https://oneapi-src.github.io/oneTBB/>
+
+[^ac-doparallel]: Microsoft / Revolution Analytics. _doParallel: Foreach Parallel Adaptor for the 'parallel' Package_. <https://CRAN.R-project.org/package=doParallel>
+
+[^ac-logger]: Daróczi, G. _logger: A Lightweight, Modern and Flexible Logging Utility_. <https://CRAN.R-project.org/package=logger>
+
+[^ac-renv]: Ushey, K. _renv: Project Environments_. <https://rstudio.github.io/renv/>
+
+[^ac-google-cpp]: Google LLC. _Google C++ Style Guide_. <https://google.github.io/styleguide/cppguide.html>
+
+---
+
+## Additional Notes
+
+- The `symmetric write` pattern in `HammingMatrixWorker` (writing
+  `mat(j, i)` from thread assigned row `i`) is safe but subtle. If
+  future maintainers change the partitioning scheme, they must
+  re-verify this invariant. A conservative alternative is to fill only
+  the upper triangle and mirror with a second sequential pass.
+- The `iterators` package must be explicitly installed
+  (`renv::install("iterators")`) because `foreach` lists it as a
+  dependency but `renv` explicit mode does not resolve transitive
+  dependencies automatically.
+- `argparse` requires Python 3 with the `argparse` module available on
+  `PATH`. On minimal CI images, substitute `optparse` and adjust the
+  parser calls accordingly.
+- When `--save` is used, `jsonlite` must also be installed
+  (`renv::install("jsonlite")`).
+- PSOCK clusters on Windows do not support `clusterEvalQ` before
+  `registerDoParallel`; the `RcppParallel::setThreadOptions` call
+  inside `clusterEvalQ` must be moved into the `foreach` body for
+  Windows compatibility.
+- For CRAN submission, remove the `exec/` script from the package
+  tarball or list it under `.Rbuildignore`; CRAN policy does not
+  require it but executable scripts without a documented interface can
+  trigger manual review.
+
+
+
+
 
 # A:1 (Gemini)
 
