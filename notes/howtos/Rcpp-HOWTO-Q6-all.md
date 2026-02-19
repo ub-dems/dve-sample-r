@@ -24,25 +24,13 @@ doctype: md-report
 
 # TOC
 
-1. [Q:1 - TODO:(q1-ref)](#q1)
-   - see: [TODO:(a1-ref-claude) (Claude)](#a1-claude)
-   - see: [TODO:(a1-ref-gemini) (Gemini)](#a1-gemini)
-   - see: [TODO:(a1-ref-chatgpt) (ChatGPT)](#a1-chatgpt)
-   - see: [TODO:(a1-ref-perplexity) (Perplexity)](#a1-perplexity)
-   - see: [TODO:(a1-ref-deepseek) (DeepSeek)](#a1-deepseek)
-2. [Q:2 - TODO:(q2-ref)](#q2)
-   - see: [TODO:(a2-ref-claude) (Claude)](#a2-claude)
-   - see: [TODO:(a2-ref-gemini) (Gemini)](#a2-gemini)
-   - see: [TODO:(a2-ref-chatgpt) (ChatGPT)](#a2-chatgpt)
-   - see: [TODO:(a2-ref-perplexity) (Perplexity)](#a2-perplexity)
-   - see: [TODO:(a2-ref-deepseek) (DeepSeek)](#a2-deepseek)
-3. [A:a - TODO:(appendix-a)](#aa)
-4. [A:b - Q1: Prompt distiller](#ab)
-   - see: [Q1: Prompt distiller (Claude)](#ab-claude)
-   - see: [Q1: Prompt distiller (Gemini)](#ab-gemini)
-   - see: [Q1: Prompt distiller (ChatGPT)](#ab-chatgpt)
-   - see: [Q1: Prompt distiller (Perplexity)](#ab-perplexity)
-   - see: [Q1: Prompt distiller (DeepSeek)](#ab-deepseek)
+1. [Q:1 - Parallelism in R Development: A Tutorial](#q1)
+   - see: [Parallel DNA Sequence Comparison with RcppParallel (Claude)](#a1-claude)
+   - see: [RcppParallel Tutorial: DNA Sequence Analysis (Gemini)](#a1-gemini)
+   - see: [Parallel Biological Sequence Comparison in R and C++ (ChatGPT)](#a1-chatgpt)
+   - see: [RcppParallel Tutorial (Perplexity)](#a1-perplexity)
+   - see: [Parallel DNA Sequence Comparison with RcppParallel (DeepSeek)](#a1-deepseek)
+   - see: [Parallelism in R Development: A Tutorial (Mistral)](#a1-mistral)
 
 <details>
 <summary></summary>
@@ -81,7 +69,7 @@ doctype: md-report
 
 # Q:1
 
-## Q:1 - **TODO:(q1-title)**
+## Q:1 - **Parallelism in R Development: A Tutorial**
 
 [⇧](#toc)
 
@@ -3141,9 +3129,211 @@ This pattern can be adapted to:
 
 # A:1 (Mistral)
 
-[⇧](#toc) **_TODO:(a1-ref-mistral)_**
+[⇧](#toc) **_Parallelism in R Development: A Tutorial_**
 
-TODO:(a1-mistral) ...
+## Overview /m
+
+This tutorial introduces parallelism in R development with examples in
+both R and C++. We focus on a practical use case: biological sequence
+comparison using the Smith-Waterman algorithm on random DNA fragments.
+
+## Tutorial Narrative /m
+
+Biological sequence comparison is a fundamental task in
+bioinformatics. The Smith-Waterman algorithm is a widely used method
+for local sequence alignment, which is computationally intensive,
+making it a good candidate for parallelization.
+
+The algorithm involves computing a scoring matrix for two sequences,
+where each cell depends on the values of neighboring cells. While the
+computation within a single pair of sequences is inherently
+sequential, comparing multiple pairs of sequences can be
+parallelized. This is where RcppParallel comes into play: we can use
+`parallelFor` to compute the scores for different pairs of sequences
+in parallel. Additionally, we can use `parallelReduce` to aggregate
+results, such as finding the maximum score across all pairs.
+
+The test harness uses `foreach` to run benchmark trials in parallel,
+allowing us to collect performance data for different input sizes and
+configurations.
+
+## C++ Implementation /m
+
+Here is the C++ implementation of the Smith-Waterman algorithm using RcppParallel:
+
+```cpp
+#include <Rcpp.h>
+#include <RcppParallel.h>
+#include <vector>
+#include <string>
+#include <algorithm>
+using namespace Rcpp;
+using namespace RcppParallel;
+
+// [[Rcpp::export]]
+double smithWaterman(const std::string& seq1, const std::string& seq2) {
+    int m = seq1.size();
+    int n = seq2.size();
+    std::vector<std::vector<double>> H(m + 1, std::vector<double>(n + 1, 0));
+    double max_score = 0;
+
+    for (int i = 1; i <= m; i++) {
+        for (int j = 1; j <= n; j++) {
+            double match = (seq1[i - 1] == seq2[j - 1]) ? 1 : -1;
+            H[i][j] = std::max({0, H[i - 1][j - 1] + match, H[i - 1][j] - 1, H[i][j - 1] - 1});
+            max_score = std::max(max_score, H[i][j]);
+        }
+    }
+    return max_score;
+}
+
+// [[Rcpp::export]]
+std::vector<double> computeAllPairs(const std::vector<std::string>& sequences) {
+    int n = sequences.size();
+    std::vector<double> scores(n * (n - 1) / 2);
+
+    parallelFor(0, n, [&](int i) {
+        for (int j = i + 1; j < n; j++) {
+            int index = i * n + j;
+            scores[index] = smithWaterman(sequences[i], sequences[j]);
+        }
+    });
+
+    return scores;
+}
+
+// [[Rcpp::export]]
+double computeMaxScore(const std::vector<double>& scores) {
+    double max_score;
+    parallelReduce(0, scores.size(), [&](int i, double& max_val) {
+        if (scores[i] > max_val) {
+            max_val = scores[i];
+        }
+    }, [&](double& max_val1, const double& max_val2) {
+        if (max_val2 > max_val1) {
+            max_val1 = max_val2;
+        }
+    }, max_score);
+    return max_score;
+}
+```
+
+## R Test Script /m
+
+Here is the R test script that calls the C++ functions and runs benchmarks:
+
+```r
+#!/usr/bin/env Rscript
+supppressPackageStartupMessages(library(argparse))
+supppressPackageStartupMessages(library(foreach))
+supppressPackageStartupMessages(library(doParallel))
+supppressPackageStartupMessages(library(glue))
+supppressPackageStartupMessages(library(logger))
+
+# Parse command-line arguments
+parser <- ArgumentParser(description = 'Benchmark Smith-Waterman algorithm with RcppParallel')
+parser$add_argument('--help', '-h', action = 'store_true', help = 'Print usage and exit')
+parser$add_argument('--verbose', '-v', action = 'store_true', help = 'Verbose output')
+parser$add_argument('--seed', '-u', type = 'integer', default = 0, help = 'Random seed')
+parser$add_argument('--save', '-s', action = 'store_true', help = 'Save data to file')
+parser$add_argument('input_size', type = 'integer', nargs = '+', help = 'Input sizes')
+
+args <- parser$parse_args()
+
+if (args$help) {
+    print(parser$format_help())
+    stop()
+}
+
+# Set up logging
+log_dir <- Sys.getenv('P_LOGS_DIR', 'logs')
+if (!dir.exists(log_dir)) dir.create(log_dir)
+log_file <- file.path(log_dir, paste0(basename(sys.frame(0)$ofile), '-', format(Sys.time(), '%Y%m%d-%H%M%S'), '.log'))
+log_appender(appender_file(log_file))
+log_layout(layout_simple, date_format = '%Y-%m-%d %H:%M:%S')
+log_threshold(if (args$verbose) 'DEBUG' else 'INFO')
+
+log_info('Script arguments: ', paste(names(args), args, collapse = ', '))
+log_info('Log directory: ', normalizePath(log_dir))
+
+# Generate random DNA sequences
+set.seed(args$seed)
+generate_sequences <- function(n, length) {
+    bases <- c('A', 'C', 'G', 'T')
+    sequences <- replicate(n, paste(sample(bases, length, replace = TRUE), collapse = ''), simplify = FALSE)
+    return(sequences)
+}
+
+# Benchmark function
+benchmark <- function(n, length) {
+    sequences <- generate_sequences(n, length)
+    scores <- computeAllPairs(sequences)
+    max_score <- computeMaxScore(scores)
+    list(input_size = n, sequence_length = length, max_score = max_score)
+}
+
+# Use foreach to run benchmarks in parallel
+cl <- makeCluster(detectCores() - 1)
+registerDoParallel(cl)
+results <- foreach(i = 1:length(args$input_size), .combine = rbind) %dopar% {
+    benchmark(args$input_size[i], 100) # Fixed sequence length for simplicity
+}
+stopCluster(cl)
+
+# Log results
+log_debug('Detailed results: ', results)
+```
+
+## Concurrency Discussion /m
+
+In the implementation, each pair of sequences is processed
+independently, so there are no shared resources between threads, and
+no race conditions occur. The `parallelReduce` function is designed to
+be thread-safe, ensuring that the reduction operation (finding the
+maximum score) is performed correctly.
+
+## Multi-Node Variant Discussion /m
+
+To distribute work across a multi-node cluster, we can use MPI or
+ZMQ. For example, with MPI, we could distribute the computation of
+different pairs of sequences across nodes. Each node would compute
+scores for a subset of pairs and send the results back to the master
+node for aggregation. This would involve modifying the R script to use
+an MPI backend for `foreach` and ensuring that data is properly
+serialized and transmitted between nodes.
+
+## RcppParallel Quick Start Guide /m
+
+1. **Package Configuration**:
+   - Add `RcppParallel` to the `DESCRIPTION` file under `LinkingTo`.
+   - Update `src/Makevars` to include the necessary compiler flags.
+
+2. **OS Dependencies**:
+   - On Ubuntu, install the necessary libraries with:
+
+     ```bash
+     sudo apt-get install libtbb-dev
+     ```
+
+3. **renv Installation**:
+   - Use `renv::install()` followed by `renv::snapshot()` to manage dependencies.
+
+## References /m
+
+1. [RcppParallel Documentation](https://rcppcore.github.io/RcppParallel/)
+2. [Smith-Waterman Algorithm](https://en.wikipedia.org/wiki/Smith%E2%80%93Waterman_algorithm)
+
+## Additional Notes /m
+
+- Ensure that the package passes `R CMD check` without any warnings
+  (except for the `-march=native` warning in `~/.R/Makevars`).
+- Follow the `tidyverse` style guide for all R code.
+- Use `glue` for log message formatting and `logger` for logging.
+
+This tutorial provides a structured approach to introducing
+parallelism in R development with practical examples and clear
+instructions for setting up and running benchmarks.
+
 
 <!-- }}} \\ %1. -->
 <!-- {{{ // %*
