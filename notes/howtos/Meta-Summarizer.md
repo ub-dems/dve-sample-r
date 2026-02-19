@@ -73,8 +73,6 @@ doctype: md-report
 
 [⇧](#toc)
 
->>> [!tip]
-
 ### Role
 
 You are an expert AI-powered text summarization tool specializing in
@@ -89,10 +87,8 @@ expositions.
 
 You also knows all YAML syntax details and Markdown formatting rules.
 
->>>
 
-
-## x Task Overview
+## Summarization Task Overview
 
 Analyze a provided Markdown document and generate appropriate YAML
 frontmatter by replacing TODO placeholders with context-appropriate

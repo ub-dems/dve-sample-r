@@ -1,14 +1,44 @@
 ---
-title: TODO:(title)
-subtitle: TODO:(subtitle)
+title: Parallelism in R Development with RcppParallel
+subtitle: |
+  A tutorial on parallel computing in R and C++ using RcppParallel,
+  foreach, and biological sequence comparison as a motivating use case
 # {{{ // %+
 
-category: RCPP-Howto
-keywords: [GEN, TODO:(keywords)]
+category: Rcpp-HOWTO
+keywords: [GEN, RcppParallel, Rcpp, OpenMP, foreach, parallelFor, parallelReduce, bioinformatics]
 abstract: |
-  TODO:(abstract)
-  
-  ...
+  This tutorial introduces parallel programming in R and C++ within a
+  CRAN-compliant package environment, using the `RcppParallel` library
+  as the primary framework. The exposition targets R developers seeking
+  to leverage multi-core hardware through both implicit parallelism
+  (OpenMP, SIMD) and explicit task-based concurrency.
+
+  A biological sequence comparison problem — pairwise distance matrix
+  computation on random DNA fragments using Hamming-based metrics — is
+  used as the central motivating example. This use case provides a
+  natural and pedagogically clear mapping to both `parallelFor` and
+  `parallelReduce` primitives, avoiding artificial API demonstrations.
+
+  The C++ implementation follows the Google C++ Style Guide and exposes
+  entry-point functions to R via `Rcpp`, with headers auto-generated
+  by `roxygen2` under `inst/include`. The accompanying R test script,
+  located under `exec/`, uses `foreach`-based parallelism to execute
+  benchmark trials across varying input sizes, aggregating timing and
+  result metrics.
+
+  Core-allocation trade-offs between outer `foreach` workers and the
+  inner `RcppParallel` thread pool are discussed, covering
+  `RcppParallel::setThreadOptions`, `doParallel::registerDoParallel`,
+  and `parallel::makeCluster`. Race condition analysis and
+  synchronisation strategies are addressed, with preference for
+  functional, message-passing patterns.
+
+  The tutorial also covers multi-node distribution strategies using
+  `ssh`, `MPI`, and `ZMQ`, and provides a concise `RcppParallel`
+  quick-start guide including `DESCRIPTION` and `src/Makevars`
+  configuration, TinyThread vs. TBB backend selection, SIMD enablement
+  via `-march=native`, and the `renv` installation workflow.
 
 doctype: md-report
 
