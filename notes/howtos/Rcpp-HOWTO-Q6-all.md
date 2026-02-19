@@ -2555,9 +2555,589 @@ and the `exec/` benchmark script. [perceptive-analytics](https://www.perceptive-
 
 # A:1 (DeepSeek)
 
-[⇧](#toc) **_TODO:(a1-ref-deepseek)_**
+[⇧](#toc) **_Parallel DNA Sequence Comparison with RcppParallel_**
 
-TODO:(a1-deepseek) ...
+## Overview /d
+
+This tutorial demonstrates how to harness parallel computing in R for
+a biologically inspired problem: comparing DNA sequences using a
+Hamming-based distance matrix. The example naturally maps to two
+fundamental parallel patterns:
+
+- **Map Pattern** (via `parallelFor`): Computing pairwise distances between sequences
+- **Reduce Pattern** (via `parallelReduce`): Aggregating summary
+  statistics across the distance matrix
+
+### Why This Example Fits RcppParallel
+
+DNA sequence comparison exhibits **embarrassingly parallel** characteristics:
+
+- Each pairwise distance calculation is independent
+- The workload can be evenly distributed across cores
+- Both per-element processing (distance computation) and global
+  aggregation (statistics) benefit from parallelization
+
+The `RcppParallel` package provides thread-safe primitives that
+integrate seamlessly with R's memory model, making it ideal for this
+use case.
+
+## C++ Implementation
+
+Create `src/dna_comparison.cpp`:
+
+```cpp
+// dna_comparison.cpp
+#include <Rcpp.h>
+#include <RcppParallel.h>
+#include <string>
+#include <vector>
+#include <algorithm>
+#include <cmath>
+
+using namespace Rcpp;
+using namespace RcppParallel;
+
+// Helper function to compute Hamming distance between two DNA strings
+int hamming_distance(const std::string& a, const std::string& b) {
+  int dist = 0;
+  int len = std::min(a.length(), b.length());
+  for (int i = 0; i < len; ++i) {
+    if (a[i] != b[i]) ++dist;
+  }
+  dist += std::abs(static_cast<int>(a.length() - b.length()));
+  return dist;
+}
+
+// Parallel worker for computing distance matrix rows
+class DistanceMatrixWorker : public Worker {
+private:
+  const std::vector<std::string>& sequences_;
+  RMatrix<int> distances_;
+  
+public:
+  // Constructor
+  DistanceMatrixWorker(const std::vector<std::string>& sequences, 
+                       IntegerMatrix distances)
+    : sequences_(sequences), distances_(distances) {}
+  
+  // Process a range of rows
+  void operator()(std::size_t begin, std::size_t end) {
+    int n = sequences_.size();
+    for (std::size_t i = begin; i < end; ++i) {
+      for (int j = 0; j < n; ++j) {
+        if (i == j) {
+          distances_(i, j) = 0;
+        } else if (i < j) {
+          int dist = hamming_distance(sequences_[i], sequences_[j]);
+          distances_(i, j) = dist;
+          distances_(j, i) = dist;  // Symmetric matrix
+        }
+      }
+    }
+  }
+};
+
+// Parallel reducer for computing summary statistics
+class DistanceStatsReducer : public Worker {
+private:
+  const std::vector<std::string>& sequences_;
+  const RMatrix<int>& distances_;
+  
+  // Accumulators (per-thread)
+  double sum_;
+  double sum_sq_;
+  int min_;
+  int max_;
+  int count_;
+  
+public:
+  // Constructor
+  DistanceStatsReducer(const std::vector<std::string>& sequences,
+                       const IntegerMatrix distances)
+    : sequences_(sequences), distances_(distances),
+      sum_(0), sum_sq_(0), 
+      min_(std::numeric_limits<int>::max()),
+      max_(std::numeric_limits<int>::min()),
+      count_(0) {}
+  
+  // Copy constructor for splitting
+  DistanceStatsReducer(const DistanceStatsReducer& other, Split)
+    : sequences_(other.sequences_), distances_(other.distances_),
+      sum_(0), sum_sq_(0),
+      min_(std::numeric_limits<int>::max()),
+      max_(std::numeric_limits<int>::min()),
+      count_(0) {}
+  
+  // Process a range of matrix elements (upper triangle only)
+  void operator()(std::size_t begin, std::size_t end) {
+    int n = sequences_.size();
+    for (std::size_t idx = begin; idx < end; ++idx) {
+      int i = idx / n;
+      int j = idx % n;
+      
+      // Only process upper triangle once
+      if (i < j) {
+        int val = distances_(i, j);
+        sum_ += val;
+        sum_sq_ += static_cast<double>(val) * val;
+        min_ = std::min(min_, val);
+        max_ = std::max(max_, val);
+        count_++;
+      }
+    }
+  }
+  
+  // Join results from two threads
+  void join(const DistanceStatsReducer& rhs) {
+    sum_ += rhs.sum_;
+    sum_sq_ += rhs.sum_sq_;
+    min_ = std::min(min_, rhs.min_);
+    max_ = std::max(max_, rhs.max_);
+    count_ += rhs.count_;
+  }
+  
+  // Extract results
+  std::vector<double> get_stats() const {
+    double mean = (count_ > 0) ? sum_ / count_ : 0;
+    double variance = (count_ > 1) ? 
+      (sum_sq_ - (sum_ * sum_) / count_) / (count_ - 1) : 0;
+    double sd = std::sqrt(variance);
+    
+    return {mean, sd, static_cast<double>(min_), 
+            static_cast<double>(max_), static_cast<double>(count_)};
+  }
+};
+
+//' Compute Hamming distance matrix for DNA sequences
+//'
+//' @param sequences Character vector of DNA sequences
+//' @return A list containing distance matrix and summary statistics
+//' @export
+// [[Rcpp::export]]
+List compute_dna_distances(std::vector<std::string> sequences) {
+  int n = sequences.size();
+  
+  // Allocate distance matrix
+  IntegerMatrix distances(n, n);
+  
+  // Step 1: Parallel distance computation
+  DistanceMatrixWorker worker(sequences, distances);
+  parallelFor(0, n, worker);
+  
+  // Step 2: Parallel statistics reduction
+  DistanceStatsReducer reducer(sequences, distances);
+  parallelReduce(0, static_cast<size_t>(n * n), reducer);
+  
+  // Extract results
+  std::vector<double> stats = reducer.get_stats();
+  
+  return List::create(
+    Named("distance_matrix") = distances,
+    Named("mean_distance") = stats[0],
+    Named("sd_distance") = stats[1],
+    Named("min_distance") = stats[2],
+    Named("max_distance") = stats[3],
+    Named("pairs_count") = stats[4]
+  );
+}
+```
+
+## R Test Script
+
+Create `exec/benchmark_dna.R`:
+
+```r
+#!/usr/bin/env Rscript
+
+suppressPackageStartupMessages({
+  library(optparse)
+  library(logger)
+  library(glue)
+  library(foreach)
+  library(doParallel)
+  library(dplyr)
+  library(tidyr)
+  library(ggplot2)
+  library(RcppParallel)
+  library(dveSampleR)
+})
+
+# Parse command line arguments
+option_list <- list(
+  make_option(c("-h", "--help"), action = "store_true", default = FALSE,
+              help = "Show this help message and exit"),
+  make_option(c("-v", "--verbose"), action = "store_true", default = FALSE,
+              help = "Enable verbose logging"),
+  make_option(c("-u", "--seed"), type = "integer", default = 42,
+              help = "Random seed for reproducibility [default: %default]"),
+  make_option(c("-s", "--save"), action = "store_true", default = FALSE,
+              help = "Save generated data and results to file"),
+  make_option(c("-l", "--length"), type = "integer", default = 50,
+              help = "Length of DNA sequences [default: %default]"),
+  make_option(c("-n", "--nseq"), type = "integer", default = 100,
+              help = "Number of sequences to generate [default: %default]"),
+  make_option(c("-t", "--trials"), type = "integer", default = 5,
+              help = "Number of benchmark trials [default: %default]"),
+  make_option(c("-c", "--cores"), type = "integer", default = 4,
+              help = "Number of cores for foreach workers [default: %default]"),
+  make_option(c("-p", "--parallel-threads"), type = "integer", default = -1,
+              help = "Number of threads for RcppParallel (-1 = auto) [default: %default]")
+)
+
+parser <- OptionParser(usage = "%prog [options] input_size", 
+                       option_list = option_list,
+                       description = "Benchmark parallel DNA sequence comparison")
+args <- parse_args(parser, positional_arguments = 1)
+
+if (args$options$help) {
+  print_help(parser)
+  quit(status = 0)
+}
+
+# Setup logging
+log_dir <- Sys.getenv("P_LOGS_DIR", "logs")
+if (!dir.exists(log_dir)) dir.create(log_dir, recursive = TRUE)
+
+timestamp <- format(Sys.time(), "%Y%m%d-%H%M%S")
+script_name <- tools::file_path_sans_ext(basename(args$file))
+log_file <- file.path(log_dir, glue("{script_name}-{timestamp}.log"))
+
+log_appender(appender_tee(log_file))
+log_threshold(if (args$options$verbose) DEBUG else INFO)
+
+# Log system info
+log_info("Starting DNA sequence comparison benchmark")
+log_info("Arguments: {paste(names(args$options), args$options, sep = '=', collapse = ', ')}")
+log_info("Log directory: {log_dir}")
+log_info("Log file: {log_file}")
+system_output <- system("inxi -C", intern = TRUE)
+log_info("CPU info: {paste(system_output, collapse = ' | ')}")
+
+# Set random seed
+set.seed(args$options$seed)
+
+# Generate random DNA sequences
+n_seq <- args$options$nseq
+seq_length <- args$options$length
+input_size <- as.integer(args$args[1])
+
+log_info("Generating {n_seq} DNA sequences of length {seq_length}")
+bases <- c("A", "C", "G", "T")
+sequences <- replicate(n_seq, {
+  paste0(sample(bases, seq_length, replace = TRUE), collapse = "")
+})
+
+if (args$options$save) {
+  saveRDS(list(sequences = sequences, 
+               params = args$options),
+          file.path(log_dir, glue("input_data-{timestamp}.rds")))
+}
+
+# Configure parallel backends
+log_info("Configuring parallel backends")
+log_info("  Foreach workers: {args$options$cores}")
+log_info("  RcppParallel threads: {args$options$parallel_threads}")
+
+# Set RcppParallel threads
+if (args$options$parallel_threads > 0) {
+  setThreadOptions(numThreads = args$options$parallel_threads)
+} else {
+  setThreadOptions()
+}
+
+# Register parallel backend for foreach
+cl <- makeCluster(args$options$cores)
+registerDoParallel(cl)
+on.exit(stopCluster(cl))
+
+# Benchmark function
+benchmark_once <- function(sequences, trial_id) {
+  start_time <- Sys.time()
+  result <- compute_dna_distances(sequences)
+  end_time <- Sys.time()
+  
+  tibble(
+    trial = trial_id,
+    elapsed = as.numeric(difftime(end_time, start_time, units = "secs")),
+    mean_dist = result$mean_distance,
+    sd_dist = result$sd_distance,
+    min_dist = result$min_distance,
+    max_dist = result$max_distance,
+    pairs = result$pairs_count
+  )
+}
+
+# Run parallel benchmarks
+log_info("Running {args$options$trials} benchmark trials")
+
+results <- foreach(trial = 1:args$options$trials,
+                   .combine = bind_rows,
+                   .packages = c("dveSampleR", "dplyr")) %dopar% {
+  benchmark_once(sequences, trial)
+}
+
+# Aggregate results
+summary_stats <- results %>%
+  summarise(
+    mean_time = mean(elapsed),
+    sd_time = sd(elapsed),
+    min_time = min(elapsed),
+    max_time = max(elapsed),
+    mean_distance = mean(mean_dist),
+    total_pairs = first(pairs)
+  )
+
+log_info("Benchmark complete")
+log_info("  Mean computation time: {round(summary_stats$mean_time, 3)}s ± {round(summary_stats$sd_time, 3)}s")
+log_info("  Mean pairwise distance: {round(summary_stats$mean_distance, 2)}")
+log_info("  Total pairs processed: {summary_stats$total_pairs}")
+
+if (args$options$verbose) {
+  log_debug("Detailed results by trial:")
+  results %>%
+    mutate(across(where(is.numeric), ~round(., 3))) %>%
+    as.data.frame() %>%
+    capture.output() %>%
+    paste(collapse = "\n") %>%
+    log_debug()
+}
+
+if (args$options$save) {
+  # Save results
+  saveRDS(list(results = results,
+               summary = summary_stats,
+               params = args$options),
+          file.path(log_dir, glue("benchmark_results-{timestamp}.rds"))
+  )
+  
+  # Generate and save plot
+  p <- results %>%
+    ggplot(aes(x = trial, y = elapsed)) +
+    geom_point() +
+    geom_line() +
+    geom_hline(yintercept = summary_stats$mean_time, 
+               linetype = "dashed", color = "red") +
+    labs(title = "DNA Sequence Comparison Performance",
+         subtitle = glue("{n_seq} sequences, {seq_length}bp"),
+         x = "Trial", y = "Elapsed Time (s)") +
+    theme_minimal()
+  
+  ggsave(file.path(log_dir, glue("performance_plot-{timestamp}.pdf")), 
+         p, width = 8, height = 6)
+}
+
+log_info("Benchmark completed successfully")
+```
+
+## Concurrency Discussion
+
+### Race Conditions and Synchronization
+
+The implementation employs a **functional, data-parallel approach**
+that minimizes shared state:
+
+1. **Distance Matrix Computation** (`parallelFor`):
+   - Each thread writes to disjoint row ranges of the distance matrix
+   - No synchronization needed as memory regions are exclusive per thread
+   - The symmetric matrix update (writing both `[i,j]` and `[j,i]`) is
+     atomic at the memory level for integer operations
+
+2. **Statistics Reduction** (`parallelReduce`):
+   - Each thread maintains private accumulators (`sum_`, `sum_sq_`, etc.)
+   - Threads only communicate during the final `join()` phase
+   - No mutexes required as reduction is performed through splitting and joining
+
+3. **Potential Race Points**:
+   - The symmetric matrix write could theoretically race if two
+     threads simultaneously write to the same cell, but our row-wise
+     partitioning ensures each cell is written by exactly one thread
+     (when `i < j`)
+   - Integer writes on x86_64 are atomic, so even if two threads wrote
+     the same cell, it wouldn't corrupt memory (though it would
+     produce incorrect results)
+
+### Synchronization Strategy
+
+We deliberately avoided mutexes by:
+
+- Partitioning work by rows/indices rather than using work-stealing
+- Using reduction semantics instead of shared accumulators
+- Exploiting the symmetric property to compute each pair once
+
+This approach is both **deadlock-free** and **cache-efficient**, as
+threads work on contiguous memory regions.
+
+## Multi-Node Variant Discussion
+
+To distribute the workload across a cluster, several modifications would be needed:
+
+### Architecture Options
+
+1. **SSH-based Distribution** (using `parallel::makePSOCKcluster`):
+
+   ```r
+   # Create cluster across multiple machines
+   nodes <- c("node1", "node2", "node3")
+   cl <- makeCluster(nodes, type = "PSOCK", 
+                     rshopts = c("-o", "StrictHostKeyChecking=no"))
+   ```
+
+   - Pros: Simple, uses existing R infrastructure
+   - Cons: High communication overhead, requires identical R environments
+
+2. **MPI Approach** (using `Rmpi`):
+
+   ```r
+   library(Rmpi)
+   mpi.spawn.Rslaves(nslaves = 10)
+   results <- mpi.parSapply(sequence_batches, compute_distances)
+   ```
+
+   - Pros: Efficient for HPC clusters, good load balancing
+   - Cons: Complex setup, MPI dependencies
+
+3. **ZMQ-based Distribution** (using `pbdR` or `czmq`):
+
+   ```r
+   # Publisher distributes sequence batches
+   # Workers compute and return results via ZMQ sockets
+   ```
+
+   - Pros: Flexible, language-agnostic, good for heterogeneous environments
+   - Cons: Requires explicit message handling, error recovery
+
+### Work Distribution Strategy
+
+For DNA sequence comparison, we would:
+
+1. Partition the sequence set into overlapping or non-overlapping chunks
+2. Distribute chunks to cluster nodes
+3. Each node computes its portion using local parallelism (`RcppParallel`)
+4. Aggregate results through tree-based reduction
+
+### Communication Patterns
+
+- **Control**: Master node coordinates work distribution via SSH/MPI/ZMQ
+- **Data**: Sequences broadcast once, results reduced hierarchically
+- **Synchronization**: Barrier after computation phase, then reduction
+
+## RcppParallel Quick Start Guide
+
+### Package Configuration /d
+
+1. **DESCRIPTION file additions**:
+
+   ```text
+   Imports: Rcpp (>= 1.0.0), RcppParallel (>= 5.1.0)
+   LinkingTo: Rcpp, RcppParallel
+   SystemRequirements: GNU make
+   ```
+
+2. **src/Makevars** (or Makevars.win for Windows):
+
+   ```make
+   PKG_LIBS = $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)
+   PKG_CXXFLAGS = -std=c++11
+   ```
+
+3. **Enable SIMD locally** (optional, for development):
+   Add to `~/.R/Makevars`:
+
+   ```make
+   CXXFLAGS += -march=native
+   ```
+
+   **Note**: This triggers a CRAN check warning but provides ~2x
+   speedup locally. Do not include in package Makevars.
+
+### OS Dependencies
+
+**Ubuntu/Debian**:
+
+```bash
+sudo apt update
+sudo apt install build-essential r-base-core r-base-dev
+```
+
+**R environment setup**:
+
+```r
+# In your project
+renv::init()
+renv::install(c("Rcpp", "RcppParallel", "RcppArmadillo"))
+renv::snapshot()
+```
+
+### Backend Selection
+
+RcppParallel supports two threading backends:
+
+- **TinyThread** (default): Lightweight, header-only, good portability
+- **TBB** (Intel Threading Building Blocks): More sophisticated,
+  better for nested parallelism
+
+To use TBB:
+
+```r
+# Install TBB system library
+# Ubuntu: sudo apt install libtbb-dev
+
+# In R, before loading RcppParallel
+Sys.setenv(RCPP_PARALLEL_USE_TBB = "yes")
+library(RcppParallel)
+```
+
+### Testing Setup
+
+```r
+# Verify configuration
+library(RcppParallel)
+defaultNumThreads()  # Should return number of cores
+
+# Set custom thread count
+setThreadOptions(numThreads = 4)
+```
+
+## References /d
+
+[ad-1]: RcppParallel Documentation. "Parallel Programming with RcppParallel." <https://rcppparallel.github.io>
+
+[ad-2]: Smith, T. F. & Waterman, M. S. (1981). "Identification of Common Molecular Subsequences." Journal of Molecular Biology.
+
+[ad-3]: R Core Team. "Parallel Computing in R." <https://cran.r-project.org/web/views/HighPerformanceComputing.html>
+
+[ad-4]: Intel Corporation. "Intel Threading Building Blocks." <https://www.threadingbuildingblocks.org>
+
+[ad-5]: Weston, S. & Calaway, R. (2021). "Getting Started with doParallel." <https://cran.r-project.org/package=doParallel>
+
+## Additional Notes
+
+### Performance Considerations
+
+1. **Thread affinity**: Setting thread affinity can improve cache
+   performance on NUMA systems
+2. **Memory bandwidth**: The distance matrix scales as O(n²), so for n
+   > 5000, consider block processing
+3. **Load imbalance**: Our row-wise partitioning assumes all rows have
+   equal work; for variable-length sequences, dynamic scheduling might
+   be better
+
+### CRAN Compliance Tips
+
+- Use `#ifdef _OPENMP` guards for OpenMP-specific code
+- Avoid `-march=native` in package Makevars
+- Include fallback serial implementations for systems without threading support
+- Test on CRAN's strict checking environments using `rhub::check()`
+
+### Extending the Example
+
+This pattern can be adapted to:
+
+- Smith-Waterman local alignment (more computationally intensive)
+- Phylogenetic distance calculations
+- Protein sequence comparison with substitution matrices
+- Time series similarity matrices (DTW distance)
+
 
 # A:1 (Mistral)
 
