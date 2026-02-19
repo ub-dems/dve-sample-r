@@ -14,13 +14,7 @@
         "type": "FilterCompleted",
         "verbosity": "INFO",
         "path": "/home/gp21012/work/vs/dve-sample-r/notes/style/md-report.lua",
-        "milliseconds": "43"
-    },
-    {
-        "type": "LoadedResource",
-        "verbosity": "INFO",
-        "for": "img/dummy-rcpp-bench-2025-09-30T182157-outer-bench.png",
-        "from": "img/dummy-rcpp-bench-2025-09-30T182157-outer-bench.png"
+        "milliseconds": "56"
     },
     {
         "type": "BlockNotRendered",
@@ -149,51 +143,7 @@
         "contents": {
             "c": [
                 "html",
-                "<!-- ::{{{ Q5: #RCPP: Loop Optimization with OpenMP/SIMD -- R VibeCoding (basic) // -->\n"
-            ],
-            "t": "RawBlock"
-        }
-    },
-    {
-        "type": "InlineNotRendered",
-        "verbosity": "INFO",
-        "contents": {
-            "c": [
-                "html",
-                "<script-name>"
-            ],
-            "t": "RawInline"
-        }
-    },
-    {
-        "type": "InlineNotRendered",
-        "verbosity": "INFO",
-        "contents": {
-            "c": [
-                "html",
-                "<sec-timestamp>"
-            ],
-            "t": "RawInline"
-        }
-    },
-    {
-        "type": "InlineNotRendered",
-        "verbosity": "INFO",
-        "contents": {
-            "c": [
-                "html",
-                "<test-type>"
-            ],
-            "t": "RawInline"
-        }
-    },
-    {
-        "type": "BlockNotRendered",
-        "verbosity": "INFO",
-        "contents": {
-            "c": [
-                "html",
-                "<!-- }}} \\\\ %5. -->\n"
+                "<!-- ::{{{ #TAG: TODO:(q1-section) // -->\n"
             ],
             "t": "RawBlock"
         }
@@ -204,40 +154,7 @@
         "contents": {
             "c": [
                 "html",
-                "<!-- ::{{{ #TAG: TODO:(aa-section) // -->\n"
-            ],
-            "t": "RawBlock"
-        }
-    },
-    {
-        "type": "BlockNotRendered",
-        "verbosity": "INFO",
-        "contents": {
-            "c": [
-                "html",
-                "<details>\n<summary></summary>\n"
-            ],
-            "t": "RawBlock"
-        }
-    },
-    {
-        "type": "BlockNotRendered",
-        "verbosity": "INFO",
-        "contents": {
-            "c": [
-                "html",
-                "</details>\n"
-            ],
-            "t": "RawBlock"
-        }
-    },
-    {
-        "type": "BlockNotRendered",
-        "verbosity": "INFO",
-        "contents": {
-            "c": [
-                "html",
-                "<!-- }}} \\\\ %a. -->\n"
+                "<!-- }}} \\\\ %1. -->\n"
             ],
             "t": "RawBlock"
         }
@@ -252,26 +169,6 @@
             ],
             "t": "RawBlock"
         }
-    },
-    {
-        "type": "MissingCharacter",
-        "verbosity": "WARNING",
-        "message": "There is no ⇧ (U+21E7) (U+21E7) in font [XCharter-Roman.otf]:mode=no"
-    },
-    {
-        "type": "MissingCharacter",
-        "verbosity": "WARNING",
-        "message": "There is no ≈ (U+2248) (U+2248) in font [XCharter-Roman.otf]:mode=no"
-    },
-    {
-        "type": "MissingCharacter",
-        "verbosity": "WARNING",
-        "message": "There is no ≈ (U+2248) (U+2248) in font [XCharter-Roman.otf]:mode=no"
-    },
-    {
-        "type": "MissingCharacter",
-        "verbosity": "WARNING",
-        "message": "There is no ⇧ (U+21E7) (U+21E7) in font [XCharter-Roman.otf]:mode=no"
     },
     {
         "type": "MissingCharacter",
