@@ -15,7 +15,7 @@ output:
 # TOC
 > RCPP HOWTO - Contents
 
-1. [Q:1 - Rcpp Usage Comprehensive Guide](Rcpp-Q1-usage-overview.md)
+1. [Q:1 - Rcpp Usage Comprehensive Guide](Rcpp-Q1-developer-guide.md)
 1. [Q:2 - R Package with Rcpp Support](Rcpp-Q2-project-structure.md)
 1. [Q:3 - C++ Compiler and Linker Options](Rcpp-Q3-compiler-options.md)
 1. [Q:4 - RCppEigen Usage Notes](Rcpp-Q4-library-issues.md)

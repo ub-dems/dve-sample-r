@@ -83,7 +83,7 @@ doctype: md-report
 
 ## Q:1 - **TODO:(q1-title)**
 
-[⇧](#toc)
+[^](#toc)
 
 >>> [!tip]
 
@@ -119,7 +119,7 @@ with precise (lint) validation:
   - {=latex} codeblocks
   - [!tip] [!note] block quotes
   - code folding tags ("three curly braces pairs")
-  - internal links: e.g. [⇧]
+  - internal links: e.g. [^]
 
 - At the end, provide, as Markdown footnotes, a list of references to
 online documentation resources, linked to answer text where
@@ -166,31 +166,31 @@ echo "$(date -isec) - (rc=${rc:-$?}) completed."
 
 # A:1 (Claude)
 
-[⇧](#toc) **_TODO:(a1-ref-claude)_**
+[^](#toc) **_TODO:(a1-ref-claude)_**
 
 TODO:(a1-claude) ...
 
 # A:1 (Gemini)
 
-[⇧](#toc) **_TODO:(a1-ref-gemini)_**
+[^](#toc) **_TODO:(a1-ref-gemini)_**
 
 TODO:(a1-gemini) ...
 
 # A:1 (ChatGPT)
 
-[⇧](#toc) **_TODO:(a1-ref-chatgpt)_**
+[^](#toc) **_TODO:(a1-ref-chatgpt)_**
 
 TODO:(a1-chatgpt) ...
 
 # A:1 (Perplexity)
 
-[⇧](#toc) **_TODO:(a1-ref-perplexity)_**
+[^](#toc) **_TODO:(a1-ref-perplexity)_**
 
 TODO:(a1-perplexity) ...
 
 ## Q:1.2 (Perplexity)
 
-[⇧](#toc) **_(=> continue)_**
+[^](#toc) **_(=> continue)_**
 
 TODO:(q1.2-perplexity) ...
 
@@ -198,13 +198,13 @@ TODO:(q1.2-perplexity) ...
 
 ## A:1.2 (Perplexity)
 
-[⇧](#toc) **_(=> continue)_**
+[^](#toc) **_(=> continue)_**
 
 TODO:(a1.2-perplexity) ...
 
 # A:1 (DeepSeek)
 
-[⇧](#toc) **_TODO:(a1-ref-deepseek)_**
+[^](#toc) **_TODO:(a1-ref-deepseek)_**
 
 TODO:(a1-deepseek) ...
 
@@ -215,7 +215,7 @@ TODO:(a1-deepseek) ...
 
 ## Q:2 - **TODO:(q2-title)**
 
-[⇧](#toc)
+[^](#toc)
 
 ## Question Prompt 2
 
@@ -224,31 +224,31 @@ TODO:(q1-prompt) ...
 
 # A:2 (Claude)
 
-[⇧](#toc) **_TODO:(a1-ref-claude)_**
+[^](#toc) **_TODO:(a1-ref-claude)_**
 
 TODO:(a2-claude) ...
 
 # A:2 (Gemini)
 
-[⇧](#toc) **_TODO:(a2-ref-gemini)_**
+[^](#toc) **_TODO:(a2-ref-gemini)_**
 
 TODO:(a2-gemini) ...
 
 # A:2 (ChatGPT)
 
-[⇧](#toc) **_TODO:(a2-ref-chatgpt)_**
+[^](#toc) **_TODO:(a2-ref-chatgpt)_**
 
 TODO:(a2-chatgpt) ...
 
 # A:2 (Perplexity)
 
-[⇧](#toc) **_TODO:(a2-ref-perplexity)_**
+[^](#toc) **_TODO:(a2-ref-perplexity)_**
 
 TODO:(a2-perplexity) ...
 
 ## Q:2.2 (Perplexity)
 
-[⇧](#toc) **_(=> continue)_**
+[^](#toc) **_(=> continue)_**
 
 TODO:(q2.2-perplexity) ...
 
@@ -256,13 +256,13 @@ TODO:(q2.2-perplexity) ...
 
 ## A:2.2 (Perplexity)
 
-[⇧](#toc) **_(=> continue)_**
+[^](#toc) **_(=> continue)_**
 
 TODO:(a2.2-perplexity) ...
 
 # A:2 (DeepSeek)
 
-[⇧](#toc) **_TODO:(a2-ref-deepseek)_**
+[^](#toc) **_TODO:(a2-ref-deepseek)_**
 
 TODO:(a2-deepseek) ...
 
@@ -283,7 +283,7 @@ TODO:(a2-deepseek) ...
 
 ## A:a - **TODO:(aa-title)**
 
-[⇧](#toc)
+[^](#toc)
 
 ## Appendix a
 
@@ -293,7 +293,7 @@ TODO:(aa-text) ...
 
 ## A:b - **Q2: Prompt distiller**
 
-[⇧](#toc)
+[^](#toc)
 
 ## Appendix b
 
@@ -343,7 +343,7 @@ In particular, ignore:
 - {=latex} codeblocks
 - [!tip] [!note] block quotes
 - code folding tags '{{{' and '}}}'
-- internal links: e.g. [⇧]
+- internal links: e.g. [^]
 
 ### Important
 
@@ -363,31 +363,31 @@ TODO:(a2-prompt) ...
 
 # A:b (Claude)
 
-[⇧](#toc) **_TODO:(ab-ref-claude)_**
+[^](#toc) **_TODO:(ab-ref-claude)_**
 
 TODO:(ab-claude) ...
 
 # A:b (Gemini)
 
-[⇧](#toc) **_TODO:(ab-ref-gemini)_**
+[^](#toc) **_TODO:(ab-ref-gemini)_**
 
 TODO:(a2-gemini) ...
 
 # A:b (ChatGPT)
 
-[⇧](#toc) **_TODO:(ab-ref-chatgpt)_**
+[^](#toc) **_TODO:(ab-ref-chatgpt)_**
 
 TODO:(ab-chatgpt) ...
 
 # A:b (Perplexity)
 
-[⇧](#toc) **_TODO:(ab-ref-perplexity)_**
+[^](#toc) **_TODO:(ab-ref-perplexity)_**
 
 TODO:(ab-perplexity) ...
 
 # A:b (DeepSeek)
 
-[⇧](#toc) **_TODO:(ab-ref-deepseek)_**
+[^](#toc) **_TODO:(ab-ref-deepseek)_**
 
 TODO:(ab-deepseek) ...
 

@@ -1,9 +1,28 @@
-``` /// vim: set foldmethod=marker : ```
-# ::{{{ #RCPP: Rcpp Overview //
-[🠴](Rcpp-HOWTO.md)
+---
+title: TODO:(title)
+subtitle: TODO:(subtitle)
+# {{{ // %+
+
+category: LLM-Style
+keywords: [GEN, TODO:(keywords)]
+abstract: |
+  TODO:(abstract)
+  
+  ...
+
+doctype: md-report
+
+# }}} // %+
+---
+<!-- {{{ #TAG: TODO:(toc) // -->
+
+<!-- markdownlint-disable MD012 -->
+<!-- markdownlint-disable MD025 -->
+<!-- markdownlint-disable MD033 -->
+<!-- markdownlint-disable MD051 -->
+
 
 # TOC
-> Rcpp Usage Comprehensive Guide - Contents
 
 1. [Q:1 - Rcpp Usage Comprehensive Guide](#Q1)
    - see: [Comprehensive Rcpp Guide for R Packages (Claude)](#a1-claude)
@@ -14,97 +33,162 @@
    - see: [Comprehensive Guide to Rcpp Usage in R Packages (Kimi)](#a1-kimi)
    - see: [Rcpp Guide for R Packages (Perplexity)](#a1-perplexity)
 
----------
+<details>
+<summary></summary>
+
+```{=latex}
+\begin{comment}
+```
+
+</details>
+
+---
+
+|                   |                        |
+|-------------------|------------------------|
+| [<<<<](README.md) | [PDF](TODO:(file).pdf) |
+
+---
+
+<details>
+<summary>[index]</summary>
+
 [[_TOC_]]
 
-# ::}}} \\ %0.
-# ::{{{ #RCPP: Rcpp Usage //
+</details>
+<details>
+<summary></summary>
 
-<a id="Q1" name="Q1" class="anchor"></a>
+```{=latex}
+\end{comment}
+```
 
-# Q:1 - Rcpp Usage Comprehensive Guide
+</details>
 
-[⌃](#toc)
+<!-- ::}}} \\ %0. -->
+<!-- ::{{{ #TAG: TODO:(q1-section) // -->
 
-<system> 
+# Q:1
+
+## Q:1 - **TODO:(q1-title)**
+
+[^](#toc)
+
+## Role
 
 You are an experienced R programmer with extensive knowledge
 of using Rcpp C++ sources in R packages. Your task is to provide a
 comprehensive guide on Rcpp usage, adhering to CRAN requirements and
 best practices.
 
-</system>
+## Objective
 
-Provide detailed information on the following topics, formatted in clear and well-structured (GFM) markdown:
 
-1.  **C++11 Rcpp Sources Coding Style:**
-    *   Explain the recommended coding style for C++11 Rcpp sources in R packages.
-    *   Include examples of good and bad practices.
+Provide detailed information on the following topics, formatted in
+clear and well-structured (GFM) markdown:
 
-2.  **Rcpp Namespace Utility and Best Practices:**
-    *   Describe the utility of the Rcpp namespace.
-    *   Provide best practices for basic I/O, memory management, and exception handling using Rcpp.
+1. **C++11 Rcpp Sources Coding Style:**
+    - Explain the recommended coding style for C++11 Rcpp sources in R packages.
+    - Include examples of good and bad practices.
 
-3.  **RcppArmadillo and RcppEigen:**
-    *   Describe RcppArmadillo and RcppEigen, including their purpose and benefits.
-    *   Provide sample usage examples for both packages, demonstrating common operations.
+2. **Rcpp Namespace Utility and Best Practices:**
+    - Describe the utility of the Rcpp namespace.
+    - Provide best practices for basic I/O, memory management, and
+      exception handling using Rcpp.
 
-4.  **Integration with Tidyverse Packages (e.g., dplyr):**
-    *   Show how to integrate Rcpp code with tidyverse packages like dplyr for data frame manipulation.
-    *   Provide code examples demonstrating this integration.
+3. **RcppArmadillo and RcppEigen:**
+    - Describe RcppArmadillo and RcppEigen, including their purpose
+      and benefits.
+    - Provide sample usage examples for both packages, demonstrating
+      common operations.
 
-5.  **Integration with Standard OS Libraries (e.g., gsl - GNU Scientific Library):**
-    *   Explain how to integrate Rcpp code with standard OS libraries like GSL.
-    *   Describe package requirements for external library linkage and
-        dependency specification in the package's DESCRIPTION file.
+4. **Integration with Tidyverse Packages (e.g., dplyr):**
+    - Show how to integrate Rcpp code with tidyverse packages like
+      dplyr for data frame manipulation.
+    - Provide code examples demonstrating this integration.
 
-6.  **Best Practices for Roxygen2 Comments and Function Documentation:**
-    *   Explain best practices for documenting Rcpp functions using Roxygen2 comments.
-    *   Provide examples of well-documented functions.
+5. **Integration with Standard OS Libraries (e.g., gsl - GNU Scientific Library):**
+    - Explain how to integrate Rcpp code with standard OS libraries like GSL.
+    - Describe package requirements for external library linkage and
+      dependency specification in the package's DESCRIPTION file.
 
-7.  **R and C++ Function Calls in Rcpp Source:**
-    *   Describe how to call other functions (R/C++) included in the
-        package or in imported external packages from within Rcpp
-        source code.
-    *   Provide a sample of R and C++ function calls in Rcpp source.
+6. **Best Practices for Roxygen2 Comments and Function Documentation:**
+    - Explain best practices for documenting Rcpp functions using Roxygen2 comments.
+    - Provide examples of well-documented functions.
 
-8.  **Rebuild Operations:**
-    *   Explain how to rebuild Rcpp functions, either directly or via standard `CMD check` or `build` R commands.
+7. **R and C++ Function Calls in Rcpp Source:**
+    - Describe how to call other functions (R/C++) included in the
+      package or in imported external packages from within Rcpp
+      source code.
+    - Provide a sample of R and C++ function calls in Rcpp source.
 
-9.  **Code Unit Testing Support with 'testthat' Package:**
-    *   Describe how to implement code unit testing for Rcpp functions using the 'testthat' package.
-    *   Provide examples of test cases.
+8. **Rebuild Operations:**
+    - Explain how to rebuild Rcpp functions, either directly or via
+      standard `CMD check` or `build` R commands.
+
+9. **Code Unit Testing Support with 'testthat' Package:**
+    - Describe how to implement code unit testing for Rcpp functions
+      using the 'testthat' package.
+    - Provide examples of test cases.
 
 After the textual replay of the above points, provide the following:
 
-1.  **Full Skeleton of a C++ Source:**
-    *   Provide a complete skeleton of a C++ source file, adhering to CRAN coding style.
-    *   Enable C++11 support.
-    *   Include necessary headers for Rcpp, RcppArmadillo, RcppEigen, STL library, and GSL (GNU Scientific Library).
+1. **Full Skeleton of a C++ Source:**
+    - Provide a complete skeleton of a C++ source file, adhering to
+      CRAN coding style.
+    - Enable C++11 support.
+    - Include necessary headers for Rcpp, RcppArmadillo, RcppEigen,
+      STL library, and GSL (GNU Scientific Library).
 
-2.  **Roxygen2 Documentation and DESCRIPTION File Requisites:**
-    *   Describe the requisites for Roxygen2 documentation in a package with Rcpp, RcppEigen, and GSL.
-    *   Explain the necessary annotations for the DESCRIPTION file.
+2. **Roxygen2 Documentation and DESCRIPTION File Requisites:**
+    - Describe the requisites for Roxygen2 documentation in a package
+      with Rcpp, RcppEigen, and GSL.
+    - Explain the necessary annotations for the DESCRIPTION file.
 
-3.  **GitHub and GitLab Packaging Action Pipeline:**
-    *   Prepare a packaging action pipeline for GitHub and GitLab that performs tests, checks, and binary builds of the package.
-    *   Include a hypothetical remote FTP server (user/password taken
-        from the environment) that can be used to upload the binary
-        package if the build is successful.
+3. **GitHub and GitLab Packaging Action Pipeline:**
+    - Prepare a packaging action pipeline for GitHub and GitLab that
+      performs tests, checks, and binary builds of the package.
+    - Include a hypothetical remote FTP server (user/password taken
+      from the environment) that can be used to upload the binary
+      package if the build is successful.
 
--------------------------------------------------------------------------------------------
--------------------------------------------------------------------------------------------
--------------------------------------------------------------------------------------------
+
+## Output Format
+
+- Reply in clear formatted "GitLab Flavored Markdown (GLFM)" Markdown,
+  with precise (lint) validation:
+  - codeblock delimiters ``` placed atline start). Avoid codeblock nesting.
+  - use _underscore markup_ for emphasys
+  - prefer nested headings to text markup with asterisks
+  - use only "dash" for unordered lists, with correct indentation
+  - insert appropriate blank line separation after headings, list and codeblocks
+
+- Ignore document formatting markup, like:
+  - <details><summary> HTML blocks
+  - {=latex} codeblocks
+  - [!tip] [!note] block quotes
+  - code folding tags ("three curly braces pairs")
+  - internal links: e.g. [^]
+
+- At the end, provide, as Markdown footnotes, a list of references to
+online documentation resources, linked to answer text where
+appropriate. To avoid reference clashing with other part of the
+document, prefix references with the string "rf-".
+
+- Add any additional important information not explicitly required in
+an "Additional Notes" section.
+
+
+
 # A:1 (Claude)
-> Comprehensive Rcpp Guide for R Packages
 
-[⌃](#toc)
+[^](#toc) **_Comprehensive Rcpp Guide for R Packages_**
 
 I have provided you with a comprehensive guide covering all aspects of
 Rcpp development for R packages. Here's a summary of what the guide
 includes:
 
-## Key Sections Covered:
+## Key Sections Covered
 
 1. **C++11 Coding Style** - Best practices with examples of good vs. bad code
 2. **Rcpp Namespace Utilities** - I/O, memory management, and exception handling
@@ -116,7 +200,7 @@ includes:
 8. **Rebuild Operations** - Development workflow and build processes
 9. **Unit Testing** - testthat integration with comprehensive test examples
 
-## Complete Implementation:
+## Complete Implementation
 
 - **Full C++ Skeleton** - Production-ready source file with all headers and dependencies
 - **DESCRIPTION Configuration** - Complete package metadata and requirements
@@ -128,7 +212,7 @@ includes:
   - Documentation generation and deployment
   - Performance benchmarking
 
-## Key Features:
+## Key Features
 
 - **CRAN Compliance** - All recommendations follow CRAN policies
 - **Modern C++11** - Leverages contemporary C++ features
@@ -143,15 +227,16 @@ This guide serves as a complete reference for developing
 professional-grade R packages with Rcpp integration, suitable for both
 CRAN submission and enterprise deployment scenarios.
 
------------------------------------------------------------------------------------------
+---
 
 ## 1. C++11 Rcpp Sources Coding Style
 
 ### Recommended Coding Style
 
-When writing C++11 Rcpp sources for R packages, follow these style guidelines to ensure CRAN compliance and maintainability:
+When writing C++11 Rcpp sources for R packages, follow these style
+guidelines to ensure CRAN compliance and maintainability:
 
-#### Good Practices:
+#### Good Practices
 
 ```cpp
 // Use clear, descriptive function names
@@ -211,7 +296,8 @@ Rcpp::NumericVector bad_func(Rcpp::NumericVector x) {  // Should be const refere
 - Initialize variables at declaration
 - Use meaningful variable and function names
 - Employ RAII (Resource Acquisition Is Initialization) principles
-- Use modern C++11 features like `nullptr`, `constexpr`, and lambda functions when appropriate
+- Use modern C++11 features like `nullptr`, `constexpr`, and lambda
+  functions when appropriate
 
 ## 2. Rcpp Namespace Utility and Best Practices
 
@@ -226,7 +312,7 @@ The Rcpp namespace provides a comprehensive interface between R and C++, offerin
 
 ### Best Practices
 
-#### Basic I/O:
+#### Basic I/O
 
 ```cpp
 #include <Rcpp.h>
@@ -250,7 +336,7 @@ void demonstrate_io(const NumericVector& input) {
 }
 ```
 
-#### Memory Management:
+#### Memory Management
 
 ```cpp
 // [[Rcpp::export]]
@@ -269,7 +355,7 @@ NumericMatrix safe_matrix_operations(int nrow, int ncol) {
 }
 ```
 
-#### Exception Handling:
+#### Exception Handling
 
 ```cpp
 // [[Rcpp::export]]
@@ -289,15 +375,17 @@ double safe_division(double numerator, double denominator) {
 
 ### RcppArmadillo
 
-RcppArmadillo provides integration with the Armadillo C++ library for linear algebra operations.
+RcppArmadillo provides integration with the Armadillo C++ library for
+linear algebra operations.
 
-#### Purpose and Benefits:
+#### Purpose and Benefits
+
 - High-performance linear algebra operations
 - MATLAB-like syntax
 - Automatic memory management
 - LAPACK and BLAS integration
 
-#### Sample Usage:
+#### Sample Usage
 
 ```cpp
 #include <RcppArmadillo.h>
@@ -338,13 +426,14 @@ List eigen_decomposition_arma(const arma::mat& X) {
 
 RcppEigen provides integration with the Eigen C++ library for linear algebra.
 
-#### Purpose and Benefits:
+#### Purpose and Benefits /c
+
 - Template-based linear algebra library
 - High performance through expression templates
 - Extensive matrix operations
 - Sparse matrix support
 
-#### Sample Usage:
+#### Sample Usage /c
 
 ```cpp
 #include <RcppEigen.h>
@@ -431,7 +520,7 @@ NumericVector group_statistics(const NumericVector& values,
 }
 ```
 
-### R Usage Example with dplyr:
+### R Usage Example with dplyr
 
 ```r
 library(dplyr)
@@ -449,18 +538,20 @@ data %>%
 
 ### GSL Integration Setup
 
-#### SystemRequirements in DESCRIPTION:
-```
+#### SystemRequirements in DESCRIPTION
+
+```yaml
 SystemRequirements: GSL (>= 2.0)
 ```
 
-#### Makevars Configuration:
+#### Makevars Configuration
+
 ```makefile
 PKG_CPPFLAGS = $(shell $(R_HOME)/bin/Rscript -e "RcppGSL:::CppFlags()")
 PKG_LIBS = $(shell $(R_HOME)/bin/Rscript -e "RcppGSL:::LdFlags()")
 ```
 
-#### Sample GSL Usage:
+#### Sample GSL Usage
 
 ```cpp
 #include <Rcpp.h>
@@ -514,8 +605,9 @@ double gsl_correlation(const NumericVector& x, const NumericVector& y) {
 
 ### Package Requirements
 
-#### DESCRIPTION File Requirements:
-```
+#### DESCRIPTION File Requirements
+
+```yaml
 Depends: R (>= 3.5.0)
 Imports: Rcpp, RcppGSL
 LinkingTo: Rcpp, RcppGSL
@@ -598,7 +690,7 @@ List calculate_summary_stats(const NumericVector& data,
 }
 ```
 
-### Documentation Best Practices:
+### Documentation Best Practices
 
 1. **Always include**: `@param`, `@return`, `@examples`
 2. **Use clear descriptions**: Explain what the function does and why
@@ -708,7 +800,7 @@ DataFrame use_external_package_function(const DataFrame& data) {
 
 ### Direct Rebuild Methods
 
-#### Using Rcpp::sourceCpp():
+#### Using Rcpp::sourceCpp()
 
 ```r
 # For development and testing
@@ -722,7 +814,7 @@ Rcpp::sourceCpp("src/your_file.cpp",
                 cppFlags = "-std=c++11 -O3")
 ```
 
-#### Using devtools:
+#### Using devtools
 
 ```r
 # Rebuild and reload package
@@ -739,7 +831,7 @@ devtools::load_all()
 
 ### Standard R CMD Operations
 
-#### Command Line Operations:
+#### Command Line Operations
 
 ```bash
 # Check package
@@ -758,7 +850,7 @@ R CMD build --resave-data package_directory
 R CMD check --as-cran package_name_1.0.0.tar.gz
 ```
 
-#### Makefile Integration:
+#### Makefile Integration
 
 ```makefile
 # Makefile for package development
@@ -792,7 +884,8 @@ cran-check: build
 
 ### Test Structure Setup
 
-#### tests/testthat.R:
+#### tests/testthat.R
+
 ```r
 library(testthat)
 library(YourPackageName)
@@ -802,7 +895,7 @@ test_check("YourPackageName")
 
 ### Sample Test Cases
 
-#### tests/testthat/test-rcpp-functions.R:
+#### tests/testthat/test-rcpp-functions.R
 
 ```r
 test_that("calculate_summary_stats works correctly", {
@@ -906,7 +999,8 @@ test_that("memory usage is reasonable", {
 })
 ```
 
------------------------------------------------------------------------------------------
+---
+
 ## Full Skeleton of a C++ Source
 
 ```cpp
@@ -914,7 +1008,8 @@ test_that("memory usage is reasonable", {
  * Package: YourPackageName
  * File: rcpp_functions.cpp
  * Author: Your Name
- * Description: Main C++ source file with Rcpp, RcppArmadillo, RcppEigen, and GSL integration
+ * Description: Main C++ source file with Rcpp, RcppArmadillo, RcppEigen,
+ * and GSL integration
  * Created: 2024
  * License: GPL (>= 2)
  */
@@ -1701,7 +1796,8 @@ useDynLib(YourPackageName, .registration=TRUE)
 
 ### Makevars and Makevars.win Files
 
-#### src/Makevars:
+#### src/Makevars
+
 ```makefile
 # Makevars for Unix-like systems
 CXX_STD = CXX11
@@ -1717,7 +1813,8 @@ PKG_CXXFLAGS = -O3 -Wall -Wextra -pedantic -DARMA_DONT_PRINT_ERRORS
 # PKG_CXXFLAGS = -g -O0 -Wall -Wextra -pedantic -DARMA_DONT_PRINT_ERRORS
 ```
 
-#### src/Makevars.win:
+#### src/Makevars.win
+
 ```makefile
 # Makevars.win for Windows systems
 CXX_STD = CXX11
@@ -1737,7 +1834,7 @@ PKG_CXXFLAGS = -O2 -Wall -DARMA_DONT_PRINT_ERRORS
 
 ### GitHub Actions Workflow
 
-#### .github/workflows/R-CMD-check.yml:
+#### .github/workflows/R-CMD-check.yml
 
 ```yaml
 name: R-CMD-check
@@ -2005,7 +2102,7 @@ jobs:
 
 ### GitLab CI/CD Pipeline
 
-#### .gitlab-ci.yml:
+#### .gitlab-ci.yml
 
 ```yaml
 # GitLab CI/CD Pipeline for R Package with Rcpp
@@ -2155,7 +2252,8 @@ deploy:
     - PKG_FILE=$(ls -1 *.tar.gz)
     - |
       # Upload to FTP server if all previous stages passed
-      if [ -n "$FTP_SERVER" ] && [ -n "$FTP_USERNAME" ] && [ -n "$FTP_PASSWORD" ]; then
+      if [ -n "$FTP_SERVER" ] && \
+      [ -n "$FTP_USERNAME" ] && [ -n "$FTP_PASSWORD" ]; then
         echo "Uploading $PKG_FILE to FTP server..."
         lftp -c "
         set ssl:verify-certificate no;
@@ -2347,7 +2445,7 @@ CODECOV_TOKEN=your_codecov_token (Type: Variable, Protected: Yes, Masked: Yes)
 
 ### Package Development Workflow Scripts
 
-#### scripts/dev-setup.R:
+#### scripts/dev-setup.R
 
 ```r
 #!/usr/bin/env Rscript
@@ -2384,7 +2482,7 @@ cat("Use devtools::test() to run tests\n")
 cat("Use devtools::check() to check the package\n")
 ```
 
-#### scripts/pre-commit-check.R:
+#### scripts/pre-commit-check.R
 
 ```r
 #!/usr/bin/env Rscript
@@ -2430,7 +2528,7 @@ cat("✅ All pre-commit checks passed!\n")
 
 ### Performance Monitoring Configuration
 
-#### .github/workflows/benchmark.yml:
+#### .github/workflows/benchmark.yml
 
 ```yaml
 name: Performance Benchmarks
@@ -2513,36 +2611,36 @@ reporting, documentation generation, and automated deployment to FTP
 servers upon successful builds.
 
 
--------------------------------------------------------------------------------------------
--------------------------------------------------------------------------------------------
--------------------------------------------------------------------------------------------
 # A:1 (Vertex)
-> Rcpp Usage Comprehensive Guide
 
-[⌃](#toc)
+[^](#toc) **_Rcpp Usage Comprehensive Guide_**
 
 Here is a comprehensive guide to using Rcpp in R packages, covering
 everything from coding style to deployment pipelines.
 
-## 1. C++11 Rcpp Sources Coding Style 
+## 1. C++11 Rcpp Sources Coding Style /v
 
 While CRAN doesn't enforce a strict C++ coding style, it's a best
 practice to adopt a clear and consistent one. A good approach is to
 follow the Google C++ Style Guide or a similar widely recognized
 standard, adapted for Rcpp's specifics.
 
-**Good Practices:** 
+### Good Practices /v
 
-*   **Naming:** Use `CamelCase` for classes and `snake_case` for variables and functions. 
-*   **Indentation:** Use 2 or 4 spaces for indentation, but be consistent. 
-*   **Comments:** Use `//` for single-line comments and `/* */` for multi-line comments. Document your code clearly. 
-*   **Includes:** Organize includes logically: system headers, then library headers, and finally your project's headers. 
+- **Naming:** Use `CamelCase` for classes and `snake_case` for
+  variables and functions.
+- **Indentation:** Use 2 or 4 spaces for indentation, but be
+  consistent.
+- **Comments:** Use `//` for single-line comments and `/* */` for
+  multi-line comments. Document your code clearly.
+- **Includes:** Organize includes logically: system headers, then
+  library headers, and finally your project's headers.
 
-**Example of Good vs. Bad Practices:** 
+#### Example of Good vs. Bad Practices
 
-**Good:** 
+##### Good
 
-```cpp 
+```cpp
 // Good: Clear, consistent, and commented 
 #include <Rcpp.h> 
 
@@ -2554,11 +2652,11 @@ Rcpp::NumericVector calculate_mean(Rcpp::NumericVector x) {
  } 
  return Rcpp::NumericVector::create(total / x.size()); 
 } 
-``` 
+```
 
-**Bad:** 
+#### Bad
 
-```cpp 
+```cpp
 // Bad: Inconsistent formatting, poor naming, and no comments 
 #include <Rcpp.h> 
 using namespace Rcpp; 
@@ -2566,36 +2664,39 @@ using namespace Rcpp;
 NumericVector Mean(NumericVector Y){ 
 double T=0;for(int i=0;i<Y.size();++i){T+=Y[i];} 
 return NumericVector::create(T/Y.size());} 
-``` 
+```
 
-## 2. Rcpp Namespace Utility and Best Practices 
+## 2. Rcpp Namespace Utility and Best Practices /v
 
 The `Rcpp` namespace provides a suite of classes and functions that
 facilitate the interaction between R and C++.
 
-*   **I/O:** Use `Rcpp::Rcout` for standard output and `Rcpp::Rcerr`
-    for error output. Avoid using `std::cout` and `std::cerr` as they
-    can interfere with R's I/O streams.
-*   **Memory Management:** Rcpp automatically handles memory
-    management for objects passed between R and C++. For manual
-    memory management, use `R_alloc` for temporary allocations that
-    are automatically freed.
-*   **Exception Handling:** Use `Rcpp::stop()` to throw an exception
-    that can be caught by R. This ensures a graceful exit and proper
-    error handling within the R environment.
+- **I/O:** Use `Rcpp::Rcout` for standard output and `Rcpp::Rcerr`
+  for error output. Avoid using `std::cout` and `std::cerr` as they
+  can interfere with R's I/O streams.
+- **Memory Management:** Rcpp automatically handles memory
+  management for objects passed between R and C++. For manual
+  memory management, use `R_alloc` for temporary allocations that
+  are automatically freed.
+- **Exception Handling:** Use `Rcpp::stop()` to throw an exception
+  that can be caught by R. This ensures a graceful exit and proper
+  error handling within the R environment.
 
-## 3. RcppArmadillo and RcppEigen 
+## 3. RcppArmadillo and RcppEigen /v
 
 `RcppArmadillo` and `RcppEigen` are packages that integrate the
 Armadillo and Eigen C++ linear algebra libraries with R,
 respectively. They offer a more intuitive and efficient way to
 perform complex matrix operations.
 
-*   **RcppArmadillo:** Known for its user-friendly API, making it easy to translate R code into C++. 
-*   **RcppEigen:** Often provides better performance, especially for more complex linear algebra tasks. 
+- **RcppArmadillo:** Known for its user-friendly API, making it easy
+  to translate R code into C++.
+- **RcppEigen:** Often provides better performance, especially for
+  more complex linear algebra tasks.
 
-**RcppArmadillo Example:** 
-```cpp 
+### RcppArmadillo Example
+
+```cpp
 #include <RcppArmadillo.h> 
 // [[Rcpp::depends(RcppArmadillo)]] 
 
@@ -2603,10 +2704,11 @@ perform complex matrix operations.
 arma::mat matrix_multiply(const arma::mat& A, const arma::mat& B) { 
  return A * B; 
 } 
-``` 
+```
 
-**RcppEigen Example:** 
-```cpp 
+### RcppEigen Example
+
+```cpp
 #include <RcppEigen.h> 
 // [[Rcpp::depends(RcppEigen)]] 
 
@@ -2614,17 +2716,18 @@ arma::mat matrix_multiply(const arma::mat& A, const arma::mat& B) {
 Eigen::MatrixXd matrix_multiply_eigen(const Eigen::MatrixXd& A, const Eigen::MatrixXd& B) { 
  return A * B; 
 } 
-``` 
+```
 
-## 4. Integration with Tidyverse Packages (e.g., dplyr) 
+## 4. Integration with Tidyverse Packages (e.g., dplyr) /v
 
 Integrating Rcpp with tidyverse packages like `dplyr` allows you to
 create highly efficient data manipulation pipelines. You can write
 performance-critical operations in C++ and seamlessly call them from
 within a `dplyr` workflow.
 
-**Example:** 
-```cpp 
+Example:
+
+```cpp
 #include <Rcpp.h> 
 
 // [[Rcpp::export]] 
@@ -2636,41 +2739,47 @@ Rcpp::NumericVector custom_summarize(Rcpp::DataFrame df) {
  } 
  return Rcpp::NumericVector::create(sum_val); 
 } 
-``` 
-**R side:** 
-```R 
+```
+
+R side:
+
+```R
 library(dplyr) 
 my_data <- tibble(x = 1:10, group = rep(c("A", "B"), each = 5)) 
 my_data %>% 
  group_by(group) %>% 
  summarise(custom_sum = custom_summarize(cur_data())) 
-``` 
+```
 
-## 5. Integration with Standard OS Libraries (e.g., gsl - GNU Scientific Library) 
+## 5. Integration with Standard OS Libraries (e.g., GNU Scientific Library) /v
 
 Rcpp can be integrated with external libraries like the GNU
 Scientific Library (GSL) to leverage a vast collection of numerical
 routines. The `RcppGSL` package simplifies this by providing wrapper
 functions and handling the necessary linking.
 
-To link against GSL, your package's `DESCRIPTION` file must be correctly configured: 
-*   **SystemRequirements:** Specify the external library needed (e.g., `GNU GSL`). 
-*   **LinkingTo:** Add `RcppGSL` to this field. 
+To link against GSL, your package's `DESCRIPTION` file must be correctly configured:
 
-## 6. Best Practices for Roxygen2 Comments and Function Documentation 
+- **SystemRequirements:** Specify the external library needed (e.g., `GNU GSL`).
+- **LinkingTo:** Add `RcppGSL` to this field.
 
-`Roxygen2` is the standard for documenting R packages, and it works seamlessly with Rcpp. 
+## 6. Best Practices for Roxygen2 Comments and Function Documentation /v
 
-**Best Practices:** 
+`Roxygen2` is the standard for documenting R packages, and it works
+seamlessly with Rcpp.
 
-*   Use `//'` for Roxygen comments in C++ files. 
-*   Document every function with `@param` for each parameter,
-    `@return` for the return value, and `@export` to make the
-    function available in R.
-*   Provide a clear and concise description of the function's purpose. 
+### Roxygen2 Best Practices
 
-**Example:** 
-```cpp 
+- Use `//'` for Roxygen comments in C++ files.
+- Document every function with `@param` for each parameter,
+  `@return` for the return value, and `@export` to make the
+  function available in R.
+- Provide a clear and concise description of the function's purpose.
+
+
+Example:
+
+```cpp
 //' Calculate the sum of a numeric vector. 
 //' 
 //' @param x A numeric vector. 
@@ -2680,17 +2789,18 @@ To link against GSL, your package's `DESCRIPTION` file must be correctly configu
 double sum_vector(Rcpp::NumericVector x) { 
  return Rcpp::sum(x); 
 } 
-``` 
+```
 
-## 7. R and C++ Function Calls in Rcpp Source 
+## 7. R and C++ Function Calls in Rcpp Source /v
 
 You can call R functions from C++ using `Rcpp::Function`. This is
 useful for accessing R's statistical functions or for
 callbacks. Similarly, you can call other C++ functions within the
 same package, which helps in modularizing your code.
 
-**Example:** 
-```cpp 
+Example:
+
+```cpp
 #include <Rcpp.h> 
 
 // [[Rcpp::export]] 
@@ -2698,28 +2808,29 @@ double call_r_mean(Rcpp::NumericVector x) {
  Rcpp::Function r_mean("mean"); 
  return Rcpp::as<double>(r_mean(x)); 
 } 
-``` 
+```
 
-## 8. Rebuild Operations 
+## 8. Rebuild Operations /v
 
-To rebuild your Rcpp functions, you can use several methods: 
+To rebuild your Rcpp functions, you can use several methods:
 
-*   **`Rcpp::sourceCpp()`:** Quickly compile and load a single C++
-    file for testing and development.
-*   **`R CMD build` and `R CMD check`:** Standard R commands that
-    will compile your C++ code as part of the package building and
-    checking process.
-*   In RStudio, the "Build and Reload" button (Ctrl+Shift+B) automates this process. 
+- **`Rcpp::sourceCpp()`:** Quickly compile and load a single C++
+  file for testing and development.
+- **`R CMD build` and `R CMD check`:** Standard R commands that
+  will compile your C++ code as part of the package building and
+  checking process.
+- In RStudio, the "Build and Reload" button (Ctrl+Shift+B) automates this process.
 
-## 9. Code Unit Testing Support with 'testthat' Package 
+## 9. Code Unit Testing Support with 'testthat' Package /v
 
 The `testthat` package is the go-to for unit testing in R, and it can
 be used to test your Rcpp functions. You can write tests that call
 your exported C++ functions and compare the results against expected
 values.
 
-**Example:** 
-```R 
+Example:
+
+```R
 # In tests/testthat/test-my_rcpp_functions.R 
 library(testthat) 
 library(yourPackageName) 
@@ -2727,13 +2838,13 @@ library(yourPackageName)
 test_that("sum_vector calculates the correct sum", { 
  expect_equal(sum_vector(c(1, 2, 3)), 6) 
 }) 
-``` 
+```
 
 ## 10. Code Examples
 
-### Full Skeleton of a C++ Source 
+### Full Skeleton of a C++ Source /v
 
-```cpp 
+```cpp
 // [[Rcpp::plugins(cpp11)]] 
 
 #include <RcppArmadillo.h> 
@@ -2753,11 +2864,12 @@ test_that("sum_vector calculates the correct sum", {
 Rcpp::NumericVector my_cpp_function(Rcpp::NumericVector x) { 
  return x * 2; 
 } 
-``` 
+```
 
-### Roxygen2 Documentation and DESCRIPTION File Requisites 
+### Roxygen2 Documentation and DESCRIPTION File Requisites /v
 
-For a package using Rcpp, RcppEigen, and GSL, your `DESCRIPTION` file should include: 
+For a package using Rcpp, RcppEigen, and GSL, your `DESCRIPTION` file
+should include:
 
 ```yaml
 Package: myPackage 
@@ -2767,16 +2879,16 @@ Version: 0.1.0
 Imports: Rcpp 
 LinkingTo: Rcpp, RcppEigen, RcppGSL 
 SystemRequirements: GNU GSL 
-``` 
+```
 
 Your Roxygen2 documentation should clearly document each function,
 its parameters, and what it returns, as shown in the examples above.
 
-### GitHub and GitLab Packaging Action Pipeline 
+### GitHub and GitLab Packaging Action Pipeline /v
 
-**GitHub Actions (`.github/workflows/R-CMD-check.yaml`):** 
+#### GitHub Actions (`.github/workflows/R-CMD-check.yaml`)
 
-```yaml 
+```yaml
 on: [push, pull_request] 
 
 name: R-CMD-check 
@@ -2824,11 +2936,11 @@ jobs:
  with: 
  name: package-binary 
  path: '*.Rcheck/ 
-``` 
+```
 
-**GitLab CI (`.gitlab-ci.yml`):** 
+#### GitLab CI (`.gitlab-ci.yml`)
 
-```yaml 
+```yaml
 image: rocker/tidyverse:latest 
 
 stages: 
@@ -2861,22 +2973,16 @@ deploy_ftp:
  only: 
  - main 
 ```
- 
 
-
--------------------------------------------------------------------------------------------
--------------------------------------------------------------------------------------------
--------------------------------------------------------------------------------------------
 # A:1 (Gemini)
-> Rcpp Programming Guide
 
-[⌃](#toc)
+[^](#toc) **_Rcpp Programming Guide_**
 
 
 Here is a comprehensive guide on Rcpp usage for R packages, adhering
 to CRAN requirements and best practices.
 
-## 1. C++11 Rcpp Sources Coding Style
+## 1. C++11 Rcpp Sources Coding Style /g
 
 Adhering to a consistent coding style is crucial for readability and
 maintainability, especially in a collaborative environment. While C++
@@ -2885,18 +2991,21 @@ the key for R packages is consistency and clarity.
 
 **Recommendations:**
 
-*   **Naming Conventions:**
-    *   Use `CamelCase` for function names and class names (e.g., `myFunction`, `MyClass`).
-    *   Use `snake_case` for variable names (e.g., `my_variable`).
-    *   Use `UPPER_SNAKE_CASE` for constants.
-*   **Indentation and Braces:**
-    *   Use 2 or 4 spaces for indentation, but be consistent.
-    *   Place opening braces on the same line as the statement (`{`) and closing braces on a new line (`}`).
-*   **Comments:**
-    *   Use `//` for single-line comments and `/* ... */` for multi-line comments.
-    *   Comment complex logic, but avoid commenting on obvious code.
-*   **Header Guards:**
-    *   Use `#pragma once` or traditional header guards (`#ifndef MY_HEADER_H ... #endif`) to prevent multiple inclusions.
+- **Naming Conventions:**
+  - Use `CamelCase` for function names and class names (e.g.,
+    `myFunction`, `MyClass`).
+  - Use `snake_case` for variable names (e.g., `my_variable`).
+  - Use `UPPER_SNAKE_CASE` for constants
+- **Indentation and Braces:**
+  - Use 2 or 4 spaces for indentation, but be consistent.
+  - Place opening braces on the same line as the statement (`{`) and
+    closing braces on a new line (`}`).
+- **Comments:**
+  - Use `//` for single-line comments and `/* ... */` for multi-line comments.
+  - Comment complex logic, but avoid commenting on obvious code.
+- **Header Guards:**
+  - Use `#pragma once` or traditional header guards (`#ifndef
+    MY_HEADER_H ... #endif`) to prevent multiple inclusions.
 
 **Good Practice Example:**
 
@@ -2929,26 +3038,26 @@ double res = A+B; // Unnecessary type conversion
 return res;} // Crowded return statement
 ```
 
-## 2. Rcpp Namespace Utility and Best Practices
+## 2. Rcpp Namespace Utility and Best Practices /g
 
 The `Rcpp` namespace is the heart of Rcpp, providing the bridge between R and C++.
 
-*   **Utility:** It contains classes that map R objects to C++ objects
-    (e.g., `NumericVector`, `DataFrame`, `Function`) and functions
-    that allow interaction with the R environment.
-*   **Basic I/O:** For printing to the R console, use `Rcpp::Rcout <<
-    "message";` instead of `std::cout`. For warnings and errors, use
-    `Rcpp::warning("message");` and `Rcpp::stop("message");`.
-*   **Memory Management:** Rcpp handles memory management
-    automatically for its objects through RAII (Resource Acquisition
-    Is Initialization). When an Rcpp object goes out of scope, the
-    memory for the corresponding R object is released. You generally
-    do not need to manually allocate or deallocate memory for Rcpp
-    objects.
-*   **Exception Handling:** C++ exceptions are automatically caught by
-    Rcpp and converted into R errors. This means you can use
-    `try-catch` blocks in your C++ code, and any uncaught exceptions
-    will be properly handled by R.
+- **Utility:** It contains classes that map R objects to C++ objects
+  (e.g., `NumericVector`, `DataFrame`, `Function`) and functions
+  that allow interaction with the R environment.
+- **Basic I/O:** For printing to the R console, use `Rcpp::Rcout <<
+  "message";` instead of `std::cout`. For warnings and errors, use
+  `Rcpp::warning("message");` and `Rcpp::stop("message");`.
+- **Memory Management:** Rcpp handles memory management
+  automatically for its objects through RAII (Resource Acquisition
+  Is Initialization). When an Rcpp object goes out of scope, the
+  memory for the corresponding R object is released. You generally
+  do not need to manually allocate or deallocate memory for Rcpp
+  objects.
+- **Exception Handling:** C++ exceptions are automatically caught by
+  Rcpp and converted into R errors. This means you can use
+  `try-catch` blocks in your C++ code, and any uncaught exceptions
+  will be properly handled by R.
 
 **Best Practice:**
 
@@ -2969,16 +3078,23 @@ void process_data(Rcpp::NumericVector data) {
 }
 ```
 
-## 3. RcppArmadillo and RcppEigen
+## 3. RcppArmadillo and RcppEigen /g
 
-These packages provide high-performance linear algebra libraries for C++, seamlessly integrated with R.
+These packages provide high-performance linear algebra libraries for
+C++, seamlessly integrated with R.
 
-*   **RcppArmadillo:**
-    *   **Purpose:** Provides the Armadillo C++ library, which offers a high-level syntax for linear algebra, similar to MATLAB.
-    *   **Benefits:** User-friendly syntax, good performance, and extensive documentation. It's often easier to learn for those new to C++ linear algebra.
-*   **RcppEigen:**
-    *   **Purpose:** Provides the Eigen C++ library, another powerful template library for linear algebra.
-    *   **Benefits:** Excellent performance, especially for small to medium-sized matrices, and a flexible API. It is widely used in high-performance computing.
+- **RcppArmadillo:**
+  - **Purpose:** Provides the Armadillo C++ library, which offers a
+    high-level syntax for linear algebra, similar to MATLAB.
+  - **Benefits:** User-friendly syntax, good performance, and
+    extensive documentation. It's often easier to learn for those new
+    to C++ linear algebra.
+- **RcppEigen:**
+  - **Purpose:** Provides the Eigen C++ library, another powerful
+    template library for linear algebra.
+  - **Benefits:** Excellent performance, especially for small to
+    medium-sized matrices, and a flexible API. It is widely used in
+    high-performance computing.
 
 **RcppArmadillo Example:**
 
@@ -3004,15 +3120,17 @@ Eigen::MatrixXd invert_matrix_eigen(const Eigen::MatrixXd& A) {
 }
 ```
 
-## 4. Integration with Tidyverse Packages (e.g., dplyr)
+## 4. Integration with Tidyverse Packages (e.g., dplyr) /g
 
 You can integrate Rcpp with tidyverse packages by creating functions
 in C++ that can be called within a `dplyr` pipeline. This is often
 done for performance-critical operations.
 
-**Example:** Let's create a C++ function to compute a rolling average and use it with `dplyr`.
+**Example:**
 
-**C++ Code (`src/rolling_average.cpp`):**
+Let's create a C++ function to compute a rolling average and use it with `dplyr`.
+
+### C++ Code (`src/rolling_average.cpp`)
 
 ```cpp
 // [[Rcpp::plugins(cpp11)]]
@@ -3036,7 +3154,7 @@ Rcpp::NumericVector rolling_average(Rcpp::NumericVector x, int n) {
 }
 ```
 
-**R Code:**
+### R Code
 
 ```R
 library(dplyr)
@@ -3057,28 +3175,32 @@ my_data %>%
 
 ## 5. Integration with Standard OS Libraries (e.g., gsl - GNU Scientific Library)
 
-To use external libraries like GSL, you need to configure your package to link against them.
+To use external libraries like GSL, you need to configure your package
+to link against them.
 
 **Package Requirements:**
 
-1.  **`DESCRIPTION` File:** You must declare the dependency.
-```yaml
-  LinkingTo: Rcpp, RcppArmadillo, RcppEigen
-  SystemRequirements: GSL (>= 2.0)
-```
-2.  **`src/Makevars` and `src/Makevars.win`:** You need to tell the compiler where to find the GSL headers and libraries.
+1. **`DESCRIPTION` File:** You must declare the dependency.
 
-    **`src/Makevars.win` (for Windows):** This is more complex as it
-    often requires bundling the library or providing instructions for
+    ```yaml
+      LinkingTo: Rcpp, RcppArmadillo, RcppEigen
+      SystemRequirements: GSL (>= 2.0)
+    ```
+
+2. **`src/Makevars` and `src/Makevars.win`:**
+   You need to tell the compiler where to find the GSL headers and libraries.
+
+   **`src/Makevars.win` (for Windows):** This is more complex as it
+   often requires bundling the library or providing instructions for
     the user to install it. For R versions 4.2 and newer, you can
     often install libraries via `rtools`.
 
     **`src/Makevars` (for Linux/macOS):**
 
-```makefile
-PKG_CPPFLAGS = `gsl-config --cflags`
-PKG_LIBS = `gsl-config --libs`
-```
+    ```makefile
+    PKG_CPPFLAGS = `gsl-config --cflags`
+    PKG_LIBS = `gsl-config --libs`
+    ```
 
 **Example C++ Code:**
 
@@ -3093,20 +3215,20 @@ double bessel_function_gsl(double x) {
 }
 ```
 
-## 6. Best Practices for Roxygen2 Comments and Function Documentation
+## 6. Best Practices for Roxygen2 Comments and Function Documentation /g
 
 Roxygen2 comments are essential for creating user-friendly documentation.
 
 **Best Practices:**
 
-*   **Header:** Start with a concise title.
-*   **Description:** Add a more detailed description of what the function does.
-*   **Parameters (`@param`):** Describe each parameter, its type, and its purpose.
-*   **Return Value (`@return`):** Describe what the function returns.
-*   **`@export` Tag:** This makes the function available to R users.
-*   **`@examples` Tag:** Provide runnable examples.
-*   **`@seealso` Tag:** Link to related functions.
-*   **`@keywords` Tag:** (Optional) Add keywords for indexing.
+- **Header:** Start with a concise title.
+- **Description:** Add a more detailed description of what the function does.
+- **Parameters (`@param`):** Describe each parameter, its type, and its purpose.
+- **Return Value (`@return`):** Describe what the function returns.
+- **`@export` Tag:** This makes the function available to R users.
+- **`@examples` Tag:** Provide runnable examples.
+- **`@seealso` Tag:** Link to related functions.
+- **`@keywords` Tag:** (Optional) Add keywords for indexing.
 
 **Well-Documented Function Example:**
 
@@ -3136,15 +3258,16 @@ arma::mat invert_matrix_arma(const arma::mat& A) {
 }
 ```
 
-## 7. R and C++ Function Calls in Rcpp Source
+## 7. R and C++ Function Calls in Rcpp Source /g
 
 You can call other R and C++ functions from your Rcpp code.
 
-**Calling another C++ function in the same package:**
+### Calling another C++ function in the same package
 
 Simply define the function in a header file and include it.
 
-**`src/my_helpers.h`**
+#### `src/my_helpers.h`
+
 ```cpp
 #ifndef MY_HELPERS_H
 #define MY_HELPERS_H
@@ -3153,7 +3276,9 @@ double internal_calculation(double x);
 
 #endif
 ```
-**`src/my_helpers.cpp`**
+
+#### `src/my_helpers.cpp`
+
 ```cpp
 #include "my_helpers.h"
 
@@ -3161,7 +3286,9 @@ double internal_calculation(double x) {
     return x * x;
 }
 ```
-**`src/main.cpp`**
+
+#### `src/main.cpp`
+
 ```cpp
 #include <Rcpp.h>
 #include "my_helpers.h"
@@ -3172,10 +3299,10 @@ double public_function(double val) {
 }
 ```
 
-**Calling an R function from Rcpp:**
+### Calling an R function from Rcpp
 
-1.  **Get the function:** Use `Rcpp::Function` to get the R function.
-2.  **Call it:** Execute it like a C++ function.
+1. **Get the function:** Use `Rcpp::Function` to get the R function.
+2. **Call it:** Execute it like a C++ function.
 
 ```cpp
 #include <Rcpp.h>
@@ -3187,7 +3314,7 @@ Rcpp::NumericVector call_r_function(Rcpp::NumericVector x) {
 }
 ```
 
-**Calling a function from another R package:**
+### Calling a function from another R package
 
 Specify the package namespace when getting the function.
 
@@ -3206,24 +3333,31 @@ Rcpp::RObject call_dplyr_mutate() {
 }
 ```
 
-## 8. Rebuild Operations
+## 8. Rebuild Operations /g
 
-*   **`Rcpp::sourceCpp()`:** For interactive development, this function compiles and sources a single C++ file.
-*   **`devtools::load_all()`:** During package development, this will automatically recompile any changed C++ files.
-*   **`R CMD INSTALL` or `devtools::install()`:** This builds and installs the entire package, compiling all C++ source code.
-*   **`R CMD check` or `devtools::check()`:** This also recompiles the C++ code as part of the checking process.
+- **`Rcpp::sourceCpp()`:** For interactive development, this function
+  compiles and sources a single C++ file.
+- **`devtools::load_all()`:** During package development, this will
+  automatically recompile any changed C++ files.
+- **`R CMD INSTALL` or `devtools::install()`:** This builds and
+  installs the entire package, compiling all C++ source code.
+- **`R CMD check` or `devtools::check()`:** This also recompiles the
+  C++ code as part of the checking process.
 
-The most common and recommended workflow during development is to use `devtools::load_all()` to incrementally recompile changes.
+The most common and recommended workflow during development is to use
+`devtools::load_all()` to incrementally recompile changes.
 
-## 9. Code Unit Testing Support with 'testthat' Package
+## 9. Code Unit Testing Support with 'testthat' Package /g
 
 `testthat` is the standard for unit testing in R, and it works seamlessly with Rcpp.
 
-1.  **Setup:** Use `usethis::use_testthat()`. This creates the `tests/testthat/` directory and a `tests/testthat.R` file.
-2.  **Create Test Files:** Add files like `tests/testthat/test-my_rcpp_functions.R`.
-3.  **Write Tests:** Use `test_that()` blocks to organize
-    tests. Inside these, use `expect_*()` functions to check your C++
-    function's behavior.
+1. **Setup:** Use `usethis::use_testthat()`. This creates the
+   `tests/testthat/` directory and a `tests/testthat.R` file.
+2. **Create Test Files:** Add files like
+   `tests/testthat/test-my_rcpp_functions.R`.
+3. **Write Tests:** Use `test_that()` blocks to organize tests. Inside
+    these, use `expect_*()` functions to check your C++ function's
+    behavior.
 
 **Example Test File (`tests/testthat/test-add_numbers.R`):**
 
@@ -3253,9 +3387,10 @@ test_that("add_numbers handles data types correctly", {
 
 ---
 
-## Full Skeleton of a C++ Source
+## Full Skeleton of a C++ Source /g
 
-Here is a full skeleton of a C++ source file (`src/my_cpp_functions.cpp`) with best practices.
+Here is a full skeleton of a C++ source file
+(`src/my_cpp_functions.cpp`) with best practices.
 
 ```cpp
 // Enable C++11
@@ -3326,11 +3461,14 @@ double call_r_sd(Rcpp::NumericVector vec) {
 }
 ```
 
-## Roxygen2 Documentation and DESCRIPTION File Requisites
+## Roxygen2 Documentation and DESCRIPTION File Requisites /g
 
 **Roxygen2 Documentation:**
 
-As shown in the skeleton above, every exported C++ function should have a Roxygen2 block directly above its signature. The C++ code is parsed by `Rcpp::compileAttributes()`, which generates the necessary R wrapper code and `.Rd` documentation files.
+As shown in the skeleton above, every exported C++ function should
+have a Roxygen2 block directly above its signature. The C++ code is
+parsed by `Rcpp::compileAttributes()`, which generates the necessary R
+wrapper code and `.Rd` documentation files.
 
 **DESCRIPTION File:**
 
@@ -3360,13 +3498,13 @@ Depends:
 
 **Key Points:**
 
-*   **`Imports`:** You must import `Rcpp`.
-*   **`LinkingTo`:** This is crucial. It tells R where to find the header files for the other C++ libraries at compile time.
-*   **`SystemRequirements`:** This informs users (and automated
-    systems) about external non-R dependencies. It doesn't install
-    them but provides a human-readable note.
+- **`Imports`:** You must import `Rcpp`.
+- **`LinkingTo`:** This is crucial. It tells R where to find the header files for the other C++ libraries at compile time.
+- **`SystemRequirements`:** This informs users (and automated
+  systems) about external non-R dependencies. It doesn't install
+  them but provides a human-readable note.
 
-## GitHub and GitLab Packaging Action Pipeline
+## GitHub and GitLab Packaging Action Pipeline /g
 
 Here are example CI/CD pipelines for GitHub Actions and GitLab CI.
 
@@ -3467,9 +3605,12 @@ jobs:
           # This is a simplified approach; a more robust script might be needed.
           state-name: ${{ steps.check.outputs.package-tarball }}
 ```
+
 **Notes for GitHub Actions:**
-*   You need to add `FTP_USER` and `FTP_PASSWORD` to your repository's secrets under `Settings > Secrets and variables > Actions`.
-*   The `FTP-Deploy-Action` is a third-party action.
+
+- You need to add `FTP_USER` and `FTP_PASSWORD` to your repository's
+  secrets under `Settings > Secrets and variables > Actions`.
+- The `FTP-Deploy-Action` is a third-party action.
 
 ### GitLab CI/CD
 
@@ -3527,20 +3668,19 @@ deploy_ftp:
     - job: build_binary
       artifacts: true
 ```
+
 **Notes for GitLab CI:**
-*   Add `FTP_USER` and `FTP_PASSWORD` as protected and masked variables in your project's `Settings > CI/CD > Variables`.
-*   This example uses the `rocker/verse` Docker image, which comes
+
+- Add `FTP_USER` and `FTP_PASSWORD` as protected and masked variables
+  in your project's `Settings > CI/CD > Variables`.
+- This example uses the `rocker/verse` Docker image, which comes
     with many R packages pre-installed. You may need to adjust the
     `before_script` depending on your exact needs.
 
 
--------------------------------------------------------------------------------------------
--------------------------------------------------------------------------------------------
--------------------------------------------------------------------------------------------
 # A:1 (ChatGPT)
-> Rcpp usage guide
 
-[⌃](#toc)
+[^](#toc) **_Rcpp usage guide_**
 
 Here is a comprehensive guide to **Rcpp usage in R packages**,
 following CRAN compliance and best practices.
@@ -3553,12 +3693,12 @@ following CRAN compliance and best practices.
 
 ### ✅ Recommended Style
 
-* Follow Google C++ Style Guide adapted for Rcpp.
-* Use `camelCase` for function names and `snake_case` for variables.
-* Brace on the same line: `if (cond) {`
-* Proper indentation (2 or 4 spaces).
-* Prefer `auto` when type is obvious.
-* Avoid `using namespace std;` or `Rcpp;` in headers.
+- Follow Google C++ Style Guide adapted for Rcpp.
+- Use `camelCase` for function names and `snake_case` for variables.
+- Brace on the same line: `if (cond) {`
+- Proper indentation (2 or 4 spaces).
+- Prefer `auto` when type is obvious.
+- Avoid `using namespace std;` or `Rcpp;` in headers.
 
 ### ✅ Good Practice
 
@@ -3590,14 +3730,15 @@ return total;}
 
 ### 🌟 Utility
 
-* `Rcpp::` wraps native R types for seamless C++ use.
-* Provides data structures (e.g., `NumericVector`, `List`) and helper macros like `RCPP_MODULE`.
+- `Rcpp::` wraps native R types for seamless C++ use.
+- Provides data structures (e.g., `NumericVector`, `List`) and helper
+  macros like `RCPP_MODULE`.
 
 ### ✅ Best Practices
 
-* Use `Rcpp::Named()` for named list output.
-* Always handle exceptions with `try-catch`.
-* Avoid raw pointers; prefer STL containers or Rcpp equivalents.
+- Use `Rcpp::Named()` for named list output.
+- Always handle exceptions with `try-catch`.
+- Avoid raw pointers; prefer STL containers or Rcpp equivalents.
 
 ### ✨ Example
 
@@ -3617,8 +3758,8 @@ Rcpp::List stats(Rcpp::NumericVector x) {
 
 ### 🔧 Purpose
 
-* **RcppArmadillo**: Linear algebra using Armadillo (efficient C++ matrix library).
-* **RcppEigen**: Interfaces with Eigen, another high-performance matrix library.
+- **RcppArmadillo**: Linear algebra using Armadillo (efficient C++ matrix library).
+- **RcppEigen**: Interfaces with Eigen, another high-performance matrix library.
 
 ### ✅ RcppArmadillo Example
 
@@ -3646,7 +3787,8 @@ Eigen::MatrixXd matMultEigen(Eigen::MatrixXd A, Eigen::MatrixXd B) {
 
 ## 4. **Integration with Tidyverse Packages (e.g., dplyr)**
 
-Rcpp functions can interoperate with tidyverse by using `dplyr::mutate()` with `.data` as input.
+Rcpp functions can interoperate with tidyverse by using
+`dplyr::mutate()` with `.data` as input.
 
 ### ✅ Example
 
@@ -3668,19 +3810,19 @@ df %>% mutate(x2 = square(x))
 
 ## 5. **Integration with Standard OS Libraries (e.g., GSL)**
 
-### 🔧 Steps
+🔧 **Steps**
 
-* Install GSL system-wide.
-* Add compiler flags via `Makevars` or `Makevars.win`.
+- Install GSL system-wide.
+- Add compiler flags via `Makevars` or `Makevars.win`.
 
-### 🔗 `DESCRIPTION`:
+🔗 `DESCRIPTION`
 
 ```yaml
 LinkingTo: Rcpp, RcppGSL
 SystemRequirements: GNU Scientific Library (GSL)
 ```
 
-### ✅ Example
+✅ **Example**
 
 ```cpp
 #include <RcppGSL.h>
@@ -3697,12 +3839,12 @@ double besselJ0(double x) {
 
 ## 6. **Best Practices for Roxygen2 Comments**
 
-### 📝 Guidelines
+📝 **Guidelines**
 
-* Always use `@export` for R-visible functions.
-* Use `@param`, `@return`, `@examples`.
+- Always use `@export` for R-visible functions.
+- Use `@param`, `@return`, `@examples`.
 
-### ✅ Example
+✅ **Example**
 
 ```cpp
 //' Compute sum of vector
@@ -3748,10 +3890,10 @@ SEXP call_r_fun(SEXP x) {
 
 ## 8. **Rebuild Operations**
 
-### 🔄 Options:
+🔄 **Options:**
 
-* Rebuild with `Rcpp::compileAttributes()`.
-* Rebuild package:
+- Rebuild with `Rcpp::compileAttributes()`.
+- Rebuild package:
 
 ```sh
 R CMD build mypkg
@@ -3764,8 +3906,8 @@ R CMD check mypkg_*.tar.gz
 
 ### ✅ Setup
 
-* Add `testthat` to `Suggests` in `DESCRIPTION`.
-* Enable in `tests/testthat.R`.
+- Add `testthat` to `Suggests` in `DESCRIPTION`.
+- Enable in `tests/testthat.R`.
 
 ### ✅ Example Test
 
@@ -3807,13 +3949,13 @@ Rcpp::List example_function(Rcpp::NumericVector x) {
 
 ## 🧾 Roxygen2 + DESCRIPTION Requirements
 
-### ✅ Roxygen Tags
+✅ **Roxygen Tags**
 
-* `@useDynLib yourpackage, .registration=TRUE`
-* `@importFrom Rcpp sourceCpp`
-* `@import Rcpp`
+- `@useDynLib yourpackage, .registration=TRUE`
+- `@importFrom Rcpp sourceCpp`
+- `@import Rcpp`
 
-### ✅ DESCRIPTION
+✅ **DESCRIPTION**
 
 ```r
 Imports: Rcpp
@@ -3875,19 +4017,336 @@ check:
 Let me know if you need a sample working package layout or help uploading to CRAN.
 
 
+# A:1 (Perplexity)
 
--------------------------------------------------------------------------------------------
--------------------------------------------------------------------------------------------
--------------------------------------------------------------------------------------------
+[^](#toc) **_Rcpp Guide for R Packages_**
+
+
+## 1. C++11 Rcpp Sources Coding Style /p
+
+### Recommended Coding Style /p
+
+- **Indentation:** Use 4 spaces, not tabs.
+- **File Names:** Use `.cpp` for source files.
+- **Headers:** Always include `RcppArmadillo.h` or `Rcpp.h` or, in
+  alternative, `RcppEigen.h` , and only include other headers as
+  needed.
+- **Namespaces:** Prefer `Rcpp::` prefix instead of `using namespace
+  Rcpp;` to avoid namespace pollution.
+- **Bracing and Alignment:** Place braces on the same line. Align
+  control statements and use clear, readable formatting.
+- **Variable Naming:** Use `snake_case` or `camelCase` consistently.
+- **Auto:** Use `auto` wisely to improve clarity but not to hide types
+  unnecessarily (a C++11 feature).
+- **Return Types:** Use explicit return types for functions.
+- **Initialization:** Use brace `{}` initialization where possible
+  (C++11 feature).
+- **Comments:** Prefer block (`// ...`) or Doxygen-style comments for
+  documentation.
+
+#### Example: Good Practice
+
+```cpp
+#include 
+
+// [[Rcpp::export]]
+int sum_cpp(const std::vector& x) {
+    int total = 0;
+    for (const auto& value : x) {
+        total += value;
+    }
+    return total;
+}
+```
+
+#### Example: Bad Practice
+
+```cpp
+#include
+using namespace Rcpp;
+int sum_cpp(vector x){
+int total=0;for(int i=0;i
+// [[Rcpp::depends(RcppArmadillo)]]
+// [[Rcpp::export]]
+arma::mat mat_mult(const arma::mat& A, const arma::mat& B) {
+    return A * B;
+}
+```
+
+### RcppEigen /p
+
+- **Purpose:** Interface to Eigen library, providing big and small
+  dense/sparse matrix computations[^3][^4].
+- **Benefits:** Fast, powerful, elegant syntax, and advanced solvers.
+
+#### Example
+
+```cpp
+#include 
+// [[Rcpp::depends(RcppEigen)]]
+// [[Rcpp::export]]
+Eigen::VectorXd get_eigenvalues(Eigen::MatrixXd M) {
+    Eigen::SelfAdjointEigenSolver es(M);
+    return es.eigenvalues();
+}
+```
+
+## 4. Integration with Tidyverse Packages (e.g., dplyr) /p
+
+- **Usage:** Use `Rcpp::DataFrame`, `NumericVector` and connect with
+  dplyr-processed data[^5].
+- **Dependency:** Add `// [[Rcpp::depends(dplyr)]]` in the source and
+  corresponding entries in the DESCRIPTION.
+
+Example
+
+```cpp
+#include 
+// [[Rcpp::depends(dplyr)]]
+// [[Rcpp::export]]
+Rcpp::DataFrame add_one(Rcpp::DataFrame df) {
+    Rcpp::NumericVector x = df["x"];
+    x = x + 1;
+    df["x"] = x;
+    return df;
+}
+```
+
+Used in R after dplyr mutate/select, or inside a dplyr pipeline using `do()`.
+
+## 5. Integration with Standard OS Libraries (e.g., GSL) /p
+
+- **Integration:** Use `` etc. in your C++ files. For smoother R
+  interfacing, use RcppGSL[^6][^7].
+- **DESCRIPTION requirements:**
+  - `LinkingTo: Rcpp, RcppGSL`
+  - `SystemRequirements: GNU GSL`
+- **Linkage:** Configure `src/Makevars` using `gsl-config --cflags`
+  and `--libs` or use `configure.ac` for portability[^8][^9].
+
+Example:
+
+```cpp
+#include 
+#include 
+// [[Rcpp::export]]
+double gsl_bessel0(double x) {
+    return gsl_sf_bessel_J0(x);
+}
+```
+
+## 6. Best Practices for Roxygen2 Comments and Function Documentation /p
+
+- **Place above function, before `// [[Rcpp::export]]`.**
+- **Include:** Title, description, parameters, return, examples, and `@export`.
+- **Document all argument types and units.**
+
+**Example:**
+
+```cpp
+//' Sum elements of a vector
+//'
+//' Computes the sum of the supplied numeric vector.
+//' @param x A numeric vector.
+//' @return Numeric scalar. The sum of \code{x}.
+//' @examples
+//' sum_cpp(c(1, 2, 3))
+//' @export
+// [[Rcpp::export]]
+double sum_cpp(Rcpp::NumericVector x) {
+    return std::accumulate(x.begin(), x.end(), 0.0);
+}
+```
+
+## 7. R and C++ Function Calls in Rcpp Source /p
+
+- **C++ Function From Package:** Include in same or another `.cpp`
+  source. Declare its prototype.
+- **External R Function:** Use `Rcpp::Function`.
+
+Example: _Calling an R function*_
+
+```cpp
+// [[Rcpp::export]]
+Rcpp::NumericVector call_mean(Rcpp::NumericVector x) {
+    Rcpp::Function mean("mean");
+    return mean(x);
+}
+```
+
+**Example:** C++ function calling another C++ function
+
+```cpp
+double helper(double x) { return x * 2; }
+
+// [[Rcpp::export]]
+double use_helper(double x) { return helper(x); }
+```
+
+## 8. Rebuild Operations /p
+
+- **Re-compile in R:** `devtools::load_all()` or
+  `Rcpp::compileAttributes()`, or touch source and run.
+- **Command line:** `R CMD build .`, `R CMD check --as-cran .`
+- **RStudio:** Use "Build & Reload".
+
+## 9. Code Unit Testing Support with 'testthat'
+
+- **Put test files in `tests/testthat/` directory.**
+- **Call exported Rcpp functions in test files as for R functions[^10].**
+
+Example
+
+```R
+test_that("sum_cpp works for a numeric vector", {
+    expect_equal(sum_cpp(c(1,2,3,4)), 10)
+    expect_error(sum_cpp(NULL))
+})
+```
+
+---
+
+## 1. Full Skeleton of a C++ Source
+
+```cpp
+// Enable C++11
+// [[Rcpp::plugins(cpp11)]]
+// [[Rcpp::depends(RcppArmadillo)]]
+// [[Rcpp::depends(RcppEigen)]]
+// [[Rcpp::depends(RcppGSL)]]
+// [[Rcpp::depends(dplyr)]]
+
+#include 
+#include 
+#include 
+#include 
+#include 
+#include 
+#include 
+
+// [[Rcpp::export]]
+double example_function(Rcpp::NumericVector x) {
+    // Use Rcpp and STL idioms
+    return std::accumulate(x.begin(), x.end(), 0.0);
+}
+```
+
+## 2. Roxygen2 Documentation and DESCRIPTION File Requisites
+
+**Roxygen2:**
+
+- Add `@useDynLib , .registration = TRUE` in your main package R file.
+- Add `@importFrom Rcpp sourceCpp` and document all parameters and return values[^11][^12].
+
+**DESCRIPTION File:**
+
+```yaml
+Imports: Rcpp (>= 1.0.0), dplyr
+LinkingTo: Rcpp, RcppArmadillo, RcppEigen, RcppGSL
+SystemRequirements: GNU GSL
+Suggests: testthat
+```
+
+## 3. GitHub and GitLab Packaging Action Pipeline
+
+Here is a minimal **GitHub Actions** workflow and a conceptually
+similar **GitLab CI** pipeline. Both run R CMD check and, if
+successful, upload the built package to a remote FTP server using
+provided environment variables.
+
+### GitHub Actions: `.github/workflows/R-CMD-check.yaml`
+
+```yaml
+name: R-CMD-check
+
+on: [push, pull_request]
+
+jobs:
+  R-CMD-check:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - uses: r-lib/actions/setup-r@v2
+    - name: Install dependencies
+      run: |
+        install.packages(c('devtools', 'Rcpp', 'RcppArmadillo', 'RcppEigen', 'RcppGSL', 'dplyr', 'testthat'))
+    - name: Check
+      run: R CMD check --as-cran .
+    - name: Build
+      run: R CMD build .
+    - name: Upload to FTP
+      if: success()
+      run: |
+        curl -T *.tar.gz -u "${{ secrets.FTP_USER }}:${{ secrets.FTP_PASSWORD }}" "ftp://${{ secrets.FTP_HOST }}/upload/"
+```
+
+### GitLab CI: `.gitlab-ci.yml`
+
+```yaml
+stages:
+  - build
+  - upload
+
+build_package:
+  image: r-base:latest
+  script:
+    - apt-get update && apt-get install -y libgsl-dev libcurl4-openssl-dev
+    - Rscript -e 'install.packages(c("devtools", "Rcpp", "RcppArmadillo", "RcppEigen", "RcppGSL", "dplyr", "testthat"))'
+    - R CMD check --as-cran .
+    - R CMD build .
+
+upload_ftp:
+  stage: upload
+  script:
+    - apt-get update && apt-get install -y curl
+    - curl -T *.tar.gz -u "$FTP_USER:$FTP_PASSWORD" "ftp://$FTP_HOST/upload/"
+  only:
+    - master
+  dependencies:
+    - build_package
+  when: on_success
+```
+
+**(Set `FTP_USER`, `FTP_PASSWORD`, `FTP_HOST` in repository secrets/variables.)**
+
+This guide presents a comprehensive set of up-to-date best practices
+for using Rcpp and its ecosystem with C++11, armadillo, eigen, dplyr,
+external libraries like GSL, and robust packaging/testing workflows
+that conform to CRAN
+standards[^13][^1][^14][^3][^5][^6][^11][^2][^7][^12][^15][^16][^17][^18][^19][^20].
+
+[^1]: [CRAN: Rcpp](https://cran.r-project.org/package=Rcpp)
+[^2]: [rcpparmadillo-package-in-r](https://www.geeksforgeeks.org/r-language/rcpparmadillo-package-in-r/)
+[^3]: [RcppEigen](https://github.com/RcppCore/RcppEigen)
+[^4]: [an-rcppeigen-example](https://www.r-bloggers.com/2012/03/an-rcppeigen-example/)
+[^5]: [ordering-dataframe-using-rcpp-dplyr](https://stackoverflow.com/questions/50828119/ordering-dataframe-using-rcpp-dplyr)
+[^6]: [CRAN:RcppGSL](https://cran.r-project.org/package=RcppGSL)
+[^7]: [RcppGSL](https://eddelbuettel.r-universe.dev/RcppGSL)
+[^8]: [RcppGSL-intro.pdf](https://cran.r-project.org/web/packages/RcppGSL/vignettes/RcppGSL-intro.pdf)
+[^9]: [linking-rcpp-to-interp2d-gsl-type-library](https://stackoverflow.com/questions/21094740/linking-rcpp-to-interp2d-gsl-type-library)
+[^10]: [testing-rcpp-packages](https://www.r-bloggers.com/2020/06/testing-rcpp-packages/)
+[^11]: [documenting-rcpp-packages](https://gallery.rcpp.org/articles/documenting-rcpp-packages/)
+[^12]: [a-minimal-rcpp-and-roxygen2-package](https://knausb.github.io/2017/09/a-minimal-rcpp-and-roxygen2-package/)
+[^13]: [Rcpp-FAQ.pdf](https://cran.r-project.org/package=Rcpp/vignettes/Rcpp-FAQ.pdf)
+[^14]: [rcpparmadillo](https://mfasiolo.github.io/sc2-2019/rcpp_advanced_i/2_rcpparmadillo/)
+[^15]: [c11-with-r-and-rcpp-supported-by-cran-policies](https://stackoverflow.com/questions/28262324/c11-with-r-and-rcpp-supported-by-cran-policies)
+[^16]: [rcpp-and-c++11-c++14-c++17](https://gallery.rcpp.org/articles/rcpp-and-c++11-c++14-c++17/)
+[^17]: [first-steps-with-C++11](https://gallery.rcpp.org/articles/first-steps-with-C++11/)
+[^18]: [Rcpp-modules.pdf](https://cran.r-project.org/package=Rcpp/vignettes/Rcpp-modules.pdf)
+[^19]: [memory-error-with-rcpparmadillo](https://stackoverflow.com/questions/48225516/memory-error-when-running-my-c-code-w-rcpp-rcpparmadillo-cant-identify-exa)
+[^20]: [fastverse](https://cran.r-project.org/web/packages/fastverse/readme/README.html)
+
+
 # A:1 (DeepSeek)
-> Comprehensive Guide to Using Rcpp in R Packages
 
-[⌃](#toc)
-
+[^](#toc) **_Comprehensive Guide to Using Rcpp in R Packages_**
 
 
 ## 1. **C++11 Rcpp Sources Coding Style**
+
 **Recommendations:**
+
 - **Naming:** Use `snake_case` for functions/variables, `CamelCase` for classes
 - **Indentation:** 2 spaces (CRAN-compliant)
 - **Braces:** Always include `{}`, even for single-line blocks
@@ -3895,6 +4354,7 @@ Let me know if you need a sample working package layout or help uploading to CRA
 - **Comments:** Use `//` for single-line, `/* */` for multi-line
 
 **Good Practice:**
+
 ```cpp
 #include <Rcpp.h>
 using namespace Rcpp;
@@ -3911,6 +4371,7 @@ double calculate_mean(NumericVector x) {
 ```
 
 **Bad Practice:**
+
 ```cpp
 #include <Rcpp.h>
 using namespace Rcpp;
@@ -3924,13 +4385,16 @@ return t/x.size();}
 
 ---
 
-## 2. **Rcpp Namespace Utility and Best Practices**
+## 2. **Rcpp Namespace Utility and Best Practices** /d
+
 **Key Utilities:**
+
 - `Rcpp::NumericVector`, `Rcpp::DataFrame`: R data structures
 - `Rcpp::stop()`: Exception handling
 - `Rcpp::Rcout`: Output redirection
 
 **Best Practices:**
+
 ```cpp
 #include <Rcpp.h>
 using namespace Rcpp;
@@ -3956,9 +4420,12 @@ NumericVector safe_divide(NumericVector a, NumericVector b) {
 
 ---
 
-## 3. **RcppArmadillo and RcppEigen**
-**RcppArmadillo:** 
+## 3. **RcppArmadillo and RcppEigen** /d
+
+**RcppArmadillo:**
+
 - Linear algebra with MATLAB-like syntax
+
 ```cpp
 #include <RcppArmadillo.h>
 // [[Rcpp::depends(RcppArmadillo)]]
@@ -3970,7 +4437,9 @@ arma::mat arma_matrix_mult(arma::mat A, arma::mat B) {
 ```
 
 **RcppEigen:**
+
 - Template-based linear algebra
+
 ```cpp
 #include <RcppEigen.h>
 // [[Rcpp::depends(RcppEigen)]]
@@ -3984,7 +4453,9 @@ Eigen::MatrixXd eigen_matrix_mult(Eigen::MatrixXd A, Eigen::MatrixXd B) {
 ---
 
 ## 4. **Integration with Tidyverse Packages**
+
 **Approach:** Return `DataFrame` for dplyr piping
+
 ```cpp
 // [[Rcpp::export]]
 DataFrame process_data(DataFrame df) {
@@ -3995,6 +4466,7 @@ DataFrame process_data(DataFrame df) {
 ```
 
 **R Usage:**
+
 ```r
 library(dplyr)
 df %>% 
@@ -4006,18 +4478,24 @@ df %>%
 ---
 
 #### 5. **Integration with OS Libraries (GSL)**
+
 **Implementation:**
+
 1. Add to `DESCRIPTION`:
-   ```
+
+   ```yaml
    SystemRequirements: GNU GSL
    LinkingTo: Rcpp
    ```
+
 2. Create `src/Makevars`:
-```make
+
+   ```make
    PKG_LIBS = `$(R_HOME)/bin/Rscript -e "Rcpp:::LdFlags()"` -lgsl -lgslcblas
-```
+   ```
 
 **C++ Example:**
+
 ```cpp
 #include <gsl/gsl_sf_bessel.h>
 #include <Rcpp.h>
@@ -4035,7 +4513,9 @@ NumericVector gsl_bessel_j0(NumericVector x) {
 ---
 
 ## 6. **Roxygen2 Documentation Best Practices**
+
 **C++ File Example:**
+
 ```cpp
 //' Compute Euclidean distance matrix
 //'
@@ -4053,7 +4533,9 @@ NumericMatrix dist_matrix(NumericMatrix x) {
 ---
 
 ## 7. **R and C++ Function Calls**
+
 **Calling R Functions:**
+
 ```cpp
 // [[Rcpp::export]]
 NumericVector rnorm_rcpp(int n) {
@@ -4063,6 +4545,7 @@ NumericVector rnorm_rcpp(int n) {
 ```
 
 **Calling C++ Functions:**
+
 ```cpp
 double internal_helper(double x) { return x*x; }
 
@@ -4079,7 +4562,9 @@ NumericVector square_vec(NumericVector x) {
 ---
 
 ## 8. **Rebuild Operations**
+
 **Commands:**
+
 ```bash
 # Full rebuild
 R CMD INSTALL --preclean --clean .
@@ -4092,7 +4577,9 @@ devtools::document()  # Update documentation
 ---
 
 ## 9. **Unit Testing with testthat**
+
 **Test File (`tests/testthat/test-rcpp.R`):**
+
 ```r
 test_that("Matrix multiplication works", {
   A <- matrix(1:4, ncol=2)
@@ -4110,6 +4597,7 @@ test_that("Error handling works", {
 ## Supplemental Materials
 
 ### 1. **C++ Source Skeleton**
+
 ```cpp
 // mypackage/src/rcpp_functions.cpp
 
@@ -4160,6 +4648,7 @@ List sample_function(NumericVector x) {
 ---
 
 ### 2. **DESCRIPTION Requisites**
+
 ```yaml
 Package: mypackage
 Title: My R Package
@@ -4182,6 +4671,7 @@ SystemRequirements:
 #### 3.1 GitHub Action
 
 **GitHub Action (.github/workflows/rcpp-ci.yml):**
+
 ```yaml
 name: R-CMD-Check
 
@@ -4223,6 +4713,7 @@ jobs:
 #### 3.1 GitLab CI
 
 **GitLab CI (.gitlab-ci.yml):**
+
 ```yaml
 image: rocker/r-ver:4.3.0
 
@@ -4260,22 +4751,22 @@ This guide provides a comprehensive overview of Rcpp best practices,
 CRAN compliance, and modern development workflows. Always validate
 with `R CMD check --as-cran` before submission.
 
--------------------------------------------------------------------------------------------
--------------------------------------------------------------------------------------------
--------------------------------------------------------------------------------------------
+
 # A:1 (Kimi)
-> Comprehensive Guide to Rcpp Usage in R Packages
 
-[⌃](#toc)
+[^](#toc) **_Comprehensive Guide to Rcpp Usage in R Packages_**
 
 
-## 1. C++11 Rcpp Sources Coding Style
+## 1. C++11 Rcpp Sources Coding Style /k
 
-### Recommended Coding Style
+### Recommended Coding Style /k
 
-The recommended coding style for C++11 Rcpp sources follows the [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html) with R-specific adaptations:
+The recommended coding style for C++11 Rcpp sources follows the
+[Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html)
+with R-specific adaptations:
 
-#### Good Practices:
+#### Good Practices
+
 ```cpp
 // Good: Clear naming, proper spacing, const correctness
 namespace mypackage {
@@ -4291,7 +4782,8 @@ double compute_sum(const Rcpp::NumericVector& x) {
 } // namespace mypackage
 ```
 
-#### Bad Practices:
+#### Bad Practices
+
 ```cpp
 // Bad: Poor naming, magic numbers, no const correctness
 double computeSum(Rcpp::NumericVector x){
@@ -4303,24 +4795,28 @@ return total;
 }
 ```
 
-### Key Style Guidelines:
+### Key Style Guidelines
+
 - **Naming**: Use `snake_case` for variables/functions, `PascalCase` for classes
 - **Indentation**: 2 spaces (no tabs)
 - **Line length**: Maximum 80 characters
 - **Headers**: Include guards using `#pragma once`
 - **Namespaces**: Always wrap code in a package-specific namespace
 
-## 2. Rcpp Namespace Utility and Best Practices
+## 2. Rcpp Namespace Utility and Best Practices /k
 
 ### Namespace Utility
+
 The Rcpp namespace provides:
+
 - Seamless R/C++ data type conversion
 - Memory management through R's garbage collector
 - Exception handling bridging R errors and C++ exceptions
 
-### Best Practices
+### Best Practices /k
 
-#### Basic I/O:
+#### Basic I/O /k
+
 ```cpp
 #include <Rcpp.h>
 using namespace Rcpp;
@@ -4342,7 +4838,8 @@ List safe_io_example(NumericVector x) {
 }
 ```
 
-#### Memory Management:
+#### Memory Management /k
+
 ```cpp
 // [[Rcpp::export]]
 IntegerVector memory_efficient_resize(IntegerVector x, int new_size) {
@@ -4358,7 +4855,8 @@ IntegerVector memory_efficient_resize(IntegerVector x, int new_size) {
 }
 ```
 
-#### Exception Handling:
+#### Exception Handling /k
+
 ```cpp
 // [[Rcpp::export]]
 double safe_division(double a, double b) {
@@ -4373,17 +4871,21 @@ double safe_division(double a, double b) {
 }
 ```
 
-## 3. RcppArmadillo and RcppEigen
+## 3. RcppArmadillo and RcppEigen /k
 
-### RcppArmadillo
-Purpose: Provides seamless integration between R and Armadillo C++ linear algebra library.
+### RcppArmadillo /k
+
+Purpose: Provides seamless integration between R and Armadillo C++
+linear algebra library.
 
 Benefits:
+
 - High-performance linear algebra operations
 - MATLAB-like syntax
 - Automatic memory management
 
-#### Sample Usage:
+#### Sample Usage /k
+
 ```cpp
 // [[Rcpp::depends(RcppArmadillo)]]
 #include <RcppArmadillo.h>
@@ -4409,15 +4911,18 @@ List arma_eigen(const arma::mat& X) {
 }
 ```
 
-### RcppEigen
+### RcppEigen /k
+
 Purpose: Integration with Eigen C++ template library for linear algebra.
 
 Benefits:
+
 - Expression templates for optimized performance
 - Header-only library
 - Advanced linear algebra operations
 
-#### Sample Usage:
+#### Sample Usage /k
+
 ```cpp
 // [[Rcpp::depends(RcppEigen)]]
 #include <RcppEigen.h>
@@ -4474,7 +4979,8 @@ DataFrame rcpp_dplyr_grouped_sum(DataFrame df, String group_col, String value_co
 }
 ```
 
-### R Usage Example:
+### R Usage Example /k
+
 ```r
 library(dplyr)
 library(Rcpp)
@@ -4524,12 +5030,14 @@ NumericVector gsl_rnorm(int n, double mu, double sigma) {
 ### Package Requirements for GSL
 
 In `DESCRIPTION`:
+
 ```yaml
 SystemRequirements: GNU GSL
 LinkingTo: RcppGSL
 ```
 
 In `Makevars`:
+
 ```makefile
 PKG_CPPFLAGS = $(GSL_CFLAGS)
 PKG_LIBS = $(GSL_LIBS)
@@ -4604,7 +5112,7 @@ double use_helper(NumericVector x) {
 }
 ```
 
-## 8. Rebuild Operations
+## 8. Rebuild Operations /k
 
 ### Rebuilding Rcpp Functions
 
@@ -4627,7 +5135,7 @@ devtools::install()
 
 ## 9. Code Unit Testing with testthat
 
-### Test File Structure (`tests/testthat/test-rcpp.R`):
+### Test File Structure (`tests/testthat/test-rcpp.R`)
 
 ```r
 test_that("Euclidean distance works correctly", {
@@ -4743,7 +5251,8 @@ Rcpp::List main_computation(const Rcpp::NumericMatrix& x,
 
 ## Roxygen2 Documentation and DESCRIPTION Requisites
 
-### DESCRIPTION File:
+### DESCRIPTION File /k
+
 ```yaml
 Package: mypackage
 Type: Package
@@ -4775,7 +5284,8 @@ Suggests:
 Config/testthat/edition: 3
 ```
 
-### NAMESPACE File (auto-generated):
+### NAMESPACE File (auto-generated) /k
+
 ```r
 # Generated by roxygen2: do not edit by hand
 
@@ -4786,7 +5296,7 @@ useDynLib(mypackage, .registration = TRUE)
 
 ## GitHub/GitLab Packaging Action Pipeline
 
-### GitHub Actions (.github/workflows/R-CMD-check.yaml):
+### GitHub Actions (.github/workflows/R-CMD-check.yaml)
 
 ```yaml
 name: R-CMD-check
@@ -4868,7 +5378,7 @@ jobs:
           EOF
 ```
 
-### GitLab CI (.gitlab-ci.yml):
+### GitLab CI (.gitlab-ci.yml)
 
 ```yaml
 stages:
@@ -4925,314 +5435,9 @@ developing, documenting, testing, and deploying R packages with Rcpp,
 including integration with major C++ libraries and continuous
 integration workflows.
 
--------------------------------------------------------------------------------------------
--------------------------------------------------------------------------------------------
--------------------------------------------------------------------------------------------
-# A:1 (Perplexity)
-> Rcpp Guide for R Packages
 
-[⌃](#toc)
-
-
-## 1. C++11 Rcpp Sources Coding Style
-
-### Recommended Coding Style
-
-- **Indentation:** Use 4 spaces, not tabs.
-- **File Names:** Use `.cpp` for source files.
-- **Headers:** Always include `RcppArmadillo.h` or `Rcpp.h` or, in alternative, `RcppEigen.h` , and only include other headers as needed.
-- **Namespaces:** Prefer `Rcpp::` prefix instead of `using namespace Rcpp;` to avoid namespace pollution.
-- **Bracing and Alignment:** Place braces on the same line. Align control statements and use clear, readable formatting.
-- **Variable Naming:** Use `snake_case` or `camelCase` consistently.
-- **Auto:** Use `auto` wisely to improve clarity but not to hide types unnecessarily (a C++11 feature).
-- **Return Types:** Use explicit return types for functions.
-- **Initialization:** Use brace `{}` initialization where possible (C++11 feature).
-- **Comments:** Prefer block (`// ...`) or Doxygen-style comments for documentation.
-
-#### Example: Good Practice
-
-```cpp
-#include 
-
-// [[Rcpp::export]]
-int sum_cpp(const std::vector& x) {
-    int total = 0;
-    for (const auto& value : x) {
-        total += value;
-    }
-    return total;
-}
-```
-
-#### Example: Bad Practice
-
-```cpp
-#include
-using namespace Rcpp;
-int sum_cpp(vector x){
-int total=0;for(int i=0;i
-// [[Rcpp::depends(RcppArmadillo)]]
-// [[Rcpp::export]]
-arma::mat mat_mult(const arma::mat& A, const arma::mat& B) {
-    return A * B;
-}
-```
-
-### RcppEigen
-
-- **Purpose:** Interface to Eigen library, providing big and small dense/sparse matrix computations[^3][^4].
-- **Benefits:** Fast, powerful, elegant syntax, and advanced solvers.
-
-#### Example
-
-```cpp
-#include 
-// [[Rcpp::depends(RcppEigen)]]
-// [[Rcpp::export]]
-Eigen::VectorXd get_eigenvalues(Eigen::MatrixXd M) {
-    Eigen::SelfAdjointEigenSolver es(M);
-    return es.eigenvalues();
-}
-```
-
-## 4. Integration with Tidyverse Packages (e.g., dplyr)
-
-- **Usage:** Use `Rcpp::DataFrame`, `NumericVector` and connect with dplyr-processed data[^5].
-- **Dependency:** Add `// [[Rcpp::depends(dplyr)]]` in the source and corresponding entries in the DESCRIPTION.
-
-#### Example
-
-```cpp
-#include 
-// [[Rcpp::depends(dplyr)]]
-// [[Rcpp::export]]
-Rcpp::DataFrame add_one(Rcpp::DataFrame df) {
-    Rcpp::NumericVector x = df["x"];
-    x = x + 1;
-    df["x"] = x;
-    return df;
-}
-```
-Used in R after dplyr mutate/select, or inside a dplyr pipeline using `do()`.
-
-## 5. Integration with Standard OS Libraries (e.g., GSL)
-
-- **Integration:** Use `` etc. in your C++ files. For smoother R interfacing, use RcppGSL[^6][^7].
-- **DESCRIPTION requirements:**
-    - `LinkingTo: Rcpp, RcppGSL`
-    - `SystemRequirements: GNU GSL`
-- **Linkage:** Configure `src/Makevars` using `gsl-config --cflags` and `--libs` or use `configure.ac` for portability[^8][^9].
-
-#### Example
-
-```cpp
-#include 
-#include 
-// [[Rcpp::export]]
-double gsl_bessel0(double x) {
-    return gsl_sf_bessel_J0(x);
-}
-```
-
-## 6. Best Practices for Roxygen2 Comments and Function Documentation
-
-- **Place above function, before `// [[Rcpp::export]]`.**
-- **Include:** Title, description, parameters, return, examples, and `@export`.
-- **Document all argument types and units.**
-
-#### Example
-
-```cpp
-//' Sum elements of a vector
-//'
-//' Computes the sum of the supplied numeric vector.
-//' @param x A numeric vector.
-//' @return Numeric scalar. The sum of \code{x}.
-//' @examples
-//' sum_cpp(c(1, 2, 3))
-//' @export
-// [[Rcpp::export]]
-double sum_cpp(Rcpp::NumericVector x) {
-    return std::accumulate(x.begin(), x.end(), 0.0);
-}
-```
-
-## 7. R and C++ Function Calls in Rcpp Source
-
-- **C++ Function From Package:** Include in same or another `.cpp` source. Declare its prototype.
-- **External R Function:** Use `Rcpp::Function`.
-
-#### Example: Calling an R function
-
-```cpp
-// [[Rcpp::export]]
-Rcpp::NumericVector call_mean(Rcpp::NumericVector x) {
-    Rcpp::Function mean("mean");
-    return mean(x);
-}
-```
-
-#### Example: C++ function calling another C++ function
-
-```cpp
-double helper(double x) { return x * 2; }
-
-// [[Rcpp::export]]
-double use_helper(double x) { return helper(x); }
-```
-
-## 8. Rebuild Operations
-
-- **Re-compile in R:** `devtools::load_all()` or `Rcpp::compileAttributes()`, or touch source and run.
-- **Command line:** `R CMD build .`, `R CMD check --as-cran .`
-- **RStudio:** Use "Build & Reload".
-
-## 9. Code Unit Testing Support with 'testthat'
-
-- **Put test files in `tests/testthat/` directory.**
-- **Call exported Rcpp functions in test files as for R functions[^10].**
-
-#### Example
-
-```R
-test_that("sum_cpp works for a numeric vector", {
-    expect_equal(sum_cpp(c(1,2,3,4)), 10)
-    expect_error(sum_cpp(NULL))
-})
-```
----------------------------------------------------------------------------------
-
-## 1. Full Skeleton of a C++ Source
-
-```cpp
-// Enable C++11
-// [[Rcpp::plugins(cpp11)]]
-// [[Rcpp::depends(RcppArmadillo)]]
-// [[Rcpp::depends(RcppEigen)]]
-// [[Rcpp::depends(RcppGSL)]]
-// [[Rcpp::depends(dplyr)]]
-
-#include 
-#include 
-#include 
-#include 
-#include 
-#include 
-#include 
-
-// [[Rcpp::export]]
-double example_function(Rcpp::NumericVector x) {
-    // Use Rcpp and STL idioms
-    return std::accumulate(x.begin(), x.end(), 0.0);
-}
-```
-
-## 2. Roxygen2 Documentation and DESCRIPTION File Requisites
-
-**Roxygen2:**
-- Add `@useDynLib , .registration = TRUE` in your main package R file.
-- Add `@importFrom Rcpp sourceCpp` and document all parameters and return values[^11][^12].
-
-**DESCRIPTION File:**
-```yaml
-Imports: Rcpp (>= 1.0.0), dplyr
-LinkingTo: Rcpp, RcppArmadillo, RcppEigen, RcppGSL
-SystemRequirements: GNU GSL
-Suggests: testthat
-```
-
-## 3. GitHub and GitLab Packaging Action Pipeline
-
-Here is a minimal **GitHub Actions** workflow and a conceptually similar **GitLab CI** pipeline. Both run R CMD check and, if successful, upload the built package to a remote FTP server using provided environment variables.
-
-### GitHub Actions: `.github/workflows/R-CMD-check.yaml`
-
-```yaml
-name: R-CMD-check
-
-on: [push, pull_request]
-
-jobs:
-  R-CMD-check:
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v4
-    - uses: r-lib/actions/setup-r@v2
-    - name: Install dependencies
-      run: |
-        install.packages(c('devtools', 'Rcpp', 'RcppArmadillo', 'RcppEigen', 'RcppGSL', 'dplyr', 'testthat'))
-    - name: Check
-      run: R CMD check --as-cran .
-    - name: Build
-      run: R CMD build .
-    - name: Upload to FTP
-      if: success()
-      run: |
-        curl -T *.tar.gz -u "${{ secrets.FTP_USER }}:${{ secrets.FTP_PASSWORD }}" "ftp://${{ secrets.FTP_HOST }}/upload/"
-```
-
-### GitLab CI: `.gitlab-ci.yml`
-
-```yaml
-stages:
-  - build
-  - upload
-
-build_package:
-  image: r-base:latest
-  script:
-    - apt-get update && apt-get install -y libgsl-dev libcurl4-openssl-dev
-    - Rscript -e 'install.packages(c("devtools", "Rcpp", "RcppArmadillo", "RcppEigen", "RcppGSL", "dplyr", "testthat"))'
-    - R CMD check --as-cran .
-    - R CMD build .
-
-upload_ftp:
-  stage: upload
-  script:
-    - apt-get update && apt-get install -y curl
-    - curl -T *.tar.gz -u "$FTP_USER:$FTP_PASSWORD" "ftp://$FTP_HOST/upload/"
-  only:
-    - master
-  dependencies:
-    - build_package
-  when: on_success
-```
-
-**(Set `FTP_USER`, `FTP_PASSWORD`, `FTP_HOST` in repository secrets/variables.)**
-
-This guide presents a comprehensive set of up-to-date best practices
-for using Rcpp and its ecosystem with C++11, armadillo, eigen, dplyr,
-external libraries like GSL, and robust packaging/testing workflows
-that conform to CRAN
-standards[^13][^1][^14][^3][^5][^6][^11][^2][^7][^12].
-
-[^1]: https://cran.r-project.org/package=Rcpp
-[^2]: https://www.geeksforgeeks.org/r-language/rcpparmadillo-package-in-r/
-[^3]: https://github.com/RcppCore/RcppEigen
-[^4]: https://www.r-bloggers.com/2012/03/an-rcppeigen-example/
-[^5]: https://stackoverflow.com/questions/50828119/ordering-dataframe-using-rcpp-dplyr
-[^6]: https://cran.r-project.org/package=RcppGSL
-[^7]: https://eddelbuettel.r-universe.dev/RcppGSL
-[^8]: https://cran.r-project.org/web/packages/RcppGSL/vignettes/RcppGSL-intro.pdf
-[^9]: https://stackoverflow.com/questions/21094740/linking-rcpp-to-interp2d-gsl-type-library
-[^10]: https://www.r-bloggers.com/2020/06/testing-rcpp-packages/
-[^11]: https://gallery.rcpp.org/articles/documenting-rcpp-packages/
-[^12]: https://knausb.github.io/2017/09/a-minimal-rcpp-and-roxygen2-package/
-[^13]: https://cran.r-project.org/package=Rcpp/vignettes/Rcpp-FAQ.pdf
-[^14]: https://mfasiolo.github.io/sc2-2019/rcpp_advanced_i/2_rcpparmadillo/
-[^15]: https://stackoverflow.com/questions/28262324/c11-with-r-and-rcpp-supported-by-cran-policies
-[^16]: https://gallery.rcpp.org/articles/rcpp-and-c++11-c++14-c++17/
-[^17]: https://gallery.rcpp.org/articles/first-steps-with-C++11/
-[^18]: https://cran.r-project.org/package=Rcpp/vignettes/Rcpp-modules.pdf
-[^19]: https://stackoverflow.com/questions/48225516/memory-error-when-running-my-c-code-w-rcpp-rcpparmadillo-cant-identify-exa
-[^20]: https://cran.r-project.org/web/packages/fastverse/readme/README.html
-
-
--------------------------------------------------------------------------------------------
--------------------------------------------------------------------------------------------
--------------------------------------------------------------------------------------------
-
-[⌃](#toc)
-
-# ::}}} \\ %1.
+<!-- }}} \\ %1. -->
+<!-- {{{ // %*
+LocalWords:  GitLab CommonMark GFM GLFM YAML
+vim: set foldmethod=marker :
+}}} // %* -->
