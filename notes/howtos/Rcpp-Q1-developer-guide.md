@@ -1,17 +1,41 @@
 ---
-title: TODO:(title)
-subtitle: TODO:(subtitle)
+title: Comprehensive Rcpp Usage Guide for R Packages
+subtitle: |
+  A multi-source synthesis of C++11 Rcpp development practices,
+  covering coding style, external library integration, documentation,
+  testing, and CI/CD packaging pipelines for CRAN-compliant R packages
 # {{{ // %+
-
-category: LLM-Style
-keywords: [GEN, TODO:(keywords)]
+category: Rcpp-HOWTO
+keywords: [GEN, Rcpp, RcppArmadillo, RcppEigen, CRAN, GSL, testthat, CI-CD]
 abstract: |
-  TODO:(abstract)
-  
-  ...
+  This document consolidates responses from multiple large language
+  models (Claude, Vertex, Gemini, ChatGPT, DeepSeek, Kimi, Perplexity)
+  to a structured prompt requesting a comprehensive guide on `Rcpp`
+  usage within CRAN-compliant R packages. The synthesis covers nine
+  core topics: C++11 coding style for `Rcpp` sources, `Rcpp` namespace
+  utilities and best practices, matrix algebra via `RcppArmadillo` and
+  `RcppEigen`, tidyverse integration (notably `dplyr`), linkage to
+  external OS libraries such as the GNU Scientific Library (`GSL`),
+  `Roxygen2` documentation conventions, inter-language function calls
+  between R and C++ within a package, rebuild workflows, and unit
+  testing with the `testthat` package.
+
+  Beyond the thematic exposition, each model response is expected to
+  provide: a complete C++11 source skeleton including headers for
+  `Rcpp`, `RcppArmadillo`, `RcppEigen`, STL, and `GSL`; the
+  corresponding `DESCRIPTION` file annotations and `Roxygen2`
+  directives required for external library linkage; and a CI/CD
+  pipeline specification for both GitHub Actions and GitLab CI,
+  performing package checks, tests, binary builds, and conditional
+  artifact upload to a remote FTP server via environment-sourced
+  credentials.
+
+  The document serves as a reference compendium for R developers
+  integrating C++ performance code into distributable packages,
+  enabling direct comparison of guidance quality and completeness
+  across leading AI code-assistance tools.
 
 doctype: md-report
-
 # }}} // %+
 ---
 <!-- {{{ #TAG: TODO:(toc) // -->

@@ -14,7 +14,7 @@
         "type": "FilterCompleted",
         "verbosity": "INFO",
         "path": "/home/gp21012/work/vs/dve-sample-r/notes/style/md-report.lua",
-        "milliseconds": "56"
+        "milliseconds": "81"
     },
     {
         "type": "BlockNotRendered",
@@ -154,6 +154,17 @@
         "contents": {
             "c": [
                 "html",
+                "<details><summary> HTML blocks\n"
+            ],
+            "t": "RawBlock"
+        }
+    },
+    {
+        "type": "BlockNotRendered",
+        "verbosity": "INFO",
+        "contents": {
+            "c": [
+                "html",
                 "<!-- }}} \\\\ %1. -->\n"
             ],
             "t": "RawBlock"
@@ -173,36 +184,266 @@
     {
         "type": "MissingCharacter",
         "verbosity": "WARNING",
-        "message": "There is no ⇧ (U+21E7) (U+21E7) in font [XCharter-Roman.otf]:mode=no"
+        "message": "There is no ✅ (U+2705) (U+2705) in font [XCharter-Roman.otf]:mode=no"
     },
     {
         "type": "MissingCharacter",
         "verbosity": "WARNING",
-        "message": "There is no ⇧ (U+21E7) (U+21E7) in font [XCharter-Roman.otf]:mode=no"
+        "message": "There is no ✅ (U+2705) (U+2705) in font [XCharter-Roman.otf]:mode=no"
     },
     {
         "type": "MissingCharacter",
         "verbosity": "WARNING",
-        "message": "There is no ⇧ (U+21E7) (U+21E7) in font [XCharter-Roman.otf]:mode=no"
+        "message": "There is no ❌ (U+274C) (U+274C) in font [XCharter-Roman.otf]:mode=no"
     },
     {
         "type": "MissingCharacter",
         "verbosity": "WARNING",
-        "message": "There is no ⇧ (U+21E7) (U+21E7) in font [XCharter-Roman.otf]:mode=no"
+        "message": "There is no 🌟 (U+1F31F) (U+1F31F) in font [XCharter-Roman.otf]:mode="
     },
     {
         "type": "MissingCharacter",
         "verbosity": "WARNING",
-        "message": "There is no ⇧ (U+21E7) (U+21E7) in font [XCharter-Roman.otf]:mode=no"
+        "message": "There is no ✅ (U+2705) (U+2705) in font [XCharter-Roman.otf]:mode=no"
     },
     {
         "type": "MissingCharacter",
         "verbosity": "WARNING",
-        "message": "There is no ⇧ (U+21E7) (U+21E7) in font [XCharter-Roman.otf]:mode=no"
+        "message": "There is no ✨ (U+2728) (U+2728) in font [XCharter-Roman.otf]:mode=no"
     },
     {
         "type": "MissingCharacter",
         "verbosity": "WARNING",
-        "message": "There is no ⇧ (U+21E7) (U+21E7) in font [XCharter-Roman.otf]:mode=no"
+        "message": "There is no 🔧 (U+1F527) (U+1F527) in font [XCharter-Roman.otf]:mode="
+    },
+    {
+        "type": "MissingCharacter",
+        "verbosity": "WARNING",
+        "message": "There is no ✅ (U+2705) (U+2705) in font [XCharter-Roman.otf]:mode=no"
+    },
+    {
+        "type": "MissingCharacter",
+        "verbosity": "WARNING",
+        "message": "There is no ✅ (U+2705) (U+2705) in font [XCharter-Roman.otf]:mode=no"
+    },
+    {
+        "type": "MissingCharacter",
+        "verbosity": "WARNING",
+        "message": "There is no ✅ (U+2705) (U+2705) in font [XCharter-Roman.otf]:mode=no"
+    },
+    {
+        "type": "MissingCharacter",
+        "verbosity": "WARNING",
+        "message": "There is no 🔁 (U+1F501) (U+1F501) in font [XCharter-Roman.otf]:mode="
+    },
+    {
+        "type": "MissingCharacter",
+        "verbosity": "WARNING",
+        "message": "There is no 🔁 (U+1F501) (U+1F501) in font [XCharter-Roman.otf]:mode="
+    },
+    {
+        "type": "MissingCharacter",
+        "verbosity": "WARNING",
+        "message": "There is no ✅ (U+2705) (U+2705) in font [XCharter-Roman.otf]:mode=no"
+    },
+    {
+        "type": "MissingCharacter",
+        "verbosity": "WARNING",
+        "message": "There is no ✅ (U+2705) (U+2705) in font [XCharter-Roman.otf]:mode=no"
+    },
+    {
+        "type": "MissingCharacter",
+        "verbosity": "WARNING",
+        "message": "There is no 🔧 (U+1F527) (U+1F527) in font [XCharter-Roman.otf]:mode="
+    },
+    {
+        "type": "MissingCharacter",
+        "verbosity": "WARNING",
+        "message": "There is no 🧾 (U+1F9FE) (U+1F9FE) in font [XCharter-Roman.otf]:mode="
+    },
+    {
+        "type": "MissingCharacter",
+        "verbosity": "WARNING",
+        "message": "There is no 🔄 (U+1F504) (U+1F504) in font [XCharter-Roman.otf]:mode="
+    },
+    {
+        "type": "MissingCharacter",
+        "verbosity": "WARNING",
+        "message": "There is no ✅ (U+2705) (U+2705) in font [XCharter-Roman.otf]:mode=no"
+    },
+    {
+        "type": "MissingCharacter",
+        "verbosity": "WARNING",
+        "message": "There is no ✅ (U+2705) (U+2705) in font [XCharter-Roman.otf]:mode=no"
+    },
+    {
+        "type": "MissingCharacter",
+        "verbosity": "WARNING",
+        "message": "There is no 🚀 (U+1F680) (U+1F680) in font JetBrainsMono:mode=node;sc"
+    },
+    {
+        "type": "MissingCharacter",
+        "verbosity": "WARNING",
+        "message": "There is no ❌ (U+274C) (U+274C) in font JetBrainsMono:mode=node;scri"
+    },
+    {
+        "type": "MissingCharacter",
+        "verbosity": "WARNING",
+        "message": "There is no ❌ (U+274C) (U+274C) in font JetBrainsMono:mode=node;scri"
+    },
+    {
+        "type": "MissingCharacter",
+        "verbosity": "WARNING",
+        "message": "There is no ✅ (U+2705) (U+2705) in font JetBrainsMono:mode=node;scri"
+    },
+    {
+        "type": "MissingCharacter",
+        "verbosity": "WARNING",
+        "message": "There is no 🧠 (U+1F9E0) (U+1F9E0) in font [XCharter-Roman.otf]:mode="
+    },
+    {
+        "type": "MissingCharacter",
+        "verbosity": "WARNING",
+        "message": "There is no ✅ (U+2705) (U+2705) in font Inter/B:mode=node;script=lat"
+    },
+    {
+        "type": "MissingCharacter",
+        "verbosity": "WARNING",
+        "message": "There is no ✅ (U+2705) (U+2705) in font Inter/B:mode=node;script=lat"
+    },
+    {
+        "type": "MissingCharacter",
+        "verbosity": "WARNING",
+        "message": "There is no ❌ (U+274C) (U+274C) in font Inter/B:mode=node;script=lat"
+    },
+    {
+        "type": "MissingCharacter",
+        "verbosity": "WARNING",
+        "message": "There is no 🌟 (U+1F31F) (U+1F31F) in font Inter/B:mode=node;script=l"
+    },
+    {
+        "type": "MissingCharacter",
+        "verbosity": "WARNING",
+        "message": "There is no ✅ (U+2705) (U+2705) in font Inter/B:mode=node;script=lat"
+    },
+    {
+        "type": "MissingCharacter",
+        "verbosity": "WARNING",
+        "message": "There is no ✨ (U+2728) (U+2728) in font Inter/B:mode=node;script=lat"
+    },
+    {
+        "type": "MissingCharacter",
+        "verbosity": "WARNING",
+        "message": "There is no 🔧 (U+1F527) (U+1F527) in font Inter/B:mode=node;script=l"
+    },
+    {
+        "type": "MissingCharacter",
+        "verbosity": "WARNING",
+        "message": "There is no ✅ (U+2705) (U+2705) in font Inter/B:mode=node;script=lat"
+    },
+    {
+        "type": "MissingCharacter",
+        "verbosity": "WARNING",
+        "message": "There is no ✅ (U+2705) (U+2705) in font Inter/B:mode=node;script=lat"
+    },
+    {
+        "type": "MissingCharacter",
+        "verbosity": "WARNING",
+        "message": "There is no ✅ (U+2705) (U+2705) in font Inter/B:mode=node;script=lat"
+    },
+    {
+        "type": "MissingCharacter",
+        "verbosity": "WARNING",
+        "message": "There is no 🔧 (U+1F527) (U+1F527) in font [XCharter-Roman.otf]:mode="
+    },
+    {
+        "type": "MissingCharacter",
+        "verbosity": "WARNING",
+        "message": "There is no 🔗 (U+1F517) (U+1F517) in font [XCharter-Roman.otf]:mode="
+    },
+    {
+        "type": "MissingCharacter",
+        "verbosity": "WARNING",
+        "message": "There is no ✅ (U+2705) (U+2705) in font [XCharter-Roman.otf]:mode=no"
+    },
+    {
+        "type": "MissingCharacter",
+        "verbosity": "WARNING",
+        "message": "There is no 📝 (U+1F4DD) (U+1F4DD) in font [XCharter-Roman.otf]:mode="
+    },
+    {
+        "type": "MissingCharacter",
+        "verbosity": "WARNING",
+        "message": "There is no ✅ (U+2705) (U+2705) in font [XCharter-Roman.otf]:mode=no"
+    },
+    {
+        "type": "MissingCharacter",
+        "verbosity": "WARNING",
+        "message": "There is no 🔁 (U+1F501) (U+1F501) in font Inter/B:mode=node;script=l"
+    },
+    {
+        "type": "MissingCharacter",
+        "verbosity": "WARNING",
+        "message": "There is no 🔁 (U+1F501) (U+1F501) in font Inter/B:mode=node;script=l"
+    },
+    {
+        "type": "MissingCharacter",
+        "verbosity": "WARNING",
+        "message": "There is no 🔄 (U+1F504) (U+1F504) in font [XCharter-Roman.otf]:mode="
+    },
+    {
+        "type": "MissingCharacter",
+        "verbosity": "WARNING",
+        "message": "There is no ✅ (U+2705) (U+2705) in font Inter/B:mode=node;script=lat"
+    },
+    {
+        "type": "MissingCharacter",
+        "verbosity": "WARNING",
+        "message": "There is no ✅ (U+2705) (U+2705) in font Inter/B:mode=node;script=lat"
+    },
+    {
+        "type": "MissingCharacter",
+        "verbosity": "WARNING",
+        "message": "There is no 🔧 (U+1F527) (U+1F527) in font Inter/B:mode=node;script=l"
+    },
+    {
+        "type": "MissingCharacter",
+        "verbosity": "WARNING",
+        "message": "There is no 🧾 (U+1F9FE) (U+1F9FE) in font [XCharter-Slanted.otf]:mod"
+    },
+    {
+        "type": "MissingCharacter",
+        "verbosity": "WARNING",
+        "message": "There is no 🧾 (U+1F9FE) (U+1F9FE) in font Inter/B:mode=node;script=l"
+    },
+    {
+        "type": "MissingCharacter",
+        "verbosity": "WARNING",
+        "message": "There is no ✅ (U+2705) (U+2705) in font [XCharter-Roman.otf]:mode=no"
+    },
+    {
+        "type": "MissingCharacter",
+        "verbosity": "WARNING",
+        "message": "There is no ✅ (U+2705) (U+2705) in font [XCharter-Roman.otf]:mode=no"
+    },
+    {
+        "type": "MissingCharacter",
+        "verbosity": "WARNING",
+        "message": "There is no 🔄 (U+1F504) (U+1F504) in font Inter/B:mode=node;script=l"
+    },
+    {
+        "type": "MissingCharacter",
+        "verbosity": "WARNING",
+        "message": "There is no ✅ (U+2705) (U+2705) in font Inter/B:mode=node;script=lat"
+    },
+    {
+        "type": "MissingCharacter",
+        "verbosity": "WARNING",
+        "message": "There is no 🔄 (U+1F504) (U+1F504) in font [XCharter-Slanted.otf]:mod"
+    },
+    {
+        "type": "MissingCharacter",
+        "verbosity": "WARNING",
+        "message": "There is no ✅ (U+2705) (U+2705) in font Inter/B:mode=node;script=lat"
     }
 ]
