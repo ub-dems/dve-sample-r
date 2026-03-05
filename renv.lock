@@ -3,8 +3,8 @@
     "Version": "4.5.2",
     "Repositories": [
       {
-        "Name": "CRAN",
-        "URL": "https://p3m.dev/cran/latest"
+        "Name": "RSPM",
+        "URL": "https://packagemanager.posit.co/all/latest"
       }
     ]
   },
@@ -430,9 +430,9 @@
     },
     "dplyr": {
       "Package": "dplyr",
-      "Version": "1.1.4",
+      "Version": "1.2.0",
       "Source": "Repository",
-      "Repository": "RSPM",
+      "Repository": "CRAN",
       "Requirements": [
         "R",
         "R6",
@@ -449,7 +449,7 @@
         "utils",
         "vctrs"
       ],
-      "Hash": "fedd9d00c2944ff00a0e2696ccf048ec"
+      "Hash": "71a469a5d5f9fdbf7de6c0dbeece0e22"
     },
     "dtplyr": {
       "Package": "dtplyr",
@@ -581,9 +581,9 @@
     },
     "ggplot2": {
       "Package": "ggplot2",
-      "Version": "4.0.1",
+      "Version": "4.0.2",
       "Source": "Repository",
-      "Repository": "RSPM",
+      "Repository": "CRAN",
       "Requirements": [
         "R",
         "S7",
@@ -599,7 +599,7 @@
         "vctrs",
         "withr"
       ],
-      "Hash": "1bfa14b2a1668b3569dafb0478b2636b"
+      "Hash": "24744d322a00a520db329287bf02ce42"
     },
     "glue": {
       "Package": "glue",
@@ -1107,7 +1107,7 @@
     },
     "reader": {
       "Package": "reader",
-      "Version": "1.0.6",
+      "Version": "1.1.0",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
@@ -1119,13 +1119,13 @@
         "stats",
         "utils"
       ],
-      "Hash": "ebf0939ae7cf7eb8776481430c279429"
+      "Hash": "347caa5f9601a15dfab2679b5c4222d9"
     },
     "readr": {
       "Package": "readr",
-      "Version": "2.1.6",
+      "Version": "2.2.0",
       "Source": "Repository",
-      "Repository": "RSPM",
+      "Repository": "CRAN",
       "Requirements": [
         "R",
         "R6",
@@ -1133,6 +1133,7 @@
         "clipr",
         "cpp11",
         "crayon",
+        "glue",
         "hms",
         "lifecycle",
         "methods",
@@ -1140,9 +1141,10 @@
         "tibble",
         "tzdb",
         "utils",
-        "vroom"
+        "vroom",
+        "withr"
       ],
-      "Hash": "141ebcec1bf55707751c7956a34d93db"
+      "Hash": "4425ad9e28b8e3351184ca2739995b87"
     },
     "readxl": {
       "Package": "readxl",
@@ -1210,9 +1212,9 @@
     },
     "reticulate": {
       "Package": "reticulate",
-      "Version": "1.44.1",
+      "Version": "1.45.0",
       "Source": "Repository",
-      "Repository": "RSPM",
+      "Repository": "CRAN",
       "Requirements": [
         "Matrix",
         "R",
@@ -1228,7 +1230,7 @@
         "utils",
         "withr"
       ],
-      "Hash": "4f6fff54515fc38387a4f33258e76312"
+      "Hash": "fdbcdf00a192b3a2acd86cadd1c1ff91"
     },
     "rlang": {
       "Package": "rlang",
@@ -1568,9 +1570,9 @@
     },
     "vctrs": {
       "Package": "vctrs",
-      "Version": "0.7.0",
+      "Version": "0.7.1",
       "Source": "Repository",
-      "Repository": "RSPM",
+      "Repository": "CRAN",
       "Requirements": [
         "R",
         "cli",
@@ -1578,7 +1580,7 @@
         "lifecycle",
         "rlang"
       ],
-      "Hash": "2d206148187e93b18ab26fd7f81b99b9"
+      "Hash": "c64e64d93489bb62bb8747bbb9e06c09"
     },
     "viridisLite": {
       "Package": "viridisLite",
@@ -1592,9 +1594,9 @@
     },
     "vroom": {
       "Package": "vroom",
-      "Version": "1.6.7",
+      "Version": "1.7.0",
       "Source": "Repository",
-      "Repository": "RSPM",
+      "Repository": "CRAN",
       "Requirements": [
         "R",
         "bit64",
@@ -1614,7 +1616,7 @@
         "vctrs",
         "withr"
       ],
-      "Hash": "28a6b7464407ac68327ec02445e7b0fd"
+      "Hash": "255cb6f090718455ff89cbc28cb5eea7"
     },
     "withr": {
       "Package": "withr",
