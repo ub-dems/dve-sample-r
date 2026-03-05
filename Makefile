@@ -37,7 +37,9 @@ CLEAN_DIRS = ${TEMP_DIR}
 
 SHELL := /bin/bash
 RSCRIPT := Rscript
-POETRY := poetry
+#POETRY := poetry
+POETRY := $(shell command -v poetry 2> /dev/null)
+PY_RUN := ${POETRY} run
 
 
 #}}} \\\
@@ -46,7 +48,7 @@ POETRY := poetry
 
 # ---(commands)------------------------------------------------
 
-.PHONY: all test check docs man vignettes readme build install clean init
+.PHONY: all test check docs man vignettes readme format build install clean init
 
 
 all: # @HELP/base make: "init,check,test,docs,build"  targets
@@ -87,6 +89,11 @@ README.md: README.Rmd
 
 readme: # @HELP/base runs: `knitr::knit("README.Rmd")` 
 readme: README.md
+
+format: # @HELP/baseformat code with black
+format: 
+	${POETRY} run black $(SRC) $(TESTS)
+
 
 build: # @HELP/base runs: `devtools::build()`
 build: 
