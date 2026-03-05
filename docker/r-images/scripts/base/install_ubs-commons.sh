@@ -114,6 +114,7 @@ function install_commons_sys() {
 
 	apt_install \
 		gpg \
+		apt-file \
 		libgsl-dev \
 		libtbb-dev \
 		libzmq3-dev \
