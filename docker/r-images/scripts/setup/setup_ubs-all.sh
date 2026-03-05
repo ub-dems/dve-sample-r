@@ -276,12 +276,14 @@ dump_venv_status() {
 $(echo "${PATH}" | tr ':' '\n' | sl)
     library_path: |
 $(echo "${LD_LIBRARY_PATH}" | tr ':' '\n' | sl)
-    python: "$(which python || )"
-    python-version: "$(python --version || echo "NOPYTHON")"
-    poetry: "$(which poetry)"
-    poetry-version: "$(poetry --version)"
-    jupyter: "$(which jupyter)"
-    jupyter-version: "$(jupyter --version)"
+    python: "$(which python || echo NOPYTHON )"
+    python-version: "$(python --version || echo NOPYTHON)"
+    uv: "$(which uv || echo NOUV )"
+    uv-version: "$(uv --version || echo NOUV )"
+    poetry: "$(which poetry || echo NOPOETRY )"
+    poetry-version: "$(poetry --version || echo NOPOETRY )"
+    jupyter: "$(which jupyter || echo NOJUPYTER )"
+    jupyter-version: "$(jupyter --version || echo NOJUPYTER )"
    poetry-venv: |
 $(poetry env info | sl)
 
