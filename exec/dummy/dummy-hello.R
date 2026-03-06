@@ -6,6 +6,12 @@
 
 devtools::load_all(".")
 
+
+log <- <- function(...) {
+  msg <- paste( "#". ... , sep = " ")
+  print(msg)
+}
+
 v <- function(...) cat(sprintf(...), "\n", sep = " ", file = stderr())
 s <- function(...) do.call(paste, as.list(c(..., sep = ", ")))
 
@@ -33,13 +39,13 @@ task <- function() {
 
 main <- function() {
   args <- commandArgs(trailingOnly = TRUE)
-  print("#> start: %s", paste(args,sep = " "))
-  print("#? args: %s", paste(commandArgs(),sep = ", "))
+  log("> start:", paste(args, sep = " "))
+  log("? args:", paste(commandArgs(), sep = ", "))
   rc <- 0
   print(elapsed <- system.time({
     rc <- task()
   }))
-  print("#< end(%d): %s", rc, summary(elapsed))
+  log("< end:", rc, " -- ". summary(elapsed))
   rc
 }
 
