@@ -7,8 +7,8 @@
 devtools::load_all(".")
 
 
-log <- <- function(...) {
-  msg <- paste( "#". ... , sep = " ")
+log <- function(...) {
+  msg <- paste("#", ..., sep = " ")
   print(msg)
 }
 
@@ -35,7 +35,6 @@ task <- function() {
   v("vcall: %s", s(vcall()))
   0
 }
-
 
 main <- function() {
   args <- commandArgs(trailingOnly = TRUE)
