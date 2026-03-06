@@ -45,6 +45,15 @@ MAKEFILE_FOLDER := $(notdir ${MAKE_DIR})
 
 WORKER_DIR := '/worker'
 
+# ---(cwd)----------------------------------------------------
+
+# environment or command-line override
+# important: relative to home directory, under mapped dir
+# (e.g. CURR_DIR=work/cs/my-project ./runtime.sh ...)
+
+CURR_DIR ?= ${WORK_DIR}
+
+
 # ---(modules)------------------------------------------------
 
 BLD_RUNTIME ?= runtime
@@ -669,7 +678,7 @@ run/shell:
 		-v /store/share:/store/share  \
 		-v /user:/user  \
 		-v /vol:/vol  \
-		-w ${RUN_USER_HOME}/${WORK_DIR}  \
+		-w ${RUN_USER_HOME}/${CURR_DIR}  \
 		-e PASSWORD=$$_passw_ \
 		-e USER=${RUN_USER_NAME} \
 		-e USERID=${RUN_USER_UID} \
@@ -1017,7 +1026,7 @@ run/r-repl:
 		-v /store/share:/store/share  \
 		-v /user:/user  \
 		-v /vol:/vol  \
-		-w ${RUN_USER_HOME}/${WORK_DIR}  \
+		-w ${RUN_USER_HOME}/${CURR_DIR}  \
 		-e PASSWORD=$$_passw_ \
 		-e USER=${RUN_USER_NAME} \
 		-e USERID=${RUN_USER_UID} \
@@ -1055,7 +1064,7 @@ run/rscript-rs:
 		-v /store/share:/store/share  \
 		-v /user:/user  \
 		-v /vol:/vol  \
-		-w ${RUN_USER_HOME}/${WORK_DIR}  \
+		-w ${RUN_USER_HOME}/${CURR_DIR}  \
 		-e PASSWORD=$$_passw_ \
 		-e USER=${RUN_USER_NAME} \
 		-e USERID=${RUN_USER_UID} \
@@ -1095,7 +1104,7 @@ run/python-repl:
 		-v /store/share:/store/share  \
 		-v /user:/user  \
 		-v /vol:/vol  \
-		-w ${RUN_USER_HOME}/${WORK_DIR}  \
+		-w ${RUN_USER_HOME}/${CURR_DIR}  \
 		-e PASSWORD=$$_passw_ \
 		-e USER=${RUN_USER_NAME} \
 		-e USERID=${RUN_USER_UID} \
@@ -1133,7 +1142,7 @@ run/python-run:
 		-v /store/share:/store/share  \
 		-v /user:/user  \
 		-v /vol:/vol  \
-		-w ${RUN_USER_HOME}/${WORK_DIR}  \
+		-w ${RUN_USER_HOME}/${CURR_DIR}  \
 		-e PASSWORD=$$_passw_ \
 		-e USER=${RUN_USER_NAME} \
 		-e USERID=${RUN_USER_UID} \
@@ -1174,7 +1183,7 @@ run/exec-auto:
 		-v /store/share:/store/share  \
 		-v /user:/user  \
 		-v /vol:/vol  \
-		-w ${RUN_USER_HOME}/${WORK_DIR}  \
+		-w ${RUN_USER_HOME}/${CURR_DIR}  \
 		-e PASSWORD=$$_passw_ \
 		-e USER=${RUN_USER_NAME} \
 		-e USERID=${RUN_USER_UID} \
@@ -1213,7 +1222,7 @@ run/rscript-cli:
 		-v /store/share:/store/share  \
 		-v /user:/user  \
 		-v /vol:/vol  \
-		-w ${RUN_USER_HOME}/${WORK_DIR}  \
+		-w ${RUN_USER_HOME}/${CURR_DIR}  \
 		-e PASSWORD=$$_passw_ \
 		-e USER=${RUN_USER_NAME} \
 		-e USERID=${RUN_USER_UID} \
@@ -1370,7 +1379,7 @@ run/command:
 		-v /store/share:/store/share  \
 		-v /user:/user  \
 		-v /vol:/vol  \
-		-w ${RUN_USER_HOME}/${WORK_DIR}  \
+		-w ${RUN_USER_HOME}/${CURR_DIR}  \
 		-e PASSWORD=$$_passw_ \
 		-e USER=${RUN_USER_NAME} \
 		-e USERID=${RUN_USER_UID} \
