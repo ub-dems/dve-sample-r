@@ -44,7 +44,7 @@ main <- function() {
   print(elapsed <- system.time({
     rc <- task()
   }))
-  log("< end:", rc, " -- ". summary(elapsed))
+  log("< end:", rc, " -- ", summary(elapsed))
   rc
 }
 
