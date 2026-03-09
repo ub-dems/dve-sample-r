@@ -9,7 +9,7 @@ devtools::load_all(".")
 
 log <- function(...) {
   msg <- paste("#", ..., sep = " ")
-  print(msg)
+  message(msg)
 }
 
 v <- function(...) cat(sprintf(...), "\n", sep = " ", file = stderr())
