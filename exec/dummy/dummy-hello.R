@@ -38,8 +38,9 @@ task <- function() {
 
 main <- function() {
   args <- commandArgs(trailingOnly = TRUE)
-  log("> start:", paste(args, sep = " "))
-  log("? args:", paste(commandArgs(), sep = ", "))
+  log("> start:", paste(args, collapse = ", "))
+  log("? args:", paste(commandArgs(), collapse = " "))
+  log("? wdir:", getwd())
   rc <- 0
   print(elapsed <- system.time({
     rc <- task()
