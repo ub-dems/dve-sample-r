@@ -10,10 +10,10 @@ start_time <- Sys.time()
 
 get_timestamp <- function() {
   curr_time <- Sys.time()
-  elapsed_millis = curr_time - start_time
+  elapsed_secs = curr_time - start_time
   list(
     timestamp = format(curr_time, "%Y%m%d-%H%M%S"),
-    elapsed = sprintf("%3.3f", elapsed_millis / 1000)
+    elapsed = sprintf("%5d", elapsed_secs)
   )
 }
 
