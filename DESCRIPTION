@@ -5,7 +5,7 @@ Version: 1.0.0.9000
 Authors@R: 
     c(person(given = "datalab",
              family = "DEMS",
-             role = c("aut", "cre"),
+             role = c("aut", "cre", "cph"),
              email = "datalab@unimib.it",
              comment = c()))
 Description: TODO:description.

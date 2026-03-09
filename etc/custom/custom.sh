@@ -363,6 +363,9 @@ echo ""
 mv -v ./${CUST_S_PACKAGE_NAME}.Rproj ./${CUST_T_PACKAGE_NAME}.Rproj
 mv -v ./man/${CUST_S_PACKAGE_NAME}-package.Rd ./man/${CUST_T_PACKAGE_NAME}-package.Rd
 mv -v ./R/${CUST_S_PACKAGE_NAME}-package.r ./R/${CUST_T_PACKAGE_NAME}-package.r
+
+[ -f ./inst/include/${CUST_S_PACKAGE_NAME}.h ] && \
+mv -v ./inst/include/${CUST_S_PACKAGE_NAME}.h ./inst/include/${CUST_T_PACKAGE_NAME}.h
 # cust-rename ends here
 
 
@@ -631,13 +634,13 @@ mkdir -p /user/$USER
 
 
 cd ~/data
-[ ! -e ~/data/local ] && [ -e /store/local ] && ln -s -Tv /store/local  ~/data/local
-[ ! -e ~/data/local ] && [ -e /store/local ] || mkdir -p                ~/data/local
-[ ! -e ~/data/share ] && [ -e /store/share ] && ln -s -Tv /store/share  ~/data/share
-[ ! -e ~/data/share ] && [ -e /store/share ] || mkdir -p                ~/data/share
+[ ! -e ~/data/local ] && [   -e /store/local ] && ln -s -Tv /store/local  ~/data/local
+[ ! -e ~/data/local ] && [ ! -e /store/local ] && mkdir -p                ~/data/local
+[ ! -e ~/data/share ] && [   -e /store/share ] && ln -s -Tv /store/share  ~/data/share
+[ ! -e ~/data/share ] && [ ! -e /store/share ] && mkdir -p                ~/data/share
 
 [ ! -e ~/data/user ] && [ -e /user/$USER ] && ln -s  -Tv /user/$USER    ~/data/user
-[ ! -e ~/data/user ] && [ -e /user/$USER ] || mkdir -p                  ~/data/user
+[ ! -e ~/data/user ] && [ ! -e /user/$USER ] && mkdir -p                  ~/data/user
 
 cd -
 
