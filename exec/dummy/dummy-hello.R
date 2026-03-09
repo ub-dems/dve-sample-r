@@ -13,7 +13,7 @@ get_timestamp <- function() {
   elapsed_secs = curr_time - start_time
   list(
     timestamp = format(curr_time, "%Y%m%d-%H%M%S"),
-    elapsed = sprintf("%5.3f", elapsed_secs)
+    elapsed = sprintf("%.3f", elapsed_secs)
   )
 }
 
