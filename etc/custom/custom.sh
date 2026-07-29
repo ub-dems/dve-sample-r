@@ -11,24 +11,24 @@
 # run from project root:
 #
 if [ ! -d ./etc/custom ]; then
-  echo '
+    echo '
 
-    custom.sh: initial project template customization
+   custom.sh: initial project template customization
 
 
-    Usage:
-            ./build.sh custom
+   Usage:
+           ./build.sh custom
 
-    from project root
+   from project root
 
-    Config:
+   Config:
 
-     before customization, project informantion must be set in config:
+    before customization, project informantion must be set in config:
 
-      nano ./etc/custom/custom-target.conf
+     nano ./etc/custom/custom-target.conf
 
-  '
-  exit 1
+'
+    exit 1
 fi
 
 mkdir -p ./logs/custom
@@ -116,8 +116,8 @@ echo "#:< (session-info)"
 # #+NAME: naming-config-head
 
 # [[file:../../notes/custom/README.org::naming-config-head][naming-config-head]]
-echo "#:> (naming-config)"
-echo "--------------------------------"
+  echo "#:> (naming-config)"
+  echo "--------------------------------"
 # naming-config-head ends here
 
 
@@ -160,9 +160,9 @@ CUST_S_REPO_HOST='https://gitlab.com/'
 CUST_S_REGS_PATH='ubdems'
 CUST_S_REGS_HOST='docker.io'
 # ---(environment versions)---
-CUST_S_IMAGE_ANCHOR='rocker/tidyverse:latest'
-CUST_S_VERS_BASE='(>= 3.6.0)'
-CUST_S_VERS_ROXY='7.2.0'
+CUST_S_IMAGE_ANCHOR='rocker/geospatial:4.4.3'
+CUST_S_VERS_BASE='(>= 4.0.0)'
+CUST_S_VERS_ROXY='7.3.2'
 # ---(data import links)---
 CUST_S_DATA_LINK='dve-ds'
 CUST_S_DATA_DEMO='1'
@@ -204,27 +204,27 @@ CUST_T_REPO_HOST='https://gitlab.com/'
 CUST_T_REGS_PATH='ubdems'
 CUST_T_REGS_HOST='docker.io'
 # ---(environment versions)---
-CUST_T_IMAGE_ANCHOR='rocker/tidyverse:latest'
-CUST_T_VERS_BASE='(>= 3.6.0)'
-CUST_T_VERS_ROXY='7.2.0'
+CUST_T_IMAGE_ANCHOR='rocker/geospatial:4.4.3'
+CUST_T_VERS_BASE='(>= 4.0.0)'
+CUST_T_VERS_ROXY='7.3.2'
 # ---(data import links)---
 CUST_T_DATA_LINK='dve-ds'
 CUST_T_DATA_DEMO='1'
 # ---(renv support options)---
 CUST_T_RENV_OPTS='enable,auto'
 # ---(project description)---
-CUST_T_INFO_AUTH_NAME='_datalab_'
-CUST_T_INFO_AUTH_SURNAME='_DEMS_'
-CUST_T_INFO_AUTH_EMAIL='_datalab@unimib.it_'
-CUST_T_INFO_DESC='_TODO:description_'
-CUST_T_INFO_TITLE='_TODO:title_'
+CUST_T_INFO_AUTH_NAME='datalab'
+CUST_T_INFO_AUTH_SURNAME='DEMS'
+CUST_T_INFO_AUTH_EMAIL='datalab@unimib.it'
+CUST_T_INFO_DESC='TODO:description'
+CUST_T_INFO_TITLE='TODO:title'
 # ---(image labels)---
-CUST_T_INFO_USER_EMAIL='_dsuser.dems@gmail.com'
+CUST_T_INFO_USER_EMAIL='dsuser.dems@gmail.com'
 CUST_T_INFO_AUTHORS="${CUST_T_INFO_AUTH_SURNAME}/${CUST_T_INFO_AUTH_NAME} <${CUST_T_INFO_USER_EMAIL}>"
-CUST_T_INFO_FROM='_2022-08-02_'
-CUST_T_INFO_OWNER='_ab21010_'
-CUST_T_INFO_CDC='_ds-101_'
-CUST_T_INFO_TAGS='_none_'
+CUST_T_INFO_FROM='2022-08-02'
+CUST_T_INFO_OWNER='ab21010'
+CUST_T_INFO_CDC='ds-101'
+CUST_T_INFO_TAGS='none'
 EOF
 # custom-target.conf ends here
 
@@ -257,26 +257,26 @@ env | grep ^CUST_ | tr '=' '\t' | sort
 # [[file:../../notes/custom/README.org::conf-check][conf-check]]
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 if [ ! "${CUST_X_CUSTOMIZED}" = '0' ] ; then
-  echo '
+    echo '
 
-    WARNING: project already customized, exiting ...
+      WARNING: project already customized, exiting ...
 
-    To re-enable customization, set
+      To re-enable customization, set
 
-    CUST_X_CUSTOMIZED=0
+      CUST_X_CUSTOMIZED=0
 
-    in ./etc/custom/custom.conf,
+      in ./etc/custom/custom.conf,
 
-    update new target customization
+      update new target customization
 
-    in ./etc/custom/custom-target.conf,
+      in ./etc/custom/custom-target.conf,
 
-    and re-execute customization with:
+      and re-execute customization with:
 
-    ./build.sh custom
+      ./build.sh custom
 
-  '
-  exit 1
+'
+    exit 1
 fi
 
 [ -z "$CUST_S_PROJECT_NAME" ] && { echo "config error: CUST_S_PROJECT_NAME"; exit 1; }
@@ -346,7 +346,7 @@ echo "#:> (cust-rename)"
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 echo "--------------------------------"
 find . \
-   \( -path ./home -o -path ./notes \) -prune -o \
+     \( -path ./home -o -path ./notes \) -prune -o \
      -name "$CUST_S_PACKAGE_NAME*" -o -name "$CUST_S_PROJECT_NAME*"
 echo "--------------------------------"
 echo ""
@@ -362,7 +362,10 @@ echo ""
 
 mv -v ./${CUST_S_PACKAGE_NAME}.Rproj ./${CUST_T_PACKAGE_NAME}.Rproj
 mv -v ./man/${CUST_S_PACKAGE_NAME}-package.Rd ./man/${CUST_T_PACKAGE_NAME}-package.Rd
-mv -v ./R/${CUST_S_PACKAGE_NAME}.r ./R/${CUST_T_PACKAGE_NAME}.r
+mv -v ./R/${CUST_S_PACKAGE_NAME}-package.r ./R/${CUST_T_PACKAGE_NAME}-package.r
+
+[ -f ./inst/include/${CUST_S_PACKAGE_NAME}.h ] && \
+mv -v ./inst/include/${CUST_S_PACKAGE_NAME}.h ./inst/include/${CUST_T_PACKAGE_NAME}.h
 # cust-rename ends here
 
 
@@ -373,8 +376,8 @@ mv -v ./R/${CUST_S_PACKAGE_NAME}.r ./R/${CUST_T_PACKAGE_NAME}.r
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 echo "--------------------------------"
 find . \
-   \( -path ./home -o -path ./notes \) -prune -o \
-   -name "$CUST_T_PACKAGE_NAME*" -o -name "$CUST_T_PROJECT_NAME*"
+     \( -path ./home -o -path ./notes \) -prune -o \
+     -name "$CUST_T_PACKAGE_NAME*" -o -name "$CUST_T_PROJECT_NAME*"
 echo "--------------------------------"
 echo ""
 echo "#:< (cust-rename)"
@@ -408,7 +411,7 @@ echo ""
 grep -l -r \
      --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=home --exclude-dir=logs \
      -I -e "$CUST_S_PACKAGE_NAME" | \
-  xargs -t -l1 perl -pi -e  "s{$CUST_S_PACKAGE_NAME}{$CUST_T_PACKAGE_NAME}g"
+    xargs -t -l1 perl -pi -e  "s{$CUST_S_PACKAGE_NAME}{$CUST_T_PACKAGE_NAME}g"
 # cust-package ends here
 
 
@@ -456,12 +459,12 @@ echo ""
 grep -l -r \
      --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=home --exclude-dir=logs \
      -I -e "CUST_S_REPO_HOST$CUST_S_REPO_PATH" | \
-  xargs -t -l1 perl -pi -e  "s{$CUST_S_REPO_HOST$CUST_S_REPO_PATH}{$CUST_T_REPO_HOST$CUST_T_REPO_PATH}g"
+    xargs -t -l1 perl -pi -e  "s{$CUST_S_REPO_HOST$CUST_S_REPO_PATH}{$CUST_T_REPO_HOST$CUST_T_REPO_PATH}g"
 
 grep -l -r \
      --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=home --exclude-dir=logs \
      -I -e "$CUST_S_REPO_PATH" | \
-  xargs -t -l1 perl -pi -e  "s{$CUST_S_REPO_PATH}{$CUST_T_REPO_PATH}g"
+    xargs -t -l1 perl -pi -e  "s{$CUST_S_REPO_PATH}{$CUST_T_REPO_PATH}g"
 # cust-repo ends here
 
 
@@ -509,12 +512,12 @@ echo ""
 grep -l -r \
      --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=home --exclude-dir=logs \
      -I -e "CUST_S_REGS_HOST/$CUST_S_REGS_PATH}" | \
-  xargs -t -l1 perl -pi -e  "s{$CUST_S_REGS_HOST/$CUST_S_REGS_PATH}{CUST_T_REGS_HOST/$CUST_T_REGS_PATH}g"
+    xargs -t -l1 perl -pi -e  "s{$CUST_S_REGS_HOST/$CUST_S_REGS_PATH}{CUST_T_REGS_HOST/$CUST_T_REGS_PATH}g"
 
 grep -l -r \
      --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=home --exclude-dir=logs \
      -I -e "$CUST_S_REGS_PATH" | \
-  xargs -t -l1 perl -pi -e  "s{$CUST_S_REGS_PATH}{$CUST_T_REGS_PATH}g"
+    xargs -t -l1 perl -pi -e  "s{$CUST_S_REGS_PATH}{$CUST_T_REGS_PATH}g"
 # cust-regs ends here
 
 
@@ -563,7 +566,7 @@ echo ""
 grep -l -r \
      --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=home --exclude-dir=logs \
      -I -e "$CUST_S_PROJECT_NAME" | \
-  xargs -t -l1 perl -pi -e  "s{$CUST_S_PROJECT_NAME}{$CUST_T_PROJECT_NAME}g"
+    xargs -t -l1 perl -pi -e  "s{$CUST_S_PROJECT_NAME}{$CUST_T_PROJECT_NAME}g"
 # cust-project ends here
 
 
@@ -631,13 +634,13 @@ mkdir -p /user/$USER
 
 
 cd ~/data
-[ ! -e ~/data/local ] && [ -e /store/local ] && ln -s -Tv /store/local  ~/data/local
-[ ! -e ~/data/local ] && [ -e /store/local ] || mkdir -p                ~/data/local
-[ ! -e ~/data/share ] && [ -e /store/share ] && ln -s -Tv /store/share  ~/data/share
-[ ! -e ~/data/share ] && [ -e /store/share ] || mkdir -p                ~/data/share
+[ ! -e ~/data/local ] && [   -e /store/local ] && ln -s -Tv /store/local  ~/data/local
+[ ! -e ~/data/local ] && [ ! -e /store/local ] && mkdir -p                ~/data/local
+[ ! -e ~/data/share ] && [   -e /store/share ] && ln -s -Tv /store/share  ~/data/share
+[ ! -e ~/data/share ] && [ ! -e /store/share ] && mkdir -p                ~/data/share
 
 [ ! -e ~/data/user ] && [ -e /user/$USER ] && ln -s  -Tv /user/$USER    ~/data/user
-[ ! -e ~/data/user ] && [ -e /user/$USER ] || mkdir -p                  ~/data/user
+[ ! -e ~/data/user ] && [ ! -e /user/$USER ] && mkdir -p                  ~/data/user
 
 cd -
 
@@ -654,11 +657,11 @@ mkdir -p ~/data/share/lib/dd/$DD.net
 # sample data
 
 if [ "${CUST_T_DATA_DEMO}" = '1' ]; then
-
+    
     [ -d /vol/glob/dvd/data/vs ] || sudo mount /vol/glob/dvd
-
+    
     if [ ! -d ~/data/share/lib/dd/$DD.net/examples ]; then
-
+        
         cp -rv /vol/glob/dvd/data/vs/dve-ds.net/. ~/data/share/lib/dd/$DD.net
         chown -R $USER:dsdata ~/data/share/lib/dd/$DD.net 2> /dev/null
         chmod -R u+w,g+w ~/data/share/lib/dd/$DD.net 2> /dev/null
@@ -784,7 +787,7 @@ grep -r \
 grep -l -r \
      --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=home --exclude-dir=logs \
      -I -e "$CUST_S_DATA_LINK" | \
-  xargs -t -l1 perl -pi -e  "s{$CUST_S_DATA_LINK}{$CUST_T_DATA_LINK}g"
+    xargs -t -l1 perl -pi -e  "s{$CUST_S_DATA_LINK}{$CUST_T_DATA_LINK}g"
 # cust-data-link ends here
 
 
@@ -908,22 +911,22 @@ echo ""
 [ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
 
 find ./docker/r-images/dockerfiles -name '*.Dockerfile' -exec \
-  perl -pi -e  's!(org.opencontainers.image.authors=").*"!\1$ENV{CUST_T_INFO_AUTHORS}"!' {} \;
+     perl -pi -e  's!(org.opencontainers.image.authors=").*"!\1$ENV{CUST_T_INFO_AUTHORS}"!' {} \;
 
 find ./docker/r-images/dockerfiles -name '*.Dockerfile' -exec \
-  perl -pi -e  's!(org.opencontainers.image.description=").*"!\1$ENV{CUST_T_INFO_DESC}"!' {} \;
+     perl -pi -e  's!(org.opencontainers.image.description=").*"!\1$ENV{CUST_T_INFO_DESC}"!' {} \;
 
 find ./docker/r-images/dockerfiles -name '*.Dockerfile' -exec \
-  perl -pi -e  's!(it.unimib.datalab.from=").*"!\1$ENV{CUST_T_INFO_FROM}"!' {} \;
+     perl -pi -e  's!(it.unimib.datalab.from=").*"!\1$ENV{CUST_T_INFO_FROM}"!' {} \;
 
 find ./docker/r-images/dockerfiles -name '*.Dockerfile' -exec \
-  perl -pi -e  's!(it.unimib.datalab.owner=").*"!\1$ENV{CUST_T_INFO_OWNER}"!' {} \;
+     perl -pi -e  's!(it.unimib.datalab.owner=").*"!\1$ENV{CUST_T_INFO_OWNER}"!' {} \;
 
 find ./docker/r-images/dockerfiles -name '*.Dockerfile' -exec \
-  perl -pi -e  's!(it.unimib.datalab.cdc=").*"!\1$ENV{CUST_T_INFO_CDC}"!' {} \;
+     perl -pi -e  's!(it.unimib.datalab.cdc=").*"!\1$ENV{CUST_T_INFO_CDC}"!' {} \;
 
 find ./docker/r-images/dockerfiles -name '*.Dockerfile' -exec \
-  perl -pi -e  's!(it.unimib.datalab.tags=").*"!\1$ENV{CUST_T_INFO_TAGS}"!' {} \;
+     perl -pi -e  's!(it.unimib.datalab.tags=").*"!\1$ENV{CUST_T_INFO_TAGS}"!' {} \;
 # cust-binfo ends here
 
 
@@ -1006,18 +1009,18 @@ echo "#:< (cust-confirm)"
 echo "<<< project customization, done."
 
 echo '
+     
+   to check customized project, run:
 
- to check customized project, run:
+   ./build.sh setup
 
- ./build.sh setup
+   ./runtime.sh build all
 
- ./runtime.sh build all
+   project developer s guide is available at:
 
- project developer s guide is available at:
+      * https://gitlab.com/ub-dems-public/ds-labs/dve-sample-r/-/blob/main/notes/usage/README.md
 
-    * https://gitlab.com/ub-dems-public/ds-labs/dve-sample-r/-/blob/main/notes/usage/README.md
-
- '
- echo "see:  $LOGFILE "
- echo " "
+'
+echo "see:  $LOGFILE "
+echo " "
 # script-tail ends here

@@ -1,4 +1,5 @@
 ^appveyor\.yml$
+^auto-save-list$
 ^azure-pipelines\.yml$
 ^bench$
 ^.clangd$
@@ -53,6 +54,7 @@
 ^Project\.toml$
 ^\.projectile$
 ^pyproject\.toml$
+^\.pytest_cache$
 ^\.python-version$
 ^rcon$
 ^renv$
@@ -81,6 +83,7 @@
 ^travis$
 ^travis/check_format\.sh$
 ^\.travis\.yml$
+^venv$
 ^vignettes/rsconnect$
 ^.vimrc$
 ^.yarn$

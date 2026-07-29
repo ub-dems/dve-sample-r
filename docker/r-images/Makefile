@@ -13,6 +13,10 @@
 
 #{{{ [ VARS.* ] /////////////////////////////////////////////////////////////////
 
+# ---(debug)------------------------------------------------
+
+VERBOSE = 1
+
 # ---(shell)------------------------------------------------
 
 SHELL = /bin/bash
@@ -36,9 +40,19 @@ MAKEFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
 MAKE_DIR := $(patsubst %/,%,$(dir $(MAKEFILE_PATH)))
 ROOT_DIR := $(shell (cd ${MAKE_DIR} && git rev-parse --show-toplevel))
 WORK_DIR := $(patsubst ${HOME}/%,./%,${ROOT_DIR})
+CONF_DIR := $(patsubst ${ROOT_DIR}/%,./%,${MAKE_DIR})
 MAKEFILE_FOLDER := $(notdir ${MAKE_DIR})
 
 WORKER_DIR := '/worker'
+
+# ---(cwd)----------------------------------------------------
+
+# environment or command-line override
+# important: relative to home directory, under mapped dir
+# (e.g. CURR_DIR=work/cs/my-project ./runtime.sh ...)
+
+CURR_DIR ?= ${WORK_DIR}
+
 
 # ---(modules)------------------------------------------------
 
@@ -110,6 +124,13 @@ PRC_RUNTIME ?= "run-${ID_PROJECT}"
 PRC_WORKER ?= "wrk-${ID_PROJECT}"
 
 
+# ---(BUILD CONFIG)------------------------------------------------
+
+Y_BUILD_CONF ?= /etc/build.conf
+X_BUILD_CONF ?= ${CONF_DIR}/build.conf
+Y_RUNTIME_CONF ?= /etc/runtime.conf
+X_RUNTIME_CONF ?= ${CONF_DIR}/runtime.conf
+
 # ---(PYTHON)------------------------------------------------
 
 X_PY_PYENV_VERSION ?= $(shell (cd ${ROOT_DIR} && cat .python-version))
@@ -137,10 +158,35 @@ RUN_USER_HOME = /root
 HOME_DIR ?= ${ROOT_DIR}/home/user
 LOGS_DIR ?= ${ROOT_DIR}/logs
 LOGB_DIR ?= ${ROOT_DIR}/logs/_build_/logs-${E_BUILD_TS}
+LOGR_DIR ?= ${ROOT_DIR}/logs/_exec_
 TEMP_DIR ?= ${ROOT_DIR}/temp
 
-BUILD_DIRS = ${TEMP_DIR} ${LOGS_DIR} ${LOGB_DIR} ${HOME_DIR} 
+RUN_LOGFILE ?= ${LOGR_DIR}/run-${E_BUILD_TS}.log
+
+BUILD_DIRS = ${TEMP_DIR} ${LOGS_DIR} ${LOGB_DIR} ${LOGR_DIR} ${HOME_DIR} 
 CLEAN_DIRS = ${TEMP_DIR}
+
+XDG_DIRS = ~/Desktop ~/Documents ~/Downloads ~/Pictures
+
+
+# ---(venv)------------------------------------------------
+
+ifeq (${USE_PYTHON_UV},1)
+PYTHON_UV_MODE := true
+else
+PYTHON_POETRY_MODE := true
+endif
+
+ifdef PYTHON_POETRY_MODE
+PYVENV := poetry
+PYVENV_RUN := poetry run
+endif
+
+ifdef PYTHON_UV_MODE
+PYVENV := uv
+PYVENV_RUN := uv run
+endif
+
 
 # ---(progs)------------------------------------------------
 
@@ -163,6 +209,15 @@ DOCKER := podman
 DOCKER_BUILD_OPTIONS := --rm
 DOCKER_BUILD_PULL := --pull
 
+
+# ---(gpu)------------------------------------------------
+
+# Check if nvidia-detector command exists and returns something other than "None"
+GPU_DETECT_CMD := nvidia-detector
+GPU_AVAILABLE := $(shell command -v $(GPU_DETECT_CMD) >/dev/null 2>&1 && \
+                         [ "$$($(GPU_DETECT_CMD))" != "None" ] && echo 1 || echo 0)
+
+ifeq ($(GPU_AVAILABLE),1)
 
 DOCKER_NVIDIA_TOOLKIT_CTK := /etc/cdi/nvidia.yaml
 
@@ -190,12 +245,53 @@ endif
 
 DOCKER_NVIDIA_OPTIONS := $(DOCKER_NVIDIA_CTK_OPTIONS) $(DOCKER_NVIDIA_OCI_OPTIONS)
 
+else
+DOCKER_NVIDIA_OPTIONS =
+endif
 
 #DOCKER_RUNTIME_OPTIONS := --ulimit=host --group-add dsdata
 #DOCKER_RUNTIME_OPTIONS := --ulimit=host --group-add keep-groups --subgidname=dsuser
 DOCKER_RUNTIME_OPTIONS := --ulimit=host --group-add keep-groups $(DOCKER_NVIDIA_OPTIONS) $(DOCKER_ARGS)
 #DOCKER_RUNTIME_OPTIONS := --ulimit=host --annotation run.oci.keep_original_groups=1 
 endif
+
+# ---(x)------------------------------------------------
+
+X_X ?= 0
+
+ifeq (${X_X},1)
+ifdef DISPLAY
+    XAUTHORITY ?= ${HOME}/.Xauthority
+    X_ENV_OPTIONS = \
+          -e DISPLAY \
+	  -e XAUTHORITY=/root/.Xauthority
+    X_NET_OPTIONS = \
+	  -v /tmp/.X11-unix:/tmp/.X11-unix:ro \
+	  -v ${XAUTHORITY}:/root/.Xauthority:ro
+else
+    X_NET_OPTIONS =
+    X_ENV_OPTIONS =
+endif
+else
+    X_NET_OPTIONS =
+    X_ENV_OPTIONS =
+endif
+X_RUNTIME_OPTIONS := $(X_ENV_OPTIONS) $(X_NET_OPTIONS)
+
+# ---(xdg)------------------------------------------------
+
+X_XDG_MOUNT ?= 0
+
+ifeq (${X_XDG_MOUNT},1)
+    X_XDG_MOUNT_OPTIONS = \
+	-v ~/Desktop:${RUN_USER_HOME}/Desktop:Z  \
+	-v ~/Documents:${RUN_USER_HOME}/Documents:Z  \
+	-v ~/Downloads:${RUN_USER_HOME}/Downloads:Z  \
+	-v ~/Pictures:${RUN_USER_HOME}/Pictures:Z
+else
+    X_XDG_MOUNT_OPTIONS =
+endif
+XDG_RUNTIME_OPTIONS := $(X_XDG_MOUNT_OPTIONS)
 
 # ---(setup)------------------------------------------------
 
@@ -211,6 +307,16 @@ RUNTIME_UPGRADE_OPTS := $(SETUP_UPGRADE_RUNTIME_OPTIONS)
 RUNTIME_CLEAR_OPTS := $(SETUP_CLEAR_RUNTIME_OPTIONS)
 RUNTIME_STATUS_OPTS := $(SETUP_STATUS_RUNTIME_OPTIONS)
 
+# ---(environ)------------------------------------------------
+
+ENVIRON_EXTRA_RUNTIME_OPTIONS := 
+ENVIRON_DEFAULT_RUNTIME_OPTIONS := $(ENVIRON_EXTRA_RUNTIME_OPTIONS) 
+ENVIRON_IMPORT_RUNTIME_OPTIONS := --environ $(ENVIRON_DEFAULT_RUNTIME_OPTIONS) --all
+ENVIRON_PROFILE_RUNTIME_OPTIONS := $(ENVIRON_DEFAULT_RUNTIME_OPTIONS)
+
+RUNTIME_ENVIRON_OPTS := $(ENVIRON_IMPORT_RUNTIME_OPTIONS)
+RUNTIME_PROFILE_OPTS := $(ENVIRON_PROFILE_RUNTIME_OPTIONS)
+
 # ---(setup)------------------------------------------------
 
 BUILD_EXTRA_RUNTIME_OPTIONS := 
@@ -219,6 +325,8 @@ BUILD_RUNTIME_OPTIONS := $(BUILD_DEFAULT_RUNTIME_OPTIONS)
 
 RUNTIME_BUILD_OPTS := $(BUILD_RUNTIME_OPTIONS)
 
+RUNTIME_TEST_OPTS := 'test'
+RUNTIME_CHECK_OPTS := 'check'
 
 # ---(rscript)------------------------------------------------
 
@@ -229,7 +337,43 @@ RSCRIPT_RUNTIME_OPTIONS := $(RSCRIPT_DEFAULT_RUNTIME_OPTIONS)
 RUNTIME_RSCRIPT_OPTS := $(RSCRIPT_RUNTIME_OPTIONS)
 
 
-# ---(codet)------------------------------------------------
+# ---(ipython)------------------------------------------------
+
+IPYTHON_EXTRA_RUNTIME_OPTIONS := 
+IPYTHON_DEFAULT_RUNTIME_OPTIONS := $(IPYTHON_EXTRA_RUNTIME_OPTIONS) 
+IPYTHON_RUNTIME_OPTIONS := $(IPYTHON_DEFAULT_RUNTIME_OPTIONS)
+
+RUNTIME_IPYTHON_OPTS := $(IPYTHON_RUNTIME_OPTIONS)
+
+
+# ---(pyrun)------------------------------------------------
+
+PYRUN_EXTRA_RUNTIME_OPTIONS := 
+PYRUN_DEFAULT_RUNTIME_OPTIONS := $(PYRUN_EXTRA_RUNTIME_OPTIONS) 
+PYRUN_RUNTIME_OPTIONS := $(PYRUN_DEFAULT_RUNTIME_OPTIONS)
+
+RUNTIME_PYRUN_OPTS := $(PYRUN_RUNTIME_OPTIONS)
+
+
+# ---(auto)------------------------------------------------
+
+AUTO_EXTRA_RUNTIME_OPTIONS := 
+AUTO_DEFAULT_RUNTIME_OPTIONS := $(AUTO_EXTRA_RUNTIME_OPTIONS) 
+AUTO_RUNTIME_OPTIONS := $(AUTO_DEFAULT_RUNTIME_OPTIONS)
+
+RUNTIME_AUTO_OPTS := "./starter.sh" $(AUTO_RUNTIME_OPTIONS)
+
+
+# ---(cli)------------------------------------------------
+
+CLI_EXTRA_RUNTIME_OPTIONS := 
+CLI_DEFAULT_RUNTIME_OPTIONS := $(AUTO_EXTRA_RUNTIME_OPTIONS) 
+CLI_RUNTIME_OPTIONS := $(AUTO_DEFAULT_RUNTIME_OPTIONS)
+
+RUNTIME_CLI_OPTS := "bash" "-c" $(CLI_RUNTIME_OPTIONS)
+
+
+# ---(code)------------------------------------------------
 
 # --accept-server-license-terms
 CODE_EXTRA_RUNTIME_OPTIONS := 
@@ -337,13 +481,21 @@ build-upgrade: build-update
 
 # ---(run)------------------------------------------------
 
-.PHONY: runtime runtime-repl runtime-cli runtime-rstudio
+.PHONY: runtime runtime-repl runtime-cli runtime-rstudio runtime-auto runtime-pyrun
 
 runtime: init run/runtime
 
 runtime-repl: init run/r-repl
 
-runtime-cli: init run/rscript-cli
+runtime-rs: init run/rscript-rs
+
+runtime-ipython: init run/python-repl
+
+runtime-pyrun: init run/python-run
+
+runtime-auto: init run/exec-auto
+
+runtime-cli: init run/exec-cli
 
 runtime-shell: init run/shell
 
@@ -355,11 +507,21 @@ runtime-setup: init run/setup
 
 runtime-status: init run/status
 
+runtime-environ: init run/environ
+
+runtime-profile: init run/profile
+
 runtime-build: init run/build
+
+runtime-test: init run/test
+
+runtime-check: init run/check
 
 runtime-command: init run/command
 
 runtime-term: init run/term
+
+runtime-xterm: init run/xterm
 
 runtime-code: init run/code-server
 
@@ -416,9 +578,12 @@ worker-help:  help/worker
 
 .PHONY: init%
 
-init: $(BUILD_DIRS)
+init: $(BUILD_DIRS) $(XDG_DIRS)
 
 $(BUILD_DIRS):
+	@mkdir -p $@
+
+$(XDG_DIRS):
 	@mkdir -p $@
 
 # ---(clean)------------------------------------------------
@@ -488,39 +653,51 @@ build-image/${BLD_WORKER}: build-image/${BLD_RUNTIME}
 
 # ---(bare)------------------------------------------------
 
+# -p ${RUN_PORT_A_EXT}:${RUN_PORT_A_INT} \
+# -p ${RUN_PORT_B_EXT}:${RUN_PORT_B_INT} \
+# -p ${RUN_PORT_C_EXT}:${RUN_PORT_C_INT} \
+# -p ${RUN_PORT_D_EXT}:${RUN_PORT_D_INT} \
+
 run/shell:
 	@echo "CLI: shell ${RUNTIME_ARGS}"
+	@[ "${X_X}" = 1 ] && [ -n "${DISPLAY}" ] && echo "DISPLAY=${DISPLAY}" || true
 	@export _passw_=$$(cat ~/.rup/*); set -x; \
 	$(DOCKER)  run \
 		--rm \
 		${DOCKER_RUNTIME_OPTIONS} \
-		-p ${RUN_PORT_A_EXT}:${RUN_PORT_A_INT} \
-		-p ${RUN_PORT_B_EXT}:${RUN_PORT_B_INT} \
-		-p ${RUN_PORT_C_EXT}:${RUN_PORT_C_INT} \
-		-p ${RUN_PORT_D_EXT}:${RUN_PORT_D_INT} \
 		-v ${HOME_DIR}:${RUN_USER_HOME}:Z  \
 		-v ~/work:${RUN_USER_HOME}/work:Z  \
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
 		-v ~/data:${HOME}/data:Z  \
+		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
+		-v /usr/local:/usr/local/.import:Z,ro  \
+		-v /opt:/opt/.import:Z  \
+		-v /data/opt/local:/data/opt/local:Z  \
+		-v /etc/terminfo:/etc/terminfo:Z  \
 		-v /store/local:/store/local:Z  \
 		-v /store/share:/store/share  \
 		-v /user:/user  \
 		-v /vol:/vol  \
-		-w ${RUN_USER_HOME}/${WORK_DIR}  \
+		-w ${RUN_USER_HOME}/${CURR_DIR}  \
 		-e PASSWORD=$$_passw_ \
 		-e USER=${RUN_USER_NAME} \
 		-e USERID=${RUN_USER_UID} \
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
+		-e X_BUILD_CONF="${X_BUILD_CONF}" \
+		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		${XDG_RUNTIME_OPTIONS} \
+		${X_RUNTIME_OPTIONS} \
 		-ti  \
 		--name  \
 		${PRC_RUNTIME}.sh-$$PPID \
 		${IMG_RUNTIME} \
-		'/bin/bash' ${RUNTIME_RSCRIPT_OPTS} ${RUNTIME_ARGS}
+		'/bin/bash' ${RUNTIME_RSCRIPT_OPTS} ${RUNTIME_ARGS} || true
 
+# ---(status)------------------------------------------------
 
 run/status:
 	@echo "CLI: status ${RUNTIME_ARGS}"
@@ -532,6 +709,10 @@ run/status:
 		-v ~/work:${RUN_USER_HOME}/work:Z  \
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
 		-v ~/data:${HOME}/data:Z  \
+		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
+		-v /usr/local:/usr/local/.import:Z,ro  \
+		-v /opt:/opt/.import:Z  \
+		-v /data/opt/local:/data/opt/local:Z  \
 		-v /store/local:/store/local:Z  \
 		-v /store/share:/store/share  \
 		-v /user:/user  \
@@ -542,6 +723,8 @@ run/status:
 		-e USERID=${RUN_USER_UID} \
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
+		-e X_BUILD_CONF="${X_BUILD_CONF}" \
+		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e X_AUTO_ENV=0  \
@@ -562,6 +745,8 @@ run/status:
 		'./setup.sh' ${RUNTIME_STATUS_OPTS} ${RUNTIME_ARGS}
 
 
+# ---(setup)------------------------------------------------
+
 run/setup:
 	@echo "CLI: setup ${RUNTIME_ARGS}"
 	@export _passw_=$$(cat ~/.rup/*); \
@@ -572,6 +757,10 @@ run/setup:
 		-v ~/work:${RUN_USER_HOME}/work:Z  \
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
 		-v ~/data:${HOME}/data:Z  \
+		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
+		-v /usr/local:/usr/local/.import:Z,ro  \
+		-v /opt:/opt/.import:Z  \
+		-v /data/opt/local:/data/opt/local:Z  \
 		-v /store/local:/store/local:Z  \
 		-v /store/share:/store/share  \
 		-v /user:/user  \
@@ -582,6 +771,8 @@ run/setup:
 		-e USERID=${RUN_USER_UID} \
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
+		-e X_BUILD_CONF="${X_BUILD_CONF}" \
+		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e X_AUTO_ENV=0  \
@@ -602,6 +793,10 @@ run/upgrade:
 		-v ~/work:${RUN_USER_HOME}/work:Z  \
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
 		-v ~/data:${HOME}/data:Z  \
+		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
+		-v /usr/local:/usr/local/.import:Z,ro  \
+		-v /opt:/opt/.import:Z  \
+		-v /data/opt/local:/data/opt/local:Z  \
 		-v /store/local:/store/local:Z  \
 		-v /store/share:/store/share  \
 		-v /user:/user  \
@@ -612,6 +807,8 @@ run/upgrade:
 		-e USERID=${RUN_USER_UID} \
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
+		-e X_BUILD_CONF="${X_BUILD_CONF}" \
+		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e X_AUTO_ENV=0  \
@@ -632,6 +829,10 @@ run/clear:
 		-v ~/work:${RUN_USER_HOME}/work:Z  \
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
 		-v ~/data:${HOME}/data:Z  \
+		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
+		-v /usr/local:/usr/local/.import:Z,ro  \
+		-v /opt:/opt/.import:Z  \
+		-v /data/opt/local:/data/opt/local:Z  \
 		-v /store/local:/store/local:Z  \
 		-v /store/share:/store/share  \
 		-v /user:/user  \
@@ -642,6 +843,8 @@ run/clear:
 		-e USERID=${RUN_USER_UID} \
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
+		-e X_BUILD_CONF="${X_BUILD_CONF}" \
+		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e X_AUTO_ENV=0  \
@@ -653,19 +856,10 @@ run/clear:
 		'./setup.sh' ${RUNTIME_CLEAR_OPTS} ${RUNTIME_ARGS}
 
 
-# ---(attach)----------------------------------------------
+# ---(environ)------------------------------------------------
 
-run/term:
-        #@echo "CLI: term ${RUNTIME_ARGS}"
-	$(DOCKER)  exec \
-		-ti  \
-		$(shell ${DOCKER} ps | grep ${IMG_RUNTIME} | cut -d' ' -f1 ) \
-		'/bin/bash' ${RUNTIME_RSCRIPT_OPTS} ${RUNTIME_ARGS}
-
-
-# ---(venv)------------------------------------------------
-
-run/r-repl:
+run/environ:
+	@echo "CLI: environ ${RUNTIME_ARGS}"
 	@export _passw_=$$(cat ~/.rup/*); \
 	$(DOCKER)  run \
 		--rm \
@@ -674,6 +868,11 @@ run/r-repl:
 		-v ~/work:${RUN_USER_HOME}/work:Z  \
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
 		-v ~/data:${HOME}/data:Z  \
+		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
+		-v ~/.:${RUN_USER_HOME}/.import:Z,ro  \
+		-v /usr/local:/usr/local/.import:Z,ro  \
+		-v /opt:/opt/.import:Z  \
+		-v /data/opt/local:/data/opt/local:Z  \
 		-v /store/local:/store/local:Z  \
 		-v /store/share:/store/share  \
 		-v /user:/user  \
@@ -684,9 +883,162 @@ run/r-repl:
 		-e USERID=${RUN_USER_UID} \
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
+		-e X_BUILD_CONF="${X_BUILD_CONF}" \
+		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
+		-e X_DEBUG="${X_DEBUG:-0}" \
+		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
+		-e X_AUTO_ENV=0  \
+		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		-ti  \
+		--name  \
+		${PRC_RUNTIME}.setup-$$PPID \
+		${IMG_RUNTIME} \
+		'./setup.sh' ${RUNTIME_ENVIRON_OPTS} ${RUNTIME_ARGS}
+
+run/profile:
+	@echo "CLI: profile ${RUNTIME_ARGS}"
+	@[ "${X_X}" = 1 ] && [ -n "${DISPLAY}" ] && echo "DISPLAY=${DISPLAY}" || true
+	@export _passw_=$$(cat ~/.rup/*); set -x; \
+	$(DOCKER)  run \
+		--rm \
+		${DOCKER_RUNTIME_OPTIONS} \
+		-v ${HOME_DIR}:${RUN_USER_HOME}:Z  \
+		-v ~/work:${RUN_USER_HOME}/work:Z  \
+		-v ~/data:${RUN_USER_HOME}/data:Z  \
+		-v ~/data:${HOME}/data:Z  \
+		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
+		-v ~/.:${RUN_USER_HOME}/.import:Z  \
+		-v /usr/local:/usr/local/.import:Z  \
+		-v /opt:/opt/.import:Z  \
+		-v /data/opt/local:/data/opt/local:Z  \
+		-v /store/local:/store/local:Z  \
+		-v /store/share:/store/share  \
+		-v /user:/user  \
+		-v /vol:/vol  \
+		-w ${RUN_USER_HOME}/${WORK_DIR}  \
+		-e PASSWORD=$$_passw_ \
+		-e USER=${RUN_USER_NAME} \
+		-e USERID=${RUN_USER_UID} \
+		-e GROUPID=${RUN_USER_GID} \
+		-e ROOT=true  \
+		-e X_BUILD_CONF="${X_BUILD_CONF}" \
+		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
+		-e X_DEBUG="${X_DEBUG:-0}" \
+		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
+		-e X_AUTO_ENV=0  \
+		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		${X_RUNTIME_OPTIONS} \
+		-ti  \
+		--name  \
+		${PRC_RUNTIME}.setup-$$PPID \
+		${IMG_RUNTIME} \
+		'/bin/bash' ${RUNTIME_PROFILE_OPTS}  ${RUNTIME_ARGS} || true
+
+# ---(attach)----------------------------------------------
+
+# CONTAINER_ID=$(podman ps --filter "ancestor=rocker/geospatial" --format "{{.ID}}")
+# -security-opt label=disable \
+
+run/term:
+        #@echo "CLI: term ${RUNTIME_ARGS}"
+	@[ "${X_X}" = 1 ] && [ -n "${DISPLAY}" ] && echo "DISPLAY=${DISPLAY}" || true
+	$(DOCKER)  exec \
+		${X_ENV_OPTIONS} \
+		-ti  \
+		$(shell ${DOCKER} ps | grep ${IMG_RUNTIME} | cut -d' ' -f1 ) \
+		'/bin/bash' ${RUNTIME_RSCRIPT_OPTS} ${RUNTIME_ARGS} || true
+
+run/xterm:
+        #@echo "CLI: xterm ${RUNTIME_ARGS}"
+	@[ "${X_X}" = 1 ] && [ -n "${DISPLAY}" ] && echo "DISPLAY=${DISPLAY}" || true
+	export CONTAINER_ID="$$(${DOCKER} ps | grep ${IMG_RUNTIME} | cut -d' ' -f1 )"; set -x; \
+	$(DOCKER)  exec \
+		${X_ENV_OPTIONS} \
+		-ti  \
+		$${CONTAINER_ID} \
+		'/usr/bin/xterm' \
+		'-fn' '9x15' \
+		'-T'  "${IMG_RUNTIME}-$${CONTAINER_ID}" \
+		'-e' $${SHELL} ${RUNTIME_RSCRIPT_OPTS} ${RUNTIME_ARGS} &
+
+
+# xterm -title "RStudio Container Terminal" \
+#       -geometry 120x40 \
+#       -fa "DejaVu Sans Mono" \
+#       -fs 11 \
+#       -bg "#2E3440" \
+#       -fg "#D8DEE9"
+
+
+# RUN apt-get update && apt-get install -y \
+#     xterm \
+#     x11-apps \
+#     x11-utils \
+#     libx11-6 \
+#     libxext6 \
+#     libxrender1 \
+#     && rm -rf /var/lib/apt/lists/*
+
+
+# RUN apt-get update && apt-get install -y --no-install-recommends \
+#     xterm \
+#     x11-xserver-utils \
+#     xauth \
+#     ca-certificates \
+#  && apt-get clean \
+#  && rm -rf /var/lib/apt/lists/*
+
+# RUN apt-get update && \
+#     apt-get install -y --no-install-recommends \
+#         x11-apps \
+#         xauth \
+#         libx11-6 \
+#         libxext6 \
+#         libxrender1 \
+#         libxtst6 \
+#         && rm -rf /var/lib/apt/lists/*
+
+# # Extract auth cookie
+# xauth list | grep $(echo $DISPLAY | cut -d: -f2 | cut -d. -f1)
+
+# # Inside container, add the cookie
+# podman exec -it $CONTAINER_ID bash -c \
+#   "xauth add $(xauth list | grep $DISPLAY)"
+
+
+# ---(R)------------------------------------------------
+
+run/r-repl:
+	@[ "${X_X}" = 1 ] && [ -n "${DISPLAY}" ] && echo "DISPLAY=${DISPLAY}" || true
+	@export _passw_=$$(cat ~/.rup/*); \
+	$(DOCKER)  run \
+		--rm \
+		${DOCKER_RUNTIME_OPTIONS} \
+		-v ${HOME_DIR}:${RUN_USER_HOME}:Z  \
+		-v ~/work:${RUN_USER_HOME}/work:Z  \
+		-v ~/data:${RUN_USER_HOME}/data:Z  \
+		-v ~/data:${HOME}/data:Z  \
+		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
+		-v /usr/local:/usr/local/.import:Z,ro  \
+		-v /opt:/opt/.import:Z  \
+		-v /data/opt/local:/data/opt/local:Z  \
+		-v /store/local:/store/local:Z  \
+		-v /store/share:/store/share  \
+		-v /user:/user  \
+		-v /vol:/vol  \
+		-w ${RUN_USER_HOME}/${CURR_DIR}  \
+		-e PASSWORD=$$_passw_ \
+		-e USER=${RUN_USER_NAME} \
+		-e USERID=${RUN_USER_UID} \
+		-e GROUPID=${RUN_USER_GID} \
+		-e ROOT=true  \
+		-e X_BUILD_CONF="${X_BUILD_CONF}" \
+		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		${XDG_RUNTIME_OPTIONS} \
+		${X_RUNTIME_OPTIONS} \
 		-ti  \
 		--name  \
 		${PRC_RUNTIME}.r-$$PPID \
@@ -694,7 +1046,85 @@ run/r-repl:
 		${X_PY_RUN} \
 		'/usr/local/bin/R' ${RUNTIME_R_OPTS} ${RUNTIME_ARGS}
 
-run/rscript-cli:
+run/rscript-rs:
+	@echo "RS: Rscript ${RUNTIME_ARGS}"
+	@export _passw_=$$(cat ~/.rup/*); \
+	$(DOCKER)  run \
+		--rm \
+		${DOCKER_RUNTIME_OPTIONS} \
+		-v ${HOME_DIR}:${RUN_USER_HOME}:Z  \
+		-v ~/work:${RUN_USER_HOME}/work:Z  \
+		-v ~/data:${RUN_USER_HOME}/data:Z  \
+		-v ~/data:${HOME}/data:Z  \
+		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
+		-v /usr/local:/usr/local/.import:Z,ro  \
+		-v /opt:/opt/.import:Z  \
+		-v /data/opt/local:/data/opt/local:Z  \
+		-v /store/local:/store/local:Z  \
+		-v /store/share:/store/share  \
+		-v /user:/user  \
+		-v /vol:/vol  \
+		-w ${RUN_USER_HOME}/${CURR_DIR}  \
+		-e PASSWORD=$$_passw_ \
+		-e USER=${RUN_USER_NAME} \
+		-e USERID=${RUN_USER_UID} \
+		-e GROUPID=${RUN_USER_GID} \
+		-e ROOT=true  \
+		-e X_BUILD_CONF="${X_BUILD_CONF}" \
+		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
+		-e X_DEBUG="${X_DEBUG:-0}" \
+		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
+		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		${XDG_RUNTIME_OPTIONS} \
+		${X_RUNTIME_OPTIONS} \
+		-ti  \
+		--name  \
+		${PRC_RUNTIME}.rs-$$PPID \
+		${IMG_RUNTIME} \
+		${X_PY_RUN} \
+		'/usr/local/bin/Rscript' ${RUNTIME_RSCRIPT_OPTS} ${RUNTIME_ARGS}
+
+# ---(python)------------------------------------------------
+
+run/python-repl:
+	@[ "${X_X}" = 1 ] && [ -n "${DISPLAY}" ] && echo "DISPLAY=${DISPLAY}" || true
+	@export _passw_=$$(cat ~/.rup/*); \
+	$(DOCKER)  run \
+		--rm \
+		${DOCKER_RUNTIME_OPTIONS} \
+		-v ${HOME_DIR}:${RUN_USER_HOME}:Z  \
+		-v ~/work:${RUN_USER_HOME}/work:Z  \
+		-v ~/data:${RUN_USER_HOME}/data:Z  \
+		-v ~/data:${HOME}/data:Z  \
+		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
+		-v /usr/local:/usr/local/.import:Z,ro  \
+		-v /opt:/opt/.import:Z  \
+		-v /data/opt/local:/data/opt/local:Z  \
+		-v /store/local:/store/local:Z  \
+		-v /store/share:/store/share  \
+		-v /user:/user  \
+		-v /vol:/vol  \
+		-w ${RUN_USER_HOME}/${CURR_DIR}  \
+		-e PASSWORD=$$_passw_ \
+		-e USER=${RUN_USER_NAME} \
+		-e USERID=${RUN_USER_UID} \
+		-e GROUPID=${RUN_USER_GID} \
+		-e ROOT=true  \
+		-e X_BUILD_CONF="${X_BUILD_CONF}" \
+		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
+		-e X_DEBUG="${X_DEBUG:-0}" \
+		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
+		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		${XDG_RUNTIME_OPTIONS} \
+		${X_RUNTIME_OPTIONS} \
+		-ti  \
+		--name  \
+		${PRC_RUNTIME}.r-$$PPID \
+		${IMG_RUNTIME} \
+		${X_PY_RUN} \
+		${PYVENV_RUN} ${RUNTIME_IPYTHON_OPTS} ${RUNTIME_ARGS}
+
+run/python-run:
 	@echo "CLI: Rscript ${RUNTIME_ARGS}"
 	@export _passw_=$$(cat ~/.rup/*); \
 	$(DOCKER)  run \
@@ -704,25 +1134,118 @@ run/rscript-cli:
 		-v ~/work:${RUN_USER_HOME}/work:Z  \
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
 		-v ~/data:${HOME}/data:Z  \
+		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
+		-v /usr/local:/usr/local/.import:Z,ro  \
+		-v /opt:/opt/.import:Z  \
+		-v /data/opt/local:/data/opt/local:Z  \
 		-v /store/local:/store/local:Z  \
 		-v /store/share:/store/share  \
 		-v /user:/user  \
 		-v /vol:/vol  \
-		-w ${RUN_USER_HOME}/${WORK_DIR}  \
+		-w ${RUN_USER_HOME}/${CURR_DIR}  \
 		-e PASSWORD=$$_passw_ \
 		-e USER=${RUN_USER_NAME} \
 		-e USERID=${RUN_USER_UID} \
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
+		-e X_BUILD_CONF="${X_BUILD_CONF}" \
+		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		${XDG_RUNTIME_OPTIONS} \
+		${X_RUNTIME_OPTIONS} \
 		-ti  \
 		--name  \
 		${PRC_RUNTIME}.rs-$$PPID \
 		${IMG_RUNTIME} \
 		${X_PY_RUN} \
-		'/usr/local/bin/Rscript' ${RUNTIME_RSCRIPT_OPTS} ${RUNTIME_ARGS}
+		${PYVENV_RUN} ${RUNTIME_PYRUN_OPTS} ${RUNTIME_ARGS}
+
+# ---(exec)------------------------------------------------
+
+
+run/exec-auto:
+	@echo "RUN: ./starter.sh ${RUNTIME_ARGS}"
+	@export _passw_=$$(cat ~/.rup/*); \
+	$(DOCKER)  run \
+		--rm \
+		${DOCKER_RUNTIME_OPTIONS} \
+		-v ${HOME_DIR}:${RUN_USER_HOME}:Z  \
+		-v ~/work:${RUN_USER_HOME}/work:Z  \
+		-v ~/data:${RUN_USER_HOME}/data:Z  \
+		-v ~/data:${HOME}/data:Z  \
+		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
+		-v /usr/local:/usr/local/.import:Z,ro  \
+		-v /opt:/opt/.import:Z  \
+		-v /data/opt/local:/data/opt/local:Z  \
+		-v /store/local:/store/local:Z  \
+		-v /store/share:/store/share  \
+		-v /user:/user  \
+		-v /vol:/vol  \
+		-w ${RUN_USER_HOME}/${CURR_DIR}  \
+		-e PASSWORD=$$_passw_ \
+		-e USER=${RUN_USER_NAME} \
+		-e USERID=${RUN_USER_UID} \
+		-e GROUPID=${RUN_USER_GID} \
+		-e ROOT=true  \
+		-e X_BUILD_CONF="${X_BUILD_CONF}" \
+		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
+		-e X_DEBUG="${X_DEBUG:-0}" \
+		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
+		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		${XDG_RUNTIME_OPTIONS} \
+		${X_RUNTIME_OPTIONS} \
+		-ti  \
+		--name  \
+		${PRC_RUNTIME}.rs-$$PPID \
+		${IMG_RUNTIME} \
+		${X_PY_RUN} \
+		echo "### ${E_BUILD_TS} - AUTO: ${RUNTIME_ARGS}" &> ${RUN_LOGFILE} \
+		${PYVENV_RUN} ${RUNTIME_AUTO_OPTS} ${RUNTIME_ARGS} 2>&1 | tee -a ${RUN_LOGFILE}
+
+run/rscript-cli:
+	@echo "CLI: run ${RUNTIME_ARGS}"
+	@export _passw_=$$(cat ~/.rup/*); \
+	$(DOCKER)  run \
+		--rm \
+		${DOCKER_RUNTIME_OPTIONS} \
+		-v ${HOME_DIR}:${RUN_USER_HOME}:Z  \
+		-v ~/work:${RUN_USER_HOME}/work:Z  \
+		-v ~/data:${RUN_USER_HOME}/data:Z  \
+		-v ~/data:${HOME}/data:Z  \
+		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
+		-v /usr/local:/usr/local/.import:Z,ro  \
+		-v /opt:/opt/.import:Z  \
+		-v /data/opt/local:/data/opt/local:Z  \
+		-v /store/local:/store/local:Z  \
+		-v /store/share:/store/share  \
+		-v /user:/user  \
+		-v /vol:/vol  \
+		-w ${RUN_USER_HOME}/${CURR_DIR}  \
+		-e PASSWORD=$$_passw_ \
+		-e USER=${RUN_USER_NAME} \
+		-e USERID=${RUN_USER_UID} \
+		-e GROUPID=${RUN_USER_GID} \
+		-e ROOT=true  \
+		-e X_BUILD_CONF="${X_BUILD_CONF}" \
+		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
+		-e X_DEBUG="${X_DEBUG:-0}" \
+		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
+		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		${XDG_RUNTIME_OPTIONS} \
+		${X_RUNTIME_OPTIONS} \
+		-ti  \
+		--name  \
+		${PRC_RUNTIME}.rs-$$PPID \
+		${IMG_RUNTIME} \
+		${X_PY_RUN} \
+		echo "### ${E_BUILD_TS} - CLI: ${RUNTIME_ARGS}" &> ${RUN_LOGFILE} \
+		${PYVENV_RUN} ${RUNTIME_CLI_OPTS} ${RUNTIME_ARGS} 2>&1 | tee -a ${RUN_LOGFILE}
+
+
+
+# ---(setup)------------------------------------------------
 
 run/build:
 	@echo "CLI: build ${RUNTIME_ARGS}"
@@ -734,6 +1257,10 @@ run/build:
 		-v ~/work:${RUN_USER_HOME}/work:Z  \
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
 		-v ~/data:${HOME}/data:Z  \
+		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
+		-v /usr/local:/usr/local/.import:Z,ro  \
+		-v /opt:/opt/.import:Z  \
+		-v /data/opt/local:/data/opt/local:Z  \
 		-v /store/local:/store/local:Z  \
 		-v /store/share:/store/share  \
 		-v /user:/user  \
@@ -744,15 +1271,95 @@ run/build:
 		-e USERID=${RUN_USER_UID} \
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
+		-e X_BUILD_CONF="${X_BUILD_CONF}" \
+		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		${XDG_RUNTIME_OPTIONS} \
+		${X_RUNTIME_OPTIONS} \
 		-ti  \
 		--name  \
 		${PRC_RUNTIME}.build-$$PPID \
 		${IMG_RUNTIME} \
 		${X_PY_RUN} \
 		'./build.sh' ${RUNTIME_BUILD_OPTS} ${RUNTIME_ARGS}
+
+run/test:
+	@echo "CLI: test ${RUNTIME_ARGS}"
+	@export _passw_=$$(cat ~/.rup/*); \
+	$(DOCKER)  run \
+		--rm \
+		${DOCKER_RUNTIME_OPTIONS} \
+		-v ${HOME_DIR}:${RUN_USER_HOME}:Z  \
+		-v ~/work:${RUN_USER_HOME}/work:Z  \
+		-v ~/data:${RUN_USER_HOME}/data:Z  \
+		-v ~/data:${HOME}/data:Z  \
+		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
+		-v /usr/local:/usr/local/.import:Z,ro  \
+		-v /opt:/opt/.import:Z  \
+		-v /data/opt/local:/data/opt/local:Z  \
+		-v /store/local:/store/local:Z  \
+		-v /store/share:/store/share  \
+		-v /user:/user  \
+		-v /vol:/vol  \
+		-w ${RUN_USER_HOME}/${WORK_DIR}  \
+		-e PASSWORD=$$_passw_ \
+		-e USER=${RUN_USER_NAME} \
+		-e USERID=${RUN_USER_UID} \
+		-e GROUPID=${RUN_USER_GID} \
+		-e ROOT=true  \
+		-e X_BUILD_CONF="${X_BUILD_CONF}" \
+		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
+		-e X_DEBUG="${X_DEBUG:-0}" \
+		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
+		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		${XDG_RUNTIME_OPTIONS} \
+		${X_RUNTIME_OPTIONS} \
+		-ti  \
+		--name  \
+		${PRC_RUNTIME}.build-$$PPID \
+		${IMG_RUNTIME} \
+		${X_PY_RUN} \
+		'./build.sh' ${RUNTIME_TEST_OPTS} ${RUNTIME_ARGS}
+
+run/check:
+	@echo "CLI: check ${RUNTIME_ARGS}"
+	@export _passw_=$$(cat ~/.rup/*); \
+	$(DOCKER)  run \
+		--rm \
+		${DOCKER_RUNTIME_OPTIONS} \
+		-v ${HOME_DIR}:${RUN_USER_HOME}:Z  \
+		-v ~/work:${RUN_USER_HOME}/work:Z  \
+		-v ~/data:${RUN_USER_HOME}/data:Z  \
+		-v ~/data:${HOME}/data:Z  \
+		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
+		-v /usr/local:/usr/local/.import:Z,ro  \
+		-v /opt:/opt/.import:Z  \
+		-v /data/opt/local:/data/opt/local:Z  \
+		-v /store/local:/store/local:Z  \
+		-v /store/share:/store/share  \
+		-v /user:/user  \
+		-v /vol:/vol  \
+		-w ${RUN_USER_HOME}/${WORK_DIR}  \
+		-e PASSWORD=$$_passw_ \
+		-e USER=${RUN_USER_NAME} \
+		-e USERID=${RUN_USER_UID} \
+		-e GROUPID=${RUN_USER_GID} \
+		-e ROOT=true  \
+		-e X_BUILD_CONF="${X_BUILD_CONF}" \
+		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
+		-e X_DEBUG="${X_DEBUG:-0}" \
+		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
+		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		${XDG_RUNTIME_OPTIONS} \
+		${X_RUNTIME_OPTIONS} \
+		-ti  \
+		--name  \
+		${PRC_RUNTIME}.build-$$PPID \
+		${IMG_RUNTIME} \
+		${X_PY_RUN} \
+		'./build.sh' ${RUNTIME_CHECK_OPTS} ${RUNTIME_ARGS}
 
 run/command:
         #@echo "CLI: command ${RUNTIME_ARGS}"
@@ -764,19 +1371,27 @@ run/command:
 		-v ~/work:${RUN_USER_HOME}/work:Z  \
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
 		-v ~/data:${HOME}/data:Z  \
+		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
+		-v /usr/local:/usr/local/.import:Z,ro  \
+		-v /opt:/opt/.import:Z  \
+		-v /data/opt/local:/data/opt/local:Z  \
 		-v /store/local:/store/local:Z  \
 		-v /store/share:/store/share  \
 		-v /user:/user  \
 		-v /vol:/vol  \
-		-w ${RUN_USER_HOME}/${WORK_DIR}  \
+		-w ${RUN_USER_HOME}/${CURR_DIR}  \
 		-e PASSWORD=$$_passw_ \
 		-e USER=${RUN_USER_NAME} \
 		-e USERID=${RUN_USER_UID} \
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
+		-e X_BUILD_CONF="${X_BUILD_CONF}" \
+		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		${XDG_RUNTIME_OPTIONS} \
+		${X_RUNTIME_OPTIONS} \
 		--name  \
 		${PRC_RUNTIME}.do-$$PPID \
 		${IMG_RUNTIME} \
@@ -785,6 +1400,7 @@ run/command:
 
 run/code-server:
 	@echo "CODE: server ${RUNTIME_ARGS}"
+	@[ "${X_X}" = 1 ] && [ -n "${DISPLAY}" ] && echo "DISPLAY=${DISPLAY}" || true
 	@export _passw_=$$(cat ~/.rup/*); \
 	$(DOCKER)  run \
 		--rm \
@@ -794,6 +1410,10 @@ run/code-server:
 		-v ~/work:${RUN_USER_HOME}/work:Z  \
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
 		-v ~/data:${HOME}/data:Z  \
+		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
+		-v /usr/local:/usr/local/.import:Z,ro  \
+		-v /opt:/opt/.import:Z  \
+		-v /data/opt/local:/data/opt/local:Z  \
 		-v /store/local:/store/local:Z  \
 		-v /store/share:/store/share  \
 		-v /user:/user  \
@@ -804,9 +1424,13 @@ run/code-server:
 		-e USERID=${RUN_USER_UID} \
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
+		-e X_BUILD_CONF="${X_BUILD_CONF}" \
+		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		${XDG_RUNTIME_OPTIONS} \
+		${X_RUNTIME_OPTIONS} \
 		--name  \
 		${PRC_RUNTIME}.code-$$PPID \
 		${IMG_RUNTIME} \
@@ -816,6 +1440,7 @@ run/code-server:
 
 run/jupyter-lab:
 	@echo "JUPYTER: lab ${RUNTIME_ARGS}"
+	@[ "${X_X}" = 1 ] && [ -n "${DISPLAY}" ] && echo "DISPLAY=${DISPLAY}" || true
 	@export _passw_=$$(cat ~/.rup/*); \
 	$(DOCKER)  run \
 		--rm \
@@ -825,6 +1450,10 @@ run/jupyter-lab:
 		-v ~/work:${RUN_USER_HOME}/work:Z  \
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
 		-v ~/data:${HOME}/data:Z  \
+		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
+		-v /usr/local:/usr/local/.import:Z,ro  \
+		-v /opt:/opt/.import:Z  \
+		-v /data/opt/local:/data/opt/local:Z  \
 		-v /store/local:/store/local:Z  \
 		-v /store/share:/store/share  \
 		-v /user:/user  \
@@ -835,9 +1464,13 @@ run/jupyter-lab:
 		-e USERID=${RUN_USER_UID} \
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
+		-e X_BUILD_CONF="${X_BUILD_CONF}" \
+		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		${XDG_RUNTIME_OPTIONS} \
+		${X_RUNTIME_OPTIONS} \
 		--name  \
 		${PRC_RUNTIME}.lab-$$PPID \
 		${IMG_RUNTIME} \
@@ -846,6 +1479,7 @@ run/jupyter-lab:
 
 run/jupyter-notebook:
 	@echo "JUPYTER: notebook ${RUNTIME_ARGS}"
+	@[ "${X_X}" = 1 ] && [ -n "${DISPLAY}" ] && echo "DISPLAY=${DISPLAY}" || true
 	@export _passw_=$$(cat ~/.rup/*); \
 	$(DOCKER)  run \
 		--rm \
@@ -855,6 +1489,10 @@ run/jupyter-notebook:
 		-v ~/work:${RUN_USER_HOME}/work:Z  \
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
 		-v ~/data:${HOME}/data:Z  \
+		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
+		-v /usr/local:/usr/local/.import:Z,ro  \
+		-v /opt:/opt/.import:Z  \
+		-v /data/opt/local:/data/opt/local:Z  \
 		-v /store/local:/store/local:Z  \
 		-v /store/share:/store/share  \
 		-v /user:/user  \
@@ -865,9 +1503,13 @@ run/jupyter-notebook:
 		-e USERID=${RUN_USER_UID} \
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
+		-e X_BUILD_CONF="${X_BUILD_CONF}" \
+		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		${XDG_RUNTIME_OPTIONS} \
+		${X_RUNTIME_OPTIONS} \
 		--name  \
 		${PRC_RUNTIME}.note-$$PPID \
 		${IMG_RUNTIME} \
@@ -889,6 +1531,8 @@ run/rstudio-server:
 	@echo " X2Go:      chromium-browser http://localhost:${RUN_PORT_B_EXT}"
 	@echo " nomachine: firefox          http://localhost:${RUN_PORT_B_EXT}"
 	@echo ""
+	@[ -n "${DISPLAY}" ] && echo "DISPLAY=${DISPLAY}   -   X_X=${X_X}"
+	@echo ""
 	@export _passw_=$$(cat ~/.rup/*); \
 	$(DOCKER)  run \
 		--rm \
@@ -898,6 +1542,10 @@ run/rstudio-server:
 		-v ~/work:${RUN_USER_HOME}/work:Z  \
 		-v ~/data:${RUN_USER_HOME}/data:Z  \
 		-v ~/data:${HOME}/data:Z  \
+		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
+		-v /usr/local:/usr/local/.import:Z,ro  \
+		-v /opt:/opt/.import:Z  \
+		-v /data/opt/local:/data/opt/local:Z  \
 		-v /store/local:/store/local:Z  \
 		-v /store/share:/store/share  \
 		-v /user:/user  \
@@ -909,9 +1557,13 @@ run/rstudio-server:
 		-e USERID=${RUN_USER_UID} \
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
+		-e X_BUILD_CONF="${X_BUILD_CONF}" \
+		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		${XDG_RUNTIME_OPTIONS} \
+		${X_RUNTIME_OPTIONS} \
 		--name  \
 		${PRC_RUNTIME}.rstudio-$$PPID \
 		${IMG_RUNTIME} \

@@ -18,5 +18,6 @@ Index
 
 * [Project Usage Guide](usage/README.md)
 * [Project Customization](custom/README.org)
+* [HOWTO Notes](howtos/README.md)
 
 

@@ -1,4 +1,8 @@
--/home
--/renv/staging
--/.mypy_cache
--/.Rproj.user
+- /.Rproj.user
+- /.devcontainer
+- /.mypy_cache
+- /.yarn
+- /auto-save-list
+- /home
+- /node_modules
+- /renv/staging

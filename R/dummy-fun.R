@@ -9,5 +9,5 @@
 #' dmy_hello("Earth")
 #' dmy_hello("Moon", "'Night")
 dmy_hello <- function(who = "World", salutation = "Hello") {
-  paste(salutation," ",who,"!",sep="")
+  paste(salutation, " ", who, "!", sep = "")
 }

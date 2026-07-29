@@ -5,7 +5,9 @@
 
 ## build ARGs
 # set -e
-source ${Y_BUILD_CONF:-/etc/build.conf}
+set -x
+source ${X_BUILD_CONF:-$Y_BUILD_CONF}
+set +x
 
 NCPUS=${NCPUS:--1}
 
@@ -33,6 +35,10 @@ set -a
 : ${X_ALL_MODE:=''}
 : ${X_PYTHON_MODE:=''}
 : ${X_R_MODE:=''}
+
+# ------------------------------------------------------
+
+X_ENV_SCRIPT="docker/r-images/scripts/setup/environ_ubs-all.sh"
 
 # ------------------------------------------------------
 case "$0" in
@@ -270,12 +276,14 @@ dump_venv_status() {
 $(echo "${PATH}" | tr ':' '\n' | sl)
     library_path: |
 $(echo "${LD_LIBRARY_PATH}" | tr ':' '\n' | sl)
-    python: "$(which python || )"
-    python-version: "$(python --version || echo "NOPYTHON")"
-    poetry: "$(which poetry)"
-    poetry-version: "$(poetry --version)"
-    jupyter: "$(which jupyter)"
-    jupyter-version: "$(jupyter --version)"
+    python: "$(which python || echo NOPYTHON )"
+    python-version: "$(python --version || echo NOPYTHON)"
+    uv: "$(which uv || echo NOUV )"
+    uv-version: "$(uv --version || echo NOUV )"
+    poetry: "$(which poetry || echo NOPOETRY )"
+    poetry-version: "$(poetry --version || echo NOPOETRY )"
+    jupyter: "$(which jupyter || echo NOJUPYTER )"
+    jupyter-version: "$(jupyter --version || echo NOJUPYTER )"
    poetry-venv: |
 $(poetry env info | sl)
 
@@ -382,7 +390,7 @@ dump_status() {
 exit_status() {
     
     dump_status
-    exit 0
+    exec ./build.sh status
 }
 
 # --------------------------------------------------------------
@@ -633,7 +641,13 @@ deactivate () {
     fi
 }
 
+# ////////////////////////////////////////////////////////////////////////
 
+exec_environ() {
+
+    exec ${X_ENV_SCRIPT} $@
+    
+}
 
 
 # ////////////////////////////////////////////////////////////////////////
@@ -897,6 +911,8 @@ do_py_jupyter_build() {
           jlpm add --dev  \
                bash-language-server \
                dockerfile-language-server-nodejs \
+               markdownlint \
+               markdownlint-cli2 \
                pyright \
                sql-language-server \
                typescript-language-server \
@@ -904,6 +920,7 @@ do_py_jupyter_build() {
                vscode-css-languageserver-bin \
                vscode-html-languageserver-bin \
                vscode-json-languageserver-bin \
+               vscode-markdown-languageserver \
                yaml-language-server
           
           info "jupyter ./package.json created"
@@ -1111,7 +1128,8 @@ do_renv_init() {
     [ -f ./renv/settings.json ] && mv ./renv/settings.json $X_SAVE_RENV_PRE
     [ -f ./renv/activate.R ]    && mv ./renv/activate.R    $X_SAVE_RENV_PRE
 
-    R -q -e 'renv::init(bare=TRUE, load=FALSE)' ; rc_renv_init=$?
+    #R -q -e 'renv::init(bare=TRUE, load=FALSE)' ; rc_renv_init=$?
+    R -q -e 'rspm::renv_init(bare=TRUE, load=FALSE)' ; rc_renv_init=$?
     
     case "$rc_renv_init" in
         0) info "=(do_renv_init):" "renv - init => ok" ;;
@@ -1697,10 +1715,13 @@ main() {
             shift
             exit_status $@
             ;;
+        --environ)
+            shift
+            exec_environ $@
+            ;;
         *)
             ;;
     esac
-    
 
     enter_main
     

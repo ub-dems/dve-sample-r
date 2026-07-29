@@ -14,7 +14,7 @@ LABEL org.opencontainers.image.vendor="ubdems" \
       it.unimib.datalab.path="ub-dems-public/ds-labs/dve-sample-r" \
       it.unimib.datalab.schema="dve:1.0" \
       it.unimib.datalab.lang="R" \
-      it.unimib.datalab.from="2022-06-01" \
+      it.unimib.datalab.from="2026-03-16" \
       it.unimib.datalab.until="2222-02-02" \
       it.unimib.datalab.owner="ab21010" \
       it.unimib.datalab.cdc="ds-101" \
@@ -47,7 +47,7 @@ ENV  PAGER=$Y_PAGER_SET
 
 
 ARG  Y_TERM_SET=xterm-256color
-ENV  TERM=$Y_TERM_SET
+#ENV  TERM=$Y_TERM_SET
 
 ARG  Y_TZ_SET=Europe/Rome
 ENV  TZ=$Y_TZ_SET
@@ -59,6 +59,8 @@ ARG  Y_KBD_LAYOUT_SET=it
 COPY scripts/base /rocker_scripts
 COPY build.conf   /etc/build.conf
 ARG  Y_BUILD_CONF=/etc/build.conf
+ENV  X_BUILD_CONF=$Y_BUILD_CONF
+
 
 ARG  Y_DEBUG_ENV=0
 ENV  X_DEBUG_ENV=$Y_DEBUG_ENV
@@ -69,6 +71,14 @@ RUN /rocker_scripts/init_ubs-userconf.sh
 # commons
 RUN /rocker_scripts/install_ubs-commons.sh
 RUN /rocker_scripts/install_ubs-utils.sh
+
+# emacs support
+
+ENV NO_AT_BRIDGE=1
+
+# cursor support
+
+ENV CAN_LAUNCH_AS_ROOT=1
 
 # python support
 

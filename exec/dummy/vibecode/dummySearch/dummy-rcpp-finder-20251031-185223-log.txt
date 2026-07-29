@@ -1,0 +1,47 @@
+INFO [2025-10-31 18:52:23] Logging initialized: logs/dummy-rcpp-finder-20251031-185223.log
+INFO [2025-10-31 18:52:23] Log directory: /root/work/vs/dve-sample-r/logs
+INFO [2025-10-31 18:52:23] === Script Arguments ===
+INFO [2025-10-31 18:52:23]   congestion_coeff: 1
+INFO [2025-10-31 18:52:23]   congestion_rate: 0.5
+INFO [2025-10-31 18:52:23]   exec: par
+INFO [2025-10-31 18:52:23]   export_graph: FALSE
+INFO [2025-10-31 18:52:23]   graph_fill: 1
+INFO [2025-10-31 18:52:23]   graph_radius: 0.1
+INFO [2025-10-31 18:52:23]   graph_size: 100
+INFO [2025-10-31 18:52:23]   graph_type: route
+INFO [2025-10-31 18:52:23]   image_orient: L
+INFO [2025-10-31 18:52:23]   image_size: A4
+INFO [2025-10-31 18:52:23]   plot: TRUE
+INFO [2025-10-31 18:52:23]   samples: 10
+INFO [2025-10-31 18:52:23]   save: FALSE
+INFO [2025-10-31 18:52:23]   seed: 0
+INFO [2025-10-31 18:52:23]   verbose: 0
+INFO [2025-10-31 18:52:23] === System Information ===
+INFO [2025-10-31 18:52:23] CPU:
+Info: 8-core model: AMD EPYC 7V12 bits: 64 type: MCP cache: L2: 4 MiB
+Speed (MHz): avg: 2830 min/max: N/A cores: 1: 2445 2: 2445 3: 3217 4: 3243
+  5: 3182 6: 2445 7: 2445 8: 3223
+INFO [2025-10-31 18:52:23] Random seed: 371888366
+INFO [2025-10-31 18:52:23] Compiling C++ source: exec/dummySearch/dummy_finder.cpp
+INFO [2025-10-31 18:52:29] C++ functions loaded successfully
+INFO [2025-10-31 18:52:29] === Preparation Phase ===
+INFO [2025-10-31 18:52:29] Generating route graph with 100 vertices
+INFO [2025-10-31 18:52:55] Graph statistics:
+INFO [2025-10-31 18:52:55]   Vertices: 100
+INFO [2025-10-31 18:52:55]   Edges: 137
+INFO [2025-10-31 18:52:55]   Density: 0.0277
+INFO [2025-10-31 18:52:55]   Avg KNN: 3.0266
+INFO [2025-10-31 18:52:55]   Query: 15 -> 92
+INFO [2025-10-31 18:52:55] === Execution Phase ===
+INFO [2025-10-31 18:52:55] Running PARALLEL search
+INFO [2025-10-31 18:52:55] Parallel: 22 nodes in 0.0031s
+INFO [2025-10-31 18:52:56] Path statistics:
+INFO [2025-10-31 18:52:56]   Elapsed: 0.0031s
+INFO [2025-10-31 18:52:56]   Length: 22
+INFO [2025-10-31 18:52:56]   Cost: 2.6055
+INFO [2025-10-31 18:52:56]   Avg degree: 3.41
+INFO [2025-10-31 18:52:56]   Rate (time/len): 0.000143
+INFO [2025-10-31 18:52:56] === Reporting Phase ===
+INFO [2025-10-31 18:52:56] Generating graph plot
+INFO [2025-10-31 18:52:57] Plot saved: logs/dummy-rcpp-finder-20251031-185223-plot.pdf
+INFO [2025-10-31 18:52:57] === Execution Complete ===

@@ -13,15 +13,19 @@ E_MAKE_FILE="${E_ROOT_DIR}/Makefile"
 #E_DOCKER_DIR="${E_ROOT_DIR}/docker/r-images"
 #E_MAKE_FILE="${E_DOCKER_DIR}/Makefile"
 
+#-----------------------------------------------------------
 set -a
 
 : ${E_CONF_DIR:="${E_ROOT_DIR}/docker/r-images"}
-: ${E_CONF_FILE:="${E_CONF_DIR}/runtime.conf"}
 : ${E_META_FILE:="${E_CONF_DIR}/project.conf"}
+: ${E_CONF_FILE:="${E_CONF_DIR}/runtime.conf"}
+: ${E_AUTO_FILE:="${E_CONF_DIR}/starter.conf"}
 
 [ -r "${E_META_FILE}" ] && source "${E_META_FILE}" || true
 [ -r "${E_CONF_FILE}" ] && source "${E_CONF_FILE}" || true
+[ -r "${E_AUTO_FILE}" ] && source "${E_AUTO_FILE}" || true
 
+#-----------------------------------------------------------
 
 : ${X_PRJ_KIND:="${X_DEF_KIND}"}
 
@@ -46,6 +50,7 @@ esac
 : ${X_DEBUG_ENV:="${X_DEF_DEBUG_ENV}"}
 
 set +a
+#-----------------------------------------------------------
 
 . $(dirname $0)/functions.sh
 
@@ -69,15 +74,24 @@ where "target" is
   notebook         : runs jupyter notebook bound on port 28888
   code             : runs visual studio code server on port 28788
   repl             : runs interactive R console
-  cli ...          : runs Rscript with arguments
+  rs ...           : runs Rscript with arguments
+  python           : runs interactive ipython console
+  pyrun            : runs Python script with arguments
+  run              : runs default autoexec script
+  cli ...          : runs executable script with arguments
+  test             : runs all unit tests
+  check            : runs project lint checks
   clear ...        : clear all virtual environmnet and packages
   upgrade ...      : runs poetry/renv lock/snapshot inside runtime
   setup ...        : runs poetry/renv install inside runtime
   status ...       : runs poetry/renv status inside runtime
   build ...        : runs ./build.sh with arguments inside runtime
+  environ ...      : imports user environment
+  profile ...      : edit user environment
   shell            : runs interactive shell prompt
   bash args,...    : runs shell with args,...
   term             : attach interactive shell to running runtime
+  xterm            : attach interactive shell to running runtime (X client)
 
 
 Target aliases:
@@ -87,15 +101,24 @@ Target aliases:
    notebook => note
    code     => edit
    repl     => r, R
-   cli      => rscript, Rscript
+   rs       => rscript, Rscript
+   python   => ipython
+   pyrun    => py
+   run      => auto
+   cli      => exec
    upgrade  => lock, snapshot
    clear    => zap
+   environ  => home
+   profile  => rc
    setup    => lib, install
    status   => deps, show
    build    => bld, build.sh
+   test     => pytest
+   check    => validate
    shell    => sh, prompt
    bash     => do, command
    term     => in, attach
+   xterm    => X, xattach
 
 
 EXAMPLES
@@ -156,12 +179,35 @@ then check 'getwd()' and exit 'q()'
 R Script
 ---------
 
- ./runtime.sh cli     exec/dummy_runner.R  
- ./runtime.sh rscript exec/dummy_runner.R  
- ./runtime.sh Rscript exec/dummy_runner.R  
+ ./runtime.sh rs      exec/dummy/dummy_runner.R  --help
+ ./runtime.sh rscript exec/dummy/dummy_runner.R  
+ ./runtime.sh Rscript exec/dummy/dummy_runner.R  
 
 to run scripts from ./exec directory
 
+Python run
+-----------
+
+ ./runtime.sh py poetry install
+ ./runtime.sh py hello --help
+
+
+Python repl
+-----------
+
+ ./runtime.sh python
+ ./runtime.sh ipython
+
+
+Autoexec (./starter.sh) run
+--------------------------
+
+ ./runtime.sh run ...
+
+Exec (Rscript/poetry run) run script
+------------------------------------
+
+ ./runtime.sh cli exec/dummy/dummy_runner.R  --help
 
 
 
@@ -291,7 +337,23 @@ case "${command}" in
         shift
         target=runtime-repl
         ;;
-    cli|rscript|Rscript)
+    rs|rscript|Rscript)
+        shift
+        target=runtime-rs
+        ;;
+    python|ipython)
+        shift
+        target=runtime-ipython
+        ;;
+    py|pyrun)
+        shift
+        target=runtime-pyrun
+        ;;
+    auto|run)
+        shift
+        target=runtime-auto
+        ;;
+    cli|exec)
         shift
         target=runtime-cli
         ;;
@@ -302,6 +364,14 @@ case "${command}" in
     bld|build|build.sh)
         shift
         target=runtime-build
+        ;;
+    test|pytest)
+        shift
+        target=runtime-test
+        ;;
+    check|validate)
+        shift
+        target=runtime-check
         ;;
     clear|zap)
         shift
@@ -315,9 +385,17 @@ case "${command}" in
         shift
         target=runtime-setup
         ;;
-    deps|show|status)
+    lib|install|setup)
         shift
-        target=runtime-status
+        target=runtime-setup
+        ;;
+    home|environ)
+        shift
+        target=runtime-environ
+        ;;
+    rc|profile)
+        shift
+        target=runtime-profile
         ;;
     do|command)
         shift
@@ -328,6 +406,11 @@ case "${command}" in
         shift
         export LOG_ACTIVE='OFF'  
         target=runtime-term
+        ;;
+    X|xterm|xattach)
+        shift
+        export LOG_ACTIVE='OFF'  
+        target=runtime-xterm
         ;;
     edit|code)
         shift
