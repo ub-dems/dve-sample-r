@@ -8,10 +8,59 @@
 
 # --------------------------------------------------------------
 
-export E_ROOT_DIR="$(dirname $0)"
-#E_DOCKER_DIR="${E_ROOT_DIR}/docker/r-images"
-export E_MAKE_FILE="${E_ROOT_DIR}/Makefile"
-export E_BUILD_TS="$(date +%Y%m%d-%H%M%S-%Z)"
+E_ROOT_DIR="$(dirname $0)"
+E_MAKE_FILE="${E_ROOT_DIR}/Makefile"
+E_DOCKER_BASE="${E_ROOT_DIR}/docker"
+
+#-----------------------------------------------------------
+set -a
+
+: ${E_DOCKER_NAME:="r-images"}
+
+: ${E_CONF_DIR:="${E_DOCKER_BASE}/${E_DOCKER_NAME}"}
+    
+: ${E_BUILD_FILE:="${E_CONF_DIR}/build.conf"}
+: ${E_CUDA_FILE:="${E_CONF_DIR}/cuda.conf"}
+
+: ${E_META_FILE:="${E_CONF_DIR}/project.conf"}
+: ${E_CONF_FILE:="${E_CONF_DIR}/runtime.conf"}
+: ${E_AUTO_FILE:="${E_CONF_DIR}/starter.conf"}
+
+[ -r "${E_CUDA_FILE}" ] && source "${E_CUDA_FILE}" || true
+[ -r "${E_BUILD_FILE}" ] && source "${E_BUILD_FILE}" || true
+
+[ -r "${E_META_FILE}" ] && source "${E_META_FILE}" || true
+[ -r "${E_CONF_FILE}" ] && source "${E_CONF_FILE}" || true
+[ -r "${E_AUTO_FILE}" ] && source "${E_AUTO_FILE}" || true
+
+#-----------------------------------------------------------
+
+: ${X_PRJ_KIND:="${X_DEF_KIND}"}
+
+if [ "${X_PRJ_KIND}" = 'auto' ]; then
+    if [ -n "$(shopt -s nullglob; echo *.Rproj)" ]; then
+        X_RUN_KIND='R'
+    else    
+        X_RUN_KIND='P'
+    fi
+else    
+   X_RUN_KIND="${X_PRJ_KIND}"
+fi    
+    
+case "$X_RUN_KIND" in
+    R) X_DEF_RUN_COMMAND="$X_DEF_RUN_R_COMMAND" ;;
+    *) X_DEF_RUN_COMMAND="$X_DEF_RUN_P_COMMAND" ;;
+esac    
+        
+: ${X_RUN_COMMAND:="${X_DEF_RUN_COMMAND}"}
+
+: ${X_DEBUG:="${X_DEF_DEBUG}"}
+: ${X_DEBUG_ENV:="${X_DEF_DEBUG_ENV}"}
+
+set +a
+#-----------------------------------------------------------
+
+env | grep -e '^[EXY]_' 
 
 . $(dirname $0)/functions.sh
 

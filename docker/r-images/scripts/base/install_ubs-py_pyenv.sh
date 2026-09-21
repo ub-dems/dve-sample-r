@@ -460,20 +460,6 @@ function install_pyenv_pipx() {
 
 }
 
-function install_pyenv_uv() {
-    
-    [ "$Y_PY_PYENV_UV" = 1 ] || return 0
-
-    debug_pyenv "install_pyenv_uv::pre"
-
-    curl -LsSf https://astral.sh/uv/install.sh | \
-        env UV_INSTALL_DIR="/usr/local/bin" sh
-
-    debug_pyenv "install_pyenv_uv::post"
-    
-
-}
-
 function define_pyenv_default() {
     
     [ "$Y_PY_PYENV_DEFAULT" = 1 ] || return 0
@@ -534,10 +520,6 @@ function check_pyenv() {
     pipx    list \
           --global    || true
     
-    which   uv        || true
-    uv    --version   || true
-    uv    python list || true
-    
     set +x
     
 }
@@ -573,8 +555,6 @@ function main() {
     upgrade_pyenv_python
     install_pyenv_extras
     install_pyenv_pipx
-
-    install_pyenv_uv
 
     define_pyenv_default
     

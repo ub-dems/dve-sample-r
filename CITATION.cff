@@ -1,0 +1,133 @@
+# -------------------------------------------------------------------
+# CITATION.cff — Citation File Format (CFF) v1.2.0
+# DEMS/datalab — University of Milano-Bicocca
+# Online reference: https://datalab.unimib.it/labs/reg/#forms
+# Template version: 2026-05-06
+# -------------------------------------------------------------------
+# See:
+# - https://citation-file-format.github.io/
+# - https://github.com/citation-file-format/citation-file-format
+# - https://cran.r-project.org/web/packages/cffr/
+# -------------------------------------------------------------------
+---
+cff-version: "1.2.0"
+
+# ── Mandatory fields ────────────────────────────────────────────────
+
+title: "TODO(title): TITLE OF THE RESEARCH WORK / TITOLO DEL LAVORO DI RICERCA"
+
+# One entry per author. Use ORCID where available.
+authors:
+  - family-names: "DEMS/datalab"
+    given-names: "Data Science Lab"
+    orcid: "https://orcid.org/0009-0005-1409-4209"
+    affiliation: "Department of Economics, Management and Statistics DEMS, University of Milano-Bicocca"
+    email: "datalab@unimib.it"
+  # Add further authors below using the same structure / Aggiungere altri autori con la stessa struttura
+
+type: software          # or: dataset | article | thesis — select the most appropriate / scegliere il più appropriato
+version: "0.1.0"        # Semantic versioning / Versionamento semantico
+date-released: "2026-05-26"   # ISO 8601 date / Data ISO 8601
+
+abstract: >
+  TODO(abstract):
+  Short abstract (2–5 sentences) describing the research question,
+  methods, and expected outputs. / Breve abstract (2-5 frasi) che descrive
+  la domanda di ricerca, i metodi e gli output attesi.
+
+# ── Repository and identifiers ───────────────────────────────────────
+# Private GitLab repository (ub-dems group) — required
+# Repository GitLab privato (gruppo ub-dems) — obbligatorio
+repository-code: "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py"
+
+# ── Publications ─────────────────────────────────────────────────────────
+# reference to publications
+# see
+# - "Citing something other than software" in "About CITATION files" (GitHub)
+#
+# preferred-citation:
+#   type: article
+#   authors:
+#   - family-names: "Lisa"
+#     given-names: "Mona"
+#     orcid: "https://orcid.org/0000-0000-0000-0000"
+#   - family-names: "Bot"
+#     given-names: "Hew"
+#     orcid: "https://orcid.org/0000-0000-0000-0000"
+#   doi: "10.0000/00000"
+#   journal: "Journal Title"
+#   month: 9
+#   start: 1 # First page number
+#   end: 10 # Last page number
+#   title: "My awesome research software"
+#   issue: 1
+#   volume: 1
+#   year: 2021
+#
+#
+identifiers:
+#
+#  Other publications / Altre Repository:
+#
+#   - description: another my publication
+#     type: doi
+#     value: "10.5281/zenodo.123456"
+#   - description: yet another my publication
+#     type: doi
+#     value: "10.5281/zenodo.123457"
+#
+# --------------------------------------------------------------------
+# Public repository, if any / Repository pubblico, se presente
+# repository-code: "https://github.com/YOUR-ORG/YOUR-REPO"
+# DOI or other persistent identifier, if already assigned
+# DOI o altro identificatore persistente, se già assegnato
+#   - description: Public project repository
+#     type: doi
+#     value: "10.XXXX/XXXXXX"
+#   - description: Public project repository
+#     type: url
+#     value: "https://github.com/YOUR-ORG/YOUR-REPO"
+#
+# --------------------------------------------------------------------
+# DEMS/datalab acknoledge:
+
+  - description: DEMS Data Science Lab (datalab) at University of Milano-Bicocca
+    type: url
+    value: "https://datalab.unimib.it/"
+
+# ── Keywords ────────────────────────────────────────────────────────
+keywords:
+  - "keyword-1"
+  - "keyword-2"
+  - "keyword-3"
+  # Add more keywords / Aggiungere parole chiave
+
+# ── License ─────────────────────────────────────────────────────────
+# SPDX license identifier — see https://spdx.org/licenses/
+# For confidential projects use: "LicenseRef-proprietary"
+# Dual-Licensed project.
+# See: REUSE.toml for details.
+license: "GPL-3.0-or-later OR CC-BY-4.0"
+
+# ── Funding and acknowledgements ────────────────────────────────────
+
+# Remove if not applicable / Rimuovere se non applicabile
+# funding: "Grant / Fondo: [FUNDER NAME, GRANT ID]"
+
+message: >
+  If you use this software, please cite it using these metadata.
+  This project is dual-licensed under GPL-3.0-or-later OR CC-BY-4.0
+  as specified in the root REUSE.toml and LICENSE.md files.
+  The DEMS DataScience Lab (datalab) should be acknowledged in publications.
+  See: https://datalab.unimib.it/labs/rules/
+
+# ── datalab-specific metadata (do not remove) ───────────────────────
+# The following fields are used for datalab activity reports.
+# I seguenti campi sono utilizzati per i report di attività datalab.
+
+# ── datalab-specific tags (do not remove) ───────────────────────
+
+# datalab userid tag — assigned by datalab staff in 'user.xlsx' (I.1)
+x-datalab-user: ""
+# datalab task tag — assigned by datalab staff in 'projects.xlsx' (I.1)
+x-datalab-task: ""

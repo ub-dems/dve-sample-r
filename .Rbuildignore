@@ -2,6 +2,9 @@
 ^auto-save-list$
 ^azure-pipelines\.yml$
 ^bench$
+^.cache/uv$
+^.cache$
+^.pytest_cache$
 ^.clangd$
 ^codecov\.yml$
 ^compile_commands.json$
@@ -17,6 +20,7 @@
 ^doc$
 ^docker$
 ^\.dockerignore.*$
+^dist$
 ^docs$
 ^\.editorconfig$
 ^env-args.txt$
@@ -28,6 +32,7 @@
 ^\.gitlab$
 ^home$
 ^\.httr-oauth$
+^images$
 ^inst/bench$
 ^inst/db$
 ^inst/extdata/ext$

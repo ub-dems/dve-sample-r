@@ -14,7 +14,7 @@ Description: TODO:description.
     vscDebugger,
     httpgd,
     aaa.
-License: MIT + file LICENSE
+License: GPL-3.0-or-later + file LICENSE.md
 URL: https://www.unimib.it,
      https://gitlab.com/ub-dems-public/ds-labs/dve-sample-r
 BugReports: https://gitlab.com/ub-dems-public/ds-labs/dve-sample-r/-/issues

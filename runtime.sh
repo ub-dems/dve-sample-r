@@ -8,18 +8,30 @@
 #  "./runtime.sh help" for usage info
 #
 
+#set -x   # trace mode
+
+# --------------------------------------------------------------
+
 E_ROOT_DIR="$(dirname $0)"
 E_MAKE_FILE="${E_ROOT_DIR}/Makefile"
-#E_DOCKER_DIR="${E_ROOT_DIR}/docker/r-images"
-#E_MAKE_FILE="${E_DOCKER_DIR}/Makefile"
+E_DOCKER_BASE="${E_ROOT_DIR}/docker"
 
 #-----------------------------------------------------------
 set -a
 
-: ${E_CONF_DIR:="${E_ROOT_DIR}/docker/r-images"}
+: ${E_DOCKER_NAME:="r-images"}
+
+: ${E_CONF_DIR:="${E_DOCKER_BASE}/${E_DOCKER_NAME}"}
+    
+: ${E_BUILD_FILE:="${E_CONF_DIR}/build.conf"}
+: ${E_CUDA_FILE:="${E_CONF_DIR}/cuda.conf"}
+
 : ${E_META_FILE:="${E_CONF_DIR}/project.conf"}
 : ${E_CONF_FILE:="${E_CONF_DIR}/runtime.conf"}
 : ${E_AUTO_FILE:="${E_CONF_DIR}/starter.conf"}
+
+[ -r "${E_CUDA_FILE}" ] && source "${E_CUDA_FILE}" || true
+[ -r "${E_BUILD_FILE}" ] && source "${E_BUILD_FILE}" || true
 
 [ -r "${E_META_FILE}" ] && source "${E_META_FILE}" || true
 [ -r "${E_CONF_FILE}" ] && source "${E_CONF_FILE}" || true
@@ -73,6 +85,7 @@ where "target" is
   jutyper          : runs jupyter lab bound on port 28888
   notebook         : runs jupyter notebook bound on port 28888
   code             : runs visual studio code server on port 28788
+  dev              : runs interactive shell in virtual environment
   repl             : runs interactive R console
   rs ...           : runs Rscript with arguments
   python           : runs interactive ipython console
@@ -99,7 +112,8 @@ Target aliases:
    rstudio  => ide, RStudio
    jupyter  => lab
    notebook => note
-   code     => edit
+   code     => vs
+   dev      => ed, edit
    repl     => r, R
    rs       => rscript, Rscript
    python   => ipython
@@ -163,7 +177,14 @@ Visual Studio Code Server
 -------------------------
 
  ./runtime.sh code
- ./runtime.sh edit
+ ./runtime.sh vs
+
+
+Dev Container Shell
+-------------------
+
+ ./runtime.sh dev
+ ./runtime.sh ed
 
 
 R Console
@@ -188,9 +209,11 @@ to run scripts from ./exec directory
 Python run
 -----------
 
- ./runtime.sh py poetry install
+ ./runtime.sh py uv pip list
+ ./runtime.sh py ruff --check
+ ./runtime.sh py pytest
  ./runtime.sh py hello --help
-
+ ./runtime.sh py python -m http.server 8000
 
 Python repl
 -----------
@@ -412,9 +435,21 @@ case "${command}" in
         export LOG_ACTIVE='OFF'  
         target=runtime-xterm
         ;;
-    edit|code)
+    dev|edit|ed)
+        shift
+        target=runtime-dev
+        ;;
+    vs|code)
         shift
         target=runtime-code
+        ;;
+    cur|cursor)
+        shift
+        target=runtime-cursor
+        ;;
+    ag|antigravity)
+        shift
+        target=runtime-antigravity
         ;;
     lab|jupyter)
         shift

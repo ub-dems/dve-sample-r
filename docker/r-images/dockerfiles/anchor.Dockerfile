@@ -31,3 +31,16 @@ LABEL org.opencontainers.image.vendor="ubdems" \
       it.unimib.datalab.owner="ab21010" \
       it.unimib.datalab.cdc="ds-101" \
       it.unimib.datalab.tags="none"
+
+
+# from makefile (autodetect) - no default
+
+ARG  Y_WORK_DIR
+ENV  X_WORK_DIR=$Y_WORK_DIR
+
+ARG  Y_PY_MODE
+ENV  X_PY_MODE=$Y_PY_MODE
+
+ARG  Y_DEBUG_ENV=0
+ENV  X_DEBUG_ENV=$Y_DEBUG_ENV
+
