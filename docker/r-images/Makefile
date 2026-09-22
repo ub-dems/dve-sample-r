@@ -180,6 +180,12 @@ CLEAN_DIRS = ${TEMP_DIR}
 
 XDG_DIRS = ~/Desktop ~/Documents ~/Downloads ~/Pictures
 
+# ---(dotenv)------------------------------------------------
+
+X_ENV_FILE ?= ${ROOT_DIR}/.env
+X_ENV_FOUND := $(shell (type $(X_ENV_FILE)) &> /dev/null  && echo 1 || (touch $(X_ENV_FILE) && echo 2 || echo 0))
+UV_ENV_FILE ?= ${X_ENV_FILE}
+
 
 # ---(venv)------------------------------------------------
 
@@ -767,6 +773,8 @@ run/shell:
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
+		-e X_ENV_FILE="${X_ENV_FILE:.env}" \
+		-e UV_ENV_FILE="${UV_ENV_FILE:$ENV_FILE}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		${XDG_RUNTIME_OPTIONS} \
 		${X_RUNTIME_OPTIONS} \
@@ -807,6 +815,8 @@ run/status:
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
+		-e X_ENV_FILE="${X_ENV_FILE:.env}" \
+		-e UV_ENV_FILE="${UV_ENV_FILE:$ENV_FILE}" \
 		-e X_AUTO_ENV=0  \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		-e REV_ID_PROJECT=${ID_PROJECT}  \
@@ -856,6 +866,8 @@ run/setup:
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
+		-e X_ENV_FILE="${X_ENV_FILE:.env}" \
+		-e UV_ENV_FILE="${UV_ENV_FILE:$ENV_FILE}" \
 		-e X_AUTO_ENV=0  \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		-ti  \
@@ -893,6 +905,8 @@ run/upgrade:
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
+		-e X_ENV_FILE="${X_ENV_FILE:.env}" \
+		-e UV_ENV_FILE="${UV_ENV_FILE:$ENV_FILE}" \
 		-e X_AUTO_ENV=0  \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		-ti  \
@@ -930,6 +944,8 @@ run/clear:
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
+		-e X_ENV_FILE="${X_ENV_FILE:.env}" \
+		-e UV_ENV_FILE="${UV_ENV_FILE:$ENV_FILE}" \
 		-e X_AUTO_ENV=0  \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		-ti  \
@@ -971,6 +987,8 @@ run/environ:
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
+		-e X_ENV_FILE="${X_ENV_FILE:.env}" \
+		-e UV_ENV_FILE="${UV_ENV_FILE:$ENV_FILE}" \
 		-e X_AUTO_ENV=0  \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		-ti  \
@@ -1010,6 +1028,8 @@ run/profile:
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
+		-e X_ENV_FILE="${X_ENV_FILE:.env}" \
+		-e UV_ENV_FILE="${UV_ENV_FILE:$ENV_FILE}" \
 		-e X_AUTO_ENV=0  \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		${X_RUNTIME_OPTIONS} \
@@ -1121,6 +1141,8 @@ run/r-repl:
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
+		-e X_ENV_FILE="${X_ENV_FILE:.env}" \
+		-e UV_ENV_FILE="${UV_ENV_FILE:$ENV_FILE}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		${XDG_RUNTIME_OPTIONS} \
 		${X_RUNTIME_OPTIONS} \
@@ -1160,6 +1182,8 @@ run/rscript-rs:
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
+		-e X_ENV_FILE="${X_ENV_FILE:.env}" \
+		-e UV_ENV_FILE="${UV_ENV_FILE:$ENV_FILE}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		${XDG_RUNTIME_OPTIONS} \
 		${X_RUNTIME_OPTIONS} \
@@ -1201,6 +1225,8 @@ run/python-repl:
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
+		-e X_ENV_FILE="${X_ENV_FILE:.env}" \
+		-e UV_ENV_FILE="${UV_ENV_FILE:$ENV_FILE}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		${XDG_RUNTIME_OPTIONS} \
 		${X_RUNTIME_OPTIONS} \
@@ -1240,6 +1266,8 @@ run/python-run:
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
+		-e X_ENV_FILE="${X_ENV_FILE:.env}" \
+		-e UV_ENV_FILE="${UV_ENV_FILE:$ENV_FILE}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		${XDG_RUNTIME_OPTIONS} \
 		${X_RUNTIME_OPTIONS} \
@@ -1282,6 +1310,8 @@ run/exec-auto:
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
+		-e X_ENV_FILE="${X_ENV_FILE:.env}" \
+		-e UV_ENV_FILE="${UV_ENV_FILE:$ENV_FILE}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		${XDG_RUNTIME_OPTIONS} \
 		${X_RUNTIME_OPTIONS} \
@@ -1322,6 +1352,8 @@ run/rscript-cli:
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
+		-e X_ENV_FILE="${X_ENV_FILE:.env}" \
+		-e UV_ENV_FILE="${UV_ENV_FILE:$ENV_FILE}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		${XDG_RUNTIME_OPTIONS} \
 		${X_RUNTIME_OPTIONS} \
@@ -1366,6 +1398,8 @@ run/build:
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
+		-e X_ENV_FILE="${X_ENV_FILE:.env}" \
+		-e UV_ENV_FILE="${UV_ENV_FILE:$ENV_FILE}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		${XDG_RUNTIME_OPTIONS} \
 		${X_RUNTIME_OPTIONS} \
@@ -1405,6 +1439,8 @@ run/test:
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
+		-e X_ENV_FILE="${X_ENV_FILE:.env}" \
+		-e UV_ENV_FILE="${UV_ENV_FILE:$ENV_FILE}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		${XDG_RUNTIME_OPTIONS} \
 		${X_RUNTIME_OPTIONS} \
@@ -1444,6 +1480,8 @@ run/check:
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
+		-e X_ENV_FILE="${X_ENV_FILE:.env}" \
+		-e UV_ENV_FILE="${UV_ENV_FILE:$ENV_FILE}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		${XDG_RUNTIME_OPTIONS} \
 		${X_RUNTIME_OPTIONS} \
@@ -1485,6 +1523,8 @@ run/command:
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
+		-e X_ENV_FILE="${X_ENV_FILE:.env}" \
+		-e UV_ENV_FILE="${UV_ENV_FILE:$ENV_FILE}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		${XDG_RUNTIME_OPTIONS} \
 		${X_RUNTIME_OPTIONS} \
@@ -1527,6 +1567,8 @@ run/dev:
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
+		-e X_ENV_FILE="${X_ENV_FILE:.env}" \
+		-e UV_ENV_FILE="${UV_ENV_FILE:$ENV_FILE}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		${XDG_RUNTIME_OPTIONS} \
 		${X_RUNTIME_OPTIONS} \
@@ -1569,6 +1611,8 @@ run/antigravity:
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
+		-e X_ENV_FILE="${X_ENV_FILE:.env}" \
+		-e UV_ENV_FILE="${UV_ENV_FILE:$ENV_FILE}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		${XDG_RUNTIME_OPTIONS} \
 		${X_RUNTIME_OPTIONS} \
@@ -1609,6 +1653,8 @@ run/cursor:
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
+		-e X_ENV_FILE="${X_ENV_FILE:.env}" \
+		-e UV_ENV_FILE="${UV_ENV_FILE:$ENV_FILE}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		${XDG_RUNTIME_OPTIONS} \
 		${X_RUNTIME_OPTIONS} \
@@ -1651,6 +1697,8 @@ run/code-server:
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
+		-e X_ENV_FILE="${X_ENV_FILE:.env}" \
+		-e UV_ENV_FILE="${UV_ENV_FILE:$ENV_FILE}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		${XDG_RUNTIME_OPTIONS} \
 		${X_RUNTIME_OPTIONS} \
@@ -1693,6 +1741,8 @@ run/jupyter-lab:
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
+		-e X_ENV_FILE="${X_ENV_FILE:.env}" \
+		-e UV_ENV_FILE="${UV_ENV_FILE:$ENV_FILE}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		${XDG_RUNTIME_OPTIONS} \
 		${X_RUNTIME_OPTIONS} \
@@ -1734,6 +1784,8 @@ run/jupyter-notebook:
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
+		-e X_ENV_FILE="${X_ENV_FILE:.env}" \
+		-e UV_ENV_FILE="${UV_ENV_FILE:$ENV_FILE}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		${XDG_RUNTIME_OPTIONS} \
 		${X_RUNTIME_OPTIONS} \
@@ -1789,6 +1841,8 @@ run/rstudio-server:
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
+		-e X_ENV_FILE="${X_ENV_FILE:.env}" \
+		-e UV_ENV_FILE="${UV_ENV_FILE:$ENV_FILE}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		${XDG_RUNTIME_OPTIONS} \
 		${X_RUNTIME_OPTIONS} \

@@ -85,6 +85,13 @@ ENV NO_AT_BRIDGE=1
 
 ENV CAN_LAUNCH_AS_ROOT=1
 
+# dotfile
+
+ARG  Y_ENV_FILE=.env
+ENV  X_ENV_FILE=$Y_ENV_FILE
+
+ENV UV_ENV_FILE=${X_ENV_FILE}
+
 # python support
 
 ENV VIRTUAL_ENV=/opt/venv

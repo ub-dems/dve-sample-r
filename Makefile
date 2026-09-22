@@ -60,6 +60,16 @@ SHELL := /bin/bash
 RSCRIPT := ${PY_RUN} Rscript
 #POETRY := poetry
 
+# ---(gpu)------------------------------------------------
+
+X_HAS_GPU := $(shell (type nvidia-smi && nvidia-smi -L) &> /dev/null  && echo 1 || echo 0)
+
+ifeq (${X_HAS_GPU},1)
+X_UV_EXTRA := gpu
+else
+X_UV_EXTRA := cpu
+endif
+
 
 #}}} \\\
 
@@ -92,7 +102,6 @@ check: init
 	@echo "+++ Running Ruff check........"; $(UV) run ruff check || true
 	@echo "+++ Running devtools::check..."; ${RSCRIPT} -e 'devtools::check()'
 	@echo "+++ }}} CHECK \\\\\\\\\ ";
-	
 
 docs: # @HELP/base make: "man,readme,vignettes"  targets
 docs: man readme vignettes

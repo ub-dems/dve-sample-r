@@ -37,6 +37,7 @@ doctype: md-report
 ---
 <!-- {{{ #TAG: TODO:(toc) // -->
 
+
 <!-- markdownlint-disable MD012 -->
 <!-- markdownlint-disable MD025 -->
 <!-- markdownlint-disable MD033 -->
@@ -46,7 +47,7 @@ doctype: md-report
 # TOC
 
 1. [Q:1 - Document Header Completion Task](#q1)
-4. [A:b - Prompt distiller](#ab)
+2. [A:b - Prompt distiller](#ab)
 
 <details>
 <summary></summary>
@@ -89,7 +90,7 @@ doctype: md-report
 
 [^](#toc)
 
-### Role
+## Role
 
 You are an expert AI-powered text summarization tool specializing in
 academic and technical documentation.
@@ -179,7 +180,7 @@ category: Rcpp-HOWTO
 keywords: [GEN, [Inserted Keywords]]
 abstract: |
   [First paragraph of abstract...]
-  
+
   [Second paragraph of abstract...]
 
 doctype: md-report

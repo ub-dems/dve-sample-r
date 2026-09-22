@@ -52,6 +52,17 @@ set -a
 
 # ------------------------------------------------------
 
+(type nvidia-smi && nvidia-smi -L) &> /dev/null \
+    && X_HAS_GPU=1 || X_HAS_GPU=0;
+
+case "$X_HAS_GPU" in
+     1) export X_UV_EXTRA='gpu' ;;
+     *) export X_UV_EXTRA='cpu' ;;
+esac
+export X_HAS_GPU
+                                   
+# ------------------------------------------------------
+
 X_ENV_SCRIPT="docker/r-images/scripts/setup/environ_ubs-all.sh"
 
 # ------------------------------------------------------
@@ -907,10 +918,12 @@ do_py_install() {
     case "$X_PY_MODE" in
         uv)
             export PYTHON_KEYRING_BACKEND="keyring.backends.null.Keyring"
+
+            info "uv sync -- (extra: $X_UV_EXTRA) -- X_HAS_GPU=$X_HAS_GPU"
             
-            uv sync --all-extras --all-groups  
+            uv sync --extra=$X_UV_EXTRA --all-groups
             
-            info "uv sync -- (rc: $?) -- from $(ls -l poetry.lock)"
+            info "uv sync -- (rc: $?) -- from $(ls -l uv.lock)"
         ;;
         poetry)
             export PYTHON_KEYRING_BACKEND="keyring.backends.null.Keyring"
@@ -1032,16 +1045,10 @@ do_py_jupyter_build() {
           jlpm add --dev  \
                bash-language-server \
                dockerfile-language-server-nodejs \
-               markdownlint \
-               markdownlint-cli2 \
                pyright \
                sql-language-server \
                typescript-language-server \
-               unified-language-server \
-               vscode-css-languageserver-bin \
-               vscode-html-languageserver-bin \
-               vscode-json-languageserver-bin \
-               vscode-markdown-languageserver \
+               vscode-langservers-extracted \
                yaml-language-server
           
           info "jupyter ./package.json created"

@@ -1,0 +1,3800 @@
+# ============================================================
+# Project metadata (PEP 621)
+# ============================================================
+[project]
+name = "dve_sample_py"
+version = "2.1.0a1"
+description = "Reproducible experiments for [Paper Title]"
+readme = "README.md"
+license = { file = "LICENCE.md" }
+requires-python = ">=3.10,<3.15"
+
+authors = [
+    {name = "Datalab DEMS", email = "datalab@unimib.it"},
+]
+
+[project.urls]
+Documentation = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py/-/wikis/home"
+Homepage      = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py"
+Repository    = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py.git"
+
+[project.scripts]
+main  = "dve.cli:main"
+demo  = "vce.cli:main"
+hello = "dve.scripts.dummy.dummy_script:main"
+
+
+# ============================================================
+# Project Custom Configuration
+# ============================================================
+
+[tool.dve]
+has_config = true
+
+[tool.dve.paths]
+log_dir = "logs"
+
+[tool.dve.log]
+level = "INFO"
+
+[tool.dve.hello]
+salutation = "Hi"
+
+
+# ============================================================
+# Build system (PEP 518 / PEP 517)
+# ============================================================
+[build-system]
+##@(uv): requires = ["hatchling>=1.21"]
+##@(uv): build-backend = "hatchling.build"
+requires = [
+    "poetry-core>=2.0",
+    "setuptools",
+    "wheel",
+    "incremental",
+]
+build-backend = "poetry.core.masonry.api"
+
+
+# ============================================================
+# Dependencies (PEP 508 strings)
+# ============================================================
+dependencies = [
+
+  # --- ML frameworks ---
+  "tensorboard",
+  "tensorflow-hub",
+  "tensorflow-datasets",
+
+  "torch==2.10.* @ https://download.pytorch.org/whl/cu130/torch",
+  "torchvision==0.25.* @ https://download.pytorch.org/whl/cu130/torchvision",
+
+  # --- data ---
+  "numpy",
+  "pandas",
+  "pandas-datareader",
+  "openpyxl",
+  "h5py",
+  "pyarrow",
+  "polars",
+
+  # --- sql ---
+  "SQLAlchemy",
+  "mysql-connector-python",
+  "mysqlclient",
+  "psycopg2-binary",
+
+  # --- stats ---
+  "scipy",
+  "sympy",
+
+  # --- graphics ---
+  "matplotlib",
+  "plotly",
+  "seaborn",
+  "Pillow",
+
+  "graphframes",
+  "graphviz",
+  "networkx",
+  "igraph",
+  "pyvis",
+  "pydot",
+
+  # --- system ---
+  "requests",
+  "oauthlib",
+  "requests-oauthlib",
+  "urllib3",
+  "pyzmq",
+
+  "pyyaml",
+  "types-pyyaml",
+  "toml",
+  "types-toml",
+  "click",
+  "pathspec",
+
+  "icecream",
+  "radian",
+  "tqdm",
+
+  "pip",
+  "more-itertools",
+
+  # --- GPU monitoring ---
+  "pynvml==*; sys_platform == 'linux'",
+  "nvidia-ml-py==*; sys_platform == 'linux'",
+
+  # --- git dependency ---
+  "rootpath @ git+https://github.com/hute37/python-rootpath@stable",
+
+]
+
+
+# ============================================================
+# Optional dependency groups
+# ============================================================
+[project.optional-dependencies]
+
+dev = [
+
+  # --- jupyter ---
+  "jupyter",
+  "jupyter-core",
+  "jupyter-console",
+  "jupyter-lsp",
+  "notebook",
+  "jupyterlab",
+  "jupytext",
+  "jupyterlab-lsp",
+
+  "nodeenv",
+  "nodejs",
+
+  "pyright",
+  "python-lsp-server[yapf,rope,pyflakes]",
+  "python-lsp-black",
+
+  "black[jupyter]",
+
+  "lux-api",
+
+  "ipykernel",
+  "ipywidgets",
+  "ipython",
+  "ipython-bg",
+
+  # --- test ---
+  "pytest",
+  "pytest-cov",
+  "behave",
+  "mock",
+  "nose",
+
+  # --- lint ---
+  "yapf",
+  "ruff",
+
+  # --- docs ---
+  # "sphinx",
+  # "nbsphinx",
+  # "sphinx-autoapi",
+  # "sphinx-rtd-theme",
+
+  # --- misc ---
+  "colorama",
+  "py",
+  "mypy",
+
+  # --- packaging ---
+  "setuptools",
+  "wheel",
+  "bumpversion",
+  "twine"
+]
+
+
+
+
+# ============================================================
+# Tool configuration (non-standard, tool-specific tables)
+# ============================================================
+
+# --- [uv] ---------------------------------------------------
+
+[tool.uv]
+# Treat this directory as an installable package
+package = true
+
+
+[tool.hatch.build.targets.wheel]
+#packages = ["src/dve"]
+
+# --- [poetry] ---------------------------------------------------
+
+[tool.poetry]
+requires-poetry = ">=2.0"
+packages = [{ include = "*", from = "src" }]
+
+# --- [setuptools] ---------------------------------------------------
+
+# [tool.setuptools.packages.find]
+# where   = ["src"]
+# include = ["*"]
+
+# [tool.setuptools]
+# include-package-data = true
+
+# [tool.setuptools.package-data]
+# res = ["resources/*", "resources/*/*"]
+
+
+# --- [pytest] ---------------------------------------------------
+
+[tool.pytest.ini_options]
+pythonpath   = ["src", "tests/pytest"]
+testpaths    = ["tests/pytest"]
+python_files = ["test_*.py"]
+python_classes  = ["Test*"]
+python_functions = ["test_*"]
+addopts      = "-v --tb=short"
+
+
+
+# --- [mypy] ---------------------------------------------------
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+ignore_missing_imports = true
+
+
+# --- [pyright] ---------------------------------------------------
+
+[tool.pyright]
+include = ["src", "tests/pytest", "notebooks"]
+exclude = [
+    "**/node_modules",
+    "**/__pycache__",
+    "docker",
+    "notes",
+    "data",
+    "logs",
+    "temp",
+]
+ignore              = ["build"]
+defineConstant      = {DEBUG = true}
+typeCheckingMode    = "basic"
+reportMissingImports = true
+
+
+# --- [ruff] ---------------------------------------------------
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+fix            = true
+
+[tool.ruff.lint]
+unfixable      = []
+typing-modules = ["pandas._typing"]
+exclude = [
+    "doc/sphinxext/*.py",
+    "doc/build/*.py",
+    "doc/temp/*.py",
+    ".eggs/*.py",
+    "pandas/util/version/*",
+    "pandas/io/clipboard/__init__.py",
+    "env",
+]
+select = [
+    "F","E","W","YTT","B","Q","T10","INT","PL","PT","PIE","PYI",
+    "TID","ISC","TCH","C4","PGH","RUF","S102","NPY002","PERF",
+    "FLY","G","FA","ICN001","SLOT","RSE",
+]
+ignore = []
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.isort]
+combine-as-imports       = true
+split-on-trailing-commas = false
+
+[tool.ruff.format]
+docstring-code-format = true
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ///////////////////////////////////////////////////////
+
+
+
+
+
+# ============================================================
+# Build system (PEP 518 / PEP 517)
+# ============================================================
+[build-system]
+requires = ["hatchling>=1.21"]
+build-backend = "hatchling.build"
+
+
+# ============================================================
+# Project metadata (PEP 621)
+# ============================================================
+[project]
+name = "research-project"
+version = "0.4.0"
+description = "Reproducible experiments for [Paper Title]"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.10,<3.13"
+
+authors = [
+    { name = "Author Name", email = "author@university.edu" },
+]
+
+# ============================================================
+# Dependencies (PEP 508 strings)
+# ============================================================
+dependencies = [
+    # --- Version specifiers ---
+    # Compatible release: >=2.1.0, <3.0.0
+    "numpy~=2.1",
+
+    # Exact floor, no ceiling (common for fast-moving libs)
+    "scipy>=1.13.0",
+
+    # Exact pin (use sparingly; justified for security or known breakage)
+    "pillow==10.4.0",
+
+    # Multiple specifiers (intersection, not union)
+    "matplotlib>=3.8.0,<4.0.0",
+
+    # --- Environment markers (PEP 508 §4) ---
+    # Install only on Linux (HPC nodes). sys_platform is most portable.
+    "nvtx>=0.2.8; sys_platform == 'linux'",
+
+    # Python-version-conditional backport
+    "tomllib>=1.0.0; python_version < '3.11'",
+
+    # CPU arch marker (useful for ARM Mac vs x86 HPC)
+    "some-fast-lib[cpu]; platform_machine != 'aarch64'",
+
+    # --- Git and URL references (PEP 440 / PEP 508 URL dependencies) ---
+    # Pinned to a specific commit SHA — the only fully reproducible Git ref
+    "my-internal-lib @ git+https://github.com/org/repo.git@a3f9b2c1d8e4",
+
+    # Tag reference (reproducible if the tag is immutable)
+    "research-utils @ git+https://github.com/org/research-utils.git@v0.3.1",
+
+    # Local wheel (use for vendored/pre-built CUDA packages)
+    # "flash-attn @ file:///opt/wheels/flash_attn-2.5.0-cp310-linux_x86_64.whl",
+]
+
+
+# ============================================================
+# Optional dependency groups
+# ============================================================
+[project.optional-dependencies]
+
+# Install with: pip install -e ".[dev]"
+dev = [
+    "pytest>=8.0",
+    "pytest-cov>=5.0",
+    "ruff>=0.4.0",
+    "mypy>=1.10",
+    "pre-commit>=3.7",
+]
+
+# For downstream users who want notebook support
+notebooks = [
+    "jupyter>=1.0",
+    "ipywidgets>=8.0",
+    "seaborn>=0.13",
+]
+
+# Heavy compute extras — intentionally NOT in core dependencies
+# (see Section 3 for why PyTorch is excluded here)
+cuda = [
+    "torch>=2.3.0; sys_platform == 'linux'",
+    "torchvision>=0.18.0; sys_platform == 'linux'",
+]
+
+
+# ============================================================
+# Tool configuration (non-standard, tool-specific tables)
+# ============================================================
+[tool.hatch.build.targets.wheel]
+packages = ["src/research_project"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v --cov=research_project --cov-report=term-missing"
+
+
+# ///////////////////////////////////////////////////////
+
+[project]
+name = "dve_sample_py"
+version = "2.1.0a1"
+description = "Python Template Project with Podman and Jupyter Support"
+authors = [
+    {name = "Datalab DEMS", email = "datalab@unimib.it"},
+]
+# AFL 3.0 has no SPDX identifier; using text form per PEP 621 §3.3
+license = {text = "Academic Free License (AFL) v. 3.0"}
+readme = "README.md"
+requires-python = ">=3.10,<3.15"
+
+# URLs moved from [tool.poetry] to [project.urls] per PEP 621 §3.12
+[project.urls]
+Documentation = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py/-/wikis/home"
+Homepage      = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py"
+Repository    = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py.git"
+
+[project.scripts]
+main  = "dve.cli:main"
+demo  = "vce.cli:main"
+hello = "dve.scripts.dummy.dummy_script:main"
+
+# ---------------------------------------------------------------------------
+# Runtime dependencies (formerly [tool.poetry.dependencies])
+# torch/torchvision index pins are in [tool.uv.sources] below
+# ---------------------------------------------------------------------------
+[project.dependencies]
+# git dependency — PEP 508 direct-reference syntax
+rootpath           = {git = "https://github.com/hute37/python-rootpath", branch = "stable"}
+
+# tensorflow stack
+tensorboard        = "*"
+tensorflow-hub     = "*"
+tensorflow-datasets = "*"
+
+# torch (version pins kept; index source resolved via [tool.uv.sources])
+torch              = "==2.10.*"
+torchvision        = "==0.25.*"
+
+# data
+numpy              = "*"
+pandas             = "*"
+pynvml             = "*"
+nvidia-ml-py       = "*"
+pandas-datareader  = "*"
+openpyxl           = "*"
+h5py               = "*"
+pyarrow            = "*"
+polars             = "*"
+SQLAlchemy         = "*"
+mysql-connector-python = "*"
+mysqlclient        = "*"
+psycopg2-binary    = "*"
+
+# stat / math
+scipy              = "*"
+sympy              = "*"
+
+# graphics
+matplotlib         = "*"
+plotly             = "*"
+seaborn            = "*"
+Pillow             = "*"
+graphframes        = "*"
+graphviz           = "*"
+networkx           = "*"
+igraph             = "*"
+pyvis              = "*"
+pydot              = "*"
+
+# system / config / CLI
+requests           = "*"
+oauthlib           = "*"
+requests-oauthlib  = "*"
+urllib3            = "*"
+pyzmq              = "*"
+pyyaml             = "*"
+piny               = "*"
+toml               = "*"
+click              = "*"
+icecream           = "*"
+radian             = "*"
+tqdm               = "*"
+pip                = "*"
+
+# lang
+more-itertools     = "*"
+
+# ---------------------------------------------------------------------------
+# Dev / optional dependencies (formerly [tool.poetry.group.dev.dependencies])
+# ---------------------------------------------------------------------------
+[project.optional-dependencies]
+dev = [
+    # jupyter core
+    "jupyter",
+    "jupyter-core",
+    "jupyter-console",
+    "jupyter-lsp",
+    "notebook",
+    "jupyterlab",
+    "jupytext",
+    "jupyterlab-lsp",
+    "nodeenv",
+    "nodejs",
+    # LSP
+    "pyright",
+    "python-lsp-server[yapf,rope,pyflakes]",
+    "python-lsp-black",
+    "black[jupyter]",
+    "lux-api",
+    # kernels / console
+    "ipykernel",
+    "ipython",
+    "ipython-bg",
+    # testing
+    "pytest",
+    "pytest-flask",
+    "pytest-cov",
+    "unittest2",
+    "coverage",
+    "mock",
+    "nose",
+    # linting / formatting (legacy tools kept for compatibility)
+    "pylint",
+    "flake8",
+    "pyproject-flake8",
+    "jedi",
+    "autopep8",
+    "yapf",
+    "isort",
+    "pipreqs",
+    "ruff",
+    # docs
+    "sphinx",
+    "nbsphinx",
+    "sphinx-autoapi",
+    "sphinx-rtd-theme",
+    # misc
+    "colorama",
+    "py",
+    "mypy",
+    # release tooling
+    "setuptools",
+    "wheel",
+    "bumpversion",
+    "twine",
+]
+
+# ---------------------------------------------------------------------------
+# Setuptools: src-layout package discovery (replaces [tool.poetry] packages)
+# ---------------------------------------------------------------------------
+[tool.setuptools.packages.find]
+where   = ["src"]
+include = ["*"]
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.package-data]
+res = ["resources/*", "resources/*/*"]
+
+# ---------------------------------------------------------------------------
+# uv index declarations (forward-compatible; inert to Poetry)
+# [[tool.poetry.source]] entries are retained below for Poetry compatibility
+# ---------------------------------------------------------------------------
+[tool.uv.sources]
+# Route torch/torchvision to the CUDA 13.0 wheel index
+torch       = {index = "torch130"}
+torchvision = {index = "torch130"}
+
+[[tool.uv.index]]
+name     = "torch121"
+url      = "https://download.pytorch.org/whl/cu121"
+explicit = true
+
+[[tool.uv.index]]
+name     = "torch124"
+url      = "https://download.pytorch.org/whl/cu124"
+explicit = true
+
+[[tool.uv.index]]
+name     = "torch130"
+url      = "https://download.pytorch.org/whl/cu130"
+explicit = true
+
+# ---------------------------------------------------------------------------
+# Poetry source declarations retained for backward compatibility
+# ---------------------------------------------------------------------------
+[[tool.poetry.source]]
+name     = "torch121"
+url      = "https://download.pytorch.org/whl/cu121"
+priority = "explicit"
+
+[[tool.poetry.source]]
+name     = "torch124"
+url      = "https://download.pytorch.org/whl/cu124"
+priority = "explicit"
+
+[[tool.poetry.source]]
+name     = "torch130"
+url      = "https://download.pytorch.org/whl/cu130"
+priority = "explicit"
+
+# ---------------------------------------------------------------------------
+# Build system — Poetry backend retained (Step 1)
+# ---------------------------------------------------------------------------
+[build-system]
+requires      = ["poetry-core>=2.0", "setuptools", "wheel"]
+build-backend = "poetry.core.masonry.api"
+
+# ---------------------------------------------------------------------------
+# Tool configuration (unchanged from source)
+# ---------------------------------------------------------------------------
+
+[tool.pyright]
+include = ["src", "tests/pytest", "notebooks"]
+exclude = [
+    "**/node_modules",
+    "**/__pycache__",
+    "docker",
+    "notes",
+    "data",
+    "logs",
+    "temp",
+]
+ignore              = ["build"]
+defineConstant      = {DEBUG = true}
+typeCheckingMode    = "basic"
+reportMissingImports = true
+
+[tool.pytest.ini_options]
+pythonpath   = ["src", "tests/pytest"]
+testpaths    = ["tests/pytest"]
+python_files = ["test_*.py"]
+python_classes  = ["Test*"]
+python_functions = ["test_*"]
+addopts      = "-v --tb=short"
+
+[tool.isort]
+profile = "black"
+
+[tool.black]
+line-length    = 88
+target-version = ["py310"]
+include        = '\.pyi?$'
+exclude        = '''
+(
+  /(
+      \.eggs | \.git | \.hg | \.mypy_cache | \.tox | \.venv
+    | _build | buck-out | build | dist
+  )/
+  | foo.py
+)
+'''
+
+[tool.ruff]
+line-length    = 88
+target-version = "py310"
+fix            = true
+
+[tool.ruff.lint]
+unfixable      = []
+typing-modules = ["pandas._typing"]
+exclude = [
+    "doc/sphinxext/*.py",
+    "doc/build/*.py",
+    "doc/temp/*.py",
+    ".eggs/*.py",
+    "pandas/util/version/*",
+    "pandas/io/clipboard/__init__.py",
+    "env",
+]
+select = [
+    "F","E","W","YTT","B","Q","T10","INT","PL","PT","PIE","PYI",
+    "TID","ISC","TCH","C4","PGH","RUF","S102","NPY002","PERF",
+    "FLY","G","FA","ICN001","SLOT","RSE",
+]
+ignore = []
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.isort]
+combine-as-imports       = true
+split-on-trailing-commas = false
+
+[tool.ruff.format]
+docstring-code-format = true
+
+# -----------------------------------------------
+
+# pyproject.toml — Step 2: full uv migration, hatchling build backend
+
+[project]
+name = "dve_sample_py"
+version = "2.1.0a1"
+description = "Python Template Project with Podman and Jupyter Support"
+authors = [
+    {name = "Datalab DEMS", email = "datalab@unimib.it"},
+]
+license = {text = "Academic Free License (AFL) v. 3.0"}
+readme = "README.md"
+requires-python = ">=3.10,<3.15"
+
+[project.urls]
+Documentation = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py/-/wikis/home"
+Homepage      = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py"
+Repository    = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py.git"
+
+[project.scripts]
+main  = "dve.cli:main"
+demo  = "vce.cli:main"
+hello = "dve.scripts.dummy.dummy_script:main"
+
+# ---------------------------------------------------------------------------
+# Runtime dependencies
+# ---------------------------------------------------------------------------
+[project.dependencies]
+rootpath           = {git = "https://github.com/hute37/python-rootpath", branch = "stable"}
+
+tensorboard         = "*"
+tensorflow-hub      = "*"
+tensorflow-datasets = "*"
+
+# Version-pinned; wheel index routed via [tool.uv.sources]
+torch       = "==2.10.*"
+torchvision = "==0.25.*"
+
+numpy                  = "*"
+pandas                 = "*"
+pynvml                 = "*"
+nvidia-ml-py           = "*"
+pandas-datareader      = "*"
+openpyxl               = "*"
+h5py                   = "*"
+pyarrow                = "*"
+polars                 = "*"
+SQLAlchemy             = "*"
+mysql-connector-python = "*"
+mysqlclient            = "*"
+psycopg2-binary        = "*"
+
+scipy          = "*"
+sympy          = "*"
+
+matplotlib     = "*"
+plotly         = "*"
+seaborn        = "*"
+Pillow         = "*"
+graphframes    = "*"
+graphviz       = "*"
+networkx       = "*"
+igraph         = "*"
+pyvis          = "*"
+pydot          = "*"
+
+requests           = "*"
+oauthlib           = "*"
+requests-oauthlib  = "*"
+urllib3            = "*"
+pyzmq              = "*"
+pyyaml             = "*"
+piny               = "*"
+toml               = "*"
+click              = "*"
+icecream           = "*"
+radian             = "*"
+tqdm               = "*"
+pip                = "*"
+
+more-itertools = "*"
+
+# ---------------------------------------------------------------------------
+# Dev / optional dependencies
+# ---------------------------------------------------------------------------
+[project.optional-dependencies]
+dev = [
+    # jupyter
+    "jupyter",
+    "jupyter-core",
+    "jupyter-console",
+    "jupyter-lsp",
+    "notebook",
+    "jupyterlab",
+    "jupytext",
+    "jupyterlab-lsp",
+    "nodeenv",
+    "nodejs",
+    # LSP / type checking
+    "pyright",                              # preferred type checker (Node.js required)
+    "python-lsp-server[yapf,rope,pyflakes]",
+    "python-lsp-black",
+    "black[jupyter]",
+    "lux-api",
+    # kernels
+    "ipykernel",
+    "ipython",
+    "ipython-bg",
+    # testing
+    "pytest",
+    "pytest-flask",
+    "pytest-cov",
+    "unittest2",
+    "coverage",
+    "mock",
+    "nose",
+    # linting / formatting
+    # NOTE: consider pruning pylint/flake8/autopep8/yapf/isort in favour of ruff-only
+    "pylint",
+    "flake8",
+    "pyproject-flake8",
+    "jedi",
+    "autopep8",
+    "yapf",
+    "isort",
+    "pipreqs",
+    "ruff",                                 # primary linter/formatter going forward
+    # docs
+    "sphinx",
+    "nbsphinx",
+    "sphinx-autoapi",
+    "sphinx-rtd-theme",
+    # misc
+    "colorama",
+    "py",
+    "mypy",
+    # release
+    "setuptools",
+    "wheel",
+    "bumpversion",
+    "twine",
+]
+
+# ---------------------------------------------------------------------------
+# uv configuration
+# ---------------------------------------------------------------------------
+[tool.uv]
+# Treat this directory as an installable package
+package = true
+
+[tool.uv.sources]
+torch       = {index = "torch130"}
+torchvision = {index = "torch130"}
+
+[[tool.uv.index]]
+name     = "torch121"
+url      = "https://download.pytorch.org/whl/cu121"
+explicit = true
+
+[[tool.uv.index]]
+name     = "torch124"
+url      = "https://download.pytorch.org/whl/cu124"
+explicit = true
+
+[[tool.uv.index]]
+name     = "torch130"
+url      = "https://download.pytorch.org/whl/cu130"
+explicit = true
+
+# ---------------------------------------------------------------------------
+# Build system — hatchling (Step 2)
+# poetry-core removed; hatchling is uv-native and PEP 517-compliant
+# ---------------------------------------------------------------------------
+[build-system]
+requires      = ["hatchling"]
+build-backend = "hatchling.build"
+
+# Hatch: src-layout discovery (replaces [tool.setuptools.packages.find] + [tool.poetry] packages)
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
+
+[tool.hatch.build.targets.wheel.sources]
+# Map package-data resource paths
+"src" = ""
+
+# ---------------------------------------------------------------------------
+# Tool configuration (identical to Step 1)
+# ---------------------------------------------------------------------------
+
+[tool.pyright]
+include = ["src", "tests/pytest", "notebooks"]
+exclude = [
+    "**/node_modules",
+    "**/__pycache__",
+    "docker",
+    "notes",
+    "data",
+    "logs",
+    "temp",
+]
+ignore               = ["build"]
+defineConstant       = {DEBUG = true}
+typeCheckingMode     = "basic"
+reportMissingImports = true
+
+[tool.pytest.ini_options]
+pythonpath       = ["src", "tests/pytest"]
+testpaths        = ["tests/pytest"]
+python_files     = ["test_*.py"]
+python_classes   = ["Test*"]
+python_functions = ["test_*"]
+addopts          = "-v --tb=short"
+
+[tool.isort]
+profile = "black"
+
+[tool.black]
+line-length    = 88
+target-version = ["py310"]
+include        = '\.pyi?$'
+exclude        = '''
+(
+  /(
+      \.eggs | \.git | \.hg | \.mypy_cache | \.tox | \.venv
+    | _build | buck-out | build | dist
+  )/
+  | foo.py
+)
+'''
+
+[tool.ruff]
+line-length    = 88
+target-version = "py310"
+fix            = true
+
+[tool.ruff.lint]
+unfixable      = []
+typing-modules = ["pandas._typing"]
+exclude = [
+    "doc/sphinxext/*.py",
+    "doc/build/*.py",
+    "doc/temp/*.py",
+    ".eggs/*.py",
+    "pandas/util/version/*",
+    "pandas/io/clipboard/__init__.py",
+    "env",
+]
+select = [
+    "F","E","W","YTT","B","Q","T10","INT","PL","PT","PIE","PYI",
+    "TID","ISC","TCH","C4","PGH","RUF","S102","NPY002","PERF",
+    "FLY","G","FA","ICN001","SLOT","RSE",
+]
+ignore = []
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.isort]
+combine-as-imports       = true
+split-on-trailing-commas = false
+
+[tool.ruff.format]
+docstring-code-format = true
+
+
+
+# ///////////////////////////////////////////////////////
+
+
+[build-system]
+requires = ["poetry-core>=2.0"]
+build-backend = "poetry.core.masonry.api"
+
+[project]
+name = "dve_sample_py"
+version = "2.1.0a1"
+description = "Python Template Project with Podman and Jypyter Support"
+readme = "README.md"
+requires-python = ">=3.10,<3.15"
+license = { text = "Academic Free License (AFL) v. 3.0" }
+authors = [{ name = "Datalab DEMS", email = "datalab@unimib.it" }]
+urls = { documentation = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py/-/wikis/home", homepage = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py", repository = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py.git" }
+
+dependencies = [
+    "tensorboard",
+    "tensorflow-hub",
+    "tensorflow-datasets",
+    "torch==2.10.*",
+    "torchvision==0.25.*",
+    "numpy",
+    "pandas",
+    "pynvml",
+    "nvidia-ml-py",
+    "pandas-datareader",
+    "openpyxl",
+    "h5py",
+    "pyarrow",
+    "polars",
+    "SQLAlchemy",
+    "mysql-connector-python",
+    "mysqlclient",
+    "psycopg2-binary",
+    "scipy",
+    "sympy",
+    "matplotlib",
+    "plotly",
+    "seaborn",
+    "Pillow",
+    "graphframes",
+    "graphviz",
+    "networkx",
+    "igraph",
+    "pyvis",
+    "pydot",
+    "requests",
+    "oauthlib",
+    "requests-oauthlib",
+    "urllib3",
+    "pyzmq",
+    "pyyaml",
+    "piny",
+    "toml",
+    "click",
+    "icecream",
+    "radian",
+    "tqdm",
+    "pip",
+    "more-itertools",
+    "rootpath @ git+https://github.com/hute37/python-rootpath@stable",
+]
+
+[dependency-groups]
+dev = [
+    "jupyter",
+    "jupyter-core",
+    "jupyter-console",
+    "jupyter-lsp",
+    "notebook",
+    "jupyterlab",
+    "jupytext",
+    "jupyterlab-lsp",
+    "nodeenv",
+    "nodejs",
+    "pyright",
+    "python-lsp-server[pyflakes,rope,yapf]",
+    "python-lsp-black",
+    "black[jupyter]",
+    "lux-api",
+    "ipykernel",
+    "ipython",
+    "ipython-bg",
+    "pytest",
+    "pytest-flask",
+    "pytest-cov",
+    "unittest2",
+    "coverage",
+    "mock",
+    "nose",
+    "pylint",
+    "flake8",
+    "pyproject-flake8",
+    "jedi",
+    "autopep8",
+    "yapf",
+    "isort",
+    "pipreqs",
+    "ruff",
+    "sphinx",
+    "nbsphinx",
+    "sphinx-autoapi",
+    "sphinx-rtd-theme",
+    "colorama",
+    "py",
+    "mypy",
+    "setuptools",
+    "wheel",
+    "bumpversion",
+    "twine",
+]
+
+[project.scripts]
+main = "dve.cli:main"
+demo = "vce.cli:main"
+hello = "dve.scripts.dummy.dummy_script:main"
+
+[tool.poetry]
+packages = [{ include = "*", from = "src" }]
+
+[[tool.poetry.source]]
+name = "torch130"
+url = "https://download.pytorch.org/whl/cu130"
+priority = "explicit"
+
+[tool.pyright]
+include = ["src", "tests/pytest", "notebooks"]
+exclude = ["**/node_modules", "**/__pycache__", "docker", "notes", "data", "logs", "temp"]
+typeCheckingMode = "basic"
+
+[tool.pytest.ini_options]
+pythonpath = ["src", "tests/pytest"]
+testpaths = ["tests/pytest"]
+addopts = "-v --tb=short"
+
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+fix = true
+
+[tool.ruff.lint]
+select = ["F", "E", "W", "YTT", "B", "Q", "T10", "PL", "PT", "PIE", "PYI", "TID", "ISC", "TCH", "C4", "PGH", "RUF", "S102", "NPY002", "PERF", "FLY", "G", "FA", "ICN001", "SLOT", "RSE"]
+
+# ---------------------------------
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "dve_sample_py"
+version = "2.1.0a1"
+description = "Python Template Project with Podman and Jypyter Support"
+readme = "README.md"
+requires-python = ">=3.10,<3.15"
+license = { text = "Academic Free License (AFL) v. 3.0" }
+authors = [{ name = "Datalab DEMS", email = "datalab@unimib.it" }]
+urls = { documentation = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py/-/wikis/home", homepage = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py", repository = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py.git" }
+
+dependencies = [
+    "tensorboard",
+    "tensorflow-hub",
+    "tensorflow-datasets",
+    "torch==2.10.*",
+    "torchvision==0.25.*",
+    "numpy",
+    "pandas",
+    "pynvml",
+    "nvidia-ml-py",
+    "pandas-datareader",
+    "openpyxl",
+    "h5py",
+    "pyarrow",
+    "polars",
+    "SQLAlchemy",
+    "mysql-connector-python",
+    "mysqlclient",
+    "psycopg2-binary",
+    "scipy",
+    "sympy",
+    "matplotlib",
+    "plotly",
+    "seaborn",
+    "Pillow",
+    "graphframes",
+    "graphviz",
+    "networkx",
+    "igraph",
+    "pyvis",
+    "pydot",
+    "requests",
+    "oauthlib",
+    "requests-oauthlib",
+    "urllib3",
+    "pyzmq",
+    "pyyaml",
+    "piny",
+    "toml",
+    "click",
+    "icecream",
+    "radian",
+    "tqdm",
+    "more-itertools",
+    "rootpath",
+]
+
+[dependency-groups]
+dev = [
+    "jupyter",
+    "jupyter-core",
+    "jupyter-console",
+    "jupyter-lsp",
+    "notebook",
+    "jupyterlab",
+    "jupytext",
+    "jupyterlab-lsp",
+    "nodeenv",
+    "nodejs",
+    "pyright",
+    "python-lsp-server[pyflakes,rope,yapf]",
+    "python-lsp-black",
+    "lux-api",
+    "ipykernel",
+    "ipython",
+    "ipython-bg",
+    "pytest",
+    "pytest-flask",
+    "pytest-cov",
+    "unittest2",
+    "coverage",
+    "mock",
+    "nose",
+    "ruff",
+    "sphinx",
+    "nbsphinx",
+    "sphinx-autoapi",
+    "sphinx-rtd-theme",
+    "colorama",
+    "mypy",
+]
+
+[project.scripts]
+main = "dve.cli:main"
+demo = "vce.cli:main"
+hello = "dve.scripts.dummy.dummy_script:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/dve", "src/vce"]
+
+[tool.uv]
+managed = true
+
+[[tool.uv.index]]
+name = "torch-cu130"
+url = "https://download.pytorch.org/whl/cu130"
+explicit = true
+
+[tool.uv.sources]
+torch = { index = "torch-cu130" }
+torchvision = { index = "torch-cu130" }
+rootpath = { git = "https://github.com/hute37/python-rootpath", branch = "stable" }
+
+[tool.pyright]
+include = ["src", "tests/pytest", "notebooks"]
+exclude = ["**/node_modules", "**/__pycache__", "docker", "notes", "data", "logs", "temp"]
+typeCheckingMode = "basic"
+
+[tool.pytest.ini_options]
+pythonpath = ["src", "tests/pytest"]
+testpaths = ["tests/pytest"]
+addopts = "-v --tb=short"
+
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["F", "E", "W", "YTT", "B", "Q", "T10", "PL", "PT", "PIE", "PYI", "TID", "ISC", "TCH", "C4", "PGH", "RUF", "S102", "NPY002", "PERF", "FLY", "G", "FA", "ICN001", "SLOT", "RSE"]
+
+# ///////////////////////////////////////////////////////
+
+[project]
+name = "dve_sample_py"
+version = "2.1.0a1"
+description = "Python Template Project with Podman and Jypyter Support"
+readme = "README.md"
+requires-python = ">=3.10,<3.15"
+
+authors = [
+  { name = "Datalab DEMS", email = "datalab@unimib.it" }
+]
+
+license = { text = "Academic Free License (AFL) v. 3.0" }
+
+urls = {
+  homepage = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py",
+  documentation = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py/-/wikis/home",
+  repository = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py.git"
+}
+
+dependencies = [
+
+  # --- ML frameworks ---
+  "tensorboard",
+  "tensorflow-hub",
+  "tensorflow-datasets",
+
+  "torch==2.10.*",
+  "torchvision==0.25.*",
+
+  # --- data ---
+  "numpy",
+  "pandas",
+  "pandas-datareader",
+  "openpyxl",
+  "h5py",
+  "pyarrow",
+  "polars",
+
+  # --- sql ---
+  "SQLAlchemy",
+  "mysql-connector-python",
+  "mysqlclient",
+  "psycopg2-binary",
+
+  # --- stats ---
+  "scipy",
+  "sympy",
+
+  # --- graphics ---
+  "matplotlib",
+  "plotly",
+  "seaborn",
+  "Pillow",
+
+  "graphframes",
+  "graphviz",
+  "networkx",
+  "igraph",
+  "pyvis",
+  "pydot",
+
+  # --- system ---
+  "requests",
+  "oauthlib",
+  "requests-oauthlib",
+  "urllib3",
+  "pyzmq",
+
+  "pyyaml",
+  "piny",
+  "toml",
+  "click",
+
+  "icecream",
+  "radian",
+  "tqdm",
+
+  "pip",
+  "more-itertools",
+
+  # --- GPU monitoring ---
+  "pynvml",
+  "nvidia-ml-py",
+
+  # --- git dependency ---
+  "rootpath @ git+https://github.com/hute37/python-rootpath@stable",
+]
+
+[project.optional-dependencies]
+
+dev = [
+
+  # --- jupyter ---
+  "jupyter",
+  "jupyter-core",
+  "jupyter-console",
+  "jupyter-lsp",
+  "notebook",
+  "jupyterlab",
+  "jupytext",
+  "jupyterlab-lsp",
+
+  "nodeenv",
+  "nodejs",
+
+  "pyright",
+  "python-lsp-server[yapf,rope,pyflakes]",
+  "python-lsp-black",
+
+  "black[jupyter]",
+
+  "lux-api",
+
+  "ipykernel",
+  "ipython",
+  "ipython-bg",
+
+  # --- test ---
+  "pytest",
+  "pytest-flask",
+  "pytest-cov",
+  "unittest2",
+  "coverage",
+  "mock",
+  "nose",
+
+  # --- lint ---
+  "pylint",
+  "flake8",
+  "pyproject-flake8",
+  "jedi",
+  "autopep8",
+  "yapf",
+  "isort",
+  "pipreqs",
+  "ruff",
+
+  # --- docs ---
+  "sphinx",
+  "nbsphinx",
+  "sphinx-autoapi",
+  "sphinx-rtd-theme",
+
+  # --- misc ---
+  "colorama",
+  "py",
+  "mypy",
+
+  # --- packaging ---
+  "setuptools",
+  "wheel",
+  "bumpversion",
+  "twine"
+]
+
+[project.scripts]
+main = "dve.cli:main"
+demo = "vce.cli:main"
+hello = "dve.scripts.dummy.dummy_script:main"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+res = ["resources/*", "resources/*/*"]
+
+[build-system]
+requires = [
+  "poetry-core>=2.0",
+  "setuptools",
+  "wheel"
+]
+build-backend = "poetry.core.masonry.api"
+
+# ----------------------------------------------------------------
+
+[project]
+name = "dve_sample_py"
+version = "2.1.0a1"
+description = "Python Template Project with Podman and Jypyter Support"
+readme = "README.md"
+requires-python = ">=3.10,<3.15"
+
+authors = [
+  { name = "Datalab DEMS", email = "datalab@unimib.it" }
+]
+
+license = { text = "Academic Free License (AFL) v. 3.0" }
+
+urls = {
+  homepage = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py",
+  documentation = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py/-/wikis/home",
+  repository = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py.git"
+}
+
+dependencies = [
+  "tensorboard",
+  "tensorflow-hub",
+  "tensorflow-datasets",
+
+  "torch==2.10.*",
+  "torchvision==0.25.*",
+
+  "numpy",
+  "pandas",
+  "pandas-datareader",
+  "openpyxl",
+  "h5py",
+  "pyarrow",
+  "polars",
+
+  "SQLAlchemy",
+  "mysql-connector-python",
+  "mysqlclient",
+  "psycopg2-binary",
+
+  "scipy",
+  "sympy",
+
+  "matplotlib",
+  "plotly",
+  "seaborn",
+  "Pillow",
+
+  "graphframes",
+  "graphviz",
+  "networkx",
+  "igraph",
+  "pyvis",
+  "pydot",
+
+  "requests",
+  "oauthlib",
+  "requests-oauthlib",
+  "urllib3",
+  "pyzmq",
+
+  "pyyaml",
+  "piny",
+  "toml",
+  "click",
+
+  "icecream",
+  "radian",
+  "tqdm",
+
+  "pynvml",
+  "nvidia-ml-py",
+
+  "more-itertools",
+
+  "rootpath @ git+https://github.com/hute37/python-rootpath@stable"
+]
+
+[project.optional-dependencies]
+
+dev = [
+  "pytest",
+  "pytest-flask",
+  "pytest-cov",
+  "coverage",
+  "ruff",
+  "pyright",
+  "jupyterlab",
+  "ipykernel",
+  "black[jupyter]",
+  "sphinx",
+  "mypy"
+]
+
+[project.scripts]
+main = "dve.cli:main"
+demo = "vce.cli:main"
+hello = "dve.scripts.dummy.dummy_script:main"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+res = ["resources/*", "resources/*/*"]
+
+[tool.uv]
+
+## extra PyTorch CUDA wheel indexes
+index-url = "https://pypi.org/simple"
+
+extra-index-url = [
+  "https://download.pytorch.org/whl/cu121",
+  "https://download.pytorch.org/whl/cu124",
+  "https://download.pytorch.org/whl/cu130"
+]
+
+[build-system]
+requires = [
+  "setuptools>=68",
+  "wheel"
+]
+build-backend = "setuptools.build_meta"
+
+
+# ///////////////////////////////////////////////////////
+
+[build-system]
+requires = [
+    "poetry-core>=2.0",
+    "setuptools",
+    "wheel",
+]
+build-backend = "poetry.core.masonry.api"
+
+[project]
+name = "dve_sample_py"
+version = "2.1.0a1"
+description = "Python Template Project with Podman and Jypyter Support"
+readme = "README.md"
+license = {text = "Academic Free License (AFL) v. 3.0"}
+requires-python = ">=3.10,<3.15"
+authors = [
+    {name = "Datalab DEMS", email = "datalab@unimib.it"}
+]
+dependencies = []  # dynamic
+dynamic = ["dependencies"]
+homepage = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py"
+repository = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py.git"
+documentation = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py/-/wikis/home"
+
+[project.scripts]
+main = "dve.cli:main"
+demo = "vce.cli:main"
+hello = "dve.scripts.dummy.dummy_script:main"
+
+[project.optional-dependencies]
+dev = [
+    # Jupyter core
+    "jupyter",
+    "jupyter-core",
+    "jupyter-console",
+    "jupyter-lsp",
+    "notebook",
+    "jupyterlab",
+    "jupytext",
+    "jupyterlab-lsp",
+    "nodeenv",
+    "nodejs",
+    "pyright",
+    "python-lsp-server[yapf,rope,pyflakes]",
+    "python-lsp-black",
+    "black[jupyter]",
+    "lux-api",
+    "ipykernel",
+    "ipython",
+    "ipython-bg",
+
+    # Tools
+    "pytest",
+    "pytest-flask",
+    "pytest-cov",
+    "unittest2",
+    "coverage",
+    "mock",
+    "nose",
+    "pylint",
+    "flake8",
+    "pyproject-flake8",
+    "jedi",
+    "autopep8",
+    "yapf",
+    "isort",
+    "pipreqs",
+    "ruff",
+    "sphinx",
+    "nbsphinx",
+    "sphinx-autoapi",
+    "sphinx-rtd-theme",
+
+    # Misc
+    "colorama",
+    "py",
+    "mypy",
+
+    # Release
+    "setuptools",
+    "wheel",
+    "bumpversion",
+    "twine",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+namespaces = false  # No namespace packages indicated
+
+[tool.setuptools.package-data]
+"*" = ["res/resources/*", "res/resources/*/*"]  # Adjusted to likely package structure; verify res/ is under src/<package>/res/
+
+# Retain other tool configs (pyright, pytest, etc.) unchanged
+[tool.pyright]
+include = ["src", "tests/pytest", "notebooks"]
+exclude = [
+  "**/node_modules",
+  "**/__pycache__",
+  "docker",
+  "notes",
+  "data",
+  "logs",
+  "temp",
+]
+ignore = ["build"]
+defineConstant = { DEBUG = true }
+typeCheckingMode = "basic"
+reportMissingImports = true
+
+[tool.pytest.ini_options]
+pythonpath = ["src", "tests/pytest"]
+testpaths = ["tests/pytest"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
+
+[tool.isort]
+profile = "black"
+
+[tool.black]
+line-length = 88
+target-version = ['py310']
+include = '\\.pyi?$'
+exclude = '''
+(
+  /(
+      \\.eggs
+    | \\.git
+    | \\.hg
+    | \\.mypy_cache
+    | \\.tox
+    | \\.venv
+    | _build
+    | buck-out
+    | build
+    | dist
+  )/
+  | foo.py
+)
+'''
+
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+fix = true
+
+[tool.ruff.lint]
+unfixable = []
+typing-modules = ["pandas._typing"]
+exclude = [
+  "doc/sphinxext/*.py",
+  "doc/build/*.py",
+  "doc/temp/*.py",
+  ".eggs/*.py",
+  "pandas/util/version/*",
+  "pandas/io/clipboard/__init__.py",
+  "env",
+]
+select = [
+  "F", "E", "W", "YTT", "B", "Q", "T10", "INT", "PL", "PT", "PIE", "PYI",
+  "TID", "ISC", "TCH", "C4", "PGH", "RUF", "S102", "NPY002", "PERF", "FLY",
+  "G", "FA", "ICN001", "SLOT", "RSE",
+]
+ignore = []
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+split-on-trailing-commas = false
+
+[tool.ruff.format]
+docstring-code-format = true
+
+
+
+# ----------------------------------------------------------
+
+[build-system]
+requires = ["uv_build>=0.8.15,<0.9.0"]  # Latest stable as of 2026^ [stackoverflow](https://stackoverflow.com/questions/79118841/how-to-migrate-from-poetry-to-uv-package-manager/79165874)
+build-backend = "uv_build"
+
+[project]
+name = "dve_sample_py"
+version = "2.1.0a1"
+description = "Python Template Project with Podman and Jypyter Support"
+readme = "README.md"
+license = {text = "Academic Free License (AFL) v. 3.0"}
+requires-python = ">=3.10,<3.15"
+authors = [
+    {name = "Datalab DEMS", email = "datalab@unimib.it"}
+]
+dependencies = [
+    "tensorboard",
+    "tensorflow-hub",
+    "tensorflow-datasets",
+    "torch==2.10.* @ https://download.pytorch.org/whl/cu130/torch",
+    "torchvision==0.25.* @ https://download.pytorch.org/whl/cu130/torchvision",
+    "numpy",
+    "pandas",
+    "pynvml",
+    "nvidia-ml-py",
+    "pandas-datareader",
+    "openpyxl",
+    "h5py",
+    "pyarrow",
+    "polars",
+    "SQLAlchemy",
+    "mysql-connector-python",
+    "mysqlclient",
+    "psycopg2-binary",
+    "scipy",
+    "sympy",
+    "matplotlib",
+    "plotly",
+    "seaborn",
+    "Pillow",
+    "graphframes",
+    "graphviz",
+    "networkx",
+    "igraph",
+    "pyvis",
+    "pydot",
+    "requests",
+    "oauthlib",
+    "requests-oauthlib",
+    "urllib3",
+    "pyzmq",
+    "pyyaml",
+    "piny",
+    "toml",
+    "click",
+    "icecream",
+    "radian",
+    "tqdm",
+    "pip",
+    "more-itertools",
+    "dve-sample-py @ file:../python-rootpath",  # Adjust path to local rootpath clone
+]
+homepage = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py"
+repository = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py.git"
+documentation = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py/-/wikis/home"
+
+[project.scripts]
+main = "dve.cli:main"
+demo = "vce.cli:main"
+hello = "dve.scripts.dummy.dummy_script:main"
+
+[dependency-groups]
+dev = [
+    "jupyter",
+    "jupyter-core",
+    "jupyter-console",
+    "jupyter-lsp",
+    "notebook",
+    "jupyterlab",
+    "jupytext",
+    "jupyterlab-lsp",
+    "nodeenv",
+    "nodejs",
+    "pyright",
+    "python-lsp-server[yapf,rope,pyflakes]",
+    "python-lsp-black",
+    "black[jupyter]",
+    "lux-api",
+    "ipykernel",
+    "ipython",
+    "ipython-bg",
+    "pytest",
+    "pytest-flask",
+    "pytest-cov",
+    "unittest2",
+    "coverage",
+    "mock",
+    "nose",
+    "pylint",
+    "flake8",
+    "pyproject-flake8",
+    "jedi",
+    "autopep8",
+    "yapf",
+    "isort",
+    "pipreqs",
+    "ruff",
+    "sphinx",
+    "nbsphinx",
+    "sphinx-autoapi",
+    "sphinx-rtd-theme",
+    "colorama",
+    "py",
+    "mypy",
+    "setuptools",
+    "wheel",
+    "bumpversion",
+    "twine",
+]
+
+[tool.uv.sources]
+torch = { index = "torch130" }
+torchvision = { index = "torch130" }
+
+[[tool.uv.index]]
+name = "torch130"
+url = "https://download.pytorch.org/whl/cu130"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+namespaces = false
+
+[tool.setuptools.package-data]
+"*" = ["res/resources/*", "res/resources/*/*"]
+
+[tool.pyright]
+include = ["src", "tests/pytest", "notebooks"]
+exclude = [
+  "**/node_modules",
+  "**/__pycache__",
+  "docker",
+  "notes",
+  "data",
+  "logs",
+  "temp",
+]
+ignore = ["build"]
+defineConstant = { DEBUG = true }
+typeCheckingMode = "basic"
+reportMissingImports = true
+
+[tool.pytest.ini_options]
+pythonpath = ["src", "tests/pytest"]
+testpaths = ["tests/pytest"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
+
+[tool.isort]
+profile = "black"
+
+[tool.black]
+line-length = 88
+target-version = ['py310']
+include = '\\.pyi?$'
+exclude = '''
+(
+  /(
+      \\.eggs
+    | \\.git
+    | \\.hg
+    | \\.mypy_cache
+    | \\.tox
+    | \\.venv
+    | _build
+    | buck-out
+    | build
+    | dist
+  )/
+  | foo.py
+)
+'''
+
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+fix = true
+
+[tool.ruff.lint]
+unfixable = []
+typing-modules = ["pandas._typing"]
+exclude = [
+  "doc/sphinxext/*.py",
+  "doc/build/*.py",
+  "doc/temp/*.py",
+  ".eggs/*.py",
+  "pandas/util/version/*",
+  "pandas/io/clipboard/__init__.py",
+  "env",
+]
+select = [
+  "F", "E", "W", "YTT", "B", "Q", "T10", "INT", "PL", "PT", "PIE", "PYI",
+  "TID", "ISC", "TCH", "C4", "PGH", "RUF", "S102", "NPY002", "PERF", "FLY",
+  "G", "FA", "ICN001", "SLOT", "RSE",
+]
+ignore = []
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+split-on-trailing-comma = false
+
+[tool.ruff.format]
+docstring-code-format = true
+
+# ///////////////////////////////////////////////////////
+
+[project]
+name = "dve_sample_py"
+version = "2.1.0a1"
+description = "Python Template Project with Podman and Jypyter Support"
+authors = [
+    {name = "Datalab DEMS", email = "datalab@unimib.it"}
+]
+license = "Academic Free License (AFL) v. 3.0"
+readme = "README.md"
+documentation = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py/-/wikis/home"
+homepage = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py"
+repository = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py.git"
+
+dynamic = ["dependencies"]
+requires-python = ">=3.10,<3.15"
+
+[tool.poetry]
+requires-poetry = ">=2.0"
+packages = [{ include = "*", from = "src" }]
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.package-data]
+res = [ "resources/*", "resources/*/*" ]
+
+[project.scripts]
+main = "dve.cli:main"
+demo = "vce.cli:main"
+hello = "dve.scripts.dummy.dummy_script:main"
+
+[tool.poetry.dependencies]
+python = ">=3.10,<3.15"
+
+
+# {{{ CUDA: Cuda-13 from NVIDIA package index
+
+# NVIDIA Tensorflow cuda binaries: from https://github.com/nvidia/tensorflow/
+
+# Tensorflow 2.19 cuda dependencies
+# @see: https://github.com/tensorflow/tensorflow/blob/v2.19.0/ci/official/requirements_updater/requirements.in#L31
+
+# nvidia-cuda-runtime-cu12 = {version = "*", source = "nvidia"}
+
+
+#@[nv]# nvidia-cublas-cu13 = {version = "*"}
+#@[nv]# nvidia-cuda-cupti-cu13 = {version = "*"}
+#@[nv]# nvidia-cuda-nvcc-cu13 = {version = "*"}
+#@[nv]# nvidia-cuda-nvrtc-cu13 = {version = "*"}
+#@[nv]# nvidia-cuda-runtime-cu13 = {version = "*"}
+#@[nv]# nvidia-cudnn-cu13 = {version = "*"}
+#@[nv]# nvidia-cufft-cu13 = {version = "*"}
+#@[nv]# nvidia-curand-cu13 = {version = "*"}
+#@[nv]# nvidia-cusolver-cu13 = {version = "*"}
+#@[nv]# nvidia-cusparse-cu13 = {version = "*"}
+#@[nv]# nvidia-nccl-cu13 = {version = "*"}
+#@[nv]# nvidia-nvjitlink-cu13 = {version = "*"}
+
+### }}} // cuda
+
+
+# {{{ TENSORFLOW: from rstudio/tensorflow/R/install.R@default_extra_packages
+
+#@[nv]# tensorflow = {extras = ["and-cuda"], version = "^2.19.0"}
+#@[nv]# tensorflow = {extras = ["and-cuda"], version = "^2.20.0"}
+## tensorflow = {version = "=2.25.*"}
+## tensorflow = {version = "=2.18.*"}
+## tensorflow = {version = "=2.18.*"}
+## tensorflow = {version = "*"}
+## tensorflow = {version = "=2.12.*"}
+## tensorflow-estimator = "*"
+tensorboard = "*"
+tensorflow-hub = "*"
+tensorflow-datasets = "*"
+
+### }}} // tensorflow
+
+
+# {{{ TENSORFLOW: TensorRT
+
+# TensorRT install: from https://docs.nvidia.com/deeplearning/tensorrt/support-matrix/index.html
+# TensorRT compatibility: from https://docs.nvidia.com/deeplearning/tensorrt/support-matrix/index.html
+
+#@[nv]# tensorrt = "*"
+
+#tensorrt = "*"
+#tensorrt_lean = "*"
+#tensorrt_dispatch = "*"
+#libnvinfer = "*"
+
+# TensorRT compatibility: from https://docs.nvidia.com/deeplearning/tensorrt/support-matrix/index.html
+
+#nvidia-cudnn-cu11 = "*"
+#nvidia-cuda-runtime-cu11 = "*"
+#nvidia-cublas-cu11 = "*"
+
+### }}} // tensorflow
+
+
+# {{{ TORCH: from https://pytorch.org/get-started/locally/
+
+torch = {version = "=2.10.*", source = "torch130"}
+torchvision = {version = "=0.25.*", source = "torch130"}
+
+### }}} // torch
+
+
+# {{{ KERAS: from rstudio/keras/R/install.R@default_extra_packages
+
+# tensorflow-hub = '*'
+# tensorflow-datasets = '*'
+
+### }}} // keras
+
+# {{{ DATA: 
+
+# --- [core] -----------------------------------
+numpy = '*'
+pandas = '*'
+
+# --- [cuda] -----------------------------------
+pynvml = '*'
+nvidia-ml-py = '*'
+
+# --- [raw] -----------------------------------
+pandas-datareader = '*'
+openpyxl = '*'
+h5py = '*'
+
+# --- [data] -----------------------------------
+pyarrow = '*'
+polars = '*'
+
+# --- [sql] --------------------------------------
+SQLAlchemy = "*"
+
+mysql-connector-python = "*"
+# requires: sudo apt install default-libmysqlclient-dev
+mysqlclient = "*"
+
+# requires: sudo apt install libpq-dev
+#psycopg2 = "*"
+psycopg2-binary = "*"
+
+
+### }}} // data
+
+# {{{ STAT: 
+
+# --- [ml] -----------------------------------
+# scikit-learn = "*"
+# scikit-image = "*"
+# sklearn = "*"
+
+# --- [math] -----------------------------------
+scipy = '*'
+sympy = "*"
+
+# --- [sim] --------------------------------------
+# simpy = "*"
+
+### }}} // data
+
+# {{{ GRAPHICS: 
+
+# --- [plots] -----------------------------------
+matplotlib = "*"
+plotly = '*'
+seaborn = "*"
+
+# --- [images] -----------------------------------
+Pillow = '*'
+
+# --- [graph] -----------------------------------
+graphframes = '*'
+graphviz = '*'
+networkx = '*'
+igraph = '*'
+pyvis = '*'
+pydot = '*'
+
+### }}} // graphics
+
+# {{{ SYSTEM: 
+
+# --- [network] -----------------------------------
+requests = '*'
+oauthlib = "*"
+requests-oauthlib = "*"
+urllib3 = "*"
+
+# --- [local] -----------------------------------
+pyzmq = "*"
+
+# --- [config] -----------------------------------
+pyyaml = '*'
+piny = "*"
+toml = "*"
+click = '*'
+
+# --- [logging] -----------------------------------
+icecream = '*'
+
+# --- [console] -----------------------------------
+radian = '*'
+
+# --- [script] -----------------------------------
+tqdm = '*'
+
+
+# --- [libs] -----------------------------------
+pip = "*"
+
+
+### }}} // system
+
+# {{{ LANG: 
+
+# --- [commons] -----------------------------------
+# six = ">=1.7.0,<=1.15.0"
+more-itertools = "*"
+
+### }}} // system
+
+
+[tool.poetry.group.dev.dependencies]
+
+# {{{ JUPYTER: from https://docs.jupyter.org/en/latest/install.html
+
+# --- [jupyter core] -----------------------------------
+jupyter = "*"
+jupyter-core = "*"
+jupyter-console = "*"
+jupyter-lsp = "*"
+notebook = "*"
+
+# --- [jupyter hub] --------------------------------------
+#jupyterhub = "*"
+#tornado = "*"
+
+# --- [jupyter lab] --------------------------------------
+jupyterlab = "*"
+
+# --- [jupyter ext] --------------------------------------
+jupytext = "*"
+
+# --- [jupyter lsp] --------------------------------------
+jupyterlab-lsp = "*"
+nodeenv = '*'
+nodejs = '*'
+
+pyright = '*'
+python-lsp-server = { extras = ["yapf", "rope", "pyflakes"], version = "*" }
+python-lsp-black = "*"
+
+black = { extras = ["jupyter"], version = "*" }
+
+# --- [jupyter dash] --------------------------------------
+lux-api = "*"
+
+# --- [jupyter kernels] -----------------------------------
+ipykernel = "*"
+#jupyterhub = "*"
+#ansible-kernel = "*"
+#dot_kernel = "*"
+#dot_kernel = "*"
+#jswip = "*"
+#matlab_kernel = "*"
+#octave_kernel = "*"
+#sparqlkernel = "*"
+#toree = "*"
+
+# --- [jupyter console] -----------------------------------
+
+ipython = "*"
+ipython-bg = "*"
+
+
+### }}} // jupyter
+
+
+# {{{ TOOLS: 
+
+# --- [test] -----------------------------------
+pytest = { version = "*" }
+pytest-flask = "*"
+pytest-cov = "*"
+unittest2 = { version = "*" }
+#   pytest-spark = "*"
+#   pyspark-test = "*"
+#   chispa = "*"
+coverage= "*"
+mock = "*"
+nose = "*"
+#codecov = "*"
+
+# --- [lint] --------------------------------------
+pylint = "*"
+flake8 = "*"
+pyproject-flake8 = "*"
+jedi = "*"
+autopep8 = "*"
+yapf = '*'
+isort = "*"
+pipreqs = "*"
+ruff = "*"
+#black = { extras = ["jupyter"], version = "*" }
+
+# --- [docs] --------------------------------------
+sphinx = "*"
+nbsphinx = "*"
+sphinx-autoapi = "*"
+sphinx-rtd-theme = "*"
+
+### }}} // tools
+
+
+# {{{ MISC: 
+
+# --- [util] -----------------------------------
+colorama = "*"
+py = "*"
+mypy = "*"
+
+### }}} // misc
+
+
+# {{{ release:
+
+# --- [package] -----------------------------------
+setuptools = "*"
+wheel = "*"
+
+# --- [auto] --------------------------------------
+bumpversion = "*"
+twine = '*'
+
+### }}} // release
+
+#[[tool.poetry.source]]
+#name = 'default'
+#url = 'https://pypi.org/'
+
+
+[[tool.poetry.source]]
+name = "torch121"
+url = "https://download.pytorch.org/whl/cu121"
+priority = "explicit"
+
+[[tool.poetry.source]]
+name = "torch124"
+url = "https://download.pytorch.org/whl/cu124"
+priority = "explicit"
+
+[[tool.poetry.source]]
+name = "torch130"
+url = "https://download.pytorch.org/whl/cu130"
+priority = "explicit"
+
+
+
+[tool.poetry.dependencies.rootpath]
+git = "https://github.com/hute37/python-rootpath"
+branch = "stable"
+
+# {{{ LSP:
+
+# --- [pyright] --------------------------------------
+
+# @see: https://github.com/microsoft/pyright/blob/main/docs/configuration.md
+[tool.pyright]
+include = ["src", "tests/pytest", "notebooks"]
+exclude = [
+  "**/node_modules",
+  "**/__pycache__",
+  "docker",
+  "notes",
+  "data",
+  "logs",
+  "temp",
+]
+ignore = ["build"]
+defineConstant = { DEBUG = true }
+#stubPath = "src/stubs"
+#venv = "env367"
+#verboseOutput = true
+typeCheckingMode = "basic"
+reportMissingImports = true
+
+### }}} // lsp
+
+# {{{ TEST:
+
+# --- [pytest] --------------------------------------
+
+[tool.pytest.ini_options]
+pythonpath = ["src", "tests/pytest"]
+testpaths = ["tests/pytest"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
+
+### }}} // test
+
+
+# {{{ FORMAT: 
+
+# --- [flake8] --------------------------------------
+
+# flake8 config unused, @see setup.cfg
+# [tool.flake8]
+# max-line-length = 88
+# extend-ignore = "E203,"
+# max-complexity = 10
+
+# --- [isort] --------------------------------------
+
+[tool.isort]
+profile = "black"
+
+
+# --- [black] --------------------------------------
+
+[tool.black]
+line-length = 88
+target-version = ['py310']
+include = '\.pyi?$'
+exclude = '''
+
+(
+  /(
+      \.eggs         # exclude a few common directories in the
+    | \.git          # root of the project
+    | \.hg
+    | \.mypy_cache
+    | \.tox
+    | \.venv
+    | _build
+    | buck-out
+    | build
+    | dist
+  )/
+  | foo.py           # also separately exclude a file named foo.py in
+                     # the root of the project
+)
+'''
+
+# --- [ruff] --------------------------------------
+
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+fix = true
+
+[tool.ruff.lint]
+unfixable = []
+typing-modules = ["pandas._typing"]
+
+exclude = [
+  "doc/sphinxext/*.py",
+  "doc/build/*.py",
+  "doc/temp/*.py",
+  ".eggs/*.py",
+  # vendored files
+  "pandas/util/version/*",
+  "pandas/io/clipboard/__init__.py",
+  # exclude asv benchmark environments from linting
+  "env",
+]
+
+select = [
+  # pyflakes
+  "F",
+  # pycodestyle
+  "E",
+  "W",
+  # flake8-2020
+  "YTT",
+  # flake8-bugbear
+  "B",
+  # flake8-quotes
+  "Q",
+  # flake8-debugger
+  "T10",
+  # flake8-gettext
+  "INT",
+  # pylint
+  "PL",
+  # flake8-pytest-style
+  "PT",
+  # misc lints
+  "PIE",
+  # flake8-pyi
+  "PYI",
+  # tidy imports
+  "TID",
+  # implicit string concatenation
+  "ISC",
+  # type-checking imports
+  "TCH",
+  # comprehensions
+  "C4",
+  # pygrep-hooks
+  "PGH",
+  # Ruff-specific rules
+  "RUF",
+  # flake8-bandit: exec-builtin
+  "S102",
+  # numpy-legacy-random
+  "NPY002",
+  # Perflint
+  "PERF",
+  # flynt
+  "FLY",
+  # flake8-logging-format
+  "G",
+  # flake8-future-annotations
+  "FA",
+  # unconventional-import-alias
+  "ICN001",
+  # flake8-slots
+  "SLOT",
+  # flake8-raise
+  "RSE",
+]
+
+ignore = [
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+split-on-trailing-commas = false
+
+[tool.ruff.format]
+docstring-code-format = true
+
+### }}} // format
+
+
+# {{{ BUILD: 
+
+[build-system]
+requires = [
+    "poetry-core>=2.0",
+    "setuptools",
+    "wheel",
+    "incremental",
+]
+build-backend = "poetry.core.masonry.api"
+#build-backend = "setuptools.build_meta"
+
+### }}} // build
+
+
+# --------------------------------------------------------
+
+[project]
+name = "dve_sample_py"
+version = "2.1.0a1"
+description = "Python Template Project with Podman and Jypyter Support"
+authors = [
+    {name = "Datalab DEMS", email = "datalab@unimib.it"}
+]
+license = "Academic Free License (AFL) v. 3.0"
+readme = "README.md"
+documentation = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py/-/wikis/home"
+homepage = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py"
+repository = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py.git"
+
+requires-python = ">=3.10,<3.15"
+
+[project.scripts]
+main = "dve.cli:main"
+demo = "vce.cli:main"
+hello = "dve.scripts.dummy.dummy_script:main"
+
+# {{{ RUNTIME DEPENDENCIES
+# Preserved from original [tool.poetry.dependencies] (python constraint omitted)
+[project.dependencies]
+# {{{ CUDA: Cuda-13 from NVIDIA package index
+#@[nv]# nvidia-cublas-cu13 = "*"
+#@[nv]# nvidia-cuda-cupti-cu13 = "*"
+#@[nv]# nvidia-cuda-nvcc-cu13 = "*"
+#@[nv]# nvidia-cuda-nvrtc-cu13 = "*"
+#@[nv]# nvidia-cuda-runtime-cu13 = "*"
+#@[nv]# nvidia-cudnn-cu13 = "*"
+#@[nv]# nvidia-cufft-cu13 = "*"
+#@[nv]# nvidia-curand-cu13 = "*"
+#@[nv]# nvidia-cusolver-cu13 = "*"
+#@[nv]# nvidia-cusparse-cu13 = "*"
+#@[nv]# nvidia-nccl-cu13 = "*"
+#@[nv]# nvidia-nvjitlink-cu13 = "*"
+### }}} // cuda
+
+# {{{ TENSORFLOW
+#@[nv]# tensorflow = { version = "^2.19.0", extras = ["and-cuda"] }
+#@[nv]# tensorflow = { version = "^2.20.0", extras = ["and-cuda"] }
+## tensorflow = "==2.25.*"
+## tensorflow = "==2.18.*"
+## tensorflow = "==2.18.*"
+## tensorflow = "*"
+## tensorflow = "==2.12.*"
+## tensorflow-estimator = "*"
+tensorboard
+tensorflow-hub
+tensorflow-datasets
+### }}} // tensorflow
+
+# {{{ TENSORFLOW: TensorRT
+#@[nv]# tensorrt = "*"
+#tensorrt = "*"
+#tensorrt_lean = "*"
+#tensorrt_dispatch = "*"
+#libnvinfer = "*"
+#nvidia-cudnn-cu11 = "*"
+#nvidia-cuda-runtime-cu11 = "*"
+#nvidia-cublas-cu11 = "*"
+### }}} // tensorflow
+
+# {{{ TORCH
+torch = { version = "==2.10.*", index = "torch130" }
+torchvision = { version = "==0.25.*", index = "torch130" }
+### }}} // torch
+
+# {{{ KERAS
+# tensorflow-hub = '*'
+# tensorflow-datasets = '*'
+### }}} // keras
+
+# {{{ DATA
+# --- [core] -----------------------------------
+numpy
+pandas
+
+# --- [cuda] -----------------------------------
+pynvml
+nvidia-ml-py
+
+# --- [raw] -----------------------------------
+pandas-datareader
+openpyxl
+h5py
+
+# --- [data] -----------------------------------
+pyarrow
+polars
+
+# --- [sql] --------------------------------------
+SQLAlchemy
+mysql-connector-python
+mysqlclient
+psycopg2-binary
+### }}} // data
+
+# {{{ STAT
+# --- [ml] -----------------------------------
+# scikit-learn = "*"
+# scikit-image = "*"
+# sklearn = "*"
+
+# --- [math] -----------------------------------
+scipy
+sympy
+
+# --- [sim] --------------------------------------
+# simpy = "*"
+### }}} // data
+
+# {{{ GRAPHICS
+# --- [plots] -----------------------------------
+matplotlib
+plotly
+seaborn
+
+# --- [images] -----------------------------------
+Pillow
+
+# --- [graph] -----------------------------------
+graphframes
+graphviz
+networkx
+igraph
+pyvis
+pydot
+### }}} // graphics
+
+# {{{ SYSTEM
+# --- [network] -----------------------------------
+requests
+oauthlib
+requests-oauthlib
+urllib3
+
+# --- [local] -----------------------------------
+pyzmq
+
+# --- [config] -----------------------------------
+pyyaml
+piny
+toml
+click
+
+# --- [logging] -----------------------------------
+icecream
+
+# --- [console] -----------------------------------
+radian
+
+# --- [script] -----------------------------------
+tqdm
+
+# --- [libs] -----------------------------------
+pip
+### }}} // system
+
+# {{{ LANG
+# --- [commons] -----------------------------------
+# six = ">=1.7.0,<=1.15.0"
+more-itertools
+### }}} // system
+
+# Git dependency (handled via [tool.uv.sources] below)
+rootpath
+# }}} RUNTIME DEPENDENCIES
+
+# {{{ DEVELOPMENT DEPENDENCIES (from [tool.poetry.group.dev.dependencies])
+[dependency-groups]
+dev = [
+    # {{{ JUPYTER
+    "jupyter",
+    "jupyter-core",
+    "jupyter-console",
+    "jupyter-lsp",
+    "notebook",
+    #jupyterhub = "*"
+    #tornado = "*"
+    "jupyterlab",
+    "jupytext",
+    "jupyterlab-lsp",
+    "nodeenv",
+    "nodejs",
+    "pyright",
+    "python-lsp-server[yapf,rope,pyflakes]",
+    "python-lsp-black",
+    "black[jupyter]",
+    "lux-api",
+    "ipykernel",
+    #jupyterhub = "*"
+    #ansible-kernel = "*"
+    #dot_kernel = "*"
+    #jswip = "*"
+    #matlab_kernel = "*"
+    #octave_kernel = "*"
+    #sparqlkernel = "*"
+    #toree = "*"
+    "ipython",
+    "ipython-bg",
+    ### }}} // jupyter
+
+    # {{{ TOOLS
+    # --- [test] -----------------------------------
+    "pytest",
+    "pytest-flask",
+    "pytest-cov",
+    "unittest2",
+    #   pytest-spark = "*"
+    #   pyspark-test = "*"
+    #   chispa = "*"
+    "coverage",
+    "mock",
+    "nose",
+    #codecov = "*"
+
+    # --- [lint] --------------------------------------
+    "pylint",
+    "flake8",
+    "pyproject-flake8",
+    "jedi",
+    "autopep8",
+    "yapf",
+    "isort",
+    "pipreqs",
+    "ruff",
+    #black = { extras = ["jupyter"], version = "*" }
+
+    # --- [docs] --------------------------------------
+    "sphinx",
+    "nbsphinx",
+    "sphinx-autoapi",
+    "sphinx-rtd-theme",
+    ### }}} // tools
+
+    # {{{ MISC
+    "colorama",
+    "py",
+    "mypy",
+    ### }}} // misc
+
+    # {{{ release
+    "setuptools",
+    "wheel",
+    "bumpversion",
+    "twine",
+    ### }}} // release
+]
+# }}} DEVELOPMENT DEPENDENCIES
+
+# {{{ uv SOURCES & INDEXES
+[[tool.uv.index]]
+name = "torch121"
+url = "https://download.pytorch.org/whl/cu121"
+explicit = true
+
+[[tool.uv.index]]
+name = "torch124"
+url = "https://download.pytorch.org/whl/cu124"
+explicit = true
+
+[[tool.uv.index]]
+name = "torch130"
+url = "https://download.pytorch.org/whl/cu130"
+explicit = true
+
+[tool.uv.sources]
+rootpath = { git = "https://github.com/hute37/python-rootpath", branch = "stable" }
+# }}} uv SOURCES & INDEXES
+
+# {{{ SETUPTOOLS CONFIGURATION
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+res = [ "resources/*", "resources/*/*" ]
+# }}} SETUPTOOLS CONFIGURATION
+
+# {{{ LSP: pyright
+[tool.pyright]
+include = ["src", "tests/pytest", "notebooks"]
+exclude = [
+  "**/node_modules",
+  "**/__pycache__",
+  "docker",
+  "notes",
+  "data",
+  "logs",
+  "temp",
+]
+ignore = ["build"]
+defineConstant = { DEBUG = true }
+#stubPath = "src/stubs"
+#venv = "env367"
+#verboseOutput = true
+typeCheckingMode = "basic"
+reportMissingImports = true
+# }}} LSP
+
+# {{{ TEST: pytest
+[tool.pytest.ini_options]
+pythonpath = ["src", "tests/pytest"]
+testpaths = ["tests/pytest"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
+# }}} TEST
+
+# {{{ FORMATTING & LINTING
+[tool.isort]
+profile = "black"
+
+[tool.black]
+line-length = 88
+target-version = ['py310']
+include = '\.pyi?$'
+exclude = '''
+(
+  /(
+      \.eggs
+    | \.git
+    | \.hg
+    | \.mypy_cache
+    | \.tox
+    | \.venv
+    | _build
+    | buck-out
+    | build
+    | dist
+  )/
+  | foo.py
+)
+'''
+
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+fix = true
+
+[tool.ruff.lint]
+unfixable = []
+typing-modules = ["pandas._typing"]
+exclude = [
+  "doc/sphinxext/*.py",
+  "doc/build/*.py",
+  "doc/temp/*.py",
+  ".eggs/*.py",
+  "pandas/util/version/*",
+  "pandas/io/clipboard/__init__.py",
+  "env",
+]
+select = [
+  "F", "E", "W", "YTT", "B", "Q", "T10", "INT", "PL", "PT", "PIE", "PYI",
+  "TID", "ISC", "TCH", "C4", "PGH", "RUF", "S102", "NPY002", "PERF",
+  "FLY", "G", "FA", "ICN001", "SLOT", "RSE",
+]
+ignore = []
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+split-on-trailing-commas = false
+
+[tool.ruff.format]
+docstring-code-format = true
+# }}} FORMATTING & LINTING
+
+# {{{ BUILD SYSTEM
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+# }}} BUILD SYSTEM
+
+
+# ///////////////////////////////////////////////////////
+
+
+[project]
+name = "dve_sample_py"
+version = "2.1.0a1"
+description = "Python Template Project with Podman and Jypyter Support"
+authors = [
+    {name = "Datalab DEMS", email = "datalab@unimib.it"}
+]
+license = "Academic Free License (AFL) v. 3.0"
+readme = "README.md"
+documentation = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py/-/wikis/home"
+homepage = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py"
+repository = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py.git"
+
+dynamic = ["dependencies"]
+requires-python = ">=3.10,<3.15"
+
+[tool.poetry]
+requires-poetry = ">=2.0"
+packages = [{ include = "*", from = "src" }]
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.package-data]
+res = [ "resources/*", "resources/*/*" ]
+
+[project.scripts]
+main = "dve.cli:main"
+demo = "vce.cli:main"
+hello = "dve.scripts.dummy.dummy_script:main"
+
+[tool.poetry.dependencies]
+python = ">=3.10,<3.15"
+
+
+# {{{ CUDA: Cuda-13 from NVIDIA package index
+
+# NVIDIA Tensorflow cuda binaries: from https://github.com/nvidia/tensorflow/
+
+# Tensorflow 2.19 cuda dependencies
+# @see: https://github.com/tensorflow/tensorflow/blob/v2.19.0/ci/official/requirements_updater/requirements.in#L31
+
+# nvidia-cuda-runtime-cu12 = {version = "*", source = "nvidia"}
+
+
+#@[nv]# nvidia-cublas-cu13 = {version = "*"}
+#@[nv]# nvidia-cuda-cupti-cu13 = {version = "*"}
+#@[nv]# nvidia-cuda-nvcc-cu13 = {version = "*"}
+#@[nv]# nvidia-cuda-nvrtc-cu13 = {version = "*"}
+#@[nv]# nvidia-cuda-runtime-cu13 = {version = "*"}
+#@[nv]# nvidia-cudnn-cu13 = {version = "*"}
+#@[nv]# nvidia-cufft-cu13 = {version = "*"}
+#@[nv]# nvidia-curand-cu13 = {version = "*"}
+#@[nv]# nvidia-cusolver-cu13 = {version = "*"}
+#@[nv]# nvidia-cusparse-cu13 = {version = "*"}
+#@[nv]# nvidia-nccl-cu13 = {version = "*"}
+#@[nv]# nvidia-nvjitlink-cu13 = {version = "*"}
+
+### }}} // cuda
+
+
+# {{{ TENSORFLOW: from rstudio/tensorflow/R/install.R@default_extra_packages
+
+#@[nv]# tensorflow = {extras = ["and-cuda"], version = "^2.19.0"}
+#@[nv]# tensorflow = {extras = ["and-cuda"], version = "^2.20.0"}
+## tensorflow = {version = "=2.25.*"}
+## tensorflow = {version = "=2.18.*"}
+## tensorflow = {version = "=2.18.*"}
+## tensorflow = {version = "*"}
+## tensorflow = {version = "=2.12.*"}
+## tensorflow-estimator = "*"
+tensorboard = "*"
+tensorflow-hub = "*"
+tensorflow-datasets = "*"
+
+### }}} // tensorflow
+
+
+# {{{ TENSORFLOW: TensorRT
+
+# TensorRT install: from https://docs.nvidia.com/deeplearning/tensorrt/support-matrix/index.html
+# TensorRT compatibility: from https://docs.nvidia.com/deeplearning/tensorrt/support-matrix/index.html
+
+#@[nv]# tensorrt = "*"
+
+#tensorrt = "*"
+#tensorrt_lean = "*"
+#tensorrt_dispatch = "*"
+#libnvinfer = "*"
+
+# TensorRT compatibility: from https://docs.nvidia.com/deeplearning/tensorrt/support-matrix/index.html
+
+#nvidia-cudnn-cu11 = "*"
+#nvidia-cuda-runtime-cu11 = "*"
+#nvidia-cublas-cu11 = "*"
+
+### }}} // tensorflow
+
+
+# {{{ TORCH: from https://pytorch.org/get-started/locally/
+
+torch = {version = "=2.10.*", source = "torch130"}
+torchvision = {version = "=0.25.*", source = "torch130"}
+
+### }}} // torch
+
+
+# {{{ KERAS: from rstudio/keras/R/install.R@default_extra_packages
+
+# tensorflow-hub = '*'
+# tensorflow-datasets = '*'
+
+### }}} // keras
+
+# {{{ DATA: 
+
+# --- [core] -----------------------------------
+numpy = '*'
+pandas = '*'
+
+# --- [cuda] -----------------------------------
+pynvml = '*'
+nvidia-ml-py = '*'
+
+# --- [raw] -----------------------------------
+pandas-datareader = '*'
+openpyxl = '*'
+h5py = '*'
+
+# --- [data] -----------------------------------
+pyarrow = '*'
+polars = '*'
+
+# --- [sql] --------------------------------------
+SQLAlchemy = "*"
+
+mysql-connector-python = "*"
+# requires: sudo apt install default-libmysqlclient-dev
+mysqlclient = "*"
+
+# requires: sudo apt install libpq-dev
+#psycopg2 = "*"
+psycopg2-binary = "*"
+
+
+### }}} // data
+
+# {{{ STAT: 
+
+# --- [ml] -----------------------------------
+# scikit-learn = "*"
+# scikit-image = "*"
+# sklearn = "*"
+
+# --- [math] -----------------------------------
+scipy = '*'
+sympy = "*"
+
+# --- [sim] --------------------------------------
+# simpy = "*"
+
+### }}} // data
+
+# {{{ GRAPHICS: 
+
+# --- [plots] -----------------------------------
+matplotlib = "*"
+plotly = '*'
+seaborn = "*"
+
+# --- [images] -----------------------------------
+Pillow = '*'
+
+# --- [graph] -----------------------------------
+graphframes = '*'
+graphviz = '*'
+networkx = '*'
+igraph = '*'
+pyvis = '*'
+pydot = '*'
+
+### }}} // graphics
+
+# {{{ SYSTEM: 
+
+# --- [network] -----------------------------------
+requests = '*'
+oauthlib = "*"
+requests-oauthlib = "*"
+urllib3 = "*"
+
+# --- [local] -----------------------------------
+pyzmq = "*"
+
+# --- [config] -----------------------------------
+pyyaml = '*'
+piny = "*"
+toml = "*"
+click = '*'
+
+# --- [logging] -----------------------------------
+icecream = '*'
+
+# --- [console] -----------------------------------
+radian = '*'
+
+# --- [script] -----------------------------------
+tqdm = '*'
+
+
+# --- [libs] -----------------------------------
+pip = "*"
+
+
+### }}} // system
+
+# {{{ LANG: 
+
+# --- [commons] -----------------------------------
+# six = ">=1.7.0,<=1.15.0"
+more-itertools = "*"
+
+### }}} // system
+
+
+[tool.poetry.group.dev.dependencies]
+
+# {{{ JUPYTER: from https://docs.jupyter.org/en/latest/install.html
+
+# --- [jupyter core] -----------------------------------
+jupyter = "*"
+jupyter-core = "*"
+jupyter-console = "*"
+jupyter-lsp = "*"
+notebook = "*"
+
+# --- [jupyter hub] --------------------------------------
+#jupyterhub = "*"
+#tornado = "*"
+
+# --- [jupyter lab] --------------------------------------
+jupyterlab = "*"
+
+# --- [jupyter ext] --------------------------------------
+jupytext = "*"
+
+# --- [jupyter lsp] --------------------------------------
+jupyterlab-lsp = "*"
+nodeenv = '*'
+nodejs = '*'
+
+pyright = '*'
+python-lsp-server = { extras = ["yapf", "rope", "pyflakes"], version = "*" }
+python-lsp-black = "*"
+
+black = { extras = ["jupyter"], version = "*" }
+
+# --- [jupyter dash] --------------------------------------
+lux-api = "*"
+
+# --- [jupyter kernels] -----------------------------------
+ipykernel = "*"
+#jupyterhub = "*"
+#ansible-kernel = "*"
+#dot_kernel = "*"
+#dot_kernel = "*"
+#jswip = "*"
+#matlab_kernel = "*"
+#octave_kernel = "*"
+#sparqlkernel = "*"
+#toree = "*"
+
+# --- [jupyter console] -----------------------------------
+
+ipython = "*"
+ipython-bg = "*"
+
+
+### }}} // jupyter
+
+
+# {{{ TOOLS: 
+
+# --- [test] -----------------------------------
+pytest = { version = "*" }
+pytest-flask = "*"
+pytest-cov = "*"
+unittest2 = { version = "*" }
+#   pytest-spark = "*"
+#   pyspark-test = "*"
+#   chispa = "*"
+coverage= "*"
+mock = "*"
+nose = "*"
+#codecov = "*"
+
+# --- [lint] --------------------------------------
+pylint = "*"
+flake8 = "*"
+pyproject-flake8 = "*"
+jedi = "*"
+autopep8 = "*"
+yapf = '*'
+isort = "*"
+pipreqs = "*"
+ruff = "*"
+#black = { extras = ["jupyter"], version = "*" }
+
+# --- [docs] --------------------------------------
+sphinx = "*"
+nbsphinx = "*"
+sphinx-autoapi = "*"
+sphinx-rtd-theme = "*"
+
+### }}} // tools
+
+
+# {{{ MISC: 
+
+# --- [util] -----------------------------------
+colorama = "*"
+py = "*"
+mypy = "*"
+
+### }}} // misc
+
+
+# {{{ release:
+
+# --- [package] -----------------------------------
+setuptools = "*"
+wheel = "*"
+
+# --- [auto] --------------------------------------
+bumpversion = "*"
+twine = '*'
+
+### }}} // release
+
+#[[tool.poetry.source]]
+#name = 'default'
+#url = 'https://pypi.org/'
+
+
+[[tool.poetry.source]]
+name = "torch121"
+url = "https://download.pytorch.org/whl/cu121"
+priority = "explicit"
+
+[[tool.poetry.source]]
+name = "torch124"
+url = "https://download.pytorch.org/whl/cu124"
+priority = "explicit"
+
+[[tool.poetry.source]]
+name = "torch130"
+url = "https://download.pytorch.org/whl/cu130"
+priority = "explicit"
+
+
+
+[tool.poetry.dependencies.rootpath]
+git = "https://github.com/hute37/python-rootpath"
+branch = "stable"
+
+# {{{ LSP:
+
+# --- [pyright] --------------------------------------
+
+# @see: https://github.com/microsoft/pyright/blob/main/docs/configuration.md
+[tool.pyright]
+include = ["src", "tests/pytest", "notebooks"]
+exclude = [
+  "**/node_modules",
+  "**/__pycache__",
+  "docker",
+  "notes",
+  "data",
+  "logs",
+  "temp",
+]
+ignore = ["build"]
+defineConstant = { DEBUG = true }
+#stubPath = "src/stubs"
+#venv = "env367"
+#verboseOutput = true
+typeCheckingMode = "basic"
+reportMissingImports = true
+
+### }}} // lsp
+
+# {{{ TEST:
+
+# --- [pytest] --------------------------------------
+
+[tool.pytest.ini_options]
+pythonpath = ["src", "tests/pytest"]
+testpaths = ["tests/pytest"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
+
+### }}} // test
+
+
+# {{{ FORMAT: 
+
+# --- [flake8] --------------------------------------
+
+# flake8 config unused, @see setup.cfg
+# [tool.flake8]
+# max-line-length = 88
+# extend-ignore = "E203,"
+# max-complexity = 10
+
+# --- [isort] --------------------------------------
+
+[tool.isort]
+profile = "black"
+
+
+# --- [black] --------------------------------------
+
+[tool.black]
+line-length = 88
+target-version = ['py310']
+include = '\.pyi?$'
+exclude = '''
+
+(
+  /(
+      \.eggs         # exclude a few common directories in the
+    | \.git          # root of the project
+    | \.hg
+    | \.mypy_cache
+    | \.tox
+    | \.venv
+    | _build
+    | buck-out
+    | build
+    | dist
+  )/
+  | foo.py           # also separately exclude a file named foo.py in
+                     # the root of the project
+)
+'''
+
+# --- [ruff] --------------------------------------
+
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+fix = true
+
+[tool.ruff.lint]
+unfixable = []
+typing-modules = ["pandas._typing"]
+
+exclude = [
+  "doc/sphinxext/*.py",
+  "doc/build/*.py",
+  "doc/temp/*.py",
+  ".eggs/*.py",
+  # vendored files
+  "pandas/util/version/*",
+  "pandas/io/clipboard/__init__.py",
+  # exclude asv benchmark environments from linting
+  "env",
+]
+
+select = [
+  # pyflakes
+  "F",
+  # pycodestyle
+  "E",
+  "W",
+  # flake8-2020
+  "YTT",
+  # flake8-bugbear
+  "B",
+  # flake8-quotes
+  "Q",
+  # flake8-debugger
+  "T10",
+  # flake8-gettext
+  "INT",
+  # pylint
+  "PL",
+  # flake8-pytest-style
+  "PT",
+  # misc lints
+  "PIE",
+  # flake8-pyi
+  "PYI",
+  # tidy imports
+  "TID",
+  # implicit string concatenation
+  "ISC",
+  # type-checking imports
+  "TCH",
+  # comprehensions
+  "C4",
+  # pygrep-hooks
+  "PGH",
+  # Ruff-specific rules
+  "RUF",
+  # flake8-bandit: exec-builtin
+  "S102",
+  # numpy-legacy-random
+  "NPY002",
+  # Perflint
+  "PERF",
+  # flynt
+  "FLY",
+  # flake8-logging-format
+  "G",
+  # flake8-future-annotations
+  "FA",
+  # unconventional-import-alias
+  "ICN001",
+  # flake8-slots
+  "SLOT",
+  # flake8-raise
+  "RSE",
+]
+
+ignore = [
+]
+
+# ignore = [
+#   ### Intentionally disabled
+#   # module level import not at top of file
+#   "E402",
+#   # do not assign a lambda expression, use a def
+#   "E731",
+#   # controversial
+#   "B007",
+#   # controversial
+#   "B008",
+#   # setattr is used to side-step mypy
+#   "B009",
+#   # getattr is used to side-step mypy
+#   "B010",
+#   # tests use comparisons but not their returned value
+#   "B015",
+#   # Function definition does not bind loop variable
+#   "B023",
+#   # Only works with python >=3.10
+#   "B905",
+#   # Too many arguments to function call
+#   "PLR0913",
+#   # Too many returns
+#   "PLR0911",
+#   # Too many branches
+#   "PLR0912",
+#   # Too many statements
+#   "PLR0915",
+#   # Redefined loop name
+#   "PLW2901",
+#   # Global statements are discouraged
+#   "PLW0603",
+#   # Use `typing.NamedTuple` instead of `collections.namedtuple`
+#   "PYI024",
+#   # Use of possibly insecure function; consider using ast.literal_eval
+#   "S307",
+#   # while int | float can be shortened to float, the former is more explicit
+#   "PYI041",
+#   # incorrect-dict-iterator, flags valid Series.items usage
+#   "PERF102",
+#   # try-except-in-loop, becomes useless in Python 3.11
+#   "PERF203",
+#   # pytest-missing-fixture-name-underscore
+#   "PT004",
+#   # pytest-incorrect-fixture-name-underscore
+#   "PT005",
+#   # pytest-parametrize-names-wrong-type
+#   "PT006",
+#   # pytest-parametrize-values-wrong-type
+#   "PT007",
+#   # pytest-patch-with-lambda
+#   "PT008",
+#   # pytest-raises-with-multiple-statements
+#   "PT012",
+#   # pytest-assert-in-except
+#   "PT017",
+#   # pytest-composite-assertion
+#   "PT018",
+#   # pytest-fixture-param-without-value
+#   "PT019",
+#   # The following rules may cause conflicts when used with the formatter:
+#   "ISC001",
+#   # if-stmt-min-max
+#   "PLR1730",
+
+#   ### TODO: Enable gradually
+#   # Useless statement
+#   "B018",
+#   # Magic number
+#   "PLR2004",
+#   # comparison-with-itself
+#   "PLR0124",
+#   # collection-literal-concatenation
+#   "RUF005",
+#   # pairwise-over-zipped (>=PY310 only)
+#   "RUF007",
+#   # mutable-class-default
+#   "RUF012",
+#   # type-comparison
+#   "E721",
+#   # repeated-equality-comparison
+#   "PLR1714",
+#   # self-or-cls-assignment
+#   "PLW0642",
+#   # literal-membership
+#   "PLR6201", # 847 errors
+#   # Method could be a function, class method, or static method
+#   "PLR6301", # 11411 errors
+#   # Private name import
+#   "PLC2701", # 27 errors
+#   # Too many positional arguments (6/5)
+#   "PLR0917", # 470 errors
+#   # compare-to-empty-string
+#   "PLC1901",
+#   # `tempfile.NamedTemporaryFile` in text mode without explicit `encoding` argument
+#   "PLW1514", # 1 error
+#   # Object does not implement `__hash__` method
+#   "PLW1641", # 16 errors
+#   # Bad or misspelled dunder method name
+#   "PLW3201", # 69 errors, seems to be all false positive
+#   # Unnecessary lookup of dictionary value by key
+#   "PLR1733", # 5 errors, it seems like we wannt to ignore these
+#   # Unnecessary lookup of list item by index
+#   "PLR1736", # 4 errors, we're currently having inline pylint ignore
+#   # empty-comment
+#   "PLR2044", # autofixable
+#   # Unpacking a dictionary in iteration without calling `.items()`
+#   "PLE1141", # autofixable
+#   # import-outside-toplevel
+#   "PLC0415",
+#   # unnecessary-dunder-call
+#   "PLC2801",
+#   # comparison-with-itself
+#   "PLR0124",
+#   # too-many-public-methods
+#   "PLR0904",
+#   # too-many-return-statements
+#   "PLR0911",
+#   # too-many-branches
+#   "PLR0912",
+#   # too-many-arguments
+#   "PLR0913",
+#   # too-many-locals
+#   "PLR0914",
+#   # too-many-statements
+#   "PLR0915",
+#   # too-many-boolean-expressions
+#   "PLR0916",
+#   # too-many-nested-blocks
+#   "PLR1702",
+#   # redefined-argument-from-local
+#   "PLR1704",
+#   # unnecessary-lambda
+#   "PLW0108",
+#   # global-statement
+#   "PLW0603",
+# ]
+
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+split-on-trailing-commas = false
+
+
+# [tool.ruff.lint.flake8-tidy-imports.banned-api]
+# "urllib.request.urlopen".msg = "Use pandas.io.common.urlopen instead of urllib.request.urlopen"
+# # numpy.random is banned but np.random is not. Is this intentional?
+# # "numpy.random".msg = "Do not use numpy.random"
+# "pytest.warns".msg = "Use tm.assert_produces_warning instead of pytest.warns"
+# "pytest.xfail".msg = "Use pytest.mark.xfail instead of pytest.xfail"
+# "conftest".msg = "No direct imports from conftest"
+# "numpy.testing".msg = "Do not use numpy.testing"
+# # "numpy.array_equal".msg = "Do not use numpy.array_equal" # Used in pandas/core
+# "unittest.mock".msg = "use pytest builtin monkeypatch fixture instead"
+# "os.remove".msg = "Do not use os.remove"
+
+# [tool.ruff.lint.flake8-import-conventions.aliases]
+# "pandas.core.construction.array" = "pd_array"
+
+# [tool.ruff.lint.per-file-ignores]
+# # relative imports allowed for asv_bench
+# "asv_bench/*" = ["TID", "NPY002"]
+# # to be enabled gradually
+# "pandas/core/*" = ["PLR5501"]
+# "pandas/tests/*" = ["B028", "FLY"]
+# "scripts/*" = ["B028"]
+# # Keep this one enabled
+# "pandas/_typing.py" = ["TCH"]
+
+# [tool.ruff.lint.flake8-pytest-style]
+# fixture-parentheses = false
+# mark-parentheses = false
+
+[tool.ruff.format]
+docstring-code-format = true
+
+### }}} // format
+
+
+# {{{ BUILD: 
+
+[build-system]
+requires = [
+    "poetry-core>=2.0",
+    "setuptools",
+    "wheel",
+    "incremental",
+]
+build-backend = "poetry.core.masonry.api"
+#build-backend = "setuptools.build_meta"
+
+### }}} // build
+
+# /////////////////////////////////////////////////////////////////////////////
+
+[project]
+name = "obs"
+version = "0.1.0"
+description = "Obsidian Markdown aggregation tools for NotebookLM"
+readme = "README.md"
+authors = [
+    { name = "datalab", email = "datalab@unimib.it" }
+]
+requires-python = ">=3.12"
+
+# {{{ ////////////////////////////////////////////////////////////////
+
+dependencies = [
+    "click>=8.1.7",
+    "pyyaml>=6.0.1",
+    "pathspec>=0.11.0",
+    "toml>=0.10.2",
+    "icecream>=2.1.3",
+]
+
+# }}} //
+
+# {{{ ////////////////////////////////////////////////////////////////
+
+# [project.optional-dependencies]
+[dependency-groups]
+dev = [
+    "pytest>=7.4.3",
+    "pytest-mock>=3.12.0",
+    "mypy>=1.7.1",
+    "ruff>=0.1.6",
+    "pyright>=1.1.338",
+    "types-pyyaml>=6.0.12",
+    "types-toml>=0.10.8",
+    "behave",
+]
+
+
+# }}} //
+
+
+
+# {{{ ////////////////////////////////////////////////////////////////
+
+[project.scripts]
+obs = "obs.cli.main:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/main/python/obs"]
+
+[tool.hatch.build.targets.wheel.sources]
+# Map the Maven directory to the root of the package
+"src/main/python" = ""
+
+[tool.pytest.ini_options]
+pythonpath = [
+    "src/main/python",
+    "src/test/python"
+]
+testpaths = ["src/test/python"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
+
+# }}} //
+
+# {{{ ////////////////////////////////////////////////////////////////
+
+[tool.ruff]
+src = ["src/main/python"]
+line-length = 100
+indent-width = 4
+target-version = "py310"
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"
+
+[tool.ruff.lint]
+select = [
+    "F",   # pyflakes
+    "E",   # pycodestyle
+    "I",   # isort
+    "N",   #
+    "W",   #
+    "UP",  #
+    "ANN", # flake8 type annotations
+    "RUF", # ruff-specific rules
+]
+fixable = ["ALL"]
+ignore = ["E501"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.mypy]
+python_version = "3.12"
+mypy_path = "src/main/python"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+strict = true
+
+# }}} //
+
+
+# {{{ ////////////////////////////////////////////////////////////////
+
+# --- Project Configuration ---
+
+[tool.obs]
+force = false
+ctl.active = false
+ctl.disabled = false
+
+[tool.obs.paths]
+doc_dir = "doc/obs"
+pdf_dir = "doc/obs/EE-pdfs"
+log_dir = "logs"
+
+[tool.obs.filter]
+include = [
+    "*.md",
+    "!*-draft.md",
+    "!*-pdfs/",
+    "!*.excalidraw.md"
+]
+
+[tool.obs.log]
+level = "INFO"
+
+
+
+# }}} //
+
