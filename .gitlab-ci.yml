@@ -4,7 +4,7 @@
 # Shared release pipeline for the dve-simple-py codebase.
 # This exact file lives in both projects:
 #   - ub-dems/dve-simple-py        (private downstream fork, branches main/development)
-#   - ub-dems-public/dve-simple-py (public upstream, branch main)
+#   - ub-dems/dve-simple-py (public upstream, branch main)
 #
 # The pipeline is tag-triggered (v*.*.*) and splits into two cooperating
 # pipeline RUNS in two different projects:
@@ -1112,7 +1112,7 @@ package-build-images:
 # -----------------------------------------------------------------------------
 # Stage: image-push (upstream only)
 # -----------------------------------------------------------------------------
-# Project scope    : upstream only (ub-dems-public/dve-simple-py)
+# Project scope    : upstream only (ub-dems/dve-simple-py)
 # Trigger condition: tag *.*.* (workflow:rules) AND upstream project path;
 # Required vars    : GS_REGISTRY_URL, GS_REGISTRY_USER, GS_REGISTRY_PASSWORD
 

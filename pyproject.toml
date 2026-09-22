@@ -175,9 +175,9 @@ gpu = [
 # ============================================================
 
 [project.urls]
-documentation = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py/-/wikis/home"
-homepage = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py"
-repository = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py.git"
+documentation = "https://gitlab.com/ub-dems/ds-labs/dve-sample-py/-/wikis/home"
+homepage = "https://gitlab.com/ub-dems/ds-labs/dve-sample-py"
+repository = "https://gitlab.com/ub-dems/ds-labs/dve-sample-py.git"
 
 # ============================================================
 # Script commands

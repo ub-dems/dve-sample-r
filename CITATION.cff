@@ -38,7 +38,7 @@ abstract: >
 # ── Repository and identifiers ───────────────────────────────────────
 # Private GitLab repository (ub-dems group) — required
 # Repository GitLab privato (gruppo ub-dems) — obbligatorio
-repository-code: "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py"
+repository-code: "https://gitlab.com/ub-dems/ds-labs/dve-sample-py"
 
 # ── Publications ─────────────────────────────────────────────────────────
 # reference to publications

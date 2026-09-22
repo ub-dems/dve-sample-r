@@ -16,8 +16,8 @@ Description: TODO:description.
     aaa.
 License: GPL-3.0-or-later + file LICENSE.md
 URL: https://www.unimib.it,
-     https://gitlab.com/ub-dems-public/ds-labs/dve-sample-r
-BugReports: https://gitlab.com/ub-dems-public/ds-labs/dve-sample-r/-/issues
+     https://gitlab.com/ub-dems/ds-labs/dve-sample-r
+BugReports: https://gitlab.com/ub-dems/ds-labs/dve-sample-r/-/issues
 Depends: 
     R (>= 4.4.0)
 Imports:
