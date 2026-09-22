@@ -120,8 +120,11 @@ RUN /rocker_scripts/install_ubs-rs_rust.sh
 RUN /rocker_scripts/install_ubs-js_node.sh
 RUN /rocker_scripts/install_ubs-js_code.sh
 
+RUN /rocker_scripts/install_ubs-ju_julia.sh
+
 RUN /rocker_scripts/install_ubs-py_base.sh
 RUN /rocker_scripts/install_ubs-py_system.sh
+RUN /rocker_scripts/install_ubs-py_uv.sh
 RUN /rocker_scripts/install_ubs-py_pyenv.sh
 RUN /rocker_scripts/install_ubs-py_poetry.sh
 RUN /rocker_scripts/install_ubs-py_lang.sh

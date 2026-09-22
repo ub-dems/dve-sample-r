@@ -239,6 +239,20 @@ function install_node() {
 }
 
 
+function upgrade_node() {
+
+    [ "$Y_JS_NODE_PKGS" = 1 ] || return 0
+
+
+    # npm upgrades
+
+    npm update -g npm
+
+    npm update -g
+
+}
+
+
 function install_pkgs() {
 
     [ "$Y_JS_NODE_PKGS" = 1 ] || return 0
@@ -275,6 +289,7 @@ function main() {
 
     setenv_rehash    
     
+    upgrade_node "$@"
     install_pkgs "$@"
     check_node "$@"
 

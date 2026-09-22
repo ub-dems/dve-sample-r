@@ -1095,6 +1095,32 @@ do_py_irkernel_reg() {
     
 }
 
+do_py_ijulia_reg() {
+
+    log ">(do_py_ijulia):" "py - ijulia install, ..."
+
+    # run in venv activated subshell
+
+    ( activate
+
+      # @see: https://github.com/IRkernel/IRkernel
+
+      (command -v julia) &> /dev/null && \
+          
+          julia -e '
+          using Pkg
+          # Ensure IJulia is installed in the global/default environment
+          Pkg.add("IJulia")
+          # Force rebuild to link the kernelspec to the $JUPYTER path
+          Pkg.build("IJulia")
+          '
+      
+    )
+
+    log "<(do_py_ijulia):" "py - ijulia install,  done."
+    
+}
+
 
 
 do_py_jupyter_show() {
@@ -1848,6 +1874,7 @@ main_run() {
     if [ "$RUN_PY_JUPYTER" = '1' ]; then
         do_py_jupyter_build $@
         do_py_irkernel_reg $@
+        do_py_ijulia_reg $@
         do_py_jupyter_show $@
         rc_exit $?
     fi

@@ -113,6 +113,7 @@ function install_commons_sys() {
     [ "$Y_BASE_COMMONS_SYS" = 1 ] || return 0
 
 	apt_install \
+		curl \
 		gpg \
 		apt-file \
 		libgsl-dev \
@@ -150,6 +151,7 @@ function install_commons_xwindow() {
 	        xauth \
 		xsel \
 		xclip \
+                ghostty \
                 qterminal \
                 rxvt-unicode \
                 xterm

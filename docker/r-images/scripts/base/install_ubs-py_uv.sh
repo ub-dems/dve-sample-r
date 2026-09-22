@@ -194,11 +194,6 @@ function config_uv() {
 
     [ "$Y_PY_UV_CONFIG" = 1 ] || return 0
 
-    mkdir -p "$UV_PYTHON_INSTALL_DIR"
-    mkdir -p "$UV_CACHE_DIR"
-    mkdir -p "$UV_TOOL_DIR"
-
-    echo "# +++ pyenv: PATH=${PATH}"
 
 }
 
@@ -213,10 +208,9 @@ function install_uv_python() {
 
     # python setup
 
-    env PYTHON_CONFIGURE_OPTS=${PYTHON_CONFIGURE_OPTS}  \
-        uv python install ${PYTHON_VERSION} \
-        --python-preference managed \
-        --preview
+    uv python install ${PYTHON_VERSION} \
+       --python-preference managed \
+       --preview
 
     ## --default
 
@@ -428,17 +422,13 @@ function check_uv() {
     which python      || true
     which -a python3  || true
 
-    python --version  || false
+    python3 --version || false
 
     # which    pip      || true
     # which -a pip3     || true
     # pip    --version  || false
 
-    which   pipx      || true
-    pipx  --version   || true
-
-    pipx    list \
-          --global    || true
+    uv tool list      || true
 
     set +x
 
@@ -464,18 +454,19 @@ function main() {
     info "> script($0) -- STARTED, ..."
 
     install_uv
-    config_uv
-    setenv_rehash
 
-    install_uv_python
-    config_uv_python
+    # config_uv
+    # setenv_rehash
 
-    upgrade_uv_python
-    install_uv_extras
-    install_uv_pipx
-    install_uv_poetry
+    # install_uv_python
+    # config_uv_python
 
-    define_uv_default
+    # upgrade_uv_python
+    # install_uv_extras
+    # install_uv_pipx
+    # install_uv_poetry
+
+    # define_uv_default
 
     check_uv
 
