@@ -260,6 +260,8 @@ function init_rstudio_config() {
 }
 
 function init_rstudio_service() {
+
+    # @deprecated: rootless mode supported in rocker images
     
     sed -i 's/"$USER" != "$DEFAULT_USER"/ "$USER" != "$DEFAULT_USER" -a "$USER" != "root"/g'      \
         /etc/cont-init.d/02_userconf
@@ -334,10 +336,10 @@ function init_rstudio() {
     
     [ "$Y_BASE_INIT_RSTUDIO" = 1 ] || return 0
     
-    init_rstudio_config
-    init_rstudio_service
-    init_rstudio_logging
-    init_rstudio_environ
+    # init_rstudio_config
+    # init_rstudio_service
+    # init_rstudio_logging
+    # init_rstudio_environ
     
 }
 
@@ -380,7 +382,7 @@ function main() {
 
     init_userconf
     init_profile
-    init_rstudio
+    # init_rstudio
     init_home
     
     setenv_rehash

@@ -90,30 +90,42 @@ ENV CAN_LAUNCH_AS_ROOT=1
 ARG  Y_ENV_FILE=.env
 ENV  X_ENV_FILE=$Y_ENV_FILE
 
-ENV UV_ENV_FILE=${X_ENV_FILE}
+ENV UV_ENV_FILE=$Y_ENV_FILE
 
 # python support
+
+ENV UV_LINK_MODE=copy
 
 ENV VIRTUAL_ENV=/opt/venv
 ENV VIRTUAL_IMG=/opt/venv.img
 
-ENV PYENV_ROOT=/opt/pyenv
-ENV PIPX_GLOBAL_HOME=/opt/pipx
-ENV PIPX_GLOBAL_BIN_DIR=/opt/pipx/bin
-ENV POETRY_HOME=/opt/poetry
-ENV PYVENVS_ROOT=/opt/pyvenvs
-ENV GLOBAL_VENV=/opt/pyvenvs/global
+# ENV PYENV_ROOT=/opt/pyenv
+# ENV PIPX_GLOBAL_HOME=/opt/pipx
+# ENV PIPX_GLOBAL_BIN_DIR=/opt/pipx/bin
+# ENV POETRY_HOME=/opt/poetry
+# ENV PYVENVS_ROOT=/opt/pyvenvs
+# ENV GLOBAL_VENV=/opt/pyvenvs/global
+
+# julia support
+
+ENV JULIA_ROOT=/opt/julia
+
+# node support
 
 ENV FNM_ROOT=/opt/fnm
 ENV NODE_ROOT=/opt/nodejs
 ENV FNM_DIR=$NODE_ROOT/.fnm
+
+# rust support
+
 ENV RUST_ROOT=/opt/rust
 ENV RUSTUP_HOME=/opt/rust
 ENV CARGO_HOME=/opt/cargo
 
-#RUN mkdir -p ${POETRY_HOME}/bin ${PIPX_GLOBAL_HOME} ${PIPX_GLOBAL_BIN_DIR} ${PYVENVS_ROOT} ${GLOBAL_VENV}/bin ${PYENV_ROOT}/bin ${PYENV_ROOT}/shims ${PYENV_ROOT}/plugins/pyenv-virtualenv/shims
-#RUN echo "# +++ #base(123): zzz"
-ENV PATH=${POETRY_HOME}/bin:${PIPX_GLOBAL_BIN_DIR}:${PYENV_ROOT}/shims:${PYENV_ROOT}/bin:${PYENV_ROOT}/plugins/pyenv-virtualenv/shims:${GLOBAL_VENV}/bin:${NODE_ROOT}/bin:${CARGO_HOME}/bin:${RUSTUP_HOME}/bin:${PATH}
+# RUN mkdir -p ${POETRY_HOME}/bin ${PIPX_GLOBAL_HOME} ${PIPX_GLOBAL_BIN_DIR} ${PYVENVS_ROOT} ${GLOBAL_VENV}/bin ${PYENV_ROOT}/bin ${PYENV_ROOT}/shims ${PYENV_ROOT}/plugins/pyenv-virtualenv/shims
+# RUN echo "# +++ #base(123): zzz"
+# ENV PATH=${POETRY_HOME}/bin:${PIPX_GLOBAL_BIN_DIR}:${PYENV_ROOT}/shims:${PYENV_ROOT}/bin:${PYENV_ROOT}/plugins/pyenv-virtualenv/shims:${GLOBAL_VENV}/bin:${NODE_ROOT}/bin:${CARGO_HOME}/bin:${RUSTUP_HOME}/bin:${PATH}
+ENV PATH=${PATH}:${NODE_ROOT}/bin:${CARGO_HOME}/bin:${RUSTUP_HOME}/bin:
 RUN echo "# +++ #base(pre): PATH=${PATH}"
 
 RUN /rocker_scripts/install_ubs-rs_rust.sh
@@ -122,13 +134,13 @@ RUN /rocker_scripts/install_ubs-js_code.sh
 
 RUN /rocker_scripts/install_ubs-ju_julia.sh
 
-RUN /rocker_scripts/install_ubs-py_base.sh
-RUN /rocker_scripts/install_ubs-py_system.sh
+# RUN /rocker_scripts/install_ubs-py_base.sh
+# RUN /rocker_scripts/install_ubs-py_system.sh
 RUN /rocker_scripts/install_ubs-py_uv.sh
-RUN /rocker_scripts/install_ubs-py_pyenv.sh
-RUN /rocker_scripts/install_ubs-py_poetry.sh
+# RUN /rocker_scripts/install_ubs-py_pyenv.sh
+# RUN /rocker_scripts/install_ubs-py_poetry.sh
 RUN /rocker_scripts/install_ubs-py_lang.sh
-RUN /rocker_scripts/install_ubs-py_jupyter.sh
+# RUN /rocker_scripts/install_ubs-py_jupyter.sh
 
 RUN /rocker_scripts/install_ubs-re_seal.sh
 

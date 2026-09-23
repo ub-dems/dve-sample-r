@@ -102,7 +102,7 @@ Usage: $XS <command> [args] ...
 where command is:
 
   --status: dump virtuaenv info
-  --upgrade: force poetry lock/renv snapshot
+  --upgrade: force uv lock/renv snapshot
   --help: 
 
 EOF
@@ -206,6 +206,18 @@ dump_extras_status() {
 # setup extra languge and tools: ${args}
 #
 
+- julia:
+   environ:
+    JULIA_ROOT: "${JULIA_ROOT}"
+    JULIA_HOME: "${JULIA_HOME}"
+   binaries:
+    julia:
+     path: |
+$(which julia  2>/dev/null || echo "NOCARGO" | sk)
+     vers: |
+$(julia --version || echo "NOCARGO" | sk)
+
+
 - rust:
    environ:
     CARGO_HOME: "${CARGO_HOME}"
@@ -266,20 +278,23 @@ dump_venv_status() {
 # setup python venv status: ${args}
 #
 
+#    poetry-venv: |
+# $(poetry env info | sl)
+
 - virtual-env:
    paths:
     path: |
 $(echo "${PATH}" | tr ':' '\n' | sl)
     library_path: |
 $(echo "${LD_LIBRARY_PATH}" | tr ':' '\n' | sl)
-    python: "$(which python || )"
-    python-version: "$(python --version || echo "NOPYTHON")"
-    poetry: "$(which poetry)"
-    poetry-version: "$(poetry --version)"
-    jupyter: "$(which jupyter)"
-    jupyter-version: "$(jupyter --version)"
-   poetry-venv: |
-$(poetry env info | sl)
+    python: "$(which python || echo NOPYTHON)"
+    python-version: "$(python --version || echo NOPYTHON)"
+    uv: "$(which uv || echo NOUV)"
+    uv-version: "$(uv --version || echo NOUV)"
+    poetry: "$(which poetry || echo NOPOETRY)"
+    poetry-version: "$(poetry --version || echo NOPOETRY)"
+    jupyter: "$(which jupyter || echo NOJUPYTER)"
+    jupyter-version: "$(jupyter --version || echo NOJUPYTER)"
 
 - r-bindings:
    config:
@@ -297,9 +312,9 @@ $(jupyter kernelspec list || echo "NOJUPYTER" | sl)
 
 - python-deps
    list: |
-$(poetry show | sl)
+$((uv pip list || poetry show) | sl)
    project: |
-$(ls -l pyproject.toml poetry.lock | sl)
+$(ls -l pyproject.toml poetry.lock uv.lock | sl)
  
 
 # }}} -----

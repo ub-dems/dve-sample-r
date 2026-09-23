@@ -108,21 +108,37 @@ function upgrade_commons_all() {
 
 }
 
-function install_commons_sys() {
+function install_commons_min() {
 
-    [ "$Y_BASE_COMMONS_SYS" = 1 ] || return 0
+    [ "$Y_BASE_COMMONS_MIN" = 1 ] || return 0
 
 	apt_install \
 		curl \
-		gpg \
-		apt-file \
+		gpg
+
+}
+
+function install_commons_dev() {
+
+    [ "$Y_BASE_COMMONS_DEV" = 1 ] || return 0
+
+	apt_install \
 		libgsl-dev \
 		libtbb-dev \
 		libzmq3-dev \
 		libglpk-dev \
 		libncurses5-dev \
 		libtinfo6 \
-		default-libmysqlclient-dev \
+		default-libmysqlclient-dev
+
+}
+
+function install_commons_sys() {
+
+    [ "$Y_BASE_COMMONS_SYS" = 1 ] || return 0
+
+	apt_install \
+		apt-file \
 		parallel \
 		hwloc \
 		tasksel \
@@ -249,6 +265,8 @@ function prepare_commons_mounts() {
 function install_commons() {
 
 	upgrade_commons_all
+	install_commons_min
+	install_commons_dev
 	install_commons_sys
 	install_commons_xwindow
 	install_commons_fonts
