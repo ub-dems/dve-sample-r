@@ -143,12 +143,21 @@ dependencies = [
 # ============================================================
 [project.optional-dependencies]
 
-cpu = ["torch==2.10.*", "torchvision==0.25.*"]
+cpu = [
+  
+  "torch==2.10.*",
+  "torchvision==0.25.*",
+
+  "keras",
+  
+]
 
 gpu = [
 
   "torch==2.10.*",
   "torchvision==0.25.*",
+
+  "keras",
 
   ### "tensorflow==2.21.*",
   ### "tensorflow-datasets==4.9.*",
