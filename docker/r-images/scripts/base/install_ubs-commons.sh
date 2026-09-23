@@ -85,11 +85,12 @@ function env_dump() {
 
 # a function to install apt packages only if they are not installed
 function apt_install() {
+        aq=" -qq -o=Dpkg::Use-Pty=0 "
 	if ! dpkg -s "$@" >/dev/null 2>&1; then
 		if [ "$(find /var/lib/apt/lists/* | wc -l)" = "0" ]; then
-			apt-get update
+			apt-get update $aq
 		fi
-		apt-get install -y --no-install-recommends "$@"
+		apt-get install $aq -y --no-install-recommends "$@"
 	fi
 }
 

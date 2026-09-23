@@ -75,7 +75,6 @@ VignetteBuilder:
 Encoding: UTF-8
 LazyData: yes
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 8.1.0
 Config/build/copy-method: link
 Collate: 
     'RcppExports.R'
@@ -87,3 +86,4 @@ Collate:
     'iologs.R'
     'iopath.R'
     'ioutils.R'
+Config/roxygen2/version: 8.1.0
