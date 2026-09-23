@@ -95,8 +95,9 @@ ENV UV_ENV_FILE=$Y_ENV_FILE
 # python support
 
 ENV UV_LINK_MODE=copy
+ENV UV_PROJECT_ENVIRONMENT=.venv.cdk
 
-ENV VIRTUAL_ENV=.venv.cdk
+ENV VIRTUAL_ENV=
 
 # ENV VIRTUAL_IMG=/opt/venv.img
 

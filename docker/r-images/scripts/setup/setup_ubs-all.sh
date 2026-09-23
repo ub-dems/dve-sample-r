@@ -892,7 +892,7 @@ do_py_lock() {
         uv)
             if [ ! -f ./uv.lock ]; then
                 export PYTHON_KEYRING_BACKEND="keyring.backends.null.Keyring"
-                uv lock
+                uv lock --no-progress
                 info "./uv.lock created."
                 uv pip list
             else
@@ -928,7 +928,7 @@ do_py_install() {
 
             info "uv sync -- (extra: $X_UV_EXTRA) -- X_HAS_GPU=$X_HAS_GPU"
             
-            uv sync --extra=$X_UV_EXTRA --all-groups
+            uv sync --extra=$X_UV_EXTRA --all-groups  --no-progress
             
             info "uv sync -- (rc: $?) -- from $(ls -l uv.lock)"
         ;;
