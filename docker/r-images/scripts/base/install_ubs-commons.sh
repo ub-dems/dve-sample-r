@@ -167,10 +167,12 @@ function install_commons_xwindow() {
 	        xauth \
 		xsel \
 		xclip \
-                ghostty \
                 qterminal \
                 rxvt-unicode \
                 xterm
+        
+        #       ghostty \
+            
 }
 
 function install_commons_fonts() {

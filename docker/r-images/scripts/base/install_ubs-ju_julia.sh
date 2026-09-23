@@ -283,9 +283,9 @@ function install_julia() {
 
 
     # Download Julia and create a symbolic link.
-    wget "https://julialang-s3.julialang.org/bin/linux/${ARCH_SHORT}/${JULIA_MINOR_VERSION}/julia-${JULIA_VERSION}-linux-${ARCH_LONG}.tar.gz"
+    wget -nv "https://julialang-s3.julialang.org/bin/linux/${ARCH_SHORT}/${JULIA_MINOR_VERSION}/julia-${JULIA_VERSION}-linux-${ARCH_LONG}.tar.gz"
     mkdir -p "${JULIA_ROOT}"
-    tar zxvf "julia-${JULIA_VERSION}-linux-${ARCH_LONG}.tar.gz" -C "${JULIA_ROOT}" --strip-components 1
+    tar zxf "julia-${JULIA_VERSION}-linux-${ARCH_LONG}.tar.gz" -C "${JULIA_ROOT}" --strip-components 1 
     rm -f "julia-${JULIA_VERSION}-linux-${ARCH_LONG}.tar.gz"
     ln -s "${JULIA_ROOT}/bin/julia" /usr/local/bin/julia
 

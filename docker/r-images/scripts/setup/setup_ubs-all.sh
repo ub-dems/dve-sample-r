@@ -10,6 +10,7 @@ source ${X_BUILD_CONF:-$Y_BUILD_CONF}
 set +x
 
 NCPUS=${NCPUS:--1}
+UV_NO_PROGRESS=1
 
 #set -x
 # ------------------------------------------------------
@@ -296,6 +297,10 @@ dump_venv_status() {
 #
 
 - virtual-env:
+   environ:
+    VIRTUAL_ENV: "${VIRTUAL_ENV}"
+    X_HAS_GPU: "${X_HAS_GPU}"
+    X_UV_EXTRA: "${X_UV_EXTRA}"
    paths:
     path: |
 $(echo "${PATH}" | tr ':' '\n' | sl)
@@ -310,8 +315,10 @@ $(echo "${LD_LIBRARY_PATH}" | tr ':' '\n' | sl)
     poetry-version: "$(poetry --version || echo NOPOETRY )"
     jupyter: "$(which jupyter || echo NOJUPYTER )"
     jupyter-version: "$(jupyter --version || echo NOJUPYTER )"
-   poetry-venv: |
-$(poetry env info | sl)
+    uv-venv: |
+$((uv python find || echo NOUVVIRTUALENV) | sl)
+    poetry-venv: |
+$((poetry env info || echo NOPOETRY) | sl)
 
 - r-bindings:
    config:
@@ -329,9 +336,9 @@ $(jupyter kernelspec list || echo "NOJUPYTER" | sl)
 
 - python-deps
    list: |
-$(poetry show | sl)
+$((uv pip list || poetry show) | sl)
    project: |
-$(ls -l pyproject.toml poetry.lock | sl)
+$(ls -l pyproject.toml uv.lock poetry.lock | sl)
  
 
 # }}} -----
@@ -1110,7 +1117,7 @@ do_py_ijulia_reg() {
           julia -e '
           using Pkg
           # Ensure IJulia is installed in the global/default environment
-          Pkg.add("IJulia")
+          Pkg.add("IJulia"; io=devnull)
           # Force rebuild to link the kernelspec to the $JUPYTER path
           Pkg.build("IJulia")
           '

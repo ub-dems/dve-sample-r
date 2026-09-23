@@ -96,8 +96,9 @@ ENV UV_ENV_FILE=$Y_ENV_FILE
 
 ENV UV_LINK_MODE=copy
 
-ENV VIRTUAL_ENV=/opt/venv
-ENV VIRTUAL_IMG=/opt/venv.img
+ENV VIRTUAL_ENV=.venv.cdk
+
+# ENV VIRTUAL_IMG=/opt/venv.img
 
 # ENV PYENV_ROOT=/opt/pyenv
 # ENV PIPX_GLOBAL_HOME=/opt/pipx

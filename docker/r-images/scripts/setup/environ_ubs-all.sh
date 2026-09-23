@@ -754,7 +754,7 @@ do_us_emacs() {
             
     [ -e ~/.emacs ] || { \
         [ -e ~/.import/.emacs ] && \
-            cp -pv  ~/.import/.emacs ~/.emacs
+            cp -p  ~/.import/.emacs ~/.emacs
         }
             
     [ -e ~/.emacs-start.el ]  || { \
@@ -764,7 +764,7 @@ do_us_emacs() {
             
     [ -d ~/.emacs.d ] || { \
         [ -d ~/.import/.emacs.d ] && \
-            cp -rpv ~/.import/.emacs.d ~/.emacs.d 
+            cp -rp ~/.import/.emacs.d ~/.emacs.d 
         }
 
     log "<(do_us_emacs):"  "us - emacs config, done"
