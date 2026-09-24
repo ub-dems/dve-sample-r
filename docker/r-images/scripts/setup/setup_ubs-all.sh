@@ -10,7 +10,6 @@ source ${X_BUILD_CONF:-$Y_BUILD_CONF}
 set +x
 
 NCPUS=${NCPUS:--1}
-UV_NO_PROGRESS=1
 
 #set -x
 # ------------------------------------------------------
@@ -41,13 +40,14 @@ set -a
 
 # ------------------------------------------------------
 
-: ${PYTHON_VERSION=${Y_PY_PYTHON_VERSION:-'3.14.3'}}
-: ${UV_ROOT:="/usr/local/bin"}
-: ${UV_INSTALL_DIR:="/usr/local/bin"}
-: ${UV_TOOL_BIN_DIR:="/usr/local/bin"}
-: ${UV_PYTHON_INSTALL_DIR:="/opt/uv/python"}
-: ${UV_CACHE_DIR:="/opt/uv/cache"}
+: ${PYTHON_VERSION=${Y_PY_PYTHON_VERSION:-'3.14'}}
+# : ${UV_ROOT:="/usr/local/bin"}
+# : ${UV_INSTALL_DIR:="/usr/local/bin"}
+# : ${UV_TOOL_BIN_DIR:="/usr/local/bin"}
+# : ${UV_PYTHON_INSTALL_DIR:="/opt/uv/python"}
+# : ${UV_CACHE_DIR:="/opt/uv/cache"}
 : ${UV_PROJECT_ENVIRONMENT:=".venv.cdk"}
+: ${UV_NO_PROGRESS:="1"}
 
 : ${PYTHON_CONFIGURE_OPTS:="--enable-shared"}
 
@@ -804,6 +804,93 @@ do_py_cache() {
 }
 
 
+do_py_boot() {
+
+    log ">(do_py_boot):" "py - boot, ..."
+
+    case "$X_PY_MODE" in
+        uv)
+            if (command -v uv) > /dev/null; then
+                log ":(do_py_boot):" "uv - found, skip."
+            else
+                log ":(do_py_boot):" "uv - not found => install uv, ..."
+                
+                curl -LsSf https://astral.sh/uv/install.sh | sh
+                
+                log ":(do_py_boot):" "uv - not found => install uv, done."
+            fi
+
+            which uv        || false
+            which uvx       || false
+            uv --version    || false
+
+            : ${PYTHON_VERSION:=3.14}
+
+            if [ -f .python-version ]; then
+                PYTHON_VERSION="$(cat .python-version)"
+                export PYTHON_VERSION
+            fi
+
+            if false; then # check uv python
+                log ":(do_py_boot):" "uv - python found, skip."
+                # uv python install --force --upgrade
+            else
+                log ":(do_py_boot):" "uv - python not found => install $PYTHON_VERSION, ..."
+                
+                uv python install ${PYTHON_VERSION} \
+                   --python-preference managed \
+                   --preview
+                
+                log ":(do_py_boot):" "uv - python not found => install $PYTHON_VERSION, done."
+            fi
+                
+            which python        || false
+            which python3       || false
+            python --version    || false
+
+
+            uv tool dir
+            uv tool list
+
+            if false; then # check uv tools
+                log ":(do_py_boot):" "uv - tools found, skip."
+                # uv tool install --force --upgrade
+            else
+                log ":(do_py_boot):" "uv - tool not found => install tools, ..."
+                
+                uv tool install ipython    --no-progress
+                uv tool install pipx       --no-progress
+                uv tool install pycowsay   --no-progress
+                uv tool install poetry     --no-progress
+                uv tool install ruff       --no-progress
+                
+                log ":(do_py_boot):" "uv - python not found => install tools, done."
+            fi
+                
+            uv tool dir
+            uv tool list
+
+            which ipython       || false
+
+            # uv run python -c "import sys; print('sys.prefix:', sys.prefix)"
+            py_msg="uv=$(uv --version), python=$(uv run python --version)"
+            py_msg="$(echo $py_msg | tr -d'\')"
+            pycowsay "$py_msg"
+            pycowsay 'moooo!'
+            
+        ;;
+        poetry)
+            warn "pyenv/poetry install unsupported, skip"
+        ;;
+        *)
+            error "undefined X_PY_MODE=$X_PY_MODE"
+        ;;
+    esac
+    
+    log "<(do_py_boot):" "py - boot, done."
+    
+}
+
 
 do_py_venv() {
 
@@ -1073,7 +1160,8 @@ do_py_jupyter_build() {
       jlpm install
 
       jupyter lab clean --all
-      jupyter lab build --debug
+      jupyter lab build
+      # jupyter lab build --debug
       
       
     )
@@ -1094,7 +1182,7 @@ do_py_irkernel_reg() {
 
       R --quiet   -e 'IRkernel::installspec()'
 
-      jupyter labextension install @techrah/text-shortcuts  # for RStudio’s shortcuts
+      # jupyter labextension install @techrah/text-shortcuts  # for RStudio’s shortcuts
       
     )
 
@@ -1615,6 +1703,7 @@ parse_args_run() {
 
     set -x
     
+    RUN_PY_BOOT=0
     RUN_PY_CLEAR=0
     RUN_PY_RESET=0
     RUN_PY_VENV=0
@@ -1638,6 +1727,11 @@ parse_args_run() {
     while [ $# -gt 0 ]; do
         case "$1" in
             
+            --boot)
+                RUN_PY_BOOT=1
+                cmds="$cmds --boot"
+                ;;
+            
             --clear)
                 RUN_PY_CLEAR=1
                 RUN_RE_CLEAR=1
@@ -1653,6 +1747,7 @@ parse_args_run() {
                 ;;
             
             --all)
+                RUN_PY_BOOT=1
                 RUN_PY_VENV=1
                 RUN_PY_INSTALL=1
                 RUN_PY_BIND=1
@@ -1819,6 +1914,7 @@ parse_args_run() {
     debug "#(args): {\n $(set | sort | grep -e ^PY_OPTS -e ^RE_OPTS -e ^RUN_  -e ^X_  -e ^Y_ ) \n} ###"
     dump  "#(args): {\n $(set | sort | grep -e ^PY_OPTS -e ^RE_OPTS -e ^RUN_  -e ^X_  -e ^Y_ ) \n} ###"
 
+    env_defined RUN_PY_BOOT
     env_defined RUN_PY_CLEAR
     env_defined RUN_PY_RESET
     env_defined RUN_PY_INSTALL
@@ -1852,6 +1948,11 @@ main_run() {
     
     log ">(main.run):" "args:$args -- cmds: $cmds, ..."
     
+    if [ "$RUN_PY_BOOT" = '1' ]; then
+        do_py_boot $@
+        rc_exit $?
+    fi
+
     if [ "$RUN_PY_CLEAR" = '1' ]; then
         do_py_clear $@
         rc_exit $?
@@ -1875,14 +1976,6 @@ main_run() {
 
     if [ "$RUN_PY_BIND" = '1' ]; then
         do_py_reticulate $@
-        rc_exit $?
-    fi
-
-    if [ "$RUN_PY_JUPYTER" = '1' ]; then
-        do_py_jupyter_build $@
-        do_py_irkernel_reg $@
-        do_py_ijulia_reg $@
-        do_py_jupyter_show $@
         rc_exit $?
     fi
 
@@ -1913,6 +2006,14 @@ main_run() {
 
     if [ "$RUN_JS_NODE" = '1' ]; then
         do_js_node $@
+        rc_exit $?
+    fi
+
+    if [ "$RUN_PY_JUPYTER" = '1' ]; then
+        do_py_jupyter_build $@
+        do_py_irkernel_reg $@
+        do_py_ijulia_reg $@
+        do_py_jupyter_show $@
         rc_exit $?
     fi
 

@@ -61,6 +61,9 @@ RUN  echo "$TZ" > /etc/timezone
 
 ARG  Y_KBD_LAYOUT_SET=it
 
+# apt-get/dpkg batch mode
+ENV DEBIAN_FRONTEND noninteractive
+
 COPY scripts/base /rocker_scripts
 COPY build.conf   /etc/build.conf
 ARG  Y_BUILD_CONF=/etc/build.conf
@@ -127,7 +130,7 @@ ENV CARGO_HOME=/opt/cargo
 # RUN mkdir -p ${POETRY_HOME}/bin ${PIPX_GLOBAL_HOME} ${PIPX_GLOBAL_BIN_DIR} ${PYVENVS_ROOT} ${GLOBAL_VENV}/bin ${PYENV_ROOT}/bin ${PYENV_ROOT}/shims ${PYENV_ROOT}/plugins/pyenv-virtualenv/shims
 # RUN echo "# +++ #base(123): zzz"
 # ENV PATH=${POETRY_HOME}/bin:${PIPX_GLOBAL_BIN_DIR}:${PYENV_ROOT}/shims:${PYENV_ROOT}/bin:${PYENV_ROOT}/plugins/pyenv-virtualenv/shims:${GLOBAL_VENV}/bin:${NODE_ROOT}/bin:${CARGO_HOME}/bin:${RUSTUP_HOME}/bin:${PATH}
-ENV PATH=${PATH}:${NODE_ROOT}/bin:${CARGO_HOME}/bin:${RUSTUP_HOME}/bin:
+ENV PATH=/root/.local/bin:${PATH}:${NODE_ROOT}/bin:${CARGO_HOME}/bin:${RUSTUP_HOME}/bin:
 RUN echo "# +++ #base(pre): PATH=${PATH}"
 
 RUN /rocker_scripts/install_ubs-rs_rust.sh
@@ -138,11 +141,12 @@ RUN /rocker_scripts/install_ubs-ju_julia.sh
 
 # RUN /rocker_scripts/install_ubs-py_base.sh
 # RUN /rocker_scripts/install_ubs-py_system.sh
-RUN /rocker_scripts/install_ubs-py_uv.sh
+# RUN /rocker_scripts/install_ubs-py_uv.sh
 # RUN /rocker_scripts/install_ubs-py_pyenv.sh
 # RUN /rocker_scripts/install_ubs-py_poetry.sh
+
 RUN /rocker_scripts/install_ubs-py_lang.sh
-# RUN /rocker_scripts/install_ubs-py_jupyter.sh
+RUN /rocker_scripts/install_ubs-py_jupyter.sh
 
 RUN /rocker_scripts/install_ubs-re_seal.sh
 

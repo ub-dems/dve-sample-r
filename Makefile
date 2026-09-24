@@ -222,8 +222,8 @@ build-help: help/build
 full: # @HELP/build project environment initializaion after checkout 
 full:  init
 full:  build-setup
-full:  runtime-setup
 full:  runtime-environ
+full:  runtime-setup
 full:  runtime-test
 full:  runtime-check
 full:  runtime-status

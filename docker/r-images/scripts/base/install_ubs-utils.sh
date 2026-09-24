@@ -172,8 +172,11 @@ function install_apps_cursor() {
     echo "deb [arch=amd64,arm64 signed-by=/etc/apt/keyrings/cursor.gpg] https://downloads.cursor.com/aptrepo stable main" \
         | sudo tee /etc/apt/sources.list.d/cursor.list > /dev/null
 
+    aq=" -qq -o=Dpkg::Use-Pty=0 "
+    
     # Update and install
-    apt update
+    apt-get update $aq
+    
     
     apt_install \
         cursor
@@ -194,8 +197,10 @@ function install_apps_antigravity() {
     echo "deb [signed-by=/etc/apt/keyrings/antigravity-repo-key.gpg] https://us-central1-apt.pkg.dev/projects/antigravity-auto-updater-dev/ antigravity-debian main" | \
         sudo tee /etc/apt/sources.list.d/antigravity.list > /dev/null    
 
+    aq=" -qq -o=Dpkg::Use-Pty=0 "
+    
     # Update and install
-    apt update
+    apt-get update $aq
     
     apt_install \
         antigravity

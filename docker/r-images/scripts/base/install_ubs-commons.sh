@@ -98,11 +98,13 @@ function upgrade_commons_all() {
 
     [ "$Y_BASE_COMMONS_UPGRADE" = 1 ] || return 0
 
-    # Update and install
-    apt-get update
+    aq=" -qq -o=Dpkg::Use-Pty=0 "
     
-    apt-get upgrade -y
-    apt-get autoremove -y
+    # Update and install
+    apt-get update $aq
+    
+    apt-get upgrade -y $aq
+    apt-get autoremove -y $aq
     
     apt_install \
         ca-certificates
@@ -115,7 +117,8 @@ function install_commons_min() {
 
 	apt_install \
 		curl \
-		gpg
+		gpg \
+                apt-utils
 
 }
 
