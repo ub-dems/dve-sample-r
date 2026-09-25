@@ -1570,6 +1570,32 @@ do_renv_reset() {
     
 }
 
+do_cffr_citation() {
+
+    log ">(do_cffr_citation):" "cffr - CITATION, ..."
+
+    # run in venv activated subshell
+
+    ( activate
+
+      R -q -e 'cffr::cff_write_citation(cffr::cff_read("CITATION.cff"), file = "inst/CITATION")'
+      rc_cffr_citation=$?
+
+      case "$rc_cffr_citation" in
+          0) info "=(do_cffr_citation):" "renv - restore => ok" ;;
+          *) error "#(do_cffr_citation):" "renv - restore => KO -- (rc:$rc_cffr_citation)" ;;
+      esac    
+      
+    )
+
+    log "<(do_cffr_citation):" "cffr - CITATION, done."
+
+    return $rc_cffr_citation
+    
+}
+
+
+
 do_re_setup() {
 
     log ">(do_re_setup):" "renv - setup, ..."
@@ -1629,6 +1655,17 @@ do_re_force() {
     log "<(do_re_upgrade):" "renv - upgrade, done."
     
 }
+
+do_re_cffr() {
+
+    log ">(do_re_cffr):" "cffr - setup, ..."
+
+    do_cffr_citation
+
+    log "<(do_re_cffr):" "cffr - setup, done."
+    
+}
+
 
 # ////////////////////////////////////////////////////////////////////////
 
@@ -1716,6 +1753,7 @@ parse_args_run() {
     RUN_RE_UPGRADE=0
     RUN_RE_RESTORE=0
     RUN_RE_SHOW=0
+    RUN_RE_CFFR=0
     
     X_ALL_MODE=1
     X_PYTHON_MODE=0
@@ -1756,6 +1794,7 @@ parse_args_run() {
                 RUN_JS_CODE=1
                 RUN_JS_NODE=1
                 RUN_RE_SETUP=1
+                RUN_RE_CFFR=1
                 RUN_RE_UPGRADE="$Y_RE_RENV_UPGRADE"
                 RUN_RE_RESTORE="$Y_RE_RENV_RESTORE"
                 cmds="$cmds --install --all"
@@ -1855,6 +1894,7 @@ parse_args_run() {
             RUN_RE_SETUP=0
             RUN_RE_RESTORE=0
             RUN_RE_UPGRADE=0
+            RUN_RE_CFFR=0
             RUN_RE_SHOW=0
             ;;
         *)
@@ -1890,6 +1930,7 @@ parse_args_run() {
             RUN_RE_SETUP=0
             RUN_RE_RESTORE=0
             RUN_RE_UPGRADE=0
+            RUN_RE_CFFR=0
             RUN_RE_SHOW=0
             ;;
         *)  ;;
@@ -1926,6 +1967,7 @@ parse_args_run() {
     env_defined RUN_RE_SETUP
     env_defined RUN_RE_RESTORE
     env_defined RUN_RE_UPGRADE
+    env_defined RUN_RE_CFFR
     env_defined RUN_RE_SHOW
     
     env_defined RUN_JS_CODE
@@ -1996,6 +2038,11 @@ main_run() {
 
     if [ "$RUN_RE_SETUP" = '1' ]; then
         do_re_setup $@
+        rc_exit $?
+    fi
+
+    if [ "$RUN_RE_CFFR" = '1' ]; then
+        do_re_cffr $@
         rc_exit $?
     fi
 

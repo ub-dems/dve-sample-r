@@ -1,7 +1,7 @@
 Type: Package
 Package: dvesimpler
 Title: TODO:title 
-Version: 1.0.0.9000
+Version: 1.0.0
 Authors@R: 
     c(person(given = "datalab",
              family = "DEMS",
@@ -9,12 +9,8 @@ Authors@R:
              email = "datalab@unimib.it",
              comment = c()))
 Description: TODO:description.
-    ManuelHentschel/vscDebugger,
-    nx10/httpgd
-    vscDebugger,
-    httpgd,
-    aaa.
-License: GPL-3.0-or-later + file LICENSE.md
+    see "CITATION.cff" for details.
+License: GPL (>= 3)
 URL: https://www.unimib.it,
      https://gitlab.com/ub-dems/ds-labs/dve-sample-r
 BugReports: https://gitlab.com/ub-dems/ds-labs/dve-sample-r/-/issues

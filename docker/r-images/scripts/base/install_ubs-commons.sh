@@ -246,6 +246,7 @@ function install_commons_cran() {
 		usethis \
 		gitcreds \
 		argparse \
+		cffr \
 		cli \
 		here \
 		logging \
