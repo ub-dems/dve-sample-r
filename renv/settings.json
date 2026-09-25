@@ -1,4 +1,5 @@
 {
+  "bioconductor.enabled": true,
   "bioconductor.version": [],
   "external.libraries": [
     "/usr/local/lib/R/site-library",
@@ -6,6 +7,7 @@
     "/usr/lib/R/site-library"
   ],
   "ignored.packages": [],
+  "lockfile.sanitize": true,
   "package.dependency.fields": [
     "Imports",
     "Depends",
@@ -14,6 +16,7 @@
   "ppm.enabled": null,
   "ppm.ignored.urls": [],
   "r.version": [],
+  "snapshot.dev": false,
   "snapshot.type": "explicit",
   "use.cache": true,
   "vcs.ignore.cellar": true,

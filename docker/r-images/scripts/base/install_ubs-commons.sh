@@ -133,7 +133,8 @@ function install_commons_dev() {
 		libglpk-dev \
 		libncurses5-dev \
 		libtinfo6 \
-		default-libmysqlclient-dev
+                libmagick++-dev \
+	        default-libmysqlclient-dev
 
 }
 
@@ -238,6 +239,7 @@ function install_commons_cran() {
 	[ "$Y_BASE_COMMONS_CRAN" = 1 ] || return 0
 
 	install2.r --error --skipmissing --skipinstalled -n $NCPUS \
+		rpsm \
 		remotes \
 		renv \
 		devtools \

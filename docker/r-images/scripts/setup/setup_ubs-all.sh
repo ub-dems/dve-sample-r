@@ -874,7 +874,7 @@ do_py_boot() {
 
             # uv run python -c "import sys; print('sys.prefix:', sys.prefix)"
             py_msg="uv=$(uv --version), python=$(uv run python --version)"
-            py_msg="$(echo $py_msg | tr -d'\')"
+            py_msg="$(echo "$py_msg" | tr -d'\')"
             pycowsay "$py_msg"
             pycowsay 'moooo!'
             

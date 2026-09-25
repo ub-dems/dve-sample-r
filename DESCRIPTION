@@ -23,6 +23,7 @@ Depends:
 Imports:
     Rcpp,
     RcppArmadillo,
+    keras,
     logger,
     glue,
     tidyverse,
@@ -40,6 +41,7 @@ Imports:
     rprojroot,
     yaml
 Suggests:
+    rspm,
     argparse,
     optparse,
     cli (>= 3.3.0),
@@ -69,7 +71,6 @@ Suggests:
     RcppEigen
 LinkingTo: Rcpp, RcppArmadillo, RcppParallel, RcppGSL
 SystemRequirements: GNU Scientific Library (GSL) (>= 2.0)
-Remotes: cran4linux/rspm,
 VignetteBuilder: 
     knitr
 Encoding: UTF-8

@@ -58,6 +58,9 @@ ARG  Y_TZ_SET=Europe/Rome
 ENV  TZ=$Y_TZ_SET
 RUN  echo "$TZ" > /etc/timezone
 
+ARG  Y_LANG_SET=en_GB.UTF-8
+ENV LANG=$Y_LANG_SET
+
 
 ARG  Y_KBD_LAYOUT_SET=it
 
