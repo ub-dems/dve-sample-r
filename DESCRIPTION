@@ -19,7 +19,7 @@ Depends:
 Imports:
     Rcpp,
     RcppArmadillo,
-    keras,
+    keras3,
     logger,
     glue,
     tidyverse,

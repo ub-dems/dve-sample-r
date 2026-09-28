@@ -16,7 +16,7 @@
 #' 
 ## @importFrom RcppGSL LdFlags CFlags
 #
-#' @importFrom keras is_keras_available
+#' @importFrom keras3 config_backend
 # 
 #' @importFrom foreach foreach
 #' @importFrom doParallel registerDoParallel
