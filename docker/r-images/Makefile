@@ -230,6 +230,17 @@ DOCKER_BUILD_PULL := --pull
 
 # ---(gpu)------------------------------------------------
 
+X_HAS_GPU := $(shell (type nvidia-smi && nvidia-smi -L) &> /dev/null  && echo 1 || echo 0)
+
+ifeq (${X_HAS_GPU},1)
+X_UV_EXTRA := gpu
+else
+X_UV_EXTRA := cpu
+endif
+
+
+
+
 # Check if nvidia-detector command exists and returns something other than "None"
 GPU_DETECT_CMD := nvidia-detector
 GPU_AVAILABLE := $(shell command -v $(GPU_DETECT_CMD) >/dev/null 2>&1 && \
@@ -384,6 +395,24 @@ PYRUN_DEFAULT_RUNTIME_OPTIONS := $(PYRUN_EXTRA_RUNTIME_OPTIONS)
 PYRUN_RUNTIME_OPTIONS := $(PYRUN_DEFAULT_RUNTIME_OPTIONS)
 
 RUNTIME_PYRUN_OPTS := $(PYRUN_RUNTIME_OPTIONS)
+
+
+# ---(julia)------------------------------------------------
+
+JULIA_EXTRA_RUNTIME_OPTIONS := 
+JULIA_DEFAULT_RUNTIME_OPTIONS := $(JULIA_EXTRA_RUNTIME_OPTIONS) 
+JULIA_RUNTIME_OPTIONS := $(JULIA_DEFAULT_RUNTIME_OPTIONS)
+
+RUNTIME_JULIA_OPTS := $(JULIA_RUNTIME_OPTIONS)
+
+
+# ---(jrun)------------------------------------------------
+
+JRUN_EXTRA_RUNTIME_OPTIONS := 
+JRUN_DEFAULT_RUNTIME_OPTIONS := $(JRUN_EXTRA_RUNTIME_OPTIONS) 
+JRUN_RUNTIME_OPTIONS := $(JRUN_DEFAULT_RUNTIME_OPTIONS)
+
+RUNTIME_JRUN_OPTS := $(JRUN_RUNTIME_OPTIONS)
 
 
 # ---(auto)------------------------------------------------
@@ -565,9 +594,15 @@ runtime-ipython: init run/python-repl
 
 runtime-pyrun: init run/python-run
 
+runtime-julia: init run/julia-repl
+
+runtime-jrun: init run/julia-run
+
 runtime-auto: init run/exec-auto
 
 runtime-cli: init run/exec-cli
+
+runtime-raw: init run/raw
 
 runtime-shell: init run/shell
 
@@ -742,8 +777,8 @@ build-image/${BLD_WORKER}: build-image/${BLD_RUNTIME}
 # -p ${RUN_PORT_C_EXT}:${RUN_PORT_C_INT} \
 # -p ${RUN_PORT_D_EXT}:${RUN_PORT_D_INT} \
 
-run/shell:
-	@echo "CLI: shell ${RUNTIME_ARGS}"
+run/raw:
+	@echo "CLI: raw (shell no-venv) ${RUNTIME_ARGS}"
 	@[ "${X_X}" = 1 ] && [ -n "${DISPLAY}" ] && echo "DISPLAY=${DISPLAY}" || true
 	@export _passw_=$$(cat ~/.rup/*); set -x; \
 	$(DOCKER)  run \
@@ -1111,6 +1146,52 @@ run/xterm:
 #   "xauth add $(xauth list | grep $DISPLAY)"
 
 
+# ---(shell)------------------------------------------------
+
+
+run/shell:
+	@echo "CLI: shell ${RUNTIME_ARGS}"
+	@[ "${X_X}" = 1 ] && [ -n "${DISPLAY}" ] && echo "DISPLAY=${DISPLAY}" || true
+	@export _passw_=$$(cat ~/.rup/*); set -x; \
+	$(DOCKER)  run \
+		--rm \
+		${DOCKER_RUNTIME_OPTIONS} \
+		-v ${HOME_DIR}:${RUN_USER_HOME}:Z  \
+		-v ~/work:${RUN_USER_HOME}/work:Z  \
+		-v ~/data:${RUN_USER_HOME}/data:Z  \
+		-v ~/data:${HOME}/data:Z  \
+		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
+		-v /usr/local:/usr/local/.import:Z,ro  \
+		-v /opt:/opt/.import:Z  \
+		-v /data/opt/local:/data/opt/local:Z  \
+		-v /etc/terminfo:/etc/terminfo:Z  \
+		-v /store/local:/store/local:Z  \
+		-v /store/share:/store/share  \
+		-v /user:/user  \
+		-v /vol:/vol  \
+		-w ${RUN_USER_HOME}/${CURR_DIR}  \
+		-e PASSWORD=$$_passw_ \
+		-e USER=${RUN_USER_NAME} \
+		-e USERID=${RUN_USER_UID} \
+		-e GROUPID=${RUN_USER_GID} \
+		-e ROOT=true  \
+		-e X_BUILD_CONF="${X_BUILD_CONF}" \
+		-e X_CUDA_CONF="${X_CUDA_CONF}" \
+		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
+		-e X_DEBUG="${X_DEBUG:-0}" \
+		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
+		-e X_ENV_FILE="${X_ENV_FILE:-.env}" \
+		-e UV_ENV_FILE="${UV_ENV_FILE:-$ENV_FILE}" \
+		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		${XDG_RUNTIME_OPTIONS} \
+		${X_RUNTIME_OPTIONS} \
+		-ti  \
+		--name  \
+		${PRC_RUNTIME}.sh-$$PPID \
+		${IMG_RUNTIME} \
+		${X_PY_RUN} \
+		'/bin/bash' ${RUNTIME_RSCRIPT_OPTS} ${RUNTIME_ARGS} || true
+
 # ---(R)------------------------------------------------
 
 run/r-repl:
@@ -1235,7 +1316,7 @@ run/python-repl:
 		${PRC_RUNTIME}.r-$$PPID \
 		${IMG_RUNTIME} \
 		${X_PY_RUN} \
-		${PYVENV_RUN} ${RUNTIME_IPYTHON_OPTS} ${RUNTIME_ARGS}
+		'ipython' ${RUNTIME_IPYTHON_OPTS} ${RUNTIME_ARGS}
 
 run/python-run:
 	@echo "CLI: Python run ${RUNTIME_ARGS}"
@@ -1277,6 +1358,90 @@ run/python-run:
 		${IMG_RUNTIME} \
 		${X_PY_RUN} \
 		${PYVENV_RUN} ${RUNTIME_PYRUN_OPTS} ${RUNTIME_ARGS}
+
+# ---(julia)------------------------------------------------
+
+run/julia-repl:
+	@[ "${X_X}" = 1 ] && [ -n "${DISPLAY}" ] && echo "DISPLAY=${DISPLAY}" || true
+	@export _passw_=$$(cat ~/.rup/*); \
+	$(DOCKER)  run \
+		--rm \
+		${DOCKER_RUNTIME_OPTIONS} \
+		-v ${HOME_DIR}:${RUN_USER_HOME}:Z  \
+		-v ~/work:${RUN_USER_HOME}/work:Z  \
+		-v ~/data:${RUN_USER_HOME}/data:Z  \
+		-v ~/data:${HOME}/data:Z  \
+		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
+		-v /usr/local:/usr/local/.import:Z,ro  \
+		-v /opt:/opt/.import:Z  \
+		-v /data/opt/local:/data/opt/local:Z  \
+		-v /store/local:/store/local:Z  \
+		-v /store/share:/store/share  \
+		-v /user:/user  \
+		-v /vol:/vol  \
+		-w ${RUN_USER_HOME}/${CURR_DIR}  \
+		-e PASSWORD=$$_passw_ \
+		-e USER=${RUN_USER_NAME} \
+		-e USERID=${RUN_USER_UID} \
+		-e GROUPID=${RUN_USER_GID} \
+		-e ROOT=true  \
+		-e X_BUILD_CONF="${X_BUILD_CONF}" \
+		-e X_CUDA_CONF="${X_CUDA_CONF}" \
+		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
+		-e X_DEBUG="${X_DEBUG:-0}" \
+		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
+		-e X_ENV_FILE="${X_ENV_FILE:-.env}" \
+		-e UV_ENV_FILE="${UV_ENV_FILE:-$ENV_FILE}" \
+		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		${XDG_RUNTIME_OPTIONS} \
+		${X_RUNTIME_OPTIONS} \
+		-ti  \
+		--name  \
+		${PRC_RUNTIME}.r-$$PPID \
+		${IMG_RUNTIME} \
+		${X_PY_RUN} \
+		'julia' ${RUNTIME_JULIA_OPTS} ${RUNTIME_ARGS}
+
+run/julia-run:
+	@echo "CLI: Julia run ${RUNTIME_ARGS}"
+	@export _passw_=$$(cat ~/.rup/*); \
+	$(DOCKER)  run \
+		--rm \
+		${DOCKER_RUNTIME_OPTIONS} \
+		-v ${HOME_DIR}:${RUN_USER_HOME}:Z  \
+		-v ~/work:${RUN_USER_HOME}/work:Z  \
+		-v ~/data:${RUN_USER_HOME}/data:Z  \
+		-v ~/data:${HOME}/data:Z  \
+		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
+		-v /usr/local:/usr/local/.import:Z,ro  \
+		-v /opt:/opt/.import:Z  \
+		-v /data/opt/local:/data/opt/local:Z  \
+		-v /store/local:/store/local:Z  \
+		-v /store/share:/store/share  \
+		-v /user:/user  \
+		-v /vol:/vol  \
+		-w ${RUN_USER_HOME}/${CURR_DIR}  \
+		-e PASSWORD=$$_passw_ \
+		-e USER=${RUN_USER_NAME} \
+		-e USERID=${RUN_USER_UID} \
+		-e GROUPID=${RUN_USER_GID} \
+		-e ROOT=true  \
+		-e X_BUILD_CONF="${X_BUILD_CONF}" \
+		-e X_CUDA_CONF="${X_CUDA_CONF}" \
+		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
+		-e X_DEBUG="${X_DEBUG:-0}" \
+		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
+		-e X_ENV_FILE="${X_ENV_FILE:-.env}" \
+		-e UV_ENV_FILE="${UV_ENV_FILE:-$ENV_FILE}" \
+		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		${XDG_RUNTIME_OPTIONS} \
+		${X_RUNTIME_OPTIONS} \
+		-ti  \
+		--name  \
+		${PRC_RUNTIME}.rs-$$PPID \
+		${IMG_RUNTIME} \
+		${X_PY_RUN} \
+		'julia' ${RUNTIME_JRUN_OPTS} ${RUNTIME_ARGS}
 
 # ---(exec)------------------------------------------------
 

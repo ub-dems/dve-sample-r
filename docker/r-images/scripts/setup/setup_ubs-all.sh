@@ -1,6 +1,12 @@
 #!/bin/bash
-
+## ========================================================================
 ## setup entry point
+##
+## -----------------------------------------------------------------------
+## NOTE: check it 'shellcheck';
+##
+## `shellcheck setup_ubs-all.sh`
+## ========================================================================
 ##
 
 ## build ARGs
@@ -153,8 +159,7 @@ sk() {
 
 
 dump_header_status() {
-    cat <<EOF
-#vim: set foldmethod=marker:foldlevel=0
+    cat << EOF
 ---
 title: "setup status - project environment"
 project: "${REV_ID_PROJECT}"
@@ -169,55 +174,55 @@ EOF
 }
 
 dump_global_status() {
-    cat <<EOF
+    cat << EOF
 # {{{ --- [setup-globals] ----------------------------------
 
 ##
 # setup global status: ${args}.
 #
+runtime:
 
-
-- meta:
+  meta:
    version: 1.0.0
    script:
     name: "${X_SRC_NAME}"
     file: "$XS"  
 
-- revision:
+  revision:
    source:
     info: |
 $(env | grep ^REV_ | sl)
 
-- workspce:
+  workspce:
    paths:
     curr: "$(pwd)"
     work: "${X_WORK}"
     logs: "${X_LOGS}"
     temp: "${X_TEMP}"
    contents: |
-$(ls -l pyproject.toml poetry.lock DESCRIPTION renv.lock package.json yarn.lock | sl)
+$(ls -l pyproject.toml *.lock DESCRIPTION package.json | sl)
 
-- host:
+  host:
    hostname: "$(hostname)"
    release: |
 $(lsb_release -a 2>/dev/null | sl)
  
-- user:
+  user:
    userid: "${USER}"
    home: "${HOME}"
    shell: "${SHELL}"
    id: |
 $(id | sl)
 
-- system-env:
+  system-env:
    path: |
 $(echo "${PATH}" | tr ':' '\n' | sl)
    library_path: |
 $(echo "${LD_LIBRARY_PATH}" | tr ':' '\n' | sl)
-   python: "$(which python)"
-   python-version: "$(which python >/dev/null && python --version | head -n1)"
+   python3: "$(which python3)"
+   python3-version: "$(which python3 &>/dev/null && python3 --version | head -n1)"
 
-- mount:
+  mount:
    df: |
 $(df -h | sl)
 
@@ -229,55 +234,68 @@ EOF
 }
 
 dump_extras_status() {
-    cat <<EOF
+    cat << EOF
 # {{{ --- [setup-extras] ----------------------------------
 
 ##
 # setup extra languge and tools: ${args}
 #
 
-- rust:
+  rust:
    environ:
     CARGO_HOME: "${CARGO_HOME}"
     RUSTUP_HOME: "${RUSTUP_HOME}"
    binaries:
     cargo:
      path: |
-$(which cargo  2>/dev/null || echo "NOCARGO" | sk)
+$( (which cargo  2>/dev/null || echo NOCARGO) | sk)
      vers: |
-$(cargo --version || echo "NOCARGO" | sk)
+$( (cargo --version || echo NOCARGO) | sk)
     rustup:
      path: |
-$(which rustup  2>/dev/null || echo "NOCARGO" | sk)
+$( (which rustup  2>/dev/null || echo NORUSTUP) | sk)
      vers: |
-$(rustup --version || echo "NOCARGO" | sk)
+$( (rustup --version 2>/dev/null || echo NORUSTUP) | sk)
     rustc:
      path: |
-$(which rustc  2>/dev/null || echo "NOCARGO" | sk)
+$( (which rustc  2>/dev/null || echo NORUSTC) | sk)
      vers: |
-$(rustc --version || echo "NOCARGO" | sk)
+$( (rustc --version || echo NORUSTC) | sk)
 
 
-- node:
+  node:
    environ:
     NODE_VERSION: "${NODE_VERSION}"
     FNM_DIR: "${FNM_DIR}"
    binaries:
     fnm:
      path: |
-$(which fnm  2>/dev/null || echo "NOFNM" | sk)
+$( (which fnm  2>/dev/null || echo NOFNM) | sk)
      vers: |
-$(fnm --version || echo "NOFNM" | sk)
+$( (fnm --version || echo NOFNM) | sk)
     node:
      path: |
-$(which node  2>/dev/null || echo "NONODE" | sk)
+$( (which node  2>/dev/null || echo NONODE) | sk)
      vers: |
-$(node --version || echo "NONODE" | sk)
+$( (node --version || echo NONODE) | sk)
     npm:
      path: |
-$(which npm 2>/dev/null || echo "NONPM" | sk)
+$( (which npm 2>/dev/null || echo NONPM) | sk)
      vers: |
-$(npm --version || echo "NONPM" | sk)
+$( (npm --version || echo NONPM) | sk)
+
+
+  julia:
+   environ:
+    JULIA_ROOT: "${JULIA_ROOT}"
+   binaries:
+    julia:
+     path: |
+$( (which julia  2>/dev/null || echo NOJULIA) | sk)
+     link: |
+$( (ls -l $(which julia  2>/dev/null) || echo NOJULIA) | sk)
+     vers: |
+$( (which julia  &>/dev/null && julia --version || echo NOJULIA) | sk)
 
  
 
@@ -289,14 +307,15 @@ EOF
 
 
 dump_venv_status() {
-    cat <<EOF
+    cat << EOF
+
 # {{{ --- [setup-venv] ----------------------------------
     
 ##
 # setup python venv status: ${args}
 #
 
-- virtual-env:
+  virtual-env:
    environ:
     VIRTUAL_ENV: "${VIRTUAL_ENV}"
     X_HAS_GPU: "${X_HAS_GPU}"
@@ -306,39 +325,40 @@ dump_venv_status() {
 $(echo "${PATH}" | tr ':' '\n' | sl)
     library_path: |
 $(echo "${LD_LIBRARY_PATH}" | tr ':' '\n' | sl)
-    python: "$(which python || echo NOPYTHON )"
-    python-version: "$(python --version || echo NOPYTHON)"
+   binaries:
+    python: "$(which python 2>/dev/null || echo NOPYTHON )"
+    python-version: "$(which python &>/dev/null && python --version || echo NOPYTHON)"
     python-mode: "${X_PY_MODE}"
-    uv: "$(which uv || echo NOUV )"
-    uv-version: "$(uv --version || echo NOUV )"
-    poetry: "$(which poetry || echo NOPOETRY )"
-    poetry-version: "$(poetry --version || echo NOPOETRY )"
-    jupyter: "$(which jupyter || echo NOJUPYTER )"
-    jupyter-version: "$(jupyter --version || echo NOJUPYTER )"
+    uv: "$(which uv 2>/dev/null || echo NOUV )"
+    uv-version: "$(which uv &>/dev/null && uv --version || echo NOUV )"
+    poetry: "$(which poetry 2>/dev/null || echo NOPOETRY )"
+    poetry-version: "$(which poetry &>/dev/null && poetry --version || echo NOPOETRY )"
+    jupyter: "$(which jupyter 2>/dev/null || echo NOJUPYTER )"
+    jupyter-version: "$(which jupyter &>/dev/null && jupyter --version || echo NOJUPYTER )"
     uv-venv: |
-$((uv python find || echo NOUVVIRTUALENV) | sl)
+ $( (which uv &>/dev/null && uv python find   || echo NOUVVENV) | sl)
     poetry-venv: |
-$((poetry env info || echo NOPOETRY) | sl)
+ $( (which poetry &>/dev/null && poetry env info  || echo NOPOETRYVENV) | sl)
 
-- r-bindings:
+  r-bindings:
    config:
      reticulate: |
-$(R -e "reticulate::py_config()" | sl)
+$(R -q -e 'reticulate::py_config()' | sl)
 
-- jupyter:
+  jupyter:
    paths:
-    jupyter-version: "$(which jupyter 2>/dev/null && jupyter --version)"
+    jupyter-version: "$(which jupyter 2>/dev/null && jupyter --version ||  echo NOJUPYTER)"
    config:
      lab-extensions: |
-$(jupyter labextension list || echo "NOJUPYTER" | sl)
+ $( (which jupyter &>/dev/null && jupyter labextension list || echo NOJUPYTER) | sl)
      kernels: |
-$(jupyter kernelspec list || echo "NOJUPYTER" | sl)
+ $( (which jupyter &>/dev/null && jupyter kernelspec list || echo NOJUPYTER) | sl)
 
-- python-deps
+  python-deps:
    list: |
-$((uv pip list || poetry show) | sl)
+ $( (which uv &>/dev/null && uv pip list || which poetry 2>/dev/null && poetry show) | sl)
    project: |
-$(ls -l pyproject.toml uv.lock poetry.lock | sl)
+$(ls -l pyproject.toml *.lock | sl)
  
 
 # }}} -----
@@ -348,23 +368,25 @@ EOF
 }
 
 dump_renv_status() {
-    cat <<EOF
+    cat << EOF
+
 # {{{ --- [setup-renv] ----------------------------------
     
 ##
 # setup R renv status: ${args}
 #
 
-- renv:
+  renv:
    paths:
     path: |
 $(echo "${PATH}" | tr ':' '\n' | sl)
     library_path: |
-$(echo "${LD_LIBRARY_PATH" | tr ':' '\n' | sl)
+$(echo "${LD_LIBRARY_PATH}" | tr ':' '\n' | sl)
+   binaries:
     R: "$(which R)"
-    R-version: "$(which R >/dev/null && R --version | tr '"' '\'' | head -n1)"
+    R-version: "$(which R >/dev/null && R --version  | head -n1)"
 
-- rdeps
+  rdeps:
    project: |
 $(ls -l DESCRIPTION renv.lock | sl)
  
@@ -384,28 +406,15 @@ dump_status_full() {
     dump_header_status
     dump_global_status
     dump_extras_status
+
+    # run in venv activated subshell
+
+    ( activate
+   
+         dump_venv_status
+         dump_renv_status
+    )
     
-    if poetry env list > /dev/null; then
-        ( source $(poetry env info --path)/bin/activate
-
-            dump_venv_status
-            dump_renv_status
-
-            
-          which python
-          python --version
-
-          R -q -e 'reticulate::py_discover_config(required_module = NULL, use_environment = NULL)'
-
-          R -e "reticulate::py_config()"
-          
-          
-        )
-    else
-        (
-            dump_renv_status
-        )
-    fi
 }
 
 dump_status() {
@@ -422,14 +431,15 @@ dump_status() {
 
 exit_status() {
     
-    dump_status
-    exec ./build.sh status
+    (./build.sh status)
+   dump_status
+   exit 0
 }
 
 # --------------------------------------------------------------
 
 docs_renv_refs() {
-    cat <<'EOF'
+    cat << 'EOF'
 ---
 # R config
 
@@ -532,7 +542,7 @@ error() { LOG_LEVEL='ERROR' CLOG="$C_IRed"     _log $*; }
 fatal() { LOG_LEVEL='FATAL' CLOG="$C_BIRed"    _log $*; }
 log()   { LOG_LEVEL='_LOG_' CLOG="$C_BBlue"    _log $*; }
 die ()  { fatal $*; ask_exit; }
-fail () { fatal $@; } # halt ...
+fail () { fatal "$@"; } # halt ...
 todo () { warn "#TODO: " $*; }
 # --------------------------------------------------------------
 rc_init() {
@@ -698,7 +708,7 @@ deactivate () {
 
 exec_environ() {
 
-    exec ${X_ENV_SCRIPT} $@
+    exec ${X_ENV_SCRIPT} "$@"
     
 }
 
@@ -1582,8 +1592,8 @@ do_cffr_citation() {
       rc_cffr_citation=$?
 
       case "$rc_cffr_citation" in
-          0) info "=(do_cffr_citation):" "renv - restore => ok" ;;
-          *) error "#(do_cffr_citation):" "renv - restore => KO -- (rc:$rc_cffr_citation)" ;;
+          0) info "=(do_cffr_citation):" "cffr - citation => ok" ;;
+          *) error "#(do_cffr_citation):" "cffr - citation => KO -- (rc:$rc_cffr_citation)" ;;
       esac    
       
     )
@@ -1591,6 +1601,30 @@ do_cffr_citation() {
     log "<(do_cffr_citation):" "cffr - CITATION, done."
 
     return $rc_cffr_citation
+    
+}
+
+do_rdev_document() {
+
+    log ">(do_rdev_document):" "devtools::document, ..."
+
+    # run in venv activated subshell
+
+    ( activate
+
+      R -q -e 'devtools::document()'
+      rc_rdev_document=$?
+
+      case "$rc_rdev_document" in
+          0) info "=(do_rdev_document):" "devtools::document => ok" ;;
+          *) error "#(do_rdev_document):" "devtools::document => KO -- (rc:$rc_rdev_document)" ;;
+      esac    
+      
+    )
+
+    log "<(do_rdev_document):" "devtools::document, done."
+
+    return $rc_rdev_document
     
 }
 
@@ -1666,6 +1700,16 @@ do_re_cffr() {
     
 }
 
+do_re_doc() {
+
+    log ">(do_re_doc):" "rdev - doc, ..."
+
+    do_rdev_document
+
+    log "<(do_re_doc):" "rdev - doc, done."
+    
+}
+
 
 # ////////////////////////////////////////////////////////////////////////
 
@@ -1732,7 +1776,7 @@ EOF
 parse_args_run() {
     
     if [ $# -lt 1 ];then
-        set -- $@ --status
+        set -- "$@" --status
     fi
     
     args="$@"
@@ -1753,6 +1797,7 @@ parse_args_run() {
     RUN_RE_UPGRADE=0
     RUN_RE_RESTORE=0
     RUN_RE_SHOW=0
+    RUN_RE_DOC=0
     RUN_RE_CFFR=0
     
     X_ALL_MODE=1
@@ -1794,6 +1839,7 @@ parse_args_run() {
                 RUN_JS_CODE=1
                 RUN_JS_NODE=1
                 RUN_RE_SETUP=1
+                RUN_RE_DOC=1
                 RUN_RE_CFFR=1
                 RUN_RE_UPGRADE="$Y_RE_RENV_UPGRADE"
                 RUN_RE_RESTORE="$Y_RE_RENV_RESTORE"
@@ -1808,20 +1854,20 @@ parse_args_run() {
                 ;;
             
             --python|-P)
-                X_ALL_MODE:='0'
-                X_PYTHON_MODE:='1'
+                X_ALL_MODE='0'
+                X_PYTHON_MODE='1'
                 cmds="$cmds -P"
                 ;;
             
             --r|-R)
-                X_ALL_MODE:='0'
-                X_R_MODE:='1'
+                X_ALL_MODE='0'
+                X_R_MODE='1'
                 cmds="$cmds -R"
                 ;;
             
             --node|-J)
-                X_ALL_MODE:='0'
-                X_NODE_MODE:='1'
+                X_ALL_MODE='0'
+                X_NODE_MODE='1'
                 cmds="$cmds -J"
                 ;;
             
@@ -1833,32 +1879,32 @@ parse_args_run() {
                 ;;
             
             --dots|-D)
-                X_DOTS_MODE:='1'
+                X_DOTS_MODE='1'
                 cmds="$cmds -D"
                 ;;
             
             --cache|-C)
-                X_CACHE_MODE:='1'
+                X_CACHE_MODE='1'
                 cmds="$cmds -C"
                 ;;
             
             --verbose|-v)
-                X_VERBOSE:='1'
+                X_VERBOSE='1'
                 cmds="$cmds -v"
                 ;;
             
             -vv)
-                X_VERBOSE:='12'
+                X_VERBOSE='12'
                 cmds="$cmds -vv"
                 ;;
             
             -vvv)
-                X_VERBOSE:='123'
+                X_VERBOSE='123'
                 cmds="$cmds -vvv"
                 ;;
             
             *)
-                exit_usage $@
+                exit_usage "$@"
                 ;;
         esac
         shift
@@ -1894,6 +1940,7 @@ parse_args_run() {
             RUN_RE_SETUP=0
             RUN_RE_RESTORE=0
             RUN_RE_UPGRADE=0
+            RUN_RE_DOC=0
             RUN_RE_CFFR=0
             RUN_RE_SHOW=0
             ;;
@@ -1930,6 +1977,7 @@ parse_args_run() {
             RUN_RE_SETUP=0
             RUN_RE_RESTORE=0
             RUN_RE_UPGRADE=0
+            RUN_RE_DOC=0
             RUN_RE_CFFR=0
             RUN_RE_SHOW=0
             ;;
@@ -1967,6 +2015,7 @@ parse_args_run() {
     env_defined RUN_RE_SETUP
     env_defined RUN_RE_RESTORE
     env_defined RUN_RE_UPGRADE
+    env_defined RUN_RE_DOC
     env_defined RUN_RE_CFFR
     env_defined RUN_RE_SHOW
     
@@ -1981,7 +2030,7 @@ main_run() {
 
     export X_MODE='run'
 
-    parse_args_run $@
+    parse_args_run "$@"
 
     #check_is_remote
 
@@ -1991,81 +2040,86 @@ main_run() {
     log ">(main.run):" "args:$args -- cmds: $cmds, ..."
     
     if [ "$RUN_PY_BOOT" = '1' ]; then
-        do_py_boot $@
+        do_py_boot "$@"
         rc_exit $?
     fi
 
     if [ "$RUN_PY_CLEAR" = '1' ]; then
-        do_py_clear $@
+        do_py_clear "$@"
         rc_exit $?
     fi
 
     if [ "$RUN_PY_RESET" = '1' ]; then
-        do_py_reset $@
+        do_py_reset "$@"
         rc_exit $?
     fi
 
     if [ "$RUN_PY_VENV" = '1' ]; then
-        do_py_venv $@
+        do_py_venv "$@"
         rc_exit $?
     fi
 
     if [ "$RUN_PY_INSTALL" = '1' ]; then
-        do_py_lock $@
-        do_py_install $@
+        do_py_lock "$@"
+        do_py_install "$@"
         rc_exit $?
     fi
 
     if [ "$RUN_PY_BIND" = '1' ]; then
-        do_py_reticulate $@
+        do_py_reticulate "$@"
         rc_exit $?
     fi
 
     if [ "$RUN_PY_SHOW" = '1' ]; then
-        do_py_show $@
+        do_py_show "$@"
         rc_exit $?
     fi
 
     if [ "$RUN_RE_CLEAR" = '1' ]; then
-        do_re_clear $@
+        do_re_clear "$@"
         rc_exit $?
     fi
 
     if [ "$RUN_RE_RESET" = '1' ]; then
-        do_re_force $@
+        do_re_force "$@"
         rc_exit $?
     fi
 
     if [ "$RUN_RE_SETUP" = '1' ]; then
-        do_re_setup $@
+        do_re_setup "$@"
         rc_exit $?
     fi
 
     if [ "$RUN_RE_CFFR" = '1' ]; then
-        do_re_cffr $@
+        do_re_cffr "$@"
+        rc_exit $?
+    fi
+
+    if [ "$RUN_RE_DOC" = '1' ]; then
+        do_re_doc "$@"
         rc_exit $?
     fi
 
     if [ "$RUN_RE_SHOW" = '1' ]; then
-        do_re_show $@
+        do_re_show "$@"
         rc_exit $?
     fi
 
     if [ "$RUN_JS_NODE" = '1' ]; then
-        do_js_node $@
+        do_js_node "$@"
         rc_exit $?
     fi
 
     if [ "$RUN_PY_JUPYTER" = '1' ]; then
-        do_py_jupyter_build $@
-        do_py_irkernel_reg $@
-        do_py_ijulia_reg $@
-        do_py_jupyter_show $@
+        do_py_jupyter_build "$@"
+        do_py_irkernel_reg "$@"
+        do_py_ijulia_reg "$@"
+        do_py_jupyter_show "$@"
         rc_exit $?
     fi
 
     if [ "$RUN_JS_CODE" = '1' ]; then
-        do_js_code $@
+        do_js_code "$@"
         rc_exit $?
     fi
 
@@ -2083,15 +2137,15 @@ main() {
         
         --help|-h)
             shift
-            exit_usage $@
+            exit_usage "$@"
             ;;
         --status|-s)
             shift
-            exit_status $@
+            exit_status "$@"
             ;;
         --environ)
             shift
-            exec_environ $@
+            exec_environ "$@"
             ;;
         *)
             ;;
@@ -2105,7 +2159,7 @@ main() {
     case "$1" in
         
         *)
-            main_run $@
+            main_run "$@"
             ;;
     esac
 
@@ -2117,7 +2171,7 @@ main() {
 }
 
 case "${X_DRY}" in
-    0) main $@ ;;
-    *) echo "# skip: main $@"
+    0) main "$@" ;;
+    *) echo "# skip: main $*"
 esac       
 

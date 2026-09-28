@@ -134,7 +134,9 @@ function install_commons_dev() {
 		libncurses5-dev \
 		libtinfo6 \
                 libmagick++-dev \
-	        default-libmysqlclient-dev
+	        default-libmysqlclient-dev \
+                cmake \
+                shellcheck
 
 }
 

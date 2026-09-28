@@ -43,6 +43,7 @@ importFrom(grDevices,
   pdf
 )
 importFrom(here,here)
+importFrom(keras,is_keras_available)
 importFrom(logger,log_info)
 importFrom(magrittr,"%>%")
 importFrom(modules,

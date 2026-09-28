@@ -98,8 +98,12 @@ test: init
 check: # @HELP/base runs: `devtools::check()`
 check: init
 	@echo "+++ {{{ CHECK /////////";
-	@echo "+++ Running UV sync..........."; $(UV) sync || true
+	@echo "+++ Showing UV sync .........."; echo "$(UV) sync --extra=$X_UV_EXTRA --all-groups  --no-progress" || true
+	@echo "+++ Running REUSE lint........"; $(UV) run reuse lint || true
+	@echo "+++ Running Pyright check....."; $(UV) run basedpyright || true
 	@echo "+++ Running Ruff check........"; $(UV) run ruff check || true
+	@echo "+++ Running renv::status......"; ${RSCRIPT} -e 'renv::status()'
+	@echo "+++ Running devtools::doc....."; ${RSCRIPT} -e 'devtools::document()'
 	@echo "+++ Running devtools::check..."; ${RSCRIPT} -e 'devtools::check()'
 	@echo "+++ }}} CHECK \\\\\\\\\ ";
 
@@ -159,7 +163,10 @@ uninstall:
 
 status: # @HELP/base runs: `poetry show` and `renv::diagnostics()`
 status:
+	${UV} 'tree'
 	${UV} 'pip' 'list'
+	${RSCRIPT} -e 'reticulate::py_discover_config(required_module = NULL, use_environment = NULL)'
+	${RSCRIPT} -e 'reticulate::py_config()'
 	${RSCRIPT} -e 'renv::diagnostics()'
 
 clean: # @HELP/base clean all files in .gitignore
@@ -225,8 +232,8 @@ full:  build-setup
 full:  runtime-environ
 full:  runtime-setup
 full:  runtime-test
-full:  runtime-check
 full:  runtime-status
+full:  runtime-check
 
 full-help: help/full
 
@@ -266,7 +273,8 @@ build-validate:
 
 .PHONY: runtime-repl runtime-rs
 .PHONY: runtime-pyrun runtime-ipython
-.PHONY: runtime-auto runtime-cli runtime-shell
+.PHONY: runtime-jrun runtime-julia
+.PHONY: runtime-auto runtime-cli runtime-shell  runtime-raw
 .PHONY: runtime-upgrade runtime-setup runtime-clear
 .PHONY: runtime-test runtime-check runtime-status
 .PHONY: runtime-environ runtime-profile
@@ -291,6 +299,14 @@ runtime-pyrun: # @HELP/runtime ...
 runtime-pyrun:
 	cd ${IMG_MAKE_DIR} && $(MAKE) $@
 
+runtime-julia: # @HELP/runtime ...
+runtime-julia:
+	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+
+runtime-jrun: # @HELP/runtime ...
+runtime-jrun:
+	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+
 runtime-auto: # @HELP/runtime ...
 runtime-auto:
 	cd ${IMG_MAKE_DIR} && $(MAKE) $@
@@ -301,6 +317,10 @@ runtime-cli:
 
 runtime-shell: # @HELP/runtime ...
 runtime-shell:
+	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+
+runtime-raw: # @HELP/runtime ...
+runtime-raw:
 	cd ${IMG_MAKE_DIR} && $(MAKE) $@
 
 runtime-clear: # @HELP/runtime ...
