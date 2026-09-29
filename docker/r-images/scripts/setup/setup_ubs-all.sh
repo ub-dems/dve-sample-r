@@ -9,11 +9,6 @@
 ## ========================================================================
 ##
 
-## build ARGs
-# set -e
-set -x
-source ${X_BUILD_CONF:-$Y_BUILD_CONF}
-set +x
 
 NCPUS=${NCPUS:--1}
 
@@ -25,7 +20,22 @@ NCPUS=${NCPUS:--1}
 #set +x
 
 
+#-----------------------------------------------------------
 set -a
+    
+: ${X_CUDA_CONF:=${Y_CUDA_CONF}}
+: ${X_BUILD_CONF:=${Y_BUILD_CONF}}
+: ${X_META_CONF:=${Y_META_CONF}}
+: ${X_RUNTIME_CONF:=${Y_RUNTIME_CONF}}
+: ${X_AUTO_CONF:=${Y_AUTO_CONF}}
+
+[ -r "${X_CUDA_CONF}" ] && source "${X_CUDA_CONF}" || true
+[ -r "${X_BUILD_CONF}" ] && source "${X_BUILD_CONF}" || true
+[ -r "${X_META_CONF}" ] && source "${X_META_CONF}" || true
+[ -r "${X_RUNTIME_CONF}" ] && source "${X_RUNTIME_CONF}" || true
+[ -r "${X_AUTO_CONF}" ] && source "${X_AUTO_CONF}" || true
+
+
 # ------------------------------------------------------
 
 : ${X_DRY:='0'}

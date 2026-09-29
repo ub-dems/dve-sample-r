@@ -72,6 +72,15 @@ COPY build.conf   /etc/build.conf
 ARG  Y_BUILD_CONF=/etc/build.conf
 ENV  X_BUILD_CONF=$Y_BUILD_CONF
 
+COPY project.conf   /etc/project.conf
+ARG  Y_META_CONF=/etc/project.conf
+ENV  X_META_CONF=$Y_META_CONF
+
+COPY starter.conf   /etc/starter.conf
+ARG  Y_AUTO_CONF=/etc/starter.conf
+ENV  X_AUTO_CONF=$Y_AUTO_CONF
+
+
 
 ARG  Y_DEBUG_ENV=0
 ENV  X_DEBUG_ENV=$Y_DEBUG_ENV
