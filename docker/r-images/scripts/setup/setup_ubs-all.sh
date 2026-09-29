@@ -57,8 +57,8 @@ set -a
 # ------------------------------------------------------
 
 : ${X_ENV_FILE:='.env'}
-: ${X_ENV_DEFAULT:='.env-default'}
-: ${X_ENV_STRICT:='.env-strict'}
+: ${X_ENV_DEFAULT:='.env.default'}
+: ${X_ENV_STRICT:='.env.strict'}
 
 # ------------------------------------------------------
 : "${JULIA_ROOT:=~/.local/share/julia}"
