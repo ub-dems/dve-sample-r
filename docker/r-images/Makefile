@@ -241,12 +241,15 @@ endif
 
 
 
-# Check if nvidia-detector command exists and returns something other than "None"
-GPU_DETECT_CMD := nvidia-detector
-GPU_AVAILABLE := $(shell command -v $(GPU_DETECT_CMD) >/dev/null 2>&1 && \
-                         [ "$$($(GPU_DETECT_CMD))" != "None" ] && echo 1 || echo 0)
+# # Check if nvidia-detector command exists and returns something other than "None"
+# GPU_DETECT_CMD := nvidia-detector
+# GPU_AVAILABLE := $(shell command -v $(GPU_DETECT_CMD) >/dev/null 2>&1 && \
+#                          [ "$$($(GPU_DETECT_CMD))" != "None" ] && echo 1 || echo 0)
 
-ifeq ($(GPU_AVAILABLE),1)
+# ifeq ($(GPU_AVAILABLE),1)
+
+
+ifeq ($(X_HAS_GPU),1)
 
 DOCKER_NVIDIA_TOOLKIT_CTK := /etc/cdi/nvidia.yaml
 
