@@ -1904,7 +1904,7 @@ parse_args_run() {
     while [ $# -gt 0 ]; do
         case "$1" in
             
-            --external)
+            --external|-E)
                 X_ALL_MODE='0'
                 X_EXTERNAL_MODE='1'
                 X_DOTENV_MODE='1'
