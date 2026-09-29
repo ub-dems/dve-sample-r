@@ -130,7 +130,7 @@ SETUP EXAMPLES
 ==============
 
 # external (non containerized) setup
-ex=0; F=/tmp/external-$(date -Isec).log; (./setup.sh -E) 2>&1 | tee $F ; echo "rc=$? -- press enter"; read  z; less $F
+ex=0; F=/tmp/external-$(date -Isec).log; (./setup.sh -E) 2>&1 | tee $F ; echo "rc=$? -- press enter"; read  z; less -RX $F
 
 # container setup, see:
 ./build.sh --help
