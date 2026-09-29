@@ -80,7 +80,7 @@ set +a
 
 exit_usage() {
 
-cat <<EOF | $PAGER   
+( cat <<EOF
 
 external setup usage:
 
@@ -122,6 +122,10 @@ ENVIRONMENNT
 
 - PATH: $E_SETUP_DIR:$PATH
 
+EOF
+
+cat <<'EOF'
+
 SETUP EXAMPLES
 ==============
 
@@ -133,6 +137,8 @@ ex=0; F=/tmp/external-$(date -Isec).log; (./setup.sh -E) 2>&1 | tee $F ; echo "r
 
 
 EOF
+
+)  | $PAGER
 
 exit 1
 
