@@ -1829,26 +1829,28 @@ EOF
         ARCH_SHORT="x64"
     fi
 
-    set -x
 
     mkdir -p /tmp/downloaded_packages
     cd /tmp/downloaded_packages
 
+    set -x
+    
     # Download Julia and create a symbolic link.
     wget -nv "https://julialang-s3.julialang.org/bin/linux/${ARCH_SHORT}/${JULIA_MINOR_VERSION}/julia-${JULIA_VERSION}-linux-${ARCH_LONG}.tar.gz"
     mkdir -p "${JULIA_ROOT}"
     tar zxf "julia-${JULIA_VERSION}-linux-${ARCH_LONG}.tar.gz" -C "${JULIA_ROOT}" --strip-components 1 
     rm -f "julia-${JULIA_VERSION}-linux-${ARCH_LONG}.tar.gz"
-    [ -e ~/.local/bin/julia ] && rm -f ~/.local/bin/julia
+    [ -L ~/.local/bin/julia ] && rm -f ~/.local/bin/julia
     ln -s ${JULIA_ROOT}/bin/julia ~/.local/bin/julia
 
+    set +x
+    
     cd -
 
     ls -l ~/.local/bin/julia
 
     info "<(do_ju_install):" "ju - Julia: $(julia --version)."
 
-    set +x
 
     log "<(do_ju_install):" "ju - Julia install, done."
     
