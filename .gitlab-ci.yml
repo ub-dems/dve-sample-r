@@ -501,8 +501,8 @@ config-int:
     - .ctx-default-config
     - .git-full
   script:
+    - cat "$[[ inputs.gd-dotenv-default ]]" | grep '^[a-zA-Z0-9_]' > "$[[ inputs.gd-dotenv-strict ]]"
     - cp "$[[ inputs.gd-dotenv-default ]]" "$[[ inputs.gd-dotenv-file ]]" || true
-    - cat "$[[ inputs.gd-dotenv-file ]]" | grep '^[a-zA-Z0-9_]' > "$[[ inputs.gd-dotenv-strict ]]"
   artifacts:
     reports:
       dotenv: "$[[ inputs.gd-dotenv-strict ]]"

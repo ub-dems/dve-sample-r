@@ -139,8 +139,6 @@ cat <<'EOF'
 BUILD EXAMPLES
 --------------
 
-```
-
 # full build and tests
 rt=0; F=/tmp/environ-$(date -Isec).log; (./build.sh full) 2>&1 | tee $F ; echo "rc=$? -- press enter"; read  z; less $F
 
@@ -153,7 +151,6 @@ rt=2; F=/tmp/setup-$(date -Isec).log; (./runtime.sh setup) 2>&1 | tee $F ; echo 
 # user configuration
 rt=3; F=/tmp/environ-$(date -Isec).log; (./runtime.sh environ) 2>&1 | tee $F ; echo "rc=$? -- press enter"; read  z; less $F
 
-```
 
 EOF
 

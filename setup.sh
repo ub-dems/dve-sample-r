@@ -82,20 +82,27 @@ exit_usage() {
 
 cat <<EOF | $PAGER   
 
-out-container usage
+external setup usage:
+
+  $0 --external|--E    : for non containerized setup
+
+
+out-container usage:
 
   ./runtime.sh setup   : for virtual environment installation
   ./runtime.sh upgrade : for virtual environment additional resolution
   ./runtime.sh status  : for virtual environment status reporting
 
 
-in-container usage $0 --status|--all [--upgrade]
+in-container usage:
+
+  $0 --status|--all [--upgrade]
 
 runs virtual enviroment install scripts inside runtime container
 
 if '--upgrade' options, dependency upgrade is forced by removing
 
-  ./poetry.lock : to force python dependency upgrade, with 'pyproject.toml' specification
+  ./uv.lock     : to force python dependency upgrade, with 'pyproject.toml' specification
   ./renv.lock   : to force R dependency upgrade, with 'DESCRIPTION' project specification
 
 
@@ -114,6 +121,15 @@ ENVIRONMENNT
 - E_SETUP_ARGS: script arguments
 
 - PATH: $E_SETUP_DIR:$PATH
+
+SETUP EXAMPLES
+==============
+
+# external (non containerized) setup
+ex=0; F=/tmp/external-$(date -Isec).log; (./setup.sh -E) 2>&1 | tee $F ; echo "rc=$? -- press enter"; read  z; less $F
+
+# container setup, see:
+./build.sh --help
 
 
 EOF
@@ -158,7 +174,10 @@ parse_args_start() {
     while [ $# -gt 0 ]; do
         case "$1" in
             --help|-h)
-                exit_usage $@
+                exit_usage "$@"
+                ;;
+            --external|-E)
+                exec_external "$@"
                 ;;
             -x|--exec)
                 E_SETUP_RUNNER="$2"

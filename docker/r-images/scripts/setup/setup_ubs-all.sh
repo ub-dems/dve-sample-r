@@ -46,6 +46,12 @@ set -a
 
 # ------------------------------------------------------
 
+: ${X_ENV_FILE:='.env'}
+: ${X_ENV_DEFAULT:='.env-default'}
+: ${X_ENV_STRICT:='.env-strict'}
+
+# ------------------------------------------------------
+
 : ${PYTHON_VERSION=${Y_PY_PYTHON_VERSION:-'3.14'}}
 # : ${UV_ROOT:="/usr/local/bin"}
 # : ${UV_INSTALL_DIR:="/usr/local/bin"}
@@ -53,7 +59,10 @@ set -a
 # : ${UV_PYTHON_INSTALL_DIR:="/opt/uv/python"}
 # : ${UV_CACHE_DIR:="/opt/uv/cache"}
 : ${UV_PROJECT_ENVIRONMENT:=".venv.cdk"}
+: ${UV_PROJECT_ENVIRONMENT_EXT:=".venv"}
+: ${UV_ENV_FILE:=$X_ENV_FILE}
 : ${UV_NO_PROGRESS:="1"}
+
 
 : ${PYTHON_CONFIGURE_OPTS:="--enable-shared"}
 
@@ -711,6 +720,62 @@ exec_environ() {
     exec ${X_ENV_SCRIPT} "$@"
     
 }
+
+# ////////////////////////////////////////////////////////////////////////
+
+
+do_ex_begin() {
+
+    log ">(do_ex_begin):" "{{{ EXTERNAL:begin, ..."
+    
+    if [ -n "$container" ]; then
+        die "!(do_ex_begin):" "??? EXTERNAL mode most be run outside of container=$container, fail"
+    fi
+
+    export UV_PROJECT_ENVIRONMENT="$UV_PROJECT_ENVIRONMENT_EXT"
+    info "-(do_ex_begin):" "=== EXTERNAL: UV_PROJECT_ENVIRONMENT=${UV_PROJECT_ENVIRONMENT},  done."
+
+    log "<(do_ex_begin):" "=== EXTERNAL:begin, done."
+    
+}
+
+do_ex_end() {
+
+    log ">(do_ex_end):" "{{{ EXTERNAL:end, ..."
+
+    info ">(do_ex_end):" "--- run ./build.sh full to setup container runtime."
+    info ">(do_ex_end):" "--- see ./build.sh --help"
+
+    rc_ex_setup=0
+
+    log "<(do_ex_end):" "--- EXTERNAL:end, done. }}}"
+    
+    return $rc_ex_setup
+    
+}
+
+# ////////////////////////////////////////////////////////////////////////
+
+
+do_ev_dotenv() {
+
+    log ">(do_ev_dotenv):" "ev - .env definition, ..."
+
+    if [ -z "${X_ENV_FILE}" ]; then
+        warn "?(do_ev_dotenv):" "ev - X_ENV_FILE undefined, skip"
+    elif [ -f "${X_ENV_FILE}" ]; then
+        info "-(do_ev_dotenv):" "ev - X_ENV_FILE=${X_ENV_FILE} found, skip"
+    else
+        cat "${X_ENV_DEFAULT}" | grep '^[a-zA-Z0-9_]' > "${X_ENV_STRICT}"
+        cp -v "${X_ENV_STRICT}" "${X_ENV_FILE}"
+        ls -l "${X_ENV_FILE}" "${X_ENV_STRICT}" "${X_ENV_DEFAULT}"
+        info "-(do_ev_dotenv):" "ev - UV_ENV_FILE=${UV_ENV_FILE} created from ${X_ENV_DEFAULT}."
+    fi
+
+    log "<do_ev_dotenv):" "ev - .env definition,  done."
+    
+}
+
 
 
 # ////////////////////////////////////////////////////////////////////////
@@ -1714,6 +1779,29 @@ do_re_doc() {
 # ////////////////////////////////////////////////////////////////////////
 
 
+do_js_nvm() {
+
+    log ">(do_js_nvm):" "js - node-js nvm install, ..."
+
+    # Download and install nvm:
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.8/install.sh | bash
+
+    # in lieu of restarting the shell
+    \. "$HOME/.nvm/nvm.sh"
+
+    # Download and install Node.js:
+    nvm install 24
+
+    # Verify the Node.js version:
+    node -v # Should print "v24.21.0".
+
+    # Verify npm version:
+    npm -v # Should print "11.19.0".
+
+    log "<(do_js_nvm):" "js - node-js nvm , done."
+    
+}
+
 
 do_js_node() {
 
@@ -1784,12 +1872,15 @@ parse_args_run() {
 
     set -x
     
+    RUN_EX_SETUP=0
+    RUN_EV_DOTENV=0
     RUN_PY_BOOT=0
     RUN_PY_CLEAR=0
     RUN_PY_RESET=0
     RUN_PY_VENV=0
     RUN_PY_INSTALL=0
     RUN_PY_SHOW=0
+    RUN_JS_NVM=0
     RUN_JS_CODE=0
     RUN_RE_CLEAR=0
     RUN_RE_RESET=0
@@ -1801,14 +1892,41 @@ parse_args_run() {
     RUN_RE_CFFR=0
     
     X_ALL_MODE=1
+    X_EXTERNAL_MODE=0
+    X_DOTENV_MODE=0
     X_PYTHON_MODE=0
     X_R_MODE=0
     X_CODE_MODE=0
+    X_NVM_MODE=0
     X_NODE_MODE=0
     cmds=""
 
     while [ $# -gt 0 ]; do
         case "$1" in
+            
+            --external)
+                X_ALL_MODE='0'
+                X_EXTERNAL_MODE='1'
+                X_DOTENV_MODE='1'
+                X_PYTHON_MODE='1'
+                X_NVM_MODE='1'
+                X_NODE_MODE='1'
+                RUN_EX_SETUP=1
+                RUN_EV_DOTENV=1
+                RUN_PY_BOOT=1
+                RUN_PY_VENV=1
+                RUN_PY_INSTALL=1
+                RUN_PY_JUPYTER=1
+                RUN_PY_SHOW=1
+                RUN_JS_NVM=1
+                RUN_JS_NODE=1
+                cmds="$cmds --external"
+                ;;
+            
+            --dotenv)
+                RUN_EV_DOTENV=1
+                cmds="$cmds --dotenv"
+                ;;
             
             --boot)
                 RUN_PY_BOOT=1
@@ -1846,12 +1964,12 @@ parse_args_run() {
                 cmds="$cmds --install --all"
                 ;;
             
-            --status|-s)
-                RUN_STATUS=1
-                RUN_PY_SHOW=1
-                RUN_RE_SHOW=1
-                cmds="$cmds --status"
-                ;;
+            # --status|-s)
+            #     RUN_STATUS=1
+            #     RUN_PY_SHOW=1
+            #     RUN_RE_SHOW=1
+            #     cmds="$cmds --status"
+            #     ;;
             
             --python|-P)
                 X_ALL_MODE='0'
@@ -1863,6 +1981,13 @@ parse_args_run() {
                 X_ALL_MODE='0'
                 X_R_MODE='1'
                 cmds="$cmds -R"
+                ;;
+            
+            --nvm|-N)
+                X_ALL_MODE='0'
+                X_NODE_MODE='1'
+                RUN_JS_NVM=1
+                cmds="$cmds -J"
                 ;;
             
             --node|-J)
@@ -1950,6 +2075,7 @@ parse_args_run() {
 
     case "$X_ALL_MODE" in
         1)
+            X_DOTENV_MODE="1"
             X_PYTHON_MODE="1"
             X_R_MODE="1"
             X_CODE_MODE="1"
@@ -2003,6 +2129,8 @@ parse_args_run() {
     debug "#(args): {\n $(set | sort | grep -e ^PY_OPTS -e ^RE_OPTS -e ^RUN_  -e ^X_  -e ^Y_ ) \n} ###"
     dump  "#(args): {\n $(set | sort | grep -e ^PY_OPTS -e ^RE_OPTS -e ^RUN_  -e ^X_  -e ^Y_ ) \n} ###"
 
+    env_defined RUN_EX_SETUP
+    env_defined RUN_EV_DOTENV
     env_defined RUN_PY_BOOT
     env_defined RUN_PY_CLEAR
     env_defined RUN_PY_RESET
@@ -2020,6 +2148,7 @@ parse_args_run() {
     env_defined RUN_RE_SHOW
     
     env_defined RUN_JS_CODE
+    env_defined RUN_JS_NVM
     env_defined RUN_JS_NODE
 
     log "<(args):" "cmds: $cmds"
@@ -2039,6 +2168,16 @@ main_run() {
     
     log ">(main.run):" "args:$args -- cmds: $cmds, ..."
     
+    if [ "$RUN_EX_SETUP" = '1' ]; then
+        do_ex_begin "$@"
+        rc_exit $?
+    fi
+
+    if [ "$RUN_EV_DOTENV" = '1' ]; then
+        do_ev_dotenv "$@"
+        rc_exit $?
+    fi
+
     if [ "$RUN_PY_BOOT" = '1' ]; then
         do_py_boot "$@"
         rc_exit $?
@@ -2105,6 +2244,11 @@ main_run() {
         rc_exit $?
     fi
 
+    if [ "$RUN_JS_NVM" = '1' ]; then
+        do_js_nvm "$@"
+        rc_exit $?
+    fi
+
     if [ "$RUN_JS_NODE" = '1' ]; then
         do_js_node "$@"
         rc_exit $?
@@ -2120,6 +2264,11 @@ main_run() {
 
     if [ "$RUN_JS_CODE" = '1' ]; then
         do_js_code "$@"
+        rc_exit $?
+    fi
+
+    if [ "$RUN_EX_SETUP" = '1' ]; then
+        do_ex_end "$@"
         rc_exit $?
     fi
 
