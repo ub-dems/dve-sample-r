@@ -138,7 +138,7 @@ ex=0; F=/tmp/external-$(date -Isec).log; (./setup.sh -E) 2>&1 | tee $F ; echo "r
 
 EOF
 
-)  | $PAGER
+) #  | $PAGER
 
 exit 1
 
