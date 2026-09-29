@@ -61,6 +61,11 @@ set -a
 : ${X_ENV_STRICT:='.env-strict'}
 
 # ------------------------------------------------------
+: "${JULIA_ROOT:=~/.local/share/julia}"
+: "${JULIA_HOME:=$JULIA_ROOT}"
+: "${JULIA_URL:=https://julialang-s3.julialang.org}"
+: "${JULIA_VERSION:=${X_JU_JULIA_VERSION:-latest}}"
+# ------------------------------------------------------
 
 : ${PYTHON_VERSION=${Y_PY_PYTHON_VERSION:-'3.14'}}
 # : ${UV_ROOT:="/usr/local/bin"}
@@ -1787,6 +1792,45 @@ do_re_doc() {
     
 }
 
+# ////////////////////////////////////////////////////////////////////////
+
+
+do_ju_install() {
+
+    log ">(do_ju_install):" "ju - Julia install, ..."
+
+    echo "Instaling Julia ${JULIA_VERSION} ..."
+    
+    JULIA_MINOR_VERSION=${JULIA_VERSION%.*}
+
+    ARCH_LONG=$(uname -p)
+    ARCH_SHORT=$ARCH_LONG
+
+    if [ "$ARCH_LONG" = "x86_64" ]; then
+        ARCH_SHORT="x64"
+    fi
+
+    set -x
+
+    mkdir -p /tmp/downloaded_packages
+    cd /tmp/downloaded_packages
+
+    # Download Julia and create a symbolic link.
+    wget -nv "https://julialang-s3.julialang.org/bin/linux/${ARCH_SHORT}/${JULIA_MINOR_VERSION}/julia-${JULIA_VERSION}-linux-${ARCH_LONG}.tar.gz"
+    mkdir -p "${JULIA_ROOT}"
+    tar zxf "julia-${JULIA_VERSION}-linux-${ARCH_LONG}.tar.gz" -C "${JULIA_ROOT}" --strip-components 1 
+    rm -f "julia-${JULIA_VERSION}-linux-${ARCH_LONG}.tar.gz"
+    ln -s "${JULIA_ROOT}/bin/julia" ~/.local/bin/julia
+
+    cd -
+
+    set +x
+
+    log "<(do_ju_install):" "ju - Julia install, done."
+    
+}
+
+
 
 # ////////////////////////////////////////////////////////////////////////
 
@@ -1891,6 +1935,7 @@ parse_args_run() {
     RUN_PY_RESET=0
     RUN_PY_VENV=0
     RUN_PY_INSTALL=0
+    RUN_PY_JUPYTER=0
     RUN_PY_SHOW=0
     RUN_JS_NVM=0
     RUN_JS_CODE=0
@@ -1899,9 +1944,12 @@ parse_args_run() {
     RUN_RE_SETUP=0
     RUN_RE_UPGRADE=0
     RUN_RE_RESTORE=0
+    RUN_RE_JUPYTER=0
     RUN_RE_SHOW=0
     RUN_RE_DOC=0
     RUN_RE_CFFR=0
+    RUN_JU_INSTALL=0
+    RUN_JU_JUPYTER=0
     
     X_ALL_MODE=1
     X_EXTERNAL_MODE=0
@@ -1968,7 +2016,9 @@ parse_args_run() {
                 RUN_PY_SHOW=1
                 RUN_JS_CODE=1
                 RUN_JS_NODE=1
+                RUN_JU_JUPYTER=1
                 RUN_RE_SETUP=1
+                RUN_RE_JUPYTER=1
                 RUN_RE_DOC=1
                 RUN_RE_CFFR=1
                 RUN_RE_UPGRADE="$Y_RE_RENV_UPGRADE"
@@ -2115,6 +2165,7 @@ parse_args_run() {
             RUN_RE_SETUP=0
             RUN_RE_RESTORE=0
             RUN_RE_UPGRADE=0
+            RUN_RE_JUPYTER=0
             RUN_RE_DOC=0
             RUN_RE_CFFR=0
             RUN_RE_SHOW=0
@@ -2155,9 +2206,13 @@ parse_args_run() {
     env_defined RUN_RE_SETUP
     env_defined RUN_RE_RESTORE
     env_defined RUN_RE_UPGRADE
+    env_defined RUN_RE_JUPYTER
     env_defined RUN_RE_DOC
     env_defined RUN_RE_CFFR
     env_defined RUN_RE_SHOW
+    
+    env_defined RUN_JU_INSTALL
+    env_defined RUN_JU_JUPYTER
     
     env_defined RUN_JS_CODE
     env_defined RUN_JS_NVM
@@ -2256,6 +2311,11 @@ main_run() {
         rc_exit $?
     fi
 
+    if [ "$RUN_JU_INSTALL" = '1' ]; then
+        do_ju_install "$@"
+        rc_exit $?
+    fi
+
     if [ "$RUN_JS_NVM" = '1' ]; then
         do_js_nvm "$@"
         rc_exit $?
@@ -2268,8 +2328,15 @@ main_run() {
 
     if [ "$RUN_PY_JUPYTER" = '1' ]; then
         do_py_jupyter_build "$@"
-        do_py_irkernel_reg "$@"
-        do_py_ijulia_reg "$@"
+        
+        if [ "$RUN_RE_JUPYTER" = '1' ]; then
+            do_py_irkernel_reg "$@"
+        fi
+        
+        if [ "$RUN_JU_JUPYTER" = '1' ]; then
+            do_py_ijulia_reg "$@"
+        fi
+        
         do_py_jupyter_show "$@"
         rc_exit $?
     fi
