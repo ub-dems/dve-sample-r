@@ -84,7 +84,7 @@ exit_usage() {
 
 external setup usage:
 
-  $0 --external|--E    : for non containerized setup
+  $0 --external | -E    : for non containerized setup
 
 
 out-container usage:
@@ -147,6 +147,14 @@ exit 1
 
 #}}} \\\
 #{{{ [ MAIN ] /////////////////////////////////////////////////////////////////
+
+# ---(external)------------------------------------------------
+
+exec_external() {
+
+    exec "$E_SETUP_RUNNER" "$@"
+
+}
 
 # ---(exec)------------------------------------------------
 
