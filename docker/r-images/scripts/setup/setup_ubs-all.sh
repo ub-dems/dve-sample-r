@@ -1954,6 +1954,7 @@ parse_args_run() {
     X_ALL_MODE=1
     X_EXTERNAL_MODE=0
     X_DOTENV_MODE=0
+    X_JULIA_MODE=0
     X_PYTHON_MODE=0
     X_R_MODE=0
     X_CODE_MODE=0
@@ -1978,6 +1979,8 @@ parse_args_run() {
                 RUN_PY_INSTALL=1
                 RUN_PY_JUPYTER=1
                 RUN_PY_SHOW=1
+                RUN_JU_INSTALL=1
+                RUN_JU_JUPYTER=1
                 RUN_JS_NVM=1
                 RUN_JS_NODE=1
                 cmds="$cmds --external"
