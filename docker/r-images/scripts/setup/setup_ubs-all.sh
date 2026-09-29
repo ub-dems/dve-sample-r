@@ -751,6 +751,7 @@ do_ex_begin() {
     export PATH=~/.local/bin:$PATH
 
     export JULIA_ROOT=~/.local/share/julia
+    export JULIA_HOME="$JULIA_ROOT"
 
     export UV_PROJECT_ENVIRONMENT="$UV_PROJECT_ENVIRONMENT_EXT"
     info "-(do_ex_begin):" "=== EXTERNAL: UV_PROJECT_ENVIRONMENT=${UV_PROJECT_ENVIRONMENT},  done."
