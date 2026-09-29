@@ -1799,6 +1799,22 @@ do_ju_install() {
 
     log ">(do_ju_install):" "ju - Julia install, ..."
 
+    export JULIA_VERSION=$(python3 - <<'EOF'
+import urllib.request
+import json
+
+url = "https://julialang-s3.julialang.org/bin/versions.json"
+with urllib.request.urlopen(url) as response:
+    js = json.loads(response.read().decode('utf-8'))
+
+stable_versions = [v for v, d in js.items() if d.get('stable')]
+print(sorted(stable_versions, key=lambda x: tuple(map(int, x.split('.'))), reverse=True)[0])
+EOF
+           )
+
+    # Verify it was set correctly
+    echo "Latest stable Julia version is: $JULIA_VERSION"    
+
     echo "Instaling Julia ${JULIA_VERSION} ..."
     
     JULIA_MINOR_VERSION=${JULIA_VERSION%.*}
