@@ -932,9 +932,8 @@ do_py_boot() {
                 log ":(do_py_boot):" "uv - python not found => install $PYTHON_VERSION, done."
             fi
                 
-            which python        || false
             which python3       || false
-            python --version    || false
+            python3 --version   || false
 
 
             uv tool dir
@@ -961,8 +960,8 @@ do_py_boot() {
             which ipython       || false
 
             # uv run python -c "import sys; print('sys.prefix:', sys.prefix)"
-            py_msg="uv=$(uv --version), python=$(uv run python --version)"
-            py_msg="$(echo "$py_msg" | tr -d'\')"
+            py_msg="uv=$(uv --version), python=$(uv run python3 --version)"
+            # py_msg="$(echo "$py_msg" | tr -d'\\')"
             pycowsay "$py_msg"
             pycowsay 'moooo!'
             
