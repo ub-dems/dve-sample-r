@@ -750,6 +750,8 @@ do_ex_begin() {
     mkdir -p ~/.local/bin
     export PATH=~/.local/bin:$PATH
 
+    export JULIA_ROOT=~/.local/share/julia
+
     export UV_PROJECT_ENVIRONMENT="$UV_PROJECT_ENVIRONMENT_EXT"
     info "-(do_ex_begin):" "=== EXTERNAL: UV_PROJECT_ENVIRONMENT=${UV_PROJECT_ENVIRONMENT},  done."
 
@@ -1836,9 +1838,14 @@ EOF
     mkdir -p "${JULIA_ROOT}"
     tar zxf "julia-${JULIA_VERSION}-linux-${ARCH_LONG}.tar.gz" -C "${JULIA_ROOT}" --strip-components 1 
     rm -f "julia-${JULIA_VERSION}-linux-${ARCH_LONG}.tar.gz"
+    [ -f ~/.local/bin/julia ] && rm -f ~/.local/bin/julia
     ln -s "${JULIA_ROOT}/bin/julia" ~/.local/bin/julia
 
     cd -
+
+    ls -l ~/.local/bin/julia
+
+    info "<(do_ju_install):" "ju - Julia: $(julia --version)."
 
     set +x
 
