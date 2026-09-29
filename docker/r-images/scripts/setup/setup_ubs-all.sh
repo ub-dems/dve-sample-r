@@ -732,6 +732,9 @@ do_ex_begin() {
         die "!(do_ex_begin):" "??? EXTERNAL mode most be run outside of container=$container, fail"
     fi
 
+    mkdir -p ~/.local/bin
+    export PATH=~/.local/bin:$PATH
+
     export UV_PROJECT_ENVIRONMENT="$UV_PROJECT_ENVIRONMENT_EXT"
     info "-(do_ex_begin):" "=== EXTERNAL: UV_PROJECT_ENVIRONMENT=${UV_PROJECT_ENVIRONMENT},  done."
 
