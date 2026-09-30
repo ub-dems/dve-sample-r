@@ -216,6 +216,8 @@ runtime:
    source:
     info: |
 $(env | grep ^REV_ | sl)
+    status: |
+$(git --no-pager status | sl)
 
   workspce:
    paths:
