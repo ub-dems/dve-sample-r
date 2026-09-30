@@ -28,11 +28,11 @@ spec:
     gd-develop-op-downstream-check-on-merge:
       default: '1'
     gd-downstream-project:
-      default: "ub-dems/vs-base/dve-sample-py"
+      default: "ub-dems/vs-base/dve-sample-r"
     gd-upstream-project:
-      default: "ub-dems/ds-labs/dve-sample-py"
+      default: "ub-dems/ds-labs/dve-sample-r"
     gd-upstream-project-enc:
-      default: "ub-dems%2Fds-labs%2Fdve-sample-py"
+      default: "ub-dems%2Fds-labs%2Fdve-sample-r"
     gd-downstream-project-head:
       default: "develop"
     gd-downstream-project-main:
@@ -56,7 +56,7 @@ spec:
     gd-dotenv-has-config:
       default: '0'
     gd-dotenv-config-url:
-      default: "https://gitlab.com/ub-dems/vs-base/dve-sample-py-conf.git"
+      default: "https://gitlab.com/ub-dems/vs-base/dve-sample-r-conf.git"
     gd-dotenv-config-branch:
       default: "main"
     gd-dotenv-config-path:
