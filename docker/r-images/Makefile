@@ -182,8 +182,10 @@ XDG_DIRS = ~/Desktop ~/Documents ~/Downloads ~/Pictures
 
 # ---(dotenv)------------------------------------------------
 
+X_ENV_DEFAULT ?= ${ROOT_DIR}/.env.defaults
+X_ENV_STRICT ?= ${ROOT_DIR}/.env.strict
+
 X_ENV_FILE ?= ${ROOT_DIR}/.env
-X_ENV_FOUND := $(shell (type $(X_ENV_FILE)) &> /dev/null  && echo 1 || (touch $(X_ENV_FILE) && echo 2 || echo 0))
 UV_ENV_FILE ?= ${X_ENV_FILE}
 
 
@@ -709,13 +711,18 @@ worker-help:  help/worker
 
 .PHONY: init%
 
-init: $(BUILD_DIRS) $(XDG_DIRS)
+init: $(BUILD_DIRS) $(XDG_DIRS) $(X_ENV_FILE)
 
 $(BUILD_DIRS):
 	@mkdir -p $@
 
 $(XDG_DIRS):
 	@mkdir -p $@
+
+$(X_ENV_FILE):
+	cat $(X_ENV_DEFAULT) | grep '^[a-zA-Z0-9_]' > $(X_ENV_STRICT)
+	cp -v $(X_ENV_STRICT) $(X_ENV_FILE)
+	ls -l $(X_ENV_FILE) $(X_ENV_STRICT) $(X_ENV_DEFAULT)
 
 # ---(clean)------------------------------------------------
 
