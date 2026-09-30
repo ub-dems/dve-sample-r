@@ -2037,6 +2037,7 @@ parse_args_run() {
                 ;;
             
             --all)
+                RUN_EV_DOTENV=1
                 RUN_PY_BOOT=1
                 RUN_PY_VENV=1
                 RUN_PY_INSTALL=1
