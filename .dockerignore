@@ -1,3 +1,6 @@
+.cache/uv/
+.cache/
+.pytest_cache/
 docker/
 .dockerignore
 etc/custom/
@@ -7,6 +10,7 @@ etc/custom/
 .gitlab/
 home/
 inst/extdata/ext/
+images/
 logs/
 notes/
 temp/

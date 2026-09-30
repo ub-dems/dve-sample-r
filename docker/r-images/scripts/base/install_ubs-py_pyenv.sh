@@ -173,7 +173,7 @@ PYTHON_CONFIGURE_OPTS=${PYTHON_CONFIGURE_OPTS:-"--enable-shared"}
 # a function to install apt packages only if they are not installed
 function apt_install() {
     if ! dpkg -s "$@" >/dev/null 2>&1; then
-        if [ "$(find /var/lib/apt/lists/* | wc -l)" = "0" ]; then
+        if [ "$(find /var/lib/apt/lists/* 2> /dev/null | wc -l)" = "0" ]; then
             apt-get update
         fi
         apt-get install -y --no-install-recommends "$@"
@@ -460,20 +460,6 @@ function install_pyenv_pipx() {
 
 }
 
-function install_pyenv_uv() {
-    
-    [ "$Y_PY_PYENV_UV" = 1 ] || return 0
-
-    debug_pyenv "install_pyenv_uv::pre"
-
-    curl -LsSf https://astral.sh/uv/install.sh | \
-        env UV_INSTALL_DIR="/usr/local/bin" sh
-
-    debug_pyenv "install_pyenv_uv::post"
-    
-
-}
-
 function define_pyenv_default() {
     
     [ "$Y_PY_PYENV_DEFAULT" = 1 ] || return 0
@@ -534,10 +520,6 @@ function check_pyenv() {
     pipx    list \
           --global    || true
     
-    which   uv        || true
-    uv    --version   || true
-    uv    python list || true
-    
     set +x
     
 }
@@ -573,8 +555,6 @@ function main() {
     upgrade_pyenv_python
     install_pyenv_extras
     install_pyenv_pipx
-
-    install_pyenv_uv
 
     define_pyenv_default
     

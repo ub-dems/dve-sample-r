@@ -17,7 +17,7 @@ Features
 
 This project is base on generic R project template:
 
-* https://gitlab.com/ub-dems-public/ds-labs/dve-sample-r
+* https://gitlab.com/ub-dems/ds-labs/dve-sample-r
 
 * supporting R package builder `as-cran`,
 * packaging runtime environment (RStudio, dependencies) as a container image

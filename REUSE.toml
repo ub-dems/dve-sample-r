@@ -1,0 +1,45 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026, Università degli Studi di Milano-Bicocca. <https://www.unimib.it>
+# SPDX-License-Identifier: CC-BY-4.0
+
+version = 1
+
+# ---(Project Default)---
+
+[[annotations]]
+path = "**"
+SPDX-FileCopyrightText = "Copyright (c) 2026, Università degli Studi di Milano-Bicocca. <https://www.unimib.it>"
+SPDX-License-Identifier = "GPL-3.0-or-later"
+
+# ---(Source Code)---
+
+[[annotations]]
+path = [
+    "src/**",
+    "tests/**",
+    "R/**",
+    "exec/**",
+    "inst/include/**",
+    "inst/python/**"
+  ]
+precedence = "override"
+SPDX-FileCopyrightText = "Copyright (c) 2026, Università degli Studi di Milano-Bicocca. <https://www.unimib.it>"
+SPDX-License-Identifier = "GPL-3.0-or-later"
+
+# ---(Documentation and Data)---
+
+[[annotations]]
+path = [
+    "CITATION.cff",
+    "references.bibC",
+    "docs/**",
+    "notes/**",
+    "notebooks/**",
+    "man/**",
+    "vignettes/**",
+    "data/**",
+    "inst/exdata/**"
+  ]
+precedence = "override"
+SPDX-FileCopyrightText = "Copyright (c) 2026, Università degli Studi di Milano-Bicocca. <https://www.unimib.it>"
+SPDX-License-Identifier = "CC-BY-4.0"
+

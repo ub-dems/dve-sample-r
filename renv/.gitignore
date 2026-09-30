@@ -1,7 +1,15 @@
-sandbox/
+# Ignore the local package library and temporary build folders
 library/
-local/
-cellar/
-lock/
 python/
 staging/
+local/
+cellar/
+sandbox/
+lock/
+
+
+# Track configuration and bootstrapper files explicitly
+!activate.R
+!settings.dcf
+!settings.json
+!.gitignore
