@@ -1,13 +1,14 @@
 #!/bin/bash
-
+## ========================================================================
 ## setup entry point
 ##
+## -----------------------------------------------------------------------
+## NOTE: check it 'shellcheck';
+##
+## `shellcheck setup_ubs-all.sh`
+## ========================================================================
+##
 
-## build ARGs
-# set -e
-set -x
-source ${X_BUILD_CONF:-$Y_BUILD_CONF}
-set +x
 
 NCPUS=${NCPUS:--1}
 
@@ -19,7 +20,22 @@ NCPUS=${NCPUS:--1}
 #set +x
 
 
+#-----------------------------------------------------------
 set -a
+    
+: ${X_CUDA_CONF:=${Y_CUDA_CONF}}
+: ${X_BUILD_CONF:=${Y_BUILD_CONF}}
+: ${X_META_CONF:=${Y_META_CONF}}
+: ${X_RUNTIME_CONF:=${Y_RUNTIME_CONF}}
+: ${X_AUTO_CONF:=${Y_AUTO_CONF}}
+
+[ -r "${X_CUDA_CONF}" ] && source "${X_CUDA_CONF}" || true
+[ -r "${X_BUILD_CONF}" ] && source "${X_BUILD_CONF}" || true
+[ -r "${X_META_CONF}" ] && source "${X_META_CONF}" || true
+[ -r "${X_RUNTIME_CONF}" ] && source "${X_RUNTIME_CONF}" || true
+[ -r "${X_AUTO_CONF}" ] && source "${X_AUTO_CONF}" || true
+
+
 # ------------------------------------------------------
 
 : ${X_DRY:='0'}
@@ -36,6 +52,46 @@ set -a
 : ${X_PYTHON_MODE:=''}
 : ${X_R_MODE:=''}
 
+: ${X_PY_MODE:='uv'}
+
+# ------------------------------------------------------
+
+: ${X_ENV_FILE:='.env'}
+: ${X_ENV_DEFAULT:='.env.defaults'}
+: ${X_ENV_STRICT:='.env.strict'}
+
+# ------------------------------------------------------
+: "${JULIA_ROOT:=~/.local/share/julia}"
+: "${JULIA_HOME:=$JULIA_ROOT}"
+: "${JULIA_URL:=https://julialang-s3.julialang.org}"
+: "${JULIA_VERSION:=${X_JU_JULIA_VERSION:-latest}}"
+# ------------------------------------------------------
+
+: ${PYTHON_VERSION=${Y_PY_PYTHON_VERSION:-'3.14'}}
+# : ${UV_ROOT:="/usr/local/bin"}
+# : ${UV_INSTALL_DIR:="/usr/local/bin"}
+# : ${UV_TOOL_BIN_DIR:="/usr/local/bin"}
+# : ${UV_PYTHON_INSTALL_DIR:="/opt/uv/python"}
+# : ${UV_CACHE_DIR:="/opt/uv/cache"}
+: ${UV_PROJECT_ENVIRONMENT:=".venv.cdk"}
+: ${UV_PROJECT_ENVIRONMENT_EXT:=".venv"}
+: ${UV_ENV_FILE:=$X_ENV_FILE}
+: ${UV_NO_PROGRESS:="1"}
+
+
+: ${PYTHON_CONFIGURE_OPTS:="--enable-shared"}
+
+# ------------------------------------------------------
+
+(type nvidia-smi && nvidia-smi -L) &> /dev/null \
+    && X_HAS_GPU=1 || X_HAS_GPU=0;
+
+case "$X_HAS_GPU" in
+     1) export X_UV_EXTRA='gpu' ;;
+     *) export X_UV_EXTRA='cpu' ;;
+esac
+export X_HAS_GPU
+                                   
 # ------------------------------------------------------
 
 X_ENV_SCRIPT="docker/r-images/scripts/setup/environ_ubs-all.sh"
@@ -119,6 +175,10 @@ sl() {
     cat | sed 's/^/      %\t/' | sed 's/\t$//'
 }
 
+sl1() {
+    cat | sed -e '1d' | sed 's/^/      %\t/' | sed 's/\t$//'
+}
+
 sk() {
     cat | sed 's/^/       %\t/' | sed 's/\t$//'
 }
@@ -127,8 +187,7 @@ sk() {
 
 
 dump_header_status() {
-    cat <<EOF
-#vim: set foldmethod=marker:foldlevel=0
+    cat << EOF
 ---
 title: "setup status - project environment"
 project: "${REV_ID_PROJECT}"
@@ -143,57 +202,68 @@ EOF
 }
 
 dump_global_status() {
-    cat <<EOF
+    cat << EOF
 # {{{ --- [setup-globals] ----------------------------------
 
 ##
 # setup global status: ${args}.
 #
+runtime:
 
-
-- meta:
+  meta:
    version: 1.0.0
    script:
     name: "${X_SRC_NAME}"
     file: "$XS"  
 
-- revision:
+  revision:
    source:
     info: |
 $(env | grep ^REV_ | sl)
+    status: |
+$(git --no-pager status | sl)
 
-- workspce:
+  workspce:
    paths:
     curr: "$(pwd)"
     work: "${X_WORK}"
     logs: "${X_LOGS}"
     temp: "${X_TEMP}"
    contents: |
-$(ls -l pyproject.toml poetry.lock DESCRIPTION renv.lock package.json yarn.lock | sl)
+$(ls -l pyproject.toml *.lock DESCRIPTION package.json | sl)
 
-- host:
+  host:
    hostname: "$(hostname)"
    release: |
 $(lsb_release -a 2>/dev/null | sl)
  
-- user:
+  user:
    userid: "${USER}"
    home: "${HOME}"
    shell: "${SHELL}"
    id: |
 $(id | sl)
 
-- system-env:
+  system-env:
    path: |
 $(echo "${PATH}" | tr ':' '\n' | sl)
    library_path: |
 $(echo "${LD_LIBRARY_PATH}" | tr ':' '\n' | sl)
-   python: "$(which python)"
-   python-version: "$(which python >/dev/null && python --version | head -n1)"
+   python3: "$(which python3)"
+   python3-version: "$(which python3 &>/dev/null && python3 --version | head -n1)"
 
-- mount:
+  mount:
    df: |
 $(df -h | sl)
+
+
+  gpu:
+   environ:
+    X_HAS_GPU: "${X_HAS_GPU}"
+    pci: |
+$( (lspci 2>&1  || echo NOPCI) | sl)
+    nvidia: |
+$( (which nvidia-smi &>/dev/null && nvidia-smi 2>&1   || echo NOGPU) | sl)
 
 
 # }}} -----
@@ -203,55 +273,68 @@ EOF
 }
 
 dump_extras_status() {
-    cat <<EOF
+    cat << EOF
 # {{{ --- [setup-extras] ----------------------------------
 
 ##
 # setup extra languge and tools: ${args}
 #
 
-- rust:
+  rust:
    environ:
     CARGO_HOME: "${CARGO_HOME}"
     RUSTUP_HOME: "${RUSTUP_HOME}"
    binaries:
     cargo:
      path: |
-$(which cargo  2>/dev/null || echo "NOCARGO" | sk)
+$( (which cargo  2>/dev/null || echo NOCARGO) | sk)
      vers: |
-$(cargo --version || echo "NOCARGO" | sk)
+$( (cargo --version || echo NOCARGO) | sk)
     rustup:
      path: |
-$(which rustup  2>/dev/null || echo "NOCARGO" | sk)
+$( (which rustup  2>/dev/null || echo NORUSTUP) | sk)
      vers: |
-$(rustup --version || echo "NOCARGO" | sk)
+$( (rustup --version 2>/dev/null || echo NORUSTUP) | sk)
     rustc:
      path: |
-$(which rustc  2>/dev/null || echo "NOCARGO" | sk)
+$( (which rustc  2>/dev/null || echo NORUSTC) | sk)
      vers: |
-$(rustc --version || echo "NOCARGO" | sk)
+$( (rustc --version || echo NORUSTC) | sk)
 
 
-- node:
+  node:
    environ:
     NODE_VERSION: "${NODE_VERSION}"
     FNM_DIR: "${FNM_DIR}"
    binaries:
     fnm:
      path: |
-$(which fnm  2>/dev/null || echo "NOFNM" | sk)
+$( (which fnm  2>/dev/null || echo NOFNM) | sk)
      vers: |
-$(fnm --version || echo "NOFNM" | sk)
+$( (fnm --version || echo NOFNM) | sk)
     node:
      path: |
-$(which node  2>/dev/null || echo "NONODE" | sk)
+$( (which node  2>/dev/null || echo NONODE) | sk)
      vers: |
-$(node --version || echo "NONODE" | sk)
+$( (node --version || echo NONODE) | sk)
     npm:
      path: |
-$(which npm 2>/dev/null || echo "NONPM" | sk)
+$( (which npm 2>/dev/null || echo NONPM) | sk)
      vers: |
-$(npm --version || echo "NONPM" | sk)
+$( (npm --version || echo NONPM) | sk)
+
+
+  julia:
+   environ:
+    JULIA_ROOT: "${JULIA_ROOT}"
+   binaries:
+    julia:
+     path: |
+$( (which julia  2>/dev/null || echo NOJULIA) | sk)
+     link: |
+$( (ls -l $(which julia  2>/dev/null) || echo NOJULIA) | sk)
+     vers: |
+$( (which julia  &>/dev/null && julia --version || echo NOJULIA) | sk)
 
  
 
@@ -263,49 +346,58 @@ EOF
 
 
 dump_venv_status() {
-    cat <<EOF
+    cat << EOF
+
 # {{{ --- [setup-venv] ----------------------------------
     
 ##
 # setup python venv status: ${args}
 #
 
-- virtual-env:
+  virtual-env:
+   environ:
+    VIRTUAL_ENV: "${VIRTUAL_ENV}"
+    X_HAS_GPU: "${X_HAS_GPU}"
+    X_UV_EXTRA: "${X_UV_EXTRA}"
    paths:
     path: |
 $(echo "${PATH}" | tr ':' '\n' | sl)
     library_path: |
 $(echo "${LD_LIBRARY_PATH}" | tr ':' '\n' | sl)
-    python: "$(which python || echo NOPYTHON )"
-    python-version: "$(python --version || echo NOPYTHON)"
-    uv: "$(which uv || echo NOUV )"
-    uv-version: "$(uv --version || echo NOUV )"
-    poetry: "$(which poetry || echo NOPOETRY )"
-    poetry-version: "$(poetry --version || echo NOPOETRY )"
-    jupyter: "$(which jupyter || echo NOJUPYTER )"
-    jupyter-version: "$(jupyter --version || echo NOJUPYTER )"
-   poetry-venv: |
-$(poetry env info | sl)
+   binaries:
+    python: "$(which python 2>/dev/null || echo NOPYTHON )"
+    python-version: "$(which python &>/dev/null && python --version || echo NOPYTHON)"
+    python-mode: "${X_PY_MODE}"
+    uv: "$(which uv 2>/dev/null || echo NOUV )"
+    uv-version: "$(which uv &>/dev/null && uv --version || echo NOUV )"
+    poetry: "$(which poetry 2>/dev/null || echo NOPOETRY )"
+    poetry-version: "$(which poetry &>/dev/null && poetry --version || echo NOPOETRY )"
+    uv-venv: |
+ $( (which uv &>/dev/null && uv python find   || echo NOUVVENV) | sl)
+    poetry-venv: |
+ $( (which poetry &>/dev/null && poetry env info 2>/dev/null  || echo NOPOETRYVENV) | sl)
 
-- r-bindings:
+  r-bindings:
    config:
      reticulate: |
-$(R -e "reticulate::py_config()" | sl)
+$(R -q -e 'reticulate::py_config()' | sl)
 
-- jupyter:
-   paths:
-    jupyter-version: "$(which jupyter 2>/dev/null && jupyter --version)"
+  jupyter:
+   binaries:
+    jupyter: "$(which jupyter 2>/dev/null || echo NOJUPYTER )"
+    jupyter-version: |
+ $( (which jupyter &>/dev/null && jupyter --version 2>&1 || echo NOJUPYTER) | sl)
    config:
      lab-extensions: |
-$(jupyter labextension list || echo "NOJUPYTER" | sl)
+ $( (which jupyter &>/dev/null && jupyter labextension list 2>&1 || echo NOJUPYTER) | sl)
      kernels: |
-$(jupyter kernelspec list || echo "NOJUPYTER" | sl)
+ $( (which jupyter &>/dev/null && jupyter kernelspec list 2>&1 || echo NOJUPYTER) | sl)
 
-- python-deps
+  python-deps:
    list: |
-$(poetry show | sl)
+ $( (which uv &>/dev/null && uv pip list || which poetry 2>/dev/null && poetry show) | sl)
    project: |
-$(ls -l pyproject.toml poetry.lock | sl)
+$(ls -l pyproject.toml *.lock | sl)
  
 
 # }}} -----
@@ -315,23 +407,25 @@ EOF
 }
 
 dump_renv_status() {
-    cat <<EOF
+    cat << EOF
+
 # {{{ --- [setup-renv] ----------------------------------
     
 ##
 # setup R renv status: ${args}
 #
 
-- renv:
+  renv:
    paths:
     path: |
 $(echo "${PATH}" | tr ':' '\n' | sl)
     library_path: |
-$(echo "${LD_LIBRARY_PATH" | tr ':' '\n' | sl)
+$(echo "${LD_LIBRARY_PATH}" | tr ':' '\n' | sl)
+   binaries:
     R: "$(which R)"
-    R-version: "$(which R >/dev/null && R --version | tr '"' '\'' | head -n1)"
+    R-version: "$(which R >/dev/null && R --version  | head -n1)"
 
-- rdeps
+  rdeps:
    project: |
 $(ls -l DESCRIPTION renv.lock | sl)
  
@@ -351,28 +445,15 @@ dump_status_full() {
     dump_header_status
     dump_global_status
     dump_extras_status
+
+    # run in venv activated subshell
+
+    ( activate
+   
+         dump_venv_status
+         dump_renv_status
+    )
     
-    if poetry env list > /dev/null; then
-        ( source $(poetry env info --path)/bin/activate
-
-            dump_venv_status
-            dump_renv_status
-
-            
-          which python
-          python --version
-
-          R -q -e 'reticulate::py_discover_config(required_module = NULL, use_environment = NULL)'
-
-          R -e "reticulate::py_config()"
-          
-          
-        )
-    else
-        (
-            dump_renv_status
-        )
-    fi
 }
 
 dump_status() {
@@ -389,14 +470,15 @@ dump_status() {
 
 exit_status() {
     
-    dump_status
-    exec ./build.sh status
+    (./build.sh status)
+   dump_status
+   exit 0
 }
 
 # --------------------------------------------------------------
 
 docs_renv_refs() {
-    cat <<'EOF'
+    cat << 'EOF'
 ---
 # R config
 
@@ -499,7 +581,7 @@ error() { LOG_LEVEL='ERROR' CLOG="$C_IRed"     _log $*; }
 fatal() { LOG_LEVEL='FATAL' CLOG="$C_BIRed"    _log $*; }
 log()   { LOG_LEVEL='_LOG_' CLOG="$C_BBlue"    _log $*; }
 die ()  { fatal $*; ask_exit; }
-fail () { fatal $@; } # halt ...
+fail () { fatal "$@"; } # halt ...
 todo () { warn "#TODO: " $*; }
 # --------------------------------------------------------------
 rc_init() {
@@ -542,7 +624,7 @@ env_dump() {
 
 }
 check_is_root()  { [ "$(id -u)" == "0" ] || die "must run as root: $(whoami)"; }
-check_not_root() { [ "$(id -u)" == "0" ] && die "cannot run as root: $(whoami)"; }
+check_not_root() { [ "$(id -u)" == "0" ] && die "caxnnot run as root: $(whoami)"; }
 # --------------------------------------------------------------
 mk_public_dir() {
     [ -z "$1" ] && return 1
@@ -607,6 +689,26 @@ exit_main() {
 # ////////////////////////////////////////////////////////////////////////
 
 
+activate() {
+    
+    case "$X_PY_MODE" in
+        uv)
+            source ${UV_PROJECT_ENVIRONMENT}/bin/activate || \
+            error "activate[uv] failed"
+        ;;
+        poetry)
+            source $(poetry env info --path)/bin/activate || \
+            error "activate[poetry] failed"
+                
+        ;;
+        *)
+            error "undefined X_PY_MODE=$X_PY_MODE"
+        ;;
+    esac
+    
+}
+
+
 deactivate () {
     # reset old environment variables
     if [ -n "${_OLD_VIRTUAL_PATH:-}" ] ; then
@@ -645,9 +747,71 @@ deactivate () {
 
 exec_environ() {
 
-    exec ${X_ENV_SCRIPT} $@
+    exec ${X_ENV_SCRIPT} "$@"
     
 }
+
+# ////////////////////////////////////////////////////////////////////////
+
+
+do_ex_begin() {
+
+    log ">(do_ex_begin):" "{{{ EXTERNAL:begin, ..."
+    
+    if [ -n "$container" ]; then
+        die "!(do_ex_begin):" "??? EXTERNAL mode most be run outside of container=$container, fail"
+    fi
+
+    mkdir -p ~/.local/bin
+    export PATH=~/.local/bin:$PATH
+
+    export JULIA_ROOT=~/.local/share/julia
+    export JULIA_HOME="$JULIA_ROOT"
+
+    export UV_PROJECT_ENVIRONMENT="$UV_PROJECT_ENVIRONMENT_EXT"
+    info "-(do_ex_begin):" "=== EXTERNAL: UV_PROJECT_ENVIRONMENT=${UV_PROJECT_ENVIRONMENT},  done."
+
+    log "<(do_ex_begin):" "=== EXTERNAL:begin, done."
+    
+}
+
+do_ex_end() {
+
+    log ">(do_ex_end):" "{{{ EXTERNAL:end, ..."
+
+    info ">(do_ex_end):" "--- run ./build.sh full to setup container runtime."
+    info ">(do_ex_end):" "--- see ./build.sh --help"
+
+    rc_ex_setup=0
+
+    log "<(do_ex_end):" "--- EXTERNAL:end, done. }}}"
+    
+    return $rc_ex_setup
+    
+}
+
+# ////////////////////////////////////////////////////////////////////////
+
+
+do_ev_dotenv() {
+
+    log ">(do_ev_dotenv):" "ev - .env definition, ..."
+
+    if [ -z "${X_ENV_FILE}" ]; then
+        warn "?(do_ev_dotenv):" "ev - X_ENV_FILE undefined, skip"
+    elif [ -f "${X_ENV_FILE}" ]; then
+        info "-(do_ev_dotenv):" "ev - X_ENV_FILE=${X_ENV_FILE} found, skip"
+    else
+        cat "${X_ENV_DEFAULT}" | grep '^[a-zA-Z0-9_]' > "${X_ENV_STRICT}"
+        cp -v "${X_ENV_STRICT}" "${X_ENV_FILE}"
+        ls -l "${X_ENV_FILE}" "${X_ENV_STRICT}" "${X_ENV_DEFAULT}"
+        info "-(do_ev_dotenv):" "ev - UV_ENV_FILE=${UV_ENV_FILE} created from ${X_ENV_DEFAULT}."
+    fi
+
+    log "<do_ev_dotenv):" "ev - .env definition,  done."
+    
+}
+
 
 
 # ////////////////////////////////////////////////////////////////////////
@@ -663,9 +827,22 @@ do_py_init() {
         warn "+(do_py_init):" "py - venv active: VIRTUAL_ENV=$VIRTUAL_ENV, deactivating, done."
     fi
 
-    poetry env info
-    poetry env list
-    log "+(do_py_init):" "py - venv detected: (rc:$?)"
+    case "$X_PY_MODE" in
+        uv)
+            [ -n "${UV_PROJECT_ENVIRONMENT}" ] && \
+                [ -d "./${UV_PROJECT_ENVIRONMENT}" ] && \
+                ( ls -lda ./${UV_PROJECT_ENVIRONMENT}; \
+                  log "+(do_py_init):" "py - venv detected: (rc:$?)" )
+        ;;
+        poetry)
+            poetry env info
+            poetry env list
+            log "+(do_py_init):" "py - venv detected: (rc:$?)"
+        ;;
+        *)
+            error "undefined X_PY_MODE=$X_PY_MODE"
+        ;;
+    esac
 
     log "<(do_py_init):" "py - venv init,  done."
     
@@ -676,11 +853,23 @@ do_py_remove() {
 
     log ">(do_py_remove):" "py - venv remove, ..."
 
-    if poetry env list > /dev/null; then
-        poetry env remove $(poetry env list)
-    else
-        warn "venv  not found, skip"
-    fi
+    case "$X_PY_MODE" in
+        uv)
+            [ -n "${UV_PROJECT_ENVIRONMENT}" ] && \
+                [ -d "./${UV_PROJECT_ENVIRONMENT}" ] && \
+                rm -rf "./${UV_PROJECT_ENVIRONMENT}"
+        ;;
+        poetry)
+            if poetry env list > /dev/null; then
+                poetry env remove $(poetry env list)
+            else
+                warn "venv  not found, skip"
+            fi
+        ;;
+        *)
+            error "undefined X_PY_MODE=$X_PY_MODE"
+        ;;
+    esac
 
     log "<(do_py_remove):" "py - venv remove,  done."
     
@@ -726,23 +915,118 @@ do_py_cache() {
 }
 
 
+do_py_boot() {
+
+    log ">(do_py_boot):" "py - boot, ..."
+
+    case "$X_PY_MODE" in
+        uv)
+            if (command -v uv) > /dev/null; then
+                log ":(do_py_boot):" "uv - found, skip."
+            else
+                log ":(do_py_boot):" "uv - not found => install uv, ..."
+                
+                curl -LsSf https://astral.sh/uv/install.sh | sh
+                
+                log ":(do_py_boot):" "uv - not found => install uv, done."
+            fi
+
+            which uv        || false
+            which uvx       || false
+            uv --version    || false
+
+            : ${PYTHON_VERSION:=3.14}
+
+            if [ -f .python-version ]; then
+                PYTHON_VERSION="$(cat .python-version)"
+                export PYTHON_VERSION
+            fi
+
+            if false; then # check uv python
+                log ":(do_py_boot):" "uv - python found, skip."
+                # uv python install --force --upgrade
+            else
+                log ":(do_py_boot):" "uv - python not found => install $PYTHON_VERSION, ..."
+                
+                uv python install ${PYTHON_VERSION} \
+                   --python-preference managed \
+                   --preview
+                
+                log ":(do_py_boot):" "uv - python not found => install $PYTHON_VERSION, done."
+            fi
+                
+            which python3       || false
+            python3 --version   || false
+
+
+            uv tool dir
+            uv tool list
+
+            if false; then # check uv tools
+                log ":(do_py_boot):" "uv - tools found, skip."
+                # uv tool install --force --upgrade
+            else
+                log ":(do_py_boot):" "uv - tool not found => install tools, ..."
+                
+                uv tool install ipython    --no-progress
+                uv tool install pipx       --no-progress
+                uv tool install pycowsay   --no-progress
+                uv tool install poetry     --no-progress
+                uv tool install ruff       --no-progress
+                
+                log ":(do_py_boot):" "uv - python not found => install tools, done."
+            fi
+                
+            uv tool dir
+            uv tool list
+
+            which ipython       || false
+
+            # uv run python -c "import sys; print('sys.prefix:', sys.prefix)"
+            py_msg="uv=$(uv --version), python=$(uv run python3 --version)"
+            # py_msg="$(echo "$py_msg" | tr -d'\\')"
+            pycowsay "$py_msg"
+            pycowsay 'moooo!'
+            
+        ;;
+        poetry)
+            warn "pyenv/poetry install unsupported, skip"
+        ;;
+        *)
+            error "undefined X_PY_MODE=$X_PY_MODE"
+        ;;
+    esac
+    
+    log "<(do_py_boot):" "py - boot, done."
+    
+}
+
 
 do_py_venv() {
 
     log ">(do_py_venv):" "py - venv define, ..."
 
-    if ! poetry env list > /dev/null; then
-        #poetry config virtualenvs.create true --local
-        #poetry config virtualenvs.in-project false --local
-        poetry env use $(which python)
-        [ -L ./venv ] && rm ./venv
-        ln -s "~/$(realpath $(poetry  env info -p) --relative-to=$HOME -s)" ./venv
-        info "venv $(poetry env list) defined."
-        poetry env info | show
-    else
-        warn "venv $(poetry env list) already defined, skip"
-    fi
-
+    case "$X_PY_MODE" in
+        uv)
+            uv venv --clear "${UV_PROJECT_ENVIRONMENT}"
+        ;;
+        poetry)
+            if ! poetry env list > /dev/null; then
+                #poetry config virtualenvs.create true --local
+                #poetry config virtualenvs.in-project false --local
+                poetry env use $(which python)
+                [ -L ./venv ] && rm ./venv
+                #ln -s "~/$(realpath $(poetry  env info -p) --relative-to=$HOME -s)" ./venv
+                info "venv $(poetry env list) defined."
+                poetry env info | show
+            else
+                warn "venv $(poetry env list) already defined, skip"
+            fi
+        ;;
+        *)
+            error "undefined X_PY_MODE=$X_PY_MODE"
+        ;;
+    esac
     
     log "<(do_py_venv):" "py - venv define,  done."
     
@@ -753,11 +1037,25 @@ do_py_reset() {
 
     log ">(do_py_reset):" "py - unlock, ..."
 
-    if [ -f ./poetry.lock ]; then
-        rm ./poetry.lock
-    else
-        warn "./poetry.lock not found, skip"
-    fi
+    case "$X_PY_MODE" in
+        uv)
+            if [ -f ./uv.lock ]; then
+                rm ./uv.lock
+            else
+                warn "./uv.lock not found, skip"
+            fi
+        ;;
+        poetry)
+            if [ -f ./poetry.lock ]; then
+                rm ./poetry.lock
+            else
+                warn "./poetry.lock not found, skip"
+            fi
+        ;;
+        *)
+            error "undefined X_PY_MODE=$X_PY_MODE"
+        ;;
+    esac
 
     do_py_remove
 
@@ -787,14 +1085,31 @@ do_py_lock() {
 
     log ">(do_py_lock):" "py - lock, ..."
 
-    if [ ! -f ./poetry.lock ]; then
-        export PYTHON_KEYRING_BACKEND="keyring.backends.null.Keyring"
-        poetry lock
-        info "./poetry.lock created."
-        poetry show | show
-    else
-        log "./poetry.lock found, skip"
-    fi
+    case "$X_PY_MODE" in
+        uv)
+            if [ ! -f ./uv.lock ]; then
+                export PYTHON_KEYRING_BACKEND="keyring.backends.null.Keyring"
+                uv lock --no-progress
+                info "./uv.lock created."
+                uv pip list
+            else
+                log "./uv.lock found, skip"
+            fi
+        ;;
+        poetry)
+            if [ ! -f ./poetry.lock ]; then
+                export PYTHON_KEYRING_BACKEND="keyring.backends.null.Keyring"
+                poetry lock
+                info "./poetry.lock created."
+                poetry show
+            else
+                log "./poetry.lock found, skip"
+            fi
+        ;;
+        *)
+            error "undefined X_PY_MODE=$X_PY_MODE"
+        ;;
+    esac
 
     log "<(do_py_lock):" "py - lock,  done."
     
@@ -804,12 +1119,28 @@ do_py_install() {
 
     log ">(do_py_install):" "py - install define, ..."
 
-    export PYTHON_KEYRING_BACKEND="keyring.backends.null.Keyring"
-    
-    poetry install --no-interaction -vv
-    
-    info "poetry install -- (rc: $?) -- from $(ls -l poetry.lock)"
-    
+    case "$X_PY_MODE" in
+        uv)
+            export PYTHON_KEYRING_BACKEND="keyring.backends.null.Keyring"
+
+            info "uv sync -- (extra: $X_UV_EXTRA) -- X_HAS_GPU=$X_HAS_GPU"
+            
+            uv sync --extra=$X_UV_EXTRA --all-groups  --no-progress
+            
+            info "uv sync -- (rc: $?) -- from $(ls -l uv.lock)"
+        ;;
+        poetry)
+            export PYTHON_KEYRING_BACKEND="keyring.backends.null.Keyring"
+            
+            poetry install --no-interaction -vv
+            
+            info "poetry install -- (rc: $?) -- from $(ls -l poetry.lock)"
+        ;;
+        *)
+            error "undefined X_PY_MODE=$X_PY_MODE"
+        ;;
+    esac
+
     log "<(do_py_install):" "py - install,  done."
     
 }
@@ -819,9 +1150,9 @@ do_py_reticulate() {
 
     log ">(do_py_reticulate):" "py - reticulate config, ..."
 
-    # run in poetry shell -- venv activated
+    # run in venv activated subshell
 
-    ( source $(poetry env info --path)/bin/activate
+    ( activate
 
       which python
       python --version
@@ -831,13 +1162,23 @@ do_py_reticulate() {
       # R - python
       # install2.r --error --skipmissing --skipinstalled -n $NCPUS  reticulate
 
+      case "$X_PY_MODE" in
+          uv)
+              eval "export X_ENV_VENV=$(realpath "./${UV_PROJECT_ENVIRONMENT}")"
+          ;;
+          poetry)
+              eval "export X_ENV_VENV=$(poetry env info --path)"
+          ;;
+          *)
+              error "undefined X_PY_MODE=$X_PY_MODE"
+              ;;
+      esac
       
       # @see: https://rstudio.github.io/reticulate/articles/versions.html#order-of-discovery
 
       eval "export X_ENV_PATH=$(bash --login -i -c 'printf \"%s\" "$PATH"' | tail -n1)"
-      eval "export X_ENV_VENV=$(poetry env info --path)"
 
-      export RETICULATE_PYTHON_ENV="$(poetry env info --path)"
+      export RETICULATE_PYTHON_ENV="${X_ENV_VENV}"
 
       touch ~/.Rsession
       touch ~/.Renviron
@@ -858,13 +1199,10 @@ PATH=${X_ENV_PATH}
 RETICULATE_PYTHON_ENV=${RETICULATE_PYTHON_ENV}
 _R_CHECK_SYSTEM_CLOCK_=0
 EOR
-    
-      
       
       R -q -e 'reticulate::py_discover_config(required_module = NULL, use_environment = NULL)'
 
       R -e "reticulate::py_config()"
-      
       
     )
 
@@ -877,9 +1215,9 @@ do_py_jupyter_build() {
 
     log ">(do_py_jupyter):" "py - jupyter prepare, ..."
 
-    # run in poetry shell -- venv activated
+    # run in venv activated subshell
 
-    ( source $(poetry env info --path)/bin/activate
+    ( activate
 
       [ -f ~/.jupyter/jupyter_server_config.py ] || \
           jupyter server --generate-config
@@ -911,16 +1249,10 @@ do_py_jupyter_build() {
           jlpm add --dev  \
                bash-language-server \
                dockerfile-language-server-nodejs \
-               markdownlint \
-               markdownlint-cli2 \
                pyright \
                sql-language-server \
                typescript-language-server \
-               unified-language-server \
-               vscode-css-languageserver-bin \
-               vscode-html-languageserver-bin \
-               vscode-json-languageserver-bin \
-               vscode-markdown-languageserver \
+               vscode-langservers-extracted \
                yaml-language-server
           
           info "jupyter ./package.json created"
@@ -938,7 +1270,8 @@ do_py_jupyter_build() {
       jlpm install
 
       jupyter lab clean --all
-      jupyter lab build --debug
+      jupyter lab build
+      # jupyter lab build --debug
       
       
     )
@@ -951,20 +1284,45 @@ do_py_irkernel_reg() {
 
     log ">(do_py_irkernel):" "py - irkernel install, ..."
 
-    # run in poetry shell -- venv activated
+    # run in venv activated subshell
 
-    ( source $(poetry env info --path)/bin/activate
-
+    ( activate
 
       # @see: https://github.com/IRkernel/IRkernel
 
       R --quiet   -e 'IRkernel::installspec()'
 
-      jupyter labextension install @techrah/text-shortcuts  # for RStudio’s shortcuts
+      # jupyter labextension install @techrah/text-shortcuts  # for RStudio’s shortcuts
       
     )
 
     log "<(do_py_irkernel):" "py - irkernel install,  done."
+    
+}
+
+do_py_ijulia_reg() {
+
+    log ">(do_py_ijulia):" "py - ijulia install, ..."
+
+    # run in venv activated subshell
+
+    ( activate
+
+      # @see: https://github.com/IRkernel/IRkernel
+
+      (command -v julia) &> /dev/null && \
+          
+          julia -e '
+          using Pkg
+          # Ensure IJulia is installed in the global/default environment
+          Pkg.add("IJulia"; io=devnull)
+          # Force rebuild to link the kernelspec to the $JUPYTER path
+          Pkg.build("IJulia")
+          '
+      
+    )
+
+    log "<(do_py_ijulia):" "py - ijulia install,  done."
     
 }
 
@@ -974,9 +1332,9 @@ do_py_jupyter_show() {
 
     log ">(do_py_jupyter_show):" "py - jupyter show, ..."
 
-    # run in poetry shell -- venv activated
+    # run in venv activated subshell
 
-    ( source $(poetry env info --path)/bin/activate
+    ( activate
 
       which python
       which jupyter
@@ -989,7 +1347,6 @@ do_py_jupyter_show() {
       jupyter labextension list
       jupyter kernelspec list
       
-      
     )
 
     log "<(do_py_jupyter_show):" "py - jupyter show,  done."
@@ -1000,23 +1357,54 @@ do_py_show() {
 
     log ">(do_py_show):" "py - show config, ..."
 
-    # run in poetry shell -- venv activated
+    case "$X_PY_MODE" in
+        uv)
+            # TODO(uv)
+        ;;
+        poetry)
+        ;;
+        *)
+            error "undefined X_PY_MODE=$X_PY_MODE"
+        ;;
+    esac
+    
 
-    ( source $(poetry env info --path)/bin/activate
+    # run in venv activated subshell
+
+    ( activate
 
       which python
       python --version
 
-      case "$X_VERBOSE" in
-          1*)
-              poetry show
-              ;;
-          12*)
-              poetry show --tree
+      case "$X_PY_MODE" in
+          uv)
+              case "$X_VERBOSE" in
+                  1*)
+                      uv pip list
+                      ;;
+                  12*)
+                      uv tree --no-dedupe --all-groups 
+                      ;;
+                  *)
+                      ;;
+              esac    
+          ;;
+          poetry)
+              case "$X_VERBOSE" in
+                  1*)
+                      poetry show
+                      ;;
+                  12*)
+                      poetry show --tree
+                      ;;
+                  *)
+                      ;;
+              esac    
               ;;
           *)
+              error "undefined X_PY_MODE=$X_PY_MODE"
               ;;
-      esac    
+      esac
 
       R -e "reticulate::py_config()"
       
@@ -1167,9 +1555,9 @@ do_renv_install() {
 
     log ">(do_renv_install):" "renv - install, ..."
 
-    # run in poetry shell -- venv activated
+    # run in venv activated subshell
 
-    ( source $(poetry env info --path)/bin/activate
+    ( activate
 
       R -q -e 'renv::install(dependencies = TRUE)' ; rc_renv_install=$?
 
@@ -1189,9 +1577,9 @@ do_renv_upgrade() {
 
     log ">(do_renv_upgrade):" "renv - upgrade, ..."
 
-    # run in poetry shell -- venv activated
+    # run in venv activated subshell
 
-    ( source $(poetry env info --path)/bin/activate
+    ( activate
 
       R -q -e 'renv::upgrade()' ; rc_renv_upgrade=$?
 
@@ -1211,9 +1599,9 @@ do_renv_snapshot() {
 
     log ">(do_renv_snapshot):" "renv - snapshot, ..."
 
-    # run in poetry shell -- venv activated
+    # run in venv activated subshell
 
-    ( source $(poetry env info --path)/bin/activate
+    ( activate
 
       R -q -e 'renv::snapshot()' ; rc_renv_snapshot=$?
 
@@ -1233,9 +1621,9 @@ do_renv_restore() {
 
     log ">(do_renv_restore):" "renv - restore, ..."
 
-    # run in poetry shell -- venv activated
+    # run in venv activated subshell
 
-    ( source $(poetry env info --path)/bin/activate
+    ( activate
 
       R -q -e 'renv::restore()' ; rc_renv_restore=$?
 
@@ -1256,9 +1644,9 @@ do_renv_show() {
 
     log ">(do_renv_show):" "renv - show status, ..."
 
-    # run in poetry shell -- venv activated
+    # run in venv activated subshell
 
-    ( source $(poetry env info --path)/bin/activate
+    ( activate
 
       R -q -e 'renv::status()'
 
@@ -1276,9 +1664,9 @@ do_renv_reset() {
 
     log ">(do_renv_reset):" "renv - reset, ..."
 
-    # run in poetry shell -- venv activated
+    # run in venv activated subshell
 
-    ( source $(poetry env info --path)/bin/activate
+    ( activate
       
       if [ -f ./renv.lock ]; then
           rm ./renv.lock
@@ -1291,6 +1679,56 @@ do_renv_reset() {
     log "<(do_renv_reset):" "renv - reset, done."
     
 }
+
+do_cffr_citation() {
+
+    log ">(do_cffr_citation):" "cffr - CITATION, ..."
+
+    # run in venv activated subshell
+
+    ( activate
+
+      R -q -e 'cffr::cff_write_citation(cffr::cff_read("CITATION.cff"), file = "inst/CITATION")'
+      rc_cffr_citation=$?
+
+      case "$rc_cffr_citation" in
+          0) info "=(do_cffr_citation):" "cffr - citation => ok" ;;
+          *) error "#(do_cffr_citation):" "cffr - citation => KO -- (rc:$rc_cffr_citation)" ;;
+      esac    
+      
+    )
+
+    log "<(do_cffr_citation):" "cffr - CITATION, done."
+
+    return $rc_cffr_citation
+    
+}
+
+do_rdev_document() {
+
+    log ">(do_rdev_document):" "devtools::document, ..."
+
+    # run in venv activated subshell
+
+    ( activate
+
+      R -q -e 'devtools::document()'
+      rc_rdev_document=$?
+
+      case "$rc_rdev_document" in
+          0) info "=(do_rdev_document):" "devtools::document => ok" ;;
+          *) error "#(do_rdev_document):" "devtools::document => KO -- (rc:$rc_rdev_document)" ;;
+      esac    
+      
+    )
+
+    log "<(do_rdev_document):" "devtools::document, done."
+
+    return $rc_rdev_document
+    
+}
+
+
 
 do_re_setup() {
 
@@ -1352,7 +1790,125 @@ do_re_force() {
     
 }
 
+do_re_cffr() {
+
+    log ">(do_re_cffr):" "cffr - setup, ..."
+
+    do_cffr_citation
+
+    log "<(do_re_cffr):" "cffr - setup, done."
+    
+}
+
+do_re_doc() {
+
+    log ">(do_re_doc):" "rdev - doc, ..."
+
+    do_rdev_document
+
+    log "<(do_re_doc):" "rdev - doc, done."
+    
+}
+
 # ////////////////////////////////////////////////////////////////////////
+
+
+do_ju_install() {
+
+    log ">(do_ju_install):" "ju - Julia install, ..."
+
+    export JULIA_VERSION=$(python3 - <<'EOF'
+import urllib.request
+import json
+
+url = "https://julialang-s3.julialang.org/bin/versions.json"
+with urllib.request.urlopen(url) as response:
+    js = json.loads(response.read().decode('utf-8'))
+
+stable_versions = [v for v, d in js.items() if d.get('stable')]
+print(sorted(stable_versions, key=lambda x: tuple(map(int, x.split('.'))), reverse=True)[0])
+EOF
+           )
+
+    # Verify it was set correctly
+    echo "Latest stable Julia version is: $JULIA_VERSION"    
+
+    echo "Instaling Julia ${JULIA_VERSION} ..."
+    
+    JULIA_MINOR_VERSION=${JULIA_VERSION%.*}
+
+    ARCH_LONG=$(uname -p)
+    ARCH_SHORT=$ARCH_LONG
+
+    if [ "$ARCH_LONG" = "x86_64" ]; then
+        ARCH_SHORT="x64"
+    fi
+
+
+    mkdir -p /tmp/downloaded_packages
+    cd /tmp/downloaded_packages
+
+    set -x
+    
+    # Download Julia and create a symbolic link.
+    wget -nv "https://julialang-s3.julialang.org/bin/linux/${ARCH_SHORT}/${JULIA_MINOR_VERSION}/julia-${JULIA_VERSION}-linux-${ARCH_LONG}.tar.gz"
+    mkdir -p "${JULIA_ROOT}"
+    tar zxf "julia-${JULIA_VERSION}-linux-${ARCH_LONG}.tar.gz" -C "${JULIA_ROOT}" --strip-components 1 
+    rm -f "julia-${JULIA_VERSION}-linux-${ARCH_LONG}.tar.gz"
+    [ -L ~/.local/bin/julia ] && rm -f ~/.local/bin/julia
+    ln -s ${JULIA_ROOT}/bin/julia ~/.local/bin/julia
+
+    set +x
+    
+    cd -
+
+    ls -l ~/.local/bin/julia
+
+    info "<(do_ju_install):" "ju - Julia: $(julia --version)."
+
+
+    log "<(do_ju_install):" "ju - Julia install, done."
+    
+}
+
+
+
+# ////////////////////////////////////////////////////////////////////////
+
+
+do_js_nvm() {
+
+    log ">(do_js_nvm):" "js - node-js nvm install, ..."
+
+    # Download and install nvm:
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.8/install.sh | bash
+
+    # in lieu of restarting the shell
+    \. "$HOME/.nvm/nvm.sh"
+
+    # Download and install Node.js:
+    nvm install 24
+
+    # Verify the Node.js version:
+    node -v # Should print "v24.21.0".
+
+    # Verify npm version:
+    npm -v # Should print "11.19.0".
+
+    log "<(do_js_nvm):" "js - node-js nvm , done."
+    
+}
+
+
+do_js_node() {
+
+    log ">(do_js_node):" "js - node modules install, ..."
+
+    npm install -g markdownlint-cli2
+
+    log "<(do_js_node):" "js - node modules install, done."
+    
+}
 
 do_js_code() {
 
@@ -1405,7 +1961,7 @@ EOF
 parse_args_run() {
     
     if [ $# -lt 1 ];then
-        set -- $@ --status
+        set -- "$@" --status
     fi
     
     args="$@"
@@ -1413,26 +1969,73 @@ parse_args_run() {
 
     set -x
     
+    RUN_EX_SETUP=0
+    RUN_EV_DOTENV=0
+    RUN_PY_BOOT=0
     RUN_PY_CLEAR=0
     RUN_PY_RESET=0
     RUN_PY_VENV=0
     RUN_PY_INSTALL=0
+    RUN_PY_JUPYTER=0
     RUN_PY_SHOW=0
+    RUN_JS_NVM=0
     RUN_JS_CODE=0
     RUN_RE_CLEAR=0
     RUN_RE_RESET=0
     RUN_RE_SETUP=0
     RUN_RE_UPGRADE=0
     RUN_RE_RESTORE=0
+    RUN_RE_JUPYTER=0
     RUN_RE_SHOW=0
+    RUN_RE_DOC=0
+    RUN_RE_CFFR=0
+    RUN_JU_INSTALL=0
+    RUN_JU_JUPYTER=0
     
     X_ALL_MODE=1
+    X_EXTERNAL_MODE=0
+    X_DOTENV_MODE=0
+    X_JULIA_MODE=0
     X_PYTHON_MODE=0
     X_R_MODE=0
+    X_CODE_MODE=0
+    X_NVM_MODE=0
+    X_NODE_MODE=0
     cmds=""
 
     while [ $# -gt 0 ]; do
         case "$1" in
+            
+            --external|-E)
+                X_ALL_MODE='0'
+                X_EXTERNAL_MODE='1'
+                X_DOTENV_MODE='1'
+                X_PYTHON_MODE='1'
+                X_NVM_MODE='1'
+                X_NODE_MODE='1'
+                RUN_EX_SETUP=1
+                RUN_EV_DOTENV=1
+                RUN_PY_BOOT=1
+                RUN_PY_VENV=1
+                RUN_PY_INSTALL=1
+                RUN_PY_JUPYTER=1
+                RUN_PY_SHOW=1
+                RUN_JU_INSTALL=1
+                RUN_JU_JUPYTER=1
+                RUN_JS_NVM=1
+                RUN_JS_NODE=1
+                cmds="$cmds --external"
+                ;;
+            
+            --dotenv)
+                RUN_EV_DOTENV=1
+                cmds="$cmds --dotenv"
+                ;;
+            
+            --boot)
+                RUN_PY_BOOT=1
+                cmds="$cmds --boot"
+                ;;
             
             --clear)
                 RUN_PY_CLEAR=1
@@ -1449,35 +2052,55 @@ parse_args_run() {
                 ;;
             
             --all)
+                RUN_EV_DOTENV=1
+                RUN_PY_BOOT=1
                 RUN_PY_VENV=1
                 RUN_PY_INSTALL=1
                 RUN_PY_BIND=1
                 RUN_PY_JUPYTER=1
                 RUN_PY_SHOW=1
                 RUN_JS_CODE=1
+                RUN_JS_NODE=1
+                RUN_JU_JUPYTER=1
                 RUN_RE_SETUP=1
+                RUN_RE_JUPYTER=1
+                RUN_RE_DOC=1
+                RUN_RE_CFFR=1
                 RUN_RE_UPGRADE="$Y_RE_RENV_UPGRADE"
                 RUN_RE_RESTORE="$Y_RE_RENV_RESTORE"
                 cmds="$cmds --install --all"
                 ;;
             
-            --status|-s)
-                RUN_STATUS=1
-                RUN_PY_SHOW=1
-                RUN_RE_SHOW=1
-                cmds="$cmds --status"
-                ;;
+            # --status|-s)
+            #     RUN_STATUS=1
+            #     RUN_PY_SHOW=1
+            #     RUN_RE_SHOW=1
+            #     cmds="$cmds --status"
+            #     ;;
             
             --python|-P)
-                X_ALL_MODE:='0'
-                X_PYTHON_MODE:='1'
+                X_ALL_MODE='0'
+                X_PYTHON_MODE='1'
                 cmds="$cmds -P"
                 ;;
             
             --r|-R)
-                X_ALL_MODE:='0'
-                X_R_MODE:='1'
+                X_ALL_MODE='0'
+                X_R_MODE='1'
                 cmds="$cmds -R"
+                ;;
+            
+            --nvm|-N)
+                X_ALL_MODE='0'
+                X_NODE_MODE='1'
+                RUN_JS_NVM=1
+                cmds="$cmds -J"
+                ;;
+            
+            --node|-J)
+                X_ALL_MODE='0'
+                X_NODE_MODE='1'
+                cmds="$cmds -J"
                 ;;
             
             --full|-F)
@@ -1488,32 +2111,32 @@ parse_args_run() {
                 ;;
             
             --dots|-D)
-                X_DOTS_MODE:='1'
+                X_DOTS_MODE='1'
                 cmds="$cmds -D"
                 ;;
             
             --cache|-C)
-                X_CACHE_MODE:='1'
+                X_CACHE_MODE='1'
                 cmds="$cmds -C"
                 ;;
             
             --verbose|-v)
-                X_VERBOSE:='1'
+                X_VERBOSE='1'
                 cmds="$cmds -v"
                 ;;
             
             -vv)
-                X_VERBOSE:='12'
+                X_VERBOSE='12'
                 cmds="$cmds -vv"
                 ;;
             
             -vvv)
-                X_VERBOSE:='123'
+                X_VERBOSE='123'
                 cmds="$cmds -vvv"
                 ;;
             
             *)
-                exit_usage $@
+                exit_usage "$@"
                 ;;
         esac
         shift
@@ -1521,11 +2144,12 @@ parse_args_run() {
 
     PY_OPTS=""
     PY_OPTS="$PY_OPTS:$Y_PY_SYSTEM_SUPPORT"
+    PY_OPTS="$PY_OPTS:$Y_PY_UV_SUPPORT"
     PY_OPTS="$PY_OPTS:$Y_PY_PYENV_SUPPORT"
     PY_OPTS="$PY_OPTS:$Y_PY_POETRY_SUPPORT"
     
     case "$PY_OPTS" in
-        :1:*|:*:0:*|:*:*:0)
+        :1:*|:*:0:0:0*)
             RUN_PY_CLEAR=0
             RUN_PY_RESET=0
             RUN_PY_VENV=0
@@ -1548,6 +2172,8 @@ parse_args_run() {
             RUN_RE_SETUP=0
             RUN_RE_RESTORE=0
             RUN_RE_UPGRADE=0
+            RUN_RE_DOC=0
+            RUN_RE_CFFR=0
             RUN_RE_SHOW=0
             ;;
         *)
@@ -1556,9 +2182,11 @@ parse_args_run() {
 
     case "$X_ALL_MODE" in
         1)
+            X_DOTENV_MODE="1"
             X_PYTHON_MODE="1"
             X_R_MODE="1"
             X_CODE_MODE="1"
+            X_NODE_MODE="1"
             ;;
         *)  ;;
     esac
@@ -1582,6 +2210,9 @@ parse_args_run() {
             RUN_RE_SETUP=0
             RUN_RE_RESTORE=0
             RUN_RE_UPGRADE=0
+            RUN_RE_JUPYTER=0
+            RUN_RE_DOC=0
+            RUN_RE_CFFR=0
             RUN_RE_SHOW=0
             ;;
         *)  ;;
@@ -1594,11 +2225,21 @@ parse_args_run() {
         *)  ;;
     esac
 
+    case "$X_NODE_MODE" in
+        0)
+            RUN_JS_NODE=0
+            ;;
+        *)  ;;
+    esac
+
     set +x
 
     debug "#(args): {\n $(set | sort | grep -e ^PY_OPTS -e ^RE_OPTS -e ^RUN_  -e ^X_  -e ^Y_ ) \n} ###"
     dump  "#(args): {\n $(set | sort | grep -e ^PY_OPTS -e ^RE_OPTS -e ^RUN_  -e ^X_  -e ^Y_ ) \n} ###"
 
+    env_defined RUN_EX_SETUP
+    env_defined RUN_EV_DOTENV
+    env_defined RUN_PY_BOOT
     env_defined RUN_PY_CLEAR
     env_defined RUN_PY_RESET
     env_defined RUN_PY_INSTALL
@@ -1610,10 +2251,17 @@ parse_args_run() {
     env_defined RUN_RE_SETUP
     env_defined RUN_RE_RESTORE
     env_defined RUN_RE_UPGRADE
+    env_defined RUN_RE_JUPYTER
+    env_defined RUN_RE_DOC
+    env_defined RUN_RE_CFFR
     env_defined RUN_RE_SHOW
     
-    env_defined RUN_JS_CODE
+    env_defined RUN_JU_INSTALL
+    env_defined RUN_JU_JUPYTER
     
+    env_defined RUN_JS_CODE
+    env_defined RUN_JS_NVM
+    env_defined RUN_JS_NODE
 
     log "<(args):" "cmds: $cmds"
     
@@ -1623,7 +2271,7 @@ main_run() {
 
     export X_MODE='run'
 
-    parse_args_run $@
+    parse_args_run "$@"
 
     #check_is_remote
 
@@ -1632,66 +2280,119 @@ main_run() {
     
     log ">(main.run):" "args:$args -- cmds: $cmds, ..."
     
+    if [ "$RUN_EX_SETUP" = '1' ]; then
+        do_ex_begin "$@"
+        rc_exit $?
+    fi
+
+    if [ "$RUN_EV_DOTENV" = '1' ]; then
+        do_ev_dotenv "$@"
+        rc_exit $?
+    fi
+
+    if [ "$RUN_PY_BOOT" = '1' ]; then
+        do_py_boot "$@"
+        rc_exit $?
+    fi
+
     if [ "$RUN_PY_CLEAR" = '1' ]; then
-        do_py_clear $@
+        do_py_clear "$@"
         rc_exit $?
     fi
 
     if [ "$RUN_PY_RESET" = '1' ]; then
-        do_py_reset $@
+        do_py_reset "$@"
         rc_exit $?
     fi
 
     if [ "$RUN_PY_VENV" = '1' ]; then
-        do_py_venv $@
+        do_py_venv "$@"
         rc_exit $?
     fi
 
     if [ "$RUN_PY_INSTALL" = '1' ]; then
-        do_py_lock $@
-        do_py_install $@
+        do_py_lock "$@"
+        do_py_install "$@"
         rc_exit $?
     fi
 
     if [ "$RUN_PY_BIND" = '1' ]; then
-        do_py_reticulate $@
-        rc_exit $?
-    fi
-
-    if [ "$RUN_PY_JUPYTER" = '1' ]; then
-        do_py_jupyter_build $@
-        do_py_irkernel_reg $@
-        do_py_jupyter_show $@
+        do_py_reticulate "$@"
         rc_exit $?
     fi
 
     if [ "$RUN_PY_SHOW" = '1' ]; then
-        do_py_show $@
+        do_py_show "$@"
         rc_exit $?
     fi
 
     if [ "$RUN_RE_CLEAR" = '1' ]; then
-        do_re_clear $@
+        do_re_clear "$@"
         rc_exit $?
     fi
 
     if [ "$RUN_RE_RESET" = '1' ]; then
-        do_re_force $@
+        do_re_force "$@"
         rc_exit $?
     fi
 
     if [ "$RUN_RE_SETUP" = '1' ]; then
-        do_re_setup $@
+        do_re_setup "$@"
+        rc_exit $?
+    fi
+
+    if [ "$RUN_RE_CFFR" = '1' ]; then
+        do_re_cffr "$@"
+        rc_exit $?
+    fi
+
+    if [ "$RUN_RE_DOC" = '1' ]; then
+        do_re_doc "$@"
         rc_exit $?
     fi
 
     if [ "$RUN_RE_SHOW" = '1' ]; then
-        do_re_show $@
+        do_re_show "$@"
+        rc_exit $?
+    fi
+
+    if [ "$RUN_JU_INSTALL" = '1' ]; then
+        do_ju_install "$@"
+        rc_exit $?
+    fi
+
+    if [ "$RUN_JS_NVM" = '1' ]; then
+        do_js_nvm "$@"
+        rc_exit $?
+    fi
+
+    if [ "$RUN_JS_NODE" = '1' ]; then
+        do_js_node "$@"
+        rc_exit $?
+    fi
+
+    if [ "$RUN_PY_JUPYTER" = '1' ]; then
+        do_py_jupyter_build "$@"
+        
+        if [ "$RUN_RE_JUPYTER" = '1' ]; then
+            do_py_irkernel_reg "$@"
+        fi
+        
+        if [ "$RUN_JU_JUPYTER" = '1' ]; then
+            do_py_ijulia_reg "$@"
+        fi
+        
+        do_py_jupyter_show "$@"
         rc_exit $?
     fi
 
     if [ "$RUN_JS_CODE" = '1' ]; then
-        do_js_code $@
+        do_js_code "$@"
+        rc_exit $?
+    fi
+
+    if [ "$RUN_EX_SETUP" = '1' ]; then
+        do_ex_end "$@"
         rc_exit $?
     fi
 
@@ -1709,15 +2410,15 @@ main() {
         
         --help|-h)
             shift
-            exit_usage $@
+            exit_usage "$@"
             ;;
         --status|-s)
             shift
-            exit_status $@
+            exit_status "$@"
             ;;
         --environ)
             shift
-            exec_environ $@
+            exec_environ "$@"
             ;;
         *)
             ;;
@@ -1731,7 +2432,7 @@ main() {
     case "$1" in
         
         *)
-            main_run $@
+            main_run "$@"
             ;;
     esac
 
@@ -1743,7 +2444,7 @@ main() {
 }
 
 case "${X_DRY}" in
-    0) main $@ ;;
-    *) echo "# skip: main $@"
+    0) main "$@" ;;
+    *) echo "# skip: main $*"
 esac       
 

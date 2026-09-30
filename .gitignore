@@ -3,6 +3,20 @@
 # Project .gitignore -- Python/R/Julia Projects
 ################################################################
 
+
+# {{{ [ ENVIRONMENT ] /////////////////////////////////////////////////////////////
+
+# ===( .env )===================================================================
+
+# Ignore all dotenv files...
+.env
+.env.*
+
+# except for .env.defaults
+!.env.defaults
+
+
+
 # {{{ [ GENERAL ] /////////////////////////////////////////////////////////////
 
 # ===( Git )===================================================================
@@ -27,6 +41,7 @@
 *.log
 *.tlog
 /logs/
+*.log.json
 
 # ===( Data )=============================================================
 
@@ -92,12 +107,17 @@ Thumbs.db
 # ---( virtualenv )-----
 venv/
 venv
+.venv/
+.venc.cdk/
+.venv.*/
+
 
 # ---( setup )-----
 **/*.2delete
 **/build/
 /build/
 /dist/
+/images/
 
 *.pyc
 *.egg
@@ -107,7 +127,10 @@ venv
 *.egg-info
 
 # ---( cache )-----
+/.cache/uv/
+/.cache/
 /.pytest_cache/
+
 
 # ---( tools )-----
 
@@ -567,4 +590,15 @@ env-args.txt
 
 # }}} ---
 
+# {{{ [ CONTAINERS ] ////////////////////////////////////////////////////////
 
+# ===( Docker & Podman )=====================================================
+
+# Ignore container intermediate files and podman-specific tmp
+docker/**/*.tmp
+docker/**/*.log
+docker/build/
+docker-compose.override.yml
+.docker-cache/
+
+# }}} ---

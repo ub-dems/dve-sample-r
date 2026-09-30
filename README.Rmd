@@ -158,7 +158,7 @@ source("exec/dummy_runner.R")
 
 # install from gitlab
 # install.packages("devtools")
-devtools::install_gitlab("ub-dems-public/ds-labs/dve-sample-r")
+devtools::install_gitlab("ub-dems/ds-labs/dve-sample-r")
 
 ```
 

@@ -1,0 +1,132 @@
+% -------------------------------------------------------------------------------------
+% references.bib — BibLaTeX bibliography references
+% DEMS/datalab — Università degli Studi di Milano-Bicocca
+% Online reference: https://datalab.unimib.it/labs/reg/#forms
+% Template version: 2026-05-06
+% -------------------------------------------------------------------------------------
+% See:
+% - https://ctan.org/pkg/biblatex
+% - https://github.com/plk/biblatex/blob/dev/bibtex/bib/biblatex/biblatex-examples.bib
+% - https://guides.library.yale.edu/bibtex/zotero-and-latex
+% -------------------------------------------------------------------------------------
+
+
+% ---[ common acronyms ]--------------------------------------------------
+
+@string{cup     = {Cambridge University Press}}
+@string{hup     = {Harvard University Press}}
+@string{pup     = {Princeton University Press}}
+
+% ---[ publication examples ]--------------------------------------------------
+
+@book{aristotle:anima,
+  author       = {Aristotle},
+  title        = {De Anima},
+  date         = 1907,
+  editor       = {Hicks, Robert Drew},
+  publisher    = cup,
+  location     = {Cambridge},
+  keywords     = {primary},
+  langid       = {english},
+  langidopts   = {variant=british},
+  annotation   = {A \texttt{book} entry with an \texttt{author} and an
+                  \texttt{editor}},
+}
+
+@article{baez/article,
+  author       = {Baez, John C. and Lauda, Aaron D.},
+  title        = {Higher-Dimensional Algebra {V}: 2-Groups},
+  journaltitle = {Theory and Applications of Categories},
+  date         = 2004,
+  volume       = 12,
+  pages        = {423-491},
+  version      = 3,
+  eprint       = {math/0307200v3},
+  eprinttype   = {arxiv},
+  langid       = {english},
+  langidopts   = {variant=american},
+  annotation   = {An \texttt{article} with \texttt{eprint} and
+                  \texttt{eprinttype} fields. Note that the arXiv reference is
+                  transformed into a clickable link if \texttt{hyperref} support
+                  has been enabled. Compare \texttt{baez\slash online}, which
+                  is the same item given as an \texttt{online} entry},
+}
+
+@inproceedings{moraux,
+  author       = {Moraux, Paul},
+  editor       = {Lloyd, G. E. R. and Owen, G. E. L.},
+  title        = {Le \emph{De Anima} dans la tradition gr{\`e}cque},
+  date         = 1979,
+  booktitle    = {Aristotle on Mind and the Senses},
+  subtitle     = {Quelques aspects de l'interpretation du trait{\'e}, de
+                  Theophraste {\`a} Themistius},
+  booktitleaddon= {Proceedings of the Seventh Symposium Aristotelicum},
+  eventdate    = 1975,
+  publisher    = cup,
+  location     = {Cambridge},
+  pages        = {281-324},
+  keywords     = {secondary},
+  langid       = {french},
+  indexsorttitle= {De Anima dans la tradition grecque},
+  indextitle   = {\emph{De Anima} dans la tradition gr{\`e}cque, Le},
+  shorttitle   = {\emph{De Anima} dans la tradition gr{\`e}cque},
+  annotation   = {This is a typical \texttt{inproceedings} entry. Note the
+                  \texttt{booksubtitle}, \texttt{shorttitle},
+                  \texttt{indextitle}, and \texttt{indexsorttitle} fields.
+                  Also note the \texttt{eventdate} field.},
+}
+
+@online{ctan,
+  title        = {CTAN},
+  date         = 2006,
+  url          = {http://www.ctan.org},
+  subtitle     = {The {Comprehensive TeX Archive Network}},
+  urldate      = {2006-10-01},
+  label        = {CTAN},
+  langid       = {english},
+  langidopts   = {variant=american},
+  annotation   = {This is an \texttt{online} entry. The \textsc{url}, which is
+                  given in the \texttt{url} field, is transformed into a
+                  clickable link if \texttt{hyperref} support has been
+                  enabled. Note the format of the \texttt{urldate} field
+                  (\texttt{yyyy-mm-dd}) in the database file. Also note the
+                  \texttt{label} field which may be used as a fallback by
+                  citation styles which need an \texttt{author} and\slash or a
+                  \texttt{year}},
+}
+
+
+% ---[ thesis examples ]--------------------------------------------------
+
+@thesis{geer,
+  author       = {de Geer, Ingrid},
+  title        = {Earl, Saint, Bishop, Skald~-- and Music},
+  type         = {phdthesis},
+  institution  = {Uppsala Universitet},
+  date         = 1985,
+  subtitle     = {The {Orkney Earldom} of the Twelfth Century. {A} Musicological
+                  Study},
+  location     = {Uppsala},
+  options      = {useprefix=false},
+  langid       = {english},
+  langidopts   = {variant=british},
+  annotation   = {This is a typical \texttt{thesis} entry for a PhD thesis. Note
+                  the \texttt{type} field in the database file which uses a
+                  localization key. Also note the format of the printed name and
+                  compare the \texttt{useprefix} option in the \texttt{options}
+                  field as well as \texttt{vangennep}},
+}
+
+@thesis{loh,
+  author       = {Loh, Nin C.},
+  title        = {High-Resolution Micromachined Interferometric Accelerometer},
+  type         = {mathesis},
+  institution  = {Massachusetts Institute of Technology},
+  date         = 1992,
+  location     = {Cambridge, Mass.},
+  langid       = {english},
+  langidopts   = {variant=american},
+  annotation   = {This is a typical \texttt{thesis} entry for an MA thesis. Note
+                  the \texttt{type} field in the database file which uses a
+                  localization key},
+}
