@@ -111,6 +111,27 @@ function upgrade_commons_all() {
 
 }
 
+function install_commons_locale() {
+
+    [ "$Y_BASE_COMMONS_LOCALE" = 1 ] || return 0
+
+    locale-gen "$LANG"
+    locale-gen "$LC_NUMERIC"
+    locale-gen "$LC_TIME"
+    locale-gen "$LC_MONETARY"
+
+    update-locale \
+        LC_ALL="$LC_ALL" \
+        LC_NUMERIC="$LC_NUMERIC" \
+        LC_TIME="$LC_TIME" \
+        LC_MONETARY="$LC_MONETARY" \
+        LANGUAGE="$LANGUAGE" \
+        LANG="$LANG"
+
+    dpkg-reconfigure locales
+
+}
+
 function install_commons_min() {
 
     [ "$Y_BASE_COMMONS_MIN" = 1 ] || return 0
@@ -276,6 +297,7 @@ function prepare_commons_mounts() {
 function install_commons() {
 
 	upgrade_commons_all
+	install_commons_locale
 	install_commons_min
 	install_commons_dev
 	install_commons_sys
