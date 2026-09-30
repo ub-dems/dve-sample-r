@@ -111,6 +111,22 @@ function upgrade_commons_all() {
 
 }
 
+function unminimize_commons_man() {
+
+    [ "$Y_BASE_COMMONS_UNMINIMIZE" = 1 ] || return 0
+
+    aq=" -qq -o=Dpkg::Use-Pty=0 "
+    
+    yes | sudo unminimize
+    
+    # Update and install
+    apt-get update $aq
+    
+    apt_install \
+        man-db
+
+}
+
 function install_commons_locale() {
 
     [ "$Y_BASE_COMMONS_LOCALE" = 1 ] || return 0
@@ -262,7 +278,6 @@ function install_commons_cran() {
 	[ "$Y_BASE_COMMONS_CRAN" = 1 ] || return 0
 
 	install2.r --error --skipmissing --skipinstalled -n $NCPUS \
-		rpsm \
 		remotes \
 		renv \
 		devtools \
@@ -297,6 +312,7 @@ function prepare_commons_mounts() {
 function install_commons() {
 
 	upgrade_commons_all
+	unminimize_commons_man
 	install_commons_locale
 	install_commons_min
 	install_commons_dev
