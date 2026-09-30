@@ -239,6 +239,19 @@ X_UV_EXTRA := cpu
 endif
 
 
+ifeq ($(X_HAS_GPU),1)
+
+    DOCKER_NVIDIA_CTK_OPTIONS = \
+           --security-opt label=type:nvidia_container_t  \
+	   --device nvidia.com/gpu=all \
+
+else
+    DOCKER_NVIDIA_CTK_OPTIONS =
+endif
+
+DOCKER_NVIDIA_OPTIONS := $(DOCKER_NVIDIA_CTK_OPTIONS)
+DOCKER_RUNTIME_OPTIONS := --ulimit=host --group-add keep-groups $(DOCKER_NVIDIA_OPTIONS) $(DOCKER_ARGS)
+
 
 
 # # Check if nvidia-detector command exists and returns something other than "None"
@@ -248,44 +261,41 @@ endif
 
 # ifeq ($(GPU_AVAILABLE),1)
 
+# DOCKER_NVIDIA_TOOLKIT_CTK := /etc/cdi/nvidia.yaml
 
-ifeq ($(X_HAS_GPU),1)
+# ifneq ("$(wildcard $(DOCKER_NVIDIA_TOOLKIT_CTK))","")
+#     DOCKER_NVIDIA_CTK_OPTIONS = \
+#            --security-opt label=type:nvidia_container_t  \
+# 	   --device nvidia.com/gpu=all \
 
-DOCKER_NVIDIA_TOOLKIT_CTK := /etc/cdi/nvidia.yaml
+# #          --runtime nvidia --gpus=all \
+# #          --security-opt=label=disable \
+# #          --security-opt=no-new-privileges --cap-drop=ALL \  #rstudio compatibility
 
-ifneq ("$(wildcard $(DOCKER_NVIDIA_TOOLKIT_CTK))","")
-    DOCKER_NVIDIA_CTK_OPTIONS = \
-           --security-opt label=type:nvidia_container_t  \
-	   --device nvidia.com/gpu=all \
+# else
+#     DOCKER_NVIDIA_CTK_OPTIONS =
+# endif
 
-#          --runtime nvidia --gpus=all \
-#          --security-opt=label=disable \
-#          --security-opt=no-new-privileges --cap-drop=ALL \  #rstudio compatibility
+# DOCKER_NVIDIA_TOOLKIT_OCI := /usr/share/containers/oci/hooks.d/oci-nvidia-hook.json
+# ifneq ("$(wildcard $(DOCKER_NVIDIA_TOOLKIT_OCI))","")
+#     DOCKER_NVIDIA_OCI_OPTIONS = \
+#            --hooks-dir=/usr/share/containers/oci/hooks.d/ \
 
-else
-    DOCKER_NVIDIA_CTK_OPTIONS =
-endif
+# else
+#     DOCKER_NVIDIA_OCI_OPTIONS =
+# endif
 
-DOCKER_NVIDIA_TOOLKIT_OCI := /usr/share/containers/oci/hooks.d/oci-nvidia-hook.json
-ifneq ("$(wildcard $(DOCKER_NVIDIA_TOOLKIT_OCI))","")
-    DOCKER_NVIDIA_OCI_OPTIONS = \
-           --hooks-dir=/usr/share/containers/oci/hooks.d/ \
+# DOCKER_NVIDIA_OPTIONS := $(DOCKER_NVIDIA_CTK_OPTIONS) $(DOCKER_NVIDIA_OCI_OPTIONS)
 
-else
-    DOCKER_NVIDIA_OCI_OPTIONS =
-endif
+# else
+# DOCKER_NVIDIA_OPTIONS =
+# endif
 
-DOCKER_NVIDIA_OPTIONS := $(DOCKER_NVIDIA_CTK_OPTIONS) $(DOCKER_NVIDIA_OCI_OPTIONS)
-
-else
-DOCKER_NVIDIA_OPTIONS =
-endif
-
-#DOCKER_RUNTIME_OPTIONS := --ulimit=host --group-add dsdata
-#DOCKER_RUNTIME_OPTIONS := --ulimit=host --group-add keep-groups --subgidname=dsuser
-DOCKER_RUNTIME_OPTIONS := --ulimit=host --group-add keep-groups $(DOCKER_NVIDIA_OPTIONS) $(DOCKER_ARGS)
-#DOCKER_RUNTIME_OPTIONS := --ulimit=host --annotation run.oci.keep_original_groups=1 
-endif
+# #DOCKER_RUNTIME_OPTIONS := --ulimit=host --group-add dsdata
+# #DOCKER_RUNTIME_OPTIONS := --ulimit=host --group-add keep-groups --subgidname=dsuser
+# DOCKER_RUNTIME_OPTIONS := --ulimit=host --group-add keep-groups $(DOCKER_NVIDIA_OPTIONS) $(DOCKER_ARGS)
+# #DOCKER_RUNTIME_OPTIONS := --ulimit=host --annotation run.oci.keep_original_groups=1 
+# endif
 
 # ---(x)------------------------------------------------
 
