@@ -87,7 +87,7 @@ function env_dump() {
 function apt_install() {
         aq=" -qq -o=Dpkg::Use-Pty=0 "
 	if ! dpkg -s "$@" >/dev/null 2>&1; then
-		if [ "$(find /var/lib/apt/lists/* | wc -l)" = "0" ]; then
+		if [ "$(find /var/lib/apt/lists/* 2> /dev/null | wc -l)" = "0" ]; then
 			apt-get update $aq
 		fi
 		apt-get install $aq -y --no-install-recommends "$@"
@@ -131,21 +131,51 @@ function install_commons_locale() {
 
     [ "$Y_BASE_COMMONS_LOCALE" = 1 ] || return 0
 
-    locale-gen "$LANG"
-    locale-gen "$LC_NUMERIC"
-    locale-gen "$LC_TIME"
-    locale-gen "$LC_MONETARY"
+    echo "# LOCALE: {"
+    
+    echo "- locale arguments:"
+    env | grep -e '^Y_LANG' -e 'Y_LC' | sort
+
+    locale-gen "$Y_LANG"
+    # locale-gen "$Y_LC_ALL"
+    # locale-gen "$Y_LC_MESSAGE"
+    locale-gen "$Y_LC_COLLATE"
+    locale-gen "$Y_LC_NUMERIC"
+    locale-gen "$Y_LC_TIME"
+    locale-gen "$Y_LC_MONETARY"
+    # locale-gen "$Y_LC_MEASUREMENT"
+    # locale-gen "$Y_LC_PAPER"
 
     update-locale \
-        LC_ALL="$LC_ALL" \
-        LC_NUMERIC="$LC_NUMERIC" \
-        LC_TIME="$LC_TIME" \
-        LC_MONETARY="$LC_MONETARY" \
-        LANGUAGE="$LANGUAGE" \
-        LANG="$LANG"
+        LC_MESSAGE="$Y_LC_MESSAGE" \
+        LC_COLLATE="$Y_LC_COLLATE" \
+        LC_NUMERIC="$Y_LC_NUMERIC" \
+        LC_TIME="$Y_LC_TIME" \
+        LC_MONETARY="$Y_LC_MONETARY" \
+        LC_MEASUREMENT="$Y_LC_MEASUREMENT" \
+        LC_PAPER="$Y_LC_PAPER" \
+        LANG="$Y_LANG" \
+        LANGUAGE="$Y_LANGUAGE"
+    
+    #   LC_ALL="$Y_LC_ALL" \
 
     dpkg-reconfigure locales
 
+    echo "- locale available:"
+    locale -a
+
+    echo "- locale active:"
+    ( bash --login -c 'locale' )
+    
+    echo "- locale test:"
+    ( eval $(cat /etc/default/locale)
+      locale
+      printf "date: %s \n" "$(date)"
+      awk '{ printf("float: %.3f \n", 1.61803398) }'
+      awk '{ printf("money: %'"'"'.2f \n", 1234567.89) }'
+    )
+
+    echo "} # LOCALE //"
 }
 
 function install_commons_min() {
@@ -155,6 +185,7 @@ function install_commons_min() {
 	apt_install \
 		curl \
 		gpg \
+                locales \
                 apt-utils
 
 }
@@ -264,6 +295,9 @@ function install_commons_latex() {
             hyphen-it \
             imagemagick
 
+	apt_install \
+            cups-pdf
+
         
         #       pandoc-filter-diagram \
 
@@ -313,8 +347,8 @@ function install_commons() {
 
 	upgrade_commons_all
 	unminimize_commons_man
-	install_commons_locale
 	install_commons_min
+	install_commons_locale
 	install_commons_dev
 	install_commons_sys
 	install_commons_xwindow

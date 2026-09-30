@@ -724,7 +724,7 @@ do_us_zsh() {
     [ -e ~/.oh-my-zsh ] || { \
         [ -e ~/.import/.oh-my-zsh ] && \
             cp -pv  ~/.import/.zsetup ~/.zsetup && \
-            zsh ~/.zsetup < /dev/null
+            (zsh ~/.zsetup < /dev/null 2>&1 | tee /dev/null)
         }
         
 

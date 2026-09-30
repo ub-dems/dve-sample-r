@@ -175,6 +175,10 @@ sl() {
     cat | sed 's/^/      %\t/' | sed 's/\t$//'
 }
 
+sl1() {
+    cat | sed -e '1d' | sed 's/^/      %\t/' | sed 's/\t$//'
+}
+
 sk() {
     cat | sed 's/^/       %\t/' | sed 's/\t$//'
 }
@@ -251,6 +255,15 @@ $(echo "${LD_LIBRARY_PATH}" | tr ':' '\n' | sl)
   mount:
    df: |
 $(df -h | sl)
+
+
+  gpu:
+   environ:
+    X_HAS_GPU: "${X_HAS_GPU}"
+    pci: |
+$( (lspci 2>&1  || echo NOPCI) | sl)
+    nvidia: |
+$( (which nvidia-smi &>/dev/null && nvidia-smi 2>&1   || echo NOGPU) | sl)
 
 
 # }}} -----
@@ -359,12 +372,10 @@ $(echo "${LD_LIBRARY_PATH}" | tr ':' '\n' | sl)
     uv-version: "$(which uv &>/dev/null && uv --version || echo NOUV )"
     poetry: "$(which poetry 2>/dev/null || echo NOPOETRY )"
     poetry-version: "$(which poetry &>/dev/null && poetry --version || echo NOPOETRY )"
-    jupyter: "$(which jupyter 2>/dev/null || echo NOJUPYTER )"
-    jupyter-version: "$(which jupyter &>/dev/null && jupyter --version || echo NOJUPYTER )"
     uv-venv: |
  $( (which uv &>/dev/null && uv python find   || echo NOUVVENV) | sl)
     poetry-venv: |
- $( (which poetry &>/dev/null && poetry env info  || echo NOPOETRYVENV) | sl)
+ $( (which poetry &>/dev/null && poetry env info 2>/dev/null  || echo NOPOETRYVENV) | sl)
 
   r-bindings:
    config:
@@ -372,13 +383,15 @@ $(echo "${LD_LIBRARY_PATH}" | tr ':' '\n' | sl)
 $(R -q -e 'reticulate::py_config()' | sl)
 
   jupyter:
-   paths:
-    jupyter-version: "$(which jupyter 2>/dev/null && jupyter --version ||  echo NOJUPYTER)"
+   binaries:
+    jupyter: "$(which jupyter 2>/dev/null || echo NOJUPYTER )"
+    jupyter-version: |
+ $( (which jupyter &>/dev/null && jupyter --version 2>&1 || echo NOJUPYTER) | sl)
    config:
      lab-extensions: |
- $( (which jupyter &>/dev/null && jupyter labextension list || echo NOJUPYTER) | sl)
+ $( (which jupyter &>/dev/null && jupyter labextension list 2>&1 || echo NOJUPYTER) | sl)
      kernels: |
- $( (which jupyter &>/dev/null && jupyter kernelspec list || echo NOJUPYTER) | sl)
+ $( (which jupyter &>/dev/null && jupyter kernelspec list 2>&1 || echo NOJUPYTER) | sl)
 
   python-deps:
    list: |
@@ -1370,7 +1383,7 @@ do_py_show() {
                       uv pip list
                       ;;
                   12*)
-                      uv tree
+                      uv tree --no-dedupe --all-groups 
                       ;;
                   *)
                       ;;

@@ -230,7 +230,8 @@ DOCKER_BUILD_PULL := --pull
 
 # ---(gpu)------------------------------------------------
 
-X_HAS_GPU := $(shell (type nvidia-smi && nvidia-smi -L) &> /dev/null  && echo 1 || echo 0)
+Y_HAS_GPU := $(shell (type nvidia-smi && nvidia-smi -L) &> /dev/null  && echo 1 || echo 0)
+X_HAS_GPU = $(Y_HAS_GPU)
 
 ifeq (${X_HAS_GPU},1)
 X_UV_EXTRA := gpu
@@ -749,6 +750,7 @@ build-image/%:
 		-t $$X_BLD_IMAGE_NAME \
 		--build-arg Y_WORK_DIR="${RUN_USER_HOME}/${WORK_DIR}" \
 		--build-arg Y_DEBUG_ENV="${Y_DEBUG_ENV}" \
+		--build-arg Y_HAS_GPU="${Y_HAS_GPU}" \
 		--build-arg Y_NV_CONDA_ENV_NAME="${Y_NV_CONDA_ENV_NAME}" \
 		--build-arg Y_NV_CONDA_ENV_FILE="${Y_NV_CONDA_ENV_FILE}" \
 		--build-arg Y_PY_MODE="${Y_PY_MODE}" \
@@ -823,6 +825,7 @@ run/raw:
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
 		-e X_CUDA_CONF="${X_CUDA_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
+		-e X_HAS_GPU="${X_HAS_GPU}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e X_ENV_FILE="${X_ENV_FILE:-.env}" \
@@ -865,6 +868,7 @@ run/status:
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
 		-e X_CUDA_CONF="${X_CUDA_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
+		-e X_HAS_GPU="${X_HAS_GPU}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e X_ENV_FILE="${X_ENV_FILE:-.env}" \
@@ -916,6 +920,7 @@ run/setup:
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
 		-e X_CUDA_CONF="${X_CUDA_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
+		-e X_HAS_GPU="${X_HAS_GPU}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e X_ENV_FILE="${X_ENV_FILE:-.env}" \
@@ -955,6 +960,7 @@ run/upgrade:
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
 		-e X_CUDA_CONF="${X_CUDA_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
+		-e X_HAS_GPU="${X_HAS_GPU}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e X_ENV_FILE="${X_ENV_FILE:-.env}" \
@@ -994,6 +1000,7 @@ run/clear:
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
 		-e X_CUDA_CONF="${X_CUDA_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
+		-e X_HAS_GPU="${X_HAS_GPU}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e X_ENV_FILE="${X_ENV_FILE:-.env}" \
@@ -1037,6 +1044,7 @@ run/environ:
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
 		-e X_CUDA_CONF="${X_CUDA_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
+		-e X_HAS_GPU="${X_HAS_GPU}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e X_ENV_FILE="${X_ENV_FILE:-.env}" \
@@ -1078,6 +1086,7 @@ run/profile:
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
 		-e X_CUDA_CONF="${X_CUDA_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
+		-e X_HAS_GPU="${X_HAS_GPU}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e X_ENV_FILE="${X_ENV_FILE:-.env}" \
@@ -1195,6 +1204,7 @@ run/shell:
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
 		-e X_CUDA_CONF="${X_CUDA_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
+		-e X_HAS_GPU="${X_HAS_GPU}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e X_ENV_FILE="${X_ENV_FILE:-.env}" \
@@ -1237,6 +1247,7 @@ run/r-repl:
 		-e ROOT=true  \
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
+		-e X_HAS_GPU="${X_HAS_GPU}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e X_ENV_FILE="${X_ENV_FILE:-.env}" \
@@ -1278,6 +1289,7 @@ run/rscript-rs:
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
 		-e X_CUDA_CONF="${X_CUDA_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
+		-e X_HAS_GPU="${X_HAS_GPU}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e X_ENV_FILE="${X_ENV_FILE:-.env}" \
@@ -1321,6 +1333,7 @@ run/python-repl:
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
 		-e X_CUDA_CONF="${X_CUDA_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
+		-e X_HAS_GPU="${X_HAS_GPU}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e X_ENV_FILE="${X_ENV_FILE:-.env}" \
@@ -1362,6 +1375,7 @@ run/python-run:
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
 		-e X_CUDA_CONF="${X_CUDA_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
+		-e X_HAS_GPU="${X_HAS_GPU}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e X_ENV_FILE="${X_ENV_FILE:-.env}" \
@@ -1405,6 +1419,7 @@ run/julia-repl:
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
 		-e X_CUDA_CONF="${X_CUDA_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
+		-e X_HAS_GPU="${X_HAS_GPU}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e X_ENV_FILE="${X_ENV_FILE:-.env}" \
@@ -1446,6 +1461,7 @@ run/julia-run:
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
 		-e X_CUDA_CONF="${X_CUDA_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
+		-e X_HAS_GPU="${X_HAS_GPU}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e X_ENV_FILE="${X_ENV_FILE:-.env}" \
@@ -1490,6 +1506,7 @@ run/exec-auto:
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
 		-e X_CUDA_CONF="${X_CUDA_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
+		-e X_HAS_GPU="${X_HAS_GPU}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e X_ENV_FILE="${X_ENV_FILE:-.env}" \
@@ -1532,6 +1549,7 @@ run/rscript-cli:
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
 		-e X_CUDA_CONF="${X_CUDA_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
+		-e X_HAS_GPU="${X_HAS_GPU}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e X_ENV_FILE="${X_ENV_FILE:-.env}" \
@@ -1578,6 +1596,7 @@ run/build:
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
 		-e X_CUDA_CONF="${X_CUDA_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
+		-e X_HAS_GPU="${X_HAS_GPU}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e X_ENV_FILE="${X_ENV_FILE:-.env}" \
@@ -1619,6 +1638,7 @@ run/test:
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
 		-e X_CUDA_CONF="${X_CUDA_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
+		-e X_HAS_GPU="${X_HAS_GPU}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e X_ENV_FILE="${X_ENV_FILE:-.env}" \
@@ -1660,6 +1680,7 @@ run/check:
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
 		-e X_CUDA_CONF="${X_CUDA_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
+		-e X_HAS_GPU="${X_HAS_GPU}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e X_ENV_FILE="${X_ENV_FILE:-.env}" \
@@ -1703,6 +1724,7 @@ run/command:
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
 		-e X_CUDA_CONF="${X_CUDA_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
+		-e X_HAS_GPU="${X_HAS_GPU}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e X_ENV_FILE="${X_ENV_FILE:-.env}" \
@@ -1747,6 +1769,7 @@ run/dev:
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
 		-e X_CUDA_CONF="${X_CUDA_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
+		-e X_HAS_GPU="${X_HAS_GPU}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e X_ENV_FILE="${X_ENV_FILE:-.env}" \
@@ -1791,6 +1814,7 @@ run/antigravity:
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
 		-e X_CUDA_CONF="${X_CUDA_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
+		-e X_HAS_GPU="${X_HAS_GPU}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e X_ENV_FILE="${X_ENV_FILE:-.env}" \
@@ -1833,6 +1857,7 @@ run/cursor:
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
 		-e X_CUDA_CONF="${X_CUDA_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
+		-e X_HAS_GPU="${X_HAS_GPU}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e X_ENV_FILE="${X_ENV_FILE:-.env}" \
@@ -1877,6 +1902,7 @@ run/code-server:
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
 		-e X_CUDA_CONF="${X_CUDA_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
+		-e X_HAS_GPU="${X_HAS_GPU}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e X_ENV_FILE="${X_ENV_FILE:-.env}" \
@@ -1921,6 +1947,7 @@ run/jupyter-lab:
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
 		-e X_CUDA_CONF="${X_CUDA_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
+		-e X_HAS_GPU="${X_HAS_GPU}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e X_ENV_FILE="${X_ENV_FILE:-.env}" \
@@ -1964,6 +1991,7 @@ run/jupyter-notebook:
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
 		-e X_CUDA_CONF="${X_CUDA_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
+		-e X_HAS_GPU="${X_HAS_GPU}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e X_ENV_FILE="${X_ENV_FILE:-.env}" \
@@ -2021,6 +2049,7 @@ run/rstudio-server:
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
 		-e X_CUDA_CONF="${X_CUDA_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
+		-e X_HAS_GPU="${X_HAS_GPU}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
 		-e X_ENV_FILE="${X_ENV_FILE:-.env}" \
