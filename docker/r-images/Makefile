@@ -250,9 +250,13 @@ else
 endif
 
 DOCKER_NVIDIA_OPTIONS := $(DOCKER_NVIDIA_CTK_OPTIONS)
+
+
+# if podman mode
+
 DOCKER_RUNTIME_OPTIONS := --ulimit=host --group-add keep-groups $(DOCKER_NVIDIA_OPTIONS) $(DOCKER_ARGS)
 
-
+endif
 
 # # Check if nvidia-detector command exists and returns something other than "None"
 # GPU_DETECT_CMD := nvidia-detector
