@@ -1,0 +1,34 @@
+# ---
+#+TITLE: py-multiproc tasks
+#+SUBTITLE:  python multiprocess ML todo list
+#+AUTHOR: --
+#+DATE: <2024-10-09>
+# ---
+y
+* @TASKS
+** TODO ML proto project
+*** TODO multiproc dependencies [0%]
+**** TODO multiproc IPC [0/4]
+ * [ ] multiproc references
+ * [ ] multiproc basic ipc benchmark
+ * [ ] multiproc ZMQ local benchmark
+ * [ ] multiproc ZMQ distributet benchmark
+**** TODO multiproc alternatives [0/3]
+ * [ ] multi-thread alternative
+ * [ ] multi-plex alternative
+ * [ ] async alternative
+*** TODO ML proto architecture [0%]
+**** TODO ML proto processes [0/5]
+ * [ ] ML component diagram
+ * [ ] ML init activity diagram
+ * [ ] ML controller activity diagram
+ * [ ] ML trainer activity diagram
+ * [ ] ML updater activity diagram
+**** TODO ML proto configuration [0/3]
+ * [ ] local init process configuration
+ * [ ] distributed init process configuration
+ * [ ] job descriptor distribution
+
+
+
+
