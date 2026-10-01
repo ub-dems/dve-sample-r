@@ -20,6 +20,7 @@
 ^CRAN-RELEASE$
 ^[^/]+.csv
 ^[^/]+.sh
+^data/ext$
 ^data-raw$
 ^\.dir-locals\.el$
 ^\.devcontainer$

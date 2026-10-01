@@ -89,7 +89,6 @@ dependencies = [
 
   # --- stats ---
   "scipy",
-  "sympy",
   "statsmodels",
 
   # --- plots ---
@@ -288,6 +287,10 @@ dev = [
   # "nbsphinx",
   # "sphinx-autoapi",
   # "sphinx-rtd-theme",
+
+  # --- math ---
+  "sympy",
+  "sympy_plot_backends[all]",
 
   # --- data ---
   "csvkit",
