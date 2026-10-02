@@ -1,0 +1,7 @@
+/ltximg/
+/_minted-*/
+*.pygtex
+*.pygstyle
+*.bbl
+*.tex
+.pdf-view-restore
