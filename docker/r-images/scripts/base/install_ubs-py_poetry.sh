@@ -151,6 +151,8 @@ function setenv_rehash() {
 
 function install_poetry() {
 
+    [ "$Y_PY_POETRY_INSTALL" = 1 ] || return 0
+    
     debug "> install poetry, ..."
 
     pipx install --global poetry
@@ -325,7 +327,7 @@ function main() {
 
     env_dump $@
     
-    [ "$Y_PY_POETRY_INSTALL" = 1 ] || return 0
+    [ "$Y_PY_POETRY_SUPPORT" = 1 ] || return 0
 
     info "> script($0) -- STARTED, ..."
     

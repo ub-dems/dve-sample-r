@@ -38,33 +38,46 @@ importFrom(doParallel,registerDoParallel)
 importFrom(dplyr,filter)
 importFrom(foreach,foreach)
 importFrom(glue,glue_data)
-importFrom(grDevices,dev.off)
-importFrom(grDevices,pdf)
+importFrom(grDevices,
+  dev.off,
+  pdf
+)
 importFrom(here,here)
+importFrom(keras3,config_backend)
 importFrom(logger,log_info)
 importFrom(magrittr,"%>%")
-importFrom(modules,export)
-importFrom(modules,import)
-importFrom(modules,module)
-importFrom(parallelly,availableCores)
-importFrom(parallelly,makeClusterPSOCK)
-importFrom(readr,col_datetime)
-importFrom(readr,cols)
-importFrom(readr,read_csv)
-importFrom(readr,write_csv)
+importFrom(modules,
+  export,
+  import,
+  module
+)
+importFrom(parallelly,
+  availableCores,
+  makeClusterPSOCK
+)
+importFrom(readr,
+  col_datetime,
+  cols,
+  read_csv,
+  write_csv
+)
 importFrom(reticulate,py_discover_config)
 importFrom(rlang,.data)
-importFrom(rprojroot,find_root)
-importFrom(rprojroot,find_root_file)
-importFrom(rprojroot,is_r_package)
-importFrom(rprojroot,is_rstudio_project)
-importFrom(rprojroot,is_testthat)
+importFrom(rprojroot,
+  find_root,
+  find_root_file,
+  is_r_package,
+  is_rstudio_project,
+  is_testthat
+)
 importFrom(stats,runif)
 importFrom(tidyverse,tidyverse_conflicts)
-importFrom(utils,View)
-importFrom(utils,capture.output)
-importFrom(utils,head)
-importFrom(utils,packageVersion)
-importFrom(utils,str)
+importFrom(utils,
+  View,
+  capture.output,
+  head,
+  packageVersion,
+  str
+)
 importFrom(yaml,as.yaml)
 useDynLib(dvesimpler, .registration = TRUE)

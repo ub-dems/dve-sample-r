@@ -67,7 +67,7 @@ It should be avoided to use path references relative to:
 
 ### Examples
 
-In [./exec/example_data_loader.R](https://gitlab.com/ub-dems-public/ds-labs/dve-sample-r/-/blob/main/exec/example_data_loader.R), data usage example:
+In [./exec/example_data_loader.R](https://gitlab.com/ub-dems/ds-labs/dve-sample-r/-/blob/main/exec/example_data_loader.R), data usage example:
 
 ```R
 

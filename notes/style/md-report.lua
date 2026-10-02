@@ -118,6 +118,7 @@ function Meta(m)
            local baseurl_string = ""
            local docsdir_string = ""
            local docname_string = ""
+           local citeurl_string = ""
            
            if m.baseurl then
               baseurl_string = pandoc.write(pandoc.Pandoc(m.baseurl), 'latex')  .. "/"
@@ -131,12 +132,28 @@ function Meta(m)
               docname_string = pandoc.write(pandoc.Pandoc(m.docname), 'latex')
            end
            
-           local docsurl_string = baseurl_string .. docsdir_string
+           if m.citeurl then
+               local str_citeurl = pandoc.utils.stringify(m.citeurl)
+               local tmp_citeurl = str_citeurl:gsub("//", "!!!!")
+               local enc_citeurl = pandoc.write(pandoc.Pandoc(tmp_citeurl), 'latex')
+               citeurl_string = tostring(enc_citeurl):gsub("!!!!", "//")
+           end
+           
+           -- default docs url
+           local docsurl_string = baseurl_string .. docsdir_string 
+           if m.citeurl then
+               docsurl_string = citeurl_string  -- citeurl yaml field
+           end
            local docsurl_cmd = "\\docsurl{" .. docsurl_string .. "}"
            table.insert(header_lines, docsurl_cmd)
            logging.temp("+++ ", rawget(_G, "FORMAT"), "#/meta(docsurl):", docsurl_cmd)
-           
+
+           -- default doc url
            local docurl_string = baseurl_string .. docsdir_string .. docname_string
+           if m.citeurl then
+               docurl_string = citeurl_string  -- citeurl yaml field
+           end
+           
            local docurl_cmd = "\\docurl{" .. docurl_string .. "}"
            table.insert(header_lines, docurl_cmd)
            logging.temp("+++ ", rawget(_G, "FORMAT"), "#/meta(docurl):", docurl_cmd)

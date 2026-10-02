@@ -154,7 +154,7 @@ CUST_S_PROJECT_NAME='dve-sample-r'
 # ---(package)---
 CUST_S_PACKAGE_NAME='dvesimpler'
 # ---(source repository)---
-CUST_S_REPO_PATH='ub-dems-public/ds-labs'
+CUST_S_REPO_PATH='ub-dems/ds-labs'
 CUST_S_REPO_HOST='https://gitlab.com/'
 # ---(image registry)---
 CUST_S_REGS_PATH='ubdems'
@@ -245,7 +245,7 @@ env | grep ^CUST_ | tr '=' '\t' | sort
 # | CUST_S_PACKAGE_NAME | dvesimpler                  |
 # | CUST_S_PROJECT_NAME | dve-sample-r                |
 # | CUST_S_REPO_HOST    | https://gitlab.com/         |
-# | CUST_S_REPO_PATH    | ub-dems-public/ds-labs      |
+# | CUST_S_REPO_PATH    | ub-dems/ds-labs      |
 # | CUST_T_PACKAGE_NAME | USprotoR                    |
 # | CUST_T_PROJECT_NAME | us-proto-r                  |
 # | CUST_T_REPO_HOST    | https://gitlab.com/         |
@@ -1018,7 +1018,7 @@ echo '
 
    project developer s guide is available at:
 
-      * https://gitlab.com/ub-dems-public/ds-labs/dve-sample-r/-/blob/main/notes/usage/README.md
+      * https://gitlab.com/ub-dems/ds-labs/dve-sample-r/-/blob/main/notes/usage/README.md
 
 '
 echo "see:  $LOGFILE "

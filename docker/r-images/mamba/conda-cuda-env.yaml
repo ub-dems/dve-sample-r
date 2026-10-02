@@ -1,0 +1,67 @@
+# conda-env.yaml
+# System-wide CUDA/cuDNN/BLAS environment managed by micromamba.
+# Targets NVIDIA driver 580+ (CTK 13.x / CUDA 13.1).
+# Installed to /opt/mamba/envs/cuda-base — no user-home dependency.
+
+# NOTE:
+#
+# ```bash
+# export LD_LIBRARY_PATH=/opt/mamba/envs/cuda-base/lib:$LD_LIBRARY_PATH
+# export CUDA_HOME=/opt/mamba/envs/cuda-base
+#
+# # nvblas
+# LD_PRELOAD=/opt/mamba/envs/cuda-base/lib/libnvblas.so
+# ```
+#
+# NVBLAS
+# - @see: install_ubs-cuda-mamba.sh#config_blas
+#
+
+---
+name: cuda-base
+
+channels:
+  - nvidia          # Primary source for CTK 13.x packages
+  - conda-forge     # Fallback and cuDNN supplementary builds
+
+dependencies:
+
+  # -- CUDA Version Pinning ------------------------------------------------
+  # Explicitly pin the virtual package to ensure compatibility with driver 580+
+  # ### - __cuda>=13.1
+
+  # ── CUDA Toolkit ────────────────────────────────────────────────────────
+  # cuda-toolkit is a meta-package that pulls the compiler (nvcc),
+  # runtime libraries, and development headers as a matched set.
+  - cuda-toolkit=13.1
+
+  # ── cuDNN ───────────────────────────────────────────────────────────────
+  # Let the solver pin the cuDNN major version compatible with CUDA 13.1.
+  # As of 2025-Q2 that resolves to cuDNN 9.x.
+  - cudnn>=9
+
+  # ── BLAS / Linear Algebra ───────────────────────────────────────────────
+  # For AMD EPYC (Rome) CPUs, OpenBLAS outperforms MKL on most workloads.
+  # There is NO `*nvidia` build string for libblas — that spec doesn't exist.
+  # GPU-side BLAS acceleration is provided by libcublas (see below).
+  - libblas=*=*openblas   # BLAS API shim → OpenBLAS backend
+  - libcblas=*=*openblas  # CBLAS API shim (same backend)
+  - liblapack=*=*openblas # LAPACK shim (keep consistent with BLAS choice)
+  - libopenblas           # the actual OpenBLAS shared library
+
+  # ── cuBLAS (GPU BLAS) ───────────────────────────────────────────────────
+  # libcublas provides GPU-accelerated dense linear algebra.
+  # PyTorch/TensorFlow call it directly — it does NOT replace libblas.
+  - libcublas             # cuBLAS runtime shared library
+  - libcublas-dev         # headers for packages that compile against cuBLAS
+
+  # ── Compiler toolchain ──────────────────────────────────────────────────
+  # nvcc on CUDA 13.x requires GCC ≤ 13 on Linux. gxx_linux-64=12 is safe.
+  - gxx_linux-64>=12,<14
+  - gcc_linux-64>=12,<14
+  - sysroot_linux-64>=2.17  # glibc sysroot for rootless Podman builds
+
+  # ── Multi-GPU / Profiling ────────────────────────────────────────────────
+  - nccl                  # collective comms (needed even for single-GPU init)
+  - cuda-nvtx             # NVIDIA Tools Extension (profiling hooks)
+  - cutensor

@@ -11,7 +11,6 @@ DEFAULT_GREETING = Greeting(who="World", salutation="Hello")
 
 
 class Greeter:
-
     def __init__(self, greeting: Greeting | None = None):
         self.greeting = greeting
 
@@ -20,4 +19,5 @@ class Greeter:
 
     def get_message(self, num_points: int = 0) -> str:
         grt = self.get_greeting()
-        return f"{grt.salutation} {grt.who}! { "👋" * num_points}"
+        hnd = "👋" * num_points
+        return f"{grt.salutation} {grt.who}! {hnd}"

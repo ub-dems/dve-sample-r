@@ -1,379 +1,464 @@
+# {{{ ////////////////////////////////////////////////////////////////
+
+# ============================================================
+# Build system (PEP 518 / PEP 517)
+# ============================================================
+[build-system]
+
+# --- [hatch] ---------------------------------------------------
+
+requires = ["hatchling>=1.30.1"]
+build-backend = "hatchling.build"
+
+# --- [uv_build] ---------------------------------------------------
+
+#requires = ["uv_build>=0.11.26,<0.12"]
+#build-backend = "uv_build"
+
+
+# ============================================================
+# Project metadata (PEP 621)
+# ============================================================
 [project]
 name = "dve_sample_r"
-version = "2.0.0a1"
-description = "R Template Project with Podman and Jypyter Support"
-authors = [
-    {name = "Datalab DEMS", email = "datalab@unimib.it"}
-]
-license = "Academic Free License (AFL) v. 3.0"
+version = "0.1.0"
+description = "TODO(title): TITLE OF THE RESEARCH WORK / TITOLO DEL LAVORO DI RICERCA"
 readme = "README.md"
-documentation = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-r/-/wikis/home"
-homepage = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-r"
-repository = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-r.git"
+license-files = ["LICENSES/*.txt", "LICENSE.md"]
+requires-python = ">=3.14,<3.15"
 
-dynamic = ["dependencies"]
-requires-python = ">=3.10,<3.15"
+authors = [
+  { name = "Data Science Lab DEMS/datalab", email = "datalab@unimib.it" },
+]
 
-[tool.poetry]
-requires-poetry = ">=2.0"
-packages = [{ include = "*", from = "inst/python/src" }]
+# }}} //
+# {{{ ////////////////////////////////////////////////////////////////
 
-[tool.setuptools]
-include-package-data = true
 
-[tool.setuptools.package-data]
-res = ["inst/python/resources/*", "inst/python/resources/*/*"]
+# ============================================================
+# Dependencies (PEP 508 strings)
+# ============================================================
+dependencies = [
+
+  # --------------------------------------------------------------------
+  # --- ML frameworks ---
+  # --------------------------------------------------------------------
+  #
+  # moved to [project.optional-dependencies]
+  # to support both 'gpu' and 'cpu' architectures
+  #
+  # usage:
+  #
+  #   uv lock
+  #
+  #   uv sync --all-groups --extra=gpu  
+  # or 
+  #   uv sync --all-groups --extra=cpu
+  #
+  #
+  # to detect GPU, in shell:
+  #
+  # (type nvidia-smi && nvidia-smi -L) &> /dev/null \
+  #   && HAS_GPU=1 || HAS_GPU=0; echo $HAS_GPU
+  #
+  # see:
+  # - https://docs.astral.sh/uv/guides/integration/pytorch/
+  # - https://zenn.dev/haru256/articles/6ded722b409d13?locale=en
+  # - AGENTS.md
+  # --------------------------------------------------------------------
+
+
+  # --- data ---
+  "numpy",
+  "pandas",
+  "pandas-datareader",
+  "openpyxl",
+  # "h5py",
+  "pyarrow",
+  "polars",
+  "py7zr",
+
+  # --- sql ---
+  "SQLAlchemy",
+  "psycopg2-binary",
+  "mysql-connector-python",
+  # "mysqlclient",
+
+  # --- db ---
+  "duckdb",
+
+  # --- stats ---
+  "scipy",
+  "statsmodels",
+
+  # --- plots ---
+  "matplotlib",
+  "plotly",
+  "seaborn",
+  "Pillow",
+  "geopandas",
+
+  # --- graphs ---
+  "graphframes",
+  "graphviz",
+  "networkx",
+  "igraph",
+  "pyvis",
+  "pydot",
+
+  # --- system ---
+  "requests",
+  "oauthlib",
+  "requests-oauthlib",
+  "urllib3",
+  "aiohttp",
+  "pyzmq",
+
+  "pyyaml",
+  "types-pyyaml",
+  "toml",
+  "types-toml",
+  "piny",
+  "click",
+  "pydantic",
+  "pathspec",
+
+  "icecream",
+  #"radian",
+  "tqdm",
+
+  "pip",
+  "packaging",
+  "more-itertools",
+
+  # --- git dependency ---
+  "rootpath @ git+https://github.com/hute37/python-rootpath@stable",
+
+]
+
+
+# ============================================================
+# Optional dependency groups (PEP 621 Extras)
+# ============================================================
+[project.optional-dependencies]
+
+cpu = [
+  
+  "torch==2.10.*",
+  "torchvision==0.25.*",
+
+  "keras",
+  
+]
+
+gpu = [
+
+  "torch==2.10.*",
+  "torchvision==0.25.*",
+
+  "keras",
+
+  ### "tensorflow==2.21.*",
+  ### "tensorflow-datasets==4.9.*",
+  ### "tensorboard",
+
+
+  ## "pynvml; sys_platform == 'linux'",
+  "nvidia-ml-py; sys_platform == 'linux'",
+
+  # Index source: controlled by [[tool.uv.index]] name = "torch-gpu".
+  # In GPU environments (dev / test / prod) the index resolves to:
+  # https:^//download.pytorch.org/whl/cu130
+  # In CI set:
+  # UV_INDEX_TORCH_GPU=https:^//download.pytorch.org/whl/cpu
+  # to redirect to the CPU wheel server, eliminating triton and all
+  # CUDA-bundled libraries from the virtual environment  # "tensorflow==2.20.*",
+
+
+]
+
+
+# ============================================================
+# Project URLs
+# ============================================================
+
+[project.urls]
+documentation = "https://gitlab.com/ub-dems/ds-labs/dve-sample-py/-/wikis/home"
+homepage = "https://gitlab.com/ub-dems/ds-labs/dve-sample-py"
+repository = "https://gitlab.com/ub-dems/ds-labs/dve-sample-py.git"
+
+# ============================================================
+# Script commands
+# ============================================================
 
 [project.scripts]
 main = "dve.cli:main"
-hello = "dve.scripts.dummy.dummy_script:main"
+demo = "vce.cli:main"
+hello = "dve.scripts.dummy.dummy_hello:main"
 
-[tool.poetry.dependencies]
-python = ">=3.10,<3.15"
 
+# ============================================================
+# Development dependency groups
+# ============================================================
+[dependency-groups]
 
-# {{{ CUDA: Cuda-13 from NVIDIA package index
+agents = [
+
+  # --- skills ---
+  # "anthropic",
+  # "openai",
+  # "graphifyy",
+  # "scikit-learn",
+  # "sentence-transformers",
 
-# NVIDIA Tensorflow cuda binaries: from https://github.com/nvidia/tensorflow/
+]
 
-# Tensorflow 2.19 cuda dependencies
-# @see: https://github.com/tensorflow/tensorflow/blob/v2.19.0/ci/official/requirements_updater/requirements.in#L31
+jupyter = [
 
-# nvidia-cuda-runtime-cu12 = {version = "*", source = "nvidia"}
+  # --- core ---
+  "jupyter",
+  "jupyterlab",
+  "jupytext",
+  "httpx",      # Fixes the PyPI extension manager proxy crash
+  # "httpx<0.28.0", # Fixes the PyPI extension manager proxy crash
 
+  # --- kernel & debug ---
+  "ipykernel",
+  "ipywidgets",
+  "ipython",
 
-#@[nv]# nvidia-cublas-cu13 = {version = "*"}
-#@[nv]# nvidia-cuda-cupti-cu13 = {version = "*"}
-#@[nv]# nvidia-cuda-nvcc-cu13 = {version = "*"}
-#@[nv]# nvidia-cuda-nvrtc-cu13 = {version = "*"}
-#@[nv]# nvidia-cuda-runtime-cu13 = {version = "*"}
-#@[nv]# nvidia-cudnn-cu13 = {version = "*"}
-#@[nv]# nvidia-cufft-cu13 = {version = "*"}
-#@[nv]# nvidia-curand-cu13 = {version = "*"}
-#@[nv]# nvidia-cusolver-cu13 = {version = "*"}
-#@[nv]# nvidia-cusparse-cu13 = {version = "*"}
-#@[nv]# nvidia-nccl-cu13 = {version = "*"}
-#@[nv]# nvidia-nvjitlink-cu13 = {version = "*"}
+  # --- export ---
+  "nbconvert[webpdf]",
+  "kaleido",
+  # "kaleido==0.1.0post1",
 
-### }}} // cuda
 
+  # --- node-js ---
+  "nodeenv",
+  "nodejs",
 
-# {{{ TENSORFLOW: from rstudio/tensorflow/R/install.R@default_extra_packages
+  # --- extensions ---
+  "jupyterlab-lsp",
+  "jupyter-ruff",
 
-#@[nv]# tensorflow = {extras = ["and-cuda"], version = "^2.19.0"}
-#@[nv]# tensorflow = {extras = ["and-cuda"], version = "^2.20.0"}
-## tensorflow = {version = "=2.25.*"}
-## tensorflow = {version = "=2.18.*"}
-## tensorflow = {version = "=2.18.*"}
-## tensorflow = {version = "*"}
-## tensorflow = {version = "=2.12.*"}
-## tensorflow-estimator = "*"
-#@[nv]# tensorboard = "*"
-#@[nv]# tensorflow-hub = "*"
-#@[nv]# tensorflow-datasets = "*"
+  # --- profiling (modern alternative to lux-api) ---
+  # "ydata-profiling",
 
-### }}} // tensorflow
+  # --- marimo ---
+  "marimo",
+
+]
 
+dev = [
 
-# {{{ TENSORFLOW: TensorRT
+  # --- test ---
+  "pytest",
+  "pytest-cov",
+  "hypothesis",
+  "behave",
+  "mock",
+  "nose",
 
-# TensorRT install: from https://docs.nvidia.com/deeplearning/tensorrt/support-matrix/index.html
-# TensorRT compatibility: from https://docs.nvidia.com/deeplearning/tensorrt/support-matrix/index.html
+  # --- profile ---
+  "line-profiler",
+  "memory-profiler",
 
-#@[nv]# tensorrt = "*"
+  # --- edit ---
+  "pyright",
+  "basedpyright",
+  "ty",
+  "rassumfrassum",
+  "tree-sitter",
+  "semgrep",
+  "mypy",
 
-#tensorrt = "*"
-#tensorrt_lean = "*"
-#tensorrt_dispatch = "*"
-#libnvinfer = "*"
+  # --- debug ---
+  "debugpy",
 
-# TensorRT compatibility: from https://docs.nvidia.com/deeplearning/tensorrt/support-matrix/index.html
+  # --- lint ---
+  "ruff",
+  # "yapf",
 
-#nvidia-cudnn-cu11 = "*"
-#nvidia-cuda-runtime-cu11 = "*"
-#nvidia-cublas-cu11 = "*"
+  # --- license ---
+  "reuse",
 
-### }}} // tensorflow
+  # --- docs ---
+  # "sphinx",
+  # "nbsphinx",
+  # "sphinx-autoapi",
+  # "sphinx-rtd-theme",
 
+  # --- math ---
+  "sympy",
+  "sympy_plot_backends[all]",
 
-# {{{ TORCH: from https://pytorch.org/get-started/locally/
+  # --- data ---
+  "csvkit",
 
-#@[nv]#torch = {version = "=2.10.*", source = "torch130"}
-#@[nv]#torchvision = {version = "=0.25.*", source = "torch130"}
+  # --- misc ---
+  "colorama",
+  #"py",
 
-### }}} // torch
+  # --- packaging ---
+  "setuptools",
+  "wheel",
+  "bumpversion",
+  "twine",
+]
 
 
-# {{{ KERAS: from rstudio/keras/R/install.R@default_extra_packages
+# }}} //
+# {{{ ////////////////////////////////////////////////////////////////
 
-# tensorflow-hub = '*'
-# tensorflow-datasets = '*'
+# ============================================================
+# Tool configuration (non-standard, tool-specific tables)
+# ============================================================
 
-### }}} // keras
+# ===[ENV]=================================================================
 
-# {{{ DATA: 
+# --- [uv] ---------------------------------------------------
 
-# --- [core] -----------------------------------
-numpy = '*'
-pandas = '*'
+[tool.uv]
+# Treat this directory as an installable package
+package = true
 
-# --- [cuda] -----------------------------------
-#@[nv]# pynvml = '*'
-#@[nv]# nvidia-ml-py = '*'
+# Prevent both "cpu" and "gpu" from being specified at the same time
+conflicts = [[{ extra = "cpu" }, { extra = "gpu" }]]
 
-# --- [raw] -----------------------------------
-pandas-datareader = '*'
-openpyxl = '*'
-h5py = '*'
+[tool.uv.sources]
+packaging = { index = "pypi" }
 
-# --- [data] -----------------------------------
-pyarrow = '*'
-polars = '*'
+torch = [
+  { index = "pytorch-cpu", extra = "cpu" },
+  { index = "pytorch-gpu", extra = "gpu" },
+]
+torchvision = [
+  { index = "pytorch-cpu", extra = "cpu" },
+  { index = "pytorch-gpu", extra = "gpu" },
+]
 
-# --- [sql] --------------------------------------
-SQLAlchemy = "*"
+### [tool.uv.environment]
+### # For CI: Force CPU-only
+### UV_INDEX_TORCH_GPU = { value = "https://download.pytorch.org/whl/cpu", if = "'CI' in os.environ" }
+### UV_EXTRA_INDEX_URL = { value = "https://download.pytorch.org/whl/cpu", if = "'CI' in os.environ" }
 
-#mysql-connector-python = "*"
-# requires: sudo apt install default-libmysqlclient-dev
-mysqlclient = "*"
+[[tool.uv.index]]
+name = "pypi"
+url = " https://pypi.org/simple"
+explicit = false
 
-# requires: sudo apt install libpq-dev
-#psycopg2 = "*"
-psycopg2-binary = "*"
 
-
-### }}} // data
-
-# {{{ STAT: 
-
-# --- [ml] -----------------------------------
-# scikit-learn = "*"
-# scikit-image = "*"
-# sklearn = "*"
-
-# --- [math] -----------------------------------
-scipy = '*'
-sympy = "*"
-
-# --- [sim] --------------------------------------
-# simpy = "*"
-
-### }}} // data
-
-# {{{ GRAPHICS: 
-
-# --- [plots] -----------------------------------
-matplotlib = "*"
-plotly = '*'
-seaborn = "*"
-
-# --- [images] -----------------------------------
-Pillow = '*'
-
-# --- [graph] -----------------------------------
-graphframes = '*'
-graphviz = '*'
-networkx = '*'
-igraph = '*'
-pyvis = '*'
-pydot = '*'
-
-### }}} // graphics
-
-# {{{ SYSTEM: 
-
-# --- [network] -----------------------------------
-requests = '*'
-oauthlib = "*"
-requests-oauthlib = "*"
-urllib3 = "*"
-
-# --- [local] -----------------------------------
-pyzmq = "*"
-
-# --- [config] -----------------------------------
-pyyaml = '*'
-piny = "*"
-toml = "*"
-click = '*'
-
-# --- [logging] -----------------------------------
-icecream = '*'
-
-# --- [console] -----------------------------------
-radian = '*'
-
-# --- [script] -----------------------------------
-tqdm = '*'
-
-
-# --- [libs] -----------------------------------
-pip = "*"
-
-
-### }}} // system
-
-# {{{ LANG: 
-
-# --- [commons] -----------------------------------
-# six = ">=1.7.0,<=1.15.0"
-more-itertools = "*"
-
-### }}} // system
-
-
-[tool.poetry.group.dev.dependencies]
-
-# {{{ JUPYTER: from https://docs.jupyter.org/en/latest/install.html
-
-# --- [jupyter core] -----------------------------------
-jupyter = "*"
-jupyter-core = "*"
-jupyter-console = "*"
-jupyter-lsp = "*"
-notebook = "*"
-
-# --- [jupyter hub] --------------------------------------
-#jupyterhub = "*"
-#tornado = "*"
-
-# --- [jupyter lab] --------------------------------------
-jupyterlab = "*"
-
-# --- [jupyter ext] --------------------------------------
-jupytext = "*"
-
-# --- [jupyter lsp] --------------------------------------
-jupyterlab-lsp = "*"
-nodeenv = '*'
-nodejs = '*'
-
-pyright = '*'
-python-lsp-server = { extras = ["yapf", "rope", "pyflakes"], version = "*" }
-python-lsp-black = "*"
-
-black = { extras = ["jupyter"], version = "*" }
-
-# --- [jupyter dash] --------------------------------------
-lux-api = "*"
-
-# --- [jupyter kernels] -----------------------------------
-ipykernel = "*"
-#jupyterhub = "*"
-#ansible-kernel = "*"
-#dot_kernel = "*"
-#dot_kernel = "*"
-#jswip = "*"
-#matlab_kernel = "*"
-#octave_kernel = "*"
-#sparqlkernel = "*"
-#toree = "*"
-
-# --- [jupyter console] -----------------------------------
-
-ipython = "*"
-ipython-bg = "*"
-
-
-### }}} // jupyter
-
-
-# {{{ TOOLS: 
-
-# --- [test] -----------------------------------
-pytest = { version = "*" }
-pytest-flask = "*"
-pytest-cov = "*"
-unittest2 = { version = "*" }
-#   pytest-spark = "*"
-#   pyspark-test = "*"
-#   chispa = "*"
-coverage = "*"
-mock = "*"
-nose = "*"
-#codecov = "*"
-
-# --- [lint] --------------------------------------
-pylint = "*"
-flake8 = "*"
-pyproject-flake8 = "*"
-jedi = "*"
-autopep8 = "*"
-yapf = '*'
-isort = "*"
-pipreqs = "*"
-ruff = "*"
-#black = { extras = ["jupyter"], version = "*" }
-
-# --- [docs] --------------------------------------
-sphinx = "*"
-nbsphinx = "*"
-sphinx-autoapi = "*"
-sphinx-rtd-theme = "*"
-
-### }}} // tools
-
-
-# {{{ MISC: 
-
-# --- [util] -----------------------------------
-colorama = "*"
-py = "*"
-mypy = "*"
-
-### }}} // misc
-
-
-# {{{ release:
-
-# --- [package] -----------------------------------
-setuptools = "*"
-wheel = "*"
-
-# --- [auto] --------------------------------------
-bumpversion = "*"
-twine = '*'
-
-### }}} // release
-
-#[[tool.poetry.source]]
-#name = 'default'
-#url = 'https://pypi.org/'
-
-
-[[tool.poetry.source]]
-name = "torch121"
-url = "https://download.pytorch.org/whl/cu121"
-priority = "explicit"
-
-[[tool.poetry.source]]
-name = "torch124"
-url = "https://download.pytorch.org/whl/cu124"
-priority = "explicit"
-
-[[tool.poetry.source]]
-name = "torch130"
+[[tool.uv.index]]
+# GPU default: CUDA 13.0-compiled wheels (driver ^>= 580).
+# Rename from "torch130" to "torch-gpu" so the uv env-var override reads:
+# UV_INDEX_TORCH_GPU=<url>
+name = "pytorch-gpu"
 url = "https://download.pytorch.org/whl/cu130"
-priority = "explicit"
+explicit = true
 
-[[tool.poetry.source]]
-name = "pypi-public"
-url = "https://pypi.org/simple/"
-priority = "primary"
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
 
 
-[tool.poetry.dependencies.rootpath]
-git = "https://github.com/hute37/python-rootpath"
-branch = "stable"
+# # --- [poetry] ---------------------------------------------------
 
-# {{{ LSP:
+# [tool.poetry]
+# requires-poetry = ">=2.0"
+# packages = [{ include = "*", from = "src" }]
 
-# --- [pyright] --------------------------------------
+# [[tool.poetry.source]]
+# name = "torch130"
+# url = "https://download.pytorch.org/whl/cu130"
+# priority = "explicit"
 
-# @see: https://github.com/microsoft/pyright/blob/main/docs/configuration.md
+# [tool.poetry.dependencies]
+# torch = { source = "torch130" }
+# torchvision = { source = "torch130" }
+
+# [tool.poetry.dependencies.rootpath]
+# git = "https://github.com/hute37/python-rootpath"
+# branch = "stable"
+
+
+# ===[BUILD]=================================================================
+
+# see: https://packaging.python.org/en/latest/tutorials/packaging-projects/#choosing-a-build-backend
+
+# --- [hatch] ---------------------------------------------------
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+
+[tool.hatch.build.targets.sdist]
+include = ["inst/python/src", "tests/pytest"]
+
+exclude = ["*.tar", "*.tar.gz", ".cache", ".cache/uv", "images", "node_modules"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["inst/python/src/dve", "inst/python/src/vce"]
+artifacts = ["*.so", "!/node_modules/*.so"]
+
+# --- [uv_build] ---------------------------------------------------
+
+# [tool.uv.build-backend]
+# namespace = true
+# #module-name = ["vce", "dve"]
+
+
+# --- [setuptools] ---------------------------------------------------
+
+# [tool.setuptools.packages.find]
+# where   = ["src"]
+# include = ["*"]
+
+# [tool.setuptools]
+# include-package-data = true
+
+# [tool.setuptools.package-data]
+# res = ["resources/*", "resources/*/*"]
+
+
+# ===[TEST]=================================================================
+
+# --- [pytest] ---------------------------------------------------
+
+[tool.pytest.ini_options]
+pythonpath = ["inst/python/src", "tests/pytest"]
+testpaths = ["tests/pytest"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
+
+log_cli = true
+log_cli_level = "DEBUG"
+
+# ===[LINT]=================================================================
+
+# --- [mypy] ---------------------------------------------------
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+ignore_missing_imports = true
+
+# --- [pyright] ---------------------------------------------------
+
 [tool.pyright]
 include = ["inst/python/src", "tests/pytest", "notebooks"]
 exclude = [
+  "notebooks/samples/Attic/*",
+  "**/*.ipynb",
+  "doc/*",
+  "home/*",
+  "notes/*",
+  "renv/*",
+  ".venv/*",
+  ".agents/*",
+  ".eggs/*.py",
   "**/node_modules",
   "**/__pycache__",
   "docker",
@@ -384,346 +469,113 @@ exclude = [
 ]
 ignore = ["build"]
 defineConstant = { DEBUG = true }
-#stubPath = "src/stubs"
-#venv = "env367"
-#verboseOutput = true
 typeCheckingMode = "basic"
+#typeCheckingMode = "strict"
 reportMissingImports = true
+#reportMissingTypeStubs = true
 
-### }}} // lsp
-
-# {{{ TEST:
-
-# --- [pytest] --------------------------------------
-
-[tool.pytest.ini_options]
-pythonpath = ["inst/python/src", "tests/pytest"]
-testpaths = ["tests/pytest"]
-python_files = ["test_*.py"]
-python_classes = ["Test*"]
-python_functions = ["test_*"]
-addopts = "-v --tb=short"
-
-### }}} // test
-
-
-# {{{ FORMAT: 
-
-# --- [flake8] --------------------------------------
-
-# flake8 config unused, @see setup.cfg
-# [tool.flake8]
-# max-line-length = 88
-# extend-ignore = "E203,"
-# max-complexity = 10
-
-# --- [isort] --------------------------------------
-
-[tool.isort]
-profile = "black"
-
-
-# --- [black] --------------------------------------
-
-[tool.black]
-line-length = 88
-target-version = ['py310']
-include = '\.pyi?$'
-exclude = '''
-
-(
-  /(
-      \.eggs         # exclude a few common directories in the
-    | \.git          # root of the project
-    | \.hg
-    | \.mypy_cache
-    | \.tox
-    | \.venv
-    | _build
-    | buck-out
-    | build
-    | dist
-  )/
-  | foo.py           # also separately exclude a file named foo.py in
-                     # the root of the project
-)
-'''
-
-# --- [ruff] --------------------------------------
+# --- [ruff] ---------------------------------------------------
 
 [tool.ruff]
-line-length = 88
-target-version = "py310"
+line-length = 120
+target-version = "py312"
 fix = true
 
 [tool.ruff.lint]
 unfixable = []
+#ignore-init-module-imports = false
 typing-modules = ["pandas._typing"]
-
 exclude = [
-  "doc/sphinxext/*.py",
-  "doc/build/*.py",
-  "doc/temp/*.py",
+  "notebooks/samples/Attic/*",
+  "doc/*",
   ".eggs/*.py",
-  # vendored files
-  "pandas/util/version/*",
-  "pandas/io/clipboard/__init__.py",
-  # exclude asv benchmark environments from linting
-  "env",
+  "home/*",
+  "notes/*",
+  "renv/*",
+  ".venv/*",
+  ".agents/*",
 ]
-
 select = [
-  # pyflakes
   "F",
-  # pycodestyle
   "E",
   "W",
-  # flake8-2020
   "YTT",
-  # flake8-bugbear
   "B",
-  # flake8-quotes
   "Q",
-  # flake8-debugger
   "T10",
-  # flake8-gettext
   "INT",
-  # pylint
   "PL",
-  # flake8-pytest-style
   "PT",
-  # misc lints
   "PIE",
-  # flake8-pyi
   "PYI",
-  # tidy imports
   "TID",
-  # implicit string concatenation
   "ISC",
-  # type-checking imports
   "TCH",
-  # comprehensions
   "C4",
-  # pygrep-hooks
   "PGH",
-  # Ruff-specific rules
   "RUF",
-  # flake8-bandit: exec-builtin
   "S102",
-  # numpy-legacy-random
   "NPY002",
-  # Perflint
   "PERF",
-  # flynt
   "FLY",
-  # flake8-logging-format
   "G",
-  # flake8-future-annotations
   "FA",
-  # unconventional-import-alias
   "ICN001",
-  # flake8-slots
   "SLOT",
-  # flake8-raise
   "RSE",
 ]
-
-ignore = [
-]
-
-# ignore = [
-#   ### Intentionally disabled
-#   # module level import not at top of file
-#   "E402",
-#   # do not assign a lambda expression, use a def
-#   "E731",
-#   # controversial
-#   "B007",
-#   # controversial
-#   "B008",
-#   # setattr is used to side-step mypy
-#   "B009",
-#   # getattr is used to side-step mypy
-#   "B010",
-#   # tests use comparisons but not their returned value
-#   "B015",
-#   # Function definition does not bind loop variable
-#   "B023",
-#   # Only works with python >=3.10
-#   "B905",
-#   # Too many arguments to function call
-#   "PLR0913",
-#   # Too many returns
-#   "PLR0911",
-#   # Too many branches
-#   "PLR0912",
-#   # Too many statements
-#   "PLR0915",
-#   # Redefined loop name
-#   "PLW2901",
-#   # Global statements are discouraged
-#   "PLW0603",
-#   # Use `typing.NamedTuple` instead of `collections.namedtuple`
-#   "PYI024",
-#   # Use of possibly insecure function; consider using ast.literal_eval
-#   "S307",
-#   # while int | float can be shortened to float, the former is more explicit
-#   "PYI041",
-#   # incorrect-dict-iterator, flags valid Series.items usage
-#   "PERF102",
-#   # try-except-in-loop, becomes useless in Python 3.11
-#   "PERF203",
-#   # pytest-missing-fixture-name-underscore
-#   "PT004",
-#   # pytest-incorrect-fixture-name-underscore
-#   "PT005",
-#   # pytest-parametrize-names-wrong-type
-#   "PT006",
-#   # pytest-parametrize-values-wrong-type
-#   "PT007",
-#   # pytest-patch-with-lambda
-#   "PT008",
-#   # pytest-raises-with-multiple-statements
-#   "PT012",
-#   # pytest-assert-in-except
-#   "PT017",
-#   # pytest-composite-assertion
-#   "PT018",
-#   # pytest-fixture-param-without-value
-#   "PT019",
-#   # The following rules may cause conflicts when used with the formatter:
-#   "ISC001",
-#   # if-stmt-min-max
-#   "PLR1730",
-
-#   ### TODO: Enable gradually
-#   # Useless statement
-#   "B018",
-#   # Magic number
-#   "PLR2004",
-#   # comparison-with-itself
-#   "PLR0124",
-#   # collection-literal-concatenation
-#   "RUF005",
-#   # pairwise-over-zipped (>=PY310 only)
-#   "RUF007",
-#   # mutable-class-default
-#   "RUF012",
-#   # type-comparison
-#   "E721",
-#   # repeated-equality-comparison
-#   "PLR1714",
-#   # self-or-cls-assignment
-#   "PLW0642",
-#   # literal-membership
-#   "PLR6201", # 847 errors
-#   # Method could be a function, class method, or static method
-#   "PLR6301", # 11411 errors
-#   # Private name import
-#   "PLC2701", # 27 errors
-#   # Too many positional arguments (6/5)
-#   "PLR0917", # 470 errors
-#   # compare-to-empty-string
-#   "PLC1901",
-#   # `tempfile.NamedTemporaryFile` in text mode without explicit `encoding` argument
-#   "PLW1514", # 1 error
-#   # Object does not implement `__hash__` method
-#   "PLW1641", # 16 errors
-#   # Bad or misspelled dunder method name
-#   "PLW3201", # 69 errors, seems to be all false positive
-#   # Unnecessary lookup of dictionary value by key
-#   "PLR1733", # 5 errors, it seems like we wannt to ignore these
-#   # Unnecessary lookup of list item by index
-#   "PLR1736", # 4 errors, we're currently having inline pylint ignore
-#   # empty-comment
-#   "PLR2044", # autofixable
-#   # Unpacking a dictionary in iteration without calling `.items()`
-#   "PLE1141", # autofixable
-#   # import-outside-toplevel
-#   "PLC0415",
-#   # unnecessary-dunder-call
-#   "PLC2801",
-#   # comparison-with-itself
-#   "PLR0124",
-#   # too-many-public-methods
-#   "PLR0904",
-#   # too-many-return-statements
-#   "PLR0911",
-#   # too-many-branches
-#   "PLR0912",
-#   # too-many-arguments
-#   "PLR0913",
-#   # too-many-locals
-#   "PLR0914",
-#   # too-many-statements
-#   "PLR0915",
-#   # too-many-boolean-expressions
-#   "PLR0916",
-#   # too-many-nested-blocks
-#   "PLR1702",
-#   # redefined-argument-from-local
-#   "PLR1704",
-#   # unnecessary-lambda
-#   "PLW0108",
-#   # global-statement
-#   "PLW0603",
-# ]
-
+ignore = ["C408", "PLR0913", "PLR0917"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
 
 [tool.ruff.lint.isort]
 combine-as-imports = true
-split-on-trailing-commas = false
+#split-on-trailing-comma  = false
 
-
-# [tool.ruff.lint.flake8-tidy-imports.banned-api]
-# "urllib.request.urlopen".msg = "Use pandas.io.common.urlopen instead of urllib.request.urlopen"
-# # numpy.random is banned but np.random is not. Is this intentional?
-# # "numpy.random".msg = "Do not use numpy.random"
-# "pytest.warns".msg = "Use tm.assert_produces_warning instead of pytest.warns"
-# "pytest.xfail".msg = "Use pytest.mark.xfail instead of pytest.xfail"
-# "conftest".msg = "No direct imports from conftest"
-# "numpy.testing".msg = "Do not use numpy.testing"
-# # "numpy.array_equal".msg = "Do not use numpy.array_equal" # Used in pandas/core
-# "unittest.mock".msg = "use pytest builtin monkeypatch fixture instead"
-# "os.remove".msg = "Do not use os.remove"
-
-# [tool.ruff.lint.flake8-import-conventions.aliases]
-# "pandas.core.construction.array" = "pd_array"
-
-# [tool.ruff.lint.per-file-ignores]
-# # relative imports allowed for asv_bench
-# "asv_bench/*" = ["TID", "NPY002"]
-# # to be enabled gradually
-# "pandas/core/*" = ["PLR5501"]
-# "pandas/tests/*" = ["B028", "FLY"]
-# "scripts/*" = ["B028"]
-# # Keep this one enabled
-# "pandas/_typing.py" = ["TCH"]
-
-# [tool.ruff.lint.flake8-pytest-style]
-# fixture-parentheses = false
-# mark-parentheses = false
 
 [tool.ruff.format]
 docstring-code-format = true
-
-### }}} // format
-
-
-# {{{ BUILD: 
-
-[build-system]
-requires = [
-    "poetry-core>=2.0",
-    "setuptools",
-    "wheel",
-    "incremental",
+exclude = [
+  "notebooks/samples/Attic/*",
+  "notebooks/*",
+  "doc/*",
+  ".eggs/*.py",
+  "home/*",
+  "notes/*",
+  "renv/*",
+  ".venv/*",
+  ".agents/*",
 ]
-build-backend = "poetry.core.masonry.api"
-#build-backend = "setuptools.build_meta"
 
-### }}} // build
+# --- [jupytext] ------------------------------------------------
 
+[tool.jupytext]
+formats = "ipynb,py:percent"
+
+# }}} //
+# {{{ ////////////////////////////////////////////////////////////////
+
+# ============================================================
+# Project Custom Configuration
+# ============================================================
+
+[tool.local]
+has_config = true
+config = "config.yaml"
+
+[tool.local.paths]
+log_dir = "logs"
+
+[tool.local.log]
+level = "INFO"
+
+[tool.local.hello]
+salutation = "Hi"
+
+
+# }}} //
+# {{{ // %*
+# LocalWords:  GitLab CommonMark GFM GLFM YAML
+# vim: set foldmethod=marker :
+# }}} //

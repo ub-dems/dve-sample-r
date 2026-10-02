@@ -1,0 +1,7 @@
+# ============================================================
+# Project Specification: see .agents/AGENTS.md
+# ============================================================
+
+# supported: 'python','R'
+
+project.layout = 'python'
