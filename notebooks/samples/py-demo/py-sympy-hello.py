@@ -18,15 +18,22 @@
 #
 # ## sympy
 #
-# - [SymPy’s documentation](https://docs.sympy.org/latest/index.html)
+# - [SymPy documentation](https://docs.sympy.org/latest/index.html)
 # - [SymPy Features](https://docs.sympy.org/latest/tutorials/intro-tutorial/features.html)
 # - [SymPy Plotting Backends](https://sympy-plot-backends.readthedocs.io/en/latest/index.html)
 #
 
 # %%
-from sympy import init_printing, symbols, Integral, integrate, oo, exp
+# ruff: disable[B018]
+# pyright: reportUnusedExpression=false
+
+# %%
+from sympy import init_printing, symbols, Integral, integrate, diff, oo, exp, sin
+from spb import plot
 
 init_printing()
+
+
 
 # %%
 x, y, z, t = symbols("x y z t")
@@ -42,3 +49,19 @@ Integral(*F)
 integrate(*F)
 
 # %%
+g = sin(x) / x
+
+# %%
+dg = diff(g)
+
+# %%
+g
+
+# %%
+dg
+
+# %%
+plot(g, dg)
+
+# %%
+# ruff: enable[B018]

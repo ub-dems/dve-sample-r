@@ -37,7 +37,7 @@
 #      *) export X_UV_EXTRA='cpu' ;;
 # esac
 # export X_HAS_GPU
-#                                    
+#
 # # ------------------------------------------------------
 #
 #
@@ -60,13 +60,6 @@
 # ```
 
 # %%
-import sys
-
-# %%
-sys.version
-
-# %%
-sys.path
 
 # %%
 # %env

@@ -450,7 +450,8 @@ ignore_missing_imports = true
 [tool.pyright]
 include = ["inst/python/src", "tests/pytest", "notebooks"]
 exclude = [
-  "notebooks/@databricks/*",
+  "notebooks/samples/Attic/*",
+  "**/*.ipynb",
   "doc/*",
   "home/*",
   "notes/*",
@@ -485,7 +486,7 @@ unfixable = []
 #ignore-init-module-imports = false
 typing-modules = ["pandas._typing"]
 exclude = [
-  "notebooks/@databricks/*",
+  "notebooks/samples/Attic/*",
   "doc/*",
   ".eggs/*.py",
   "home/*",
@@ -536,7 +537,7 @@ combine-as-imports = true
 [tool.ruff.format]
 docstring-code-format = true
 exclude = [
-  "notebooks/@databricks/*",
+  "notebooks/samples/Attic/*",
   "notebooks/*",
   "doc/*",
   ".eggs/*.py",

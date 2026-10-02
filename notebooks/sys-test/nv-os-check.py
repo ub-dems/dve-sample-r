@@ -41,9 +41,12 @@
 # !nvidia-smi -q
 
 # %%
-# !poetry show
+# !uv pip list
 
 # %%
-# !poetry show --tree
+# ! uv tree --no-dedupe --no-group jupyter --show-sizes | grep -i -e nvidia -e torch -e keras -e tensorflow
+
+# %%
+# ! uv tree --no-dedupe --no-group jupyter --show-sizes
 
 # %%

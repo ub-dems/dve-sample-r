@@ -22,9 +22,11 @@
 # * @see [#](#)
 
 # %% [markdown]
-# The built in `Pipe` is great if you are sending bytes. If you are not sending bytes, pickling and unpickling might become a bottleneck. 
+# The built in `Pipe` is great if you are sending bytes.
+# If you are not sending bytes, pickling and unpickling might become a bottleneck.
 #
-# I also checked https://github.com/portugueslab/arrayqueues which had very bad performance, and is specialized to numpy arrays not byte arrays.
+# I also checked https://github.com/portugueslab/arrayqueues which had very bad performance,
+# and is specialized to numpy arrays not byte arrays.
 
 # %% [markdown]
 # ## Imports
@@ -50,6 +52,7 @@ import zmq
 # %% [markdown]
 # ### Payloads
 
+
 # %%
 class PayloadsConsts:
     DEF_RANDOM_MAX = 2**31
@@ -58,36 +61,35 @@ class PayloadsConsts:
     DEF_ARRAY_SIZE = DEF_RANDOM_SIZE
     DEF_RANDOM_RATE = 0.60
 
-    ARR_RANDDM_DATA = np.random.Generator(DEF_RANDOM_MIN, DEF_RANDOM_MAX, DEF_RANDOM_SIZE)
+    ARR_RANDDM_DATA = np.random.default_rng().integers(DEF_RANDOM_MIN, DEF_RANDOM_MAX, DEF_RANDOM_SIZE)
 
     @staticmethod
-    def fill(array: np.array, random_rate: float = DEF_RANDOM_RATE) -> np.array:
-        m = min(np.prod(array), min(1.0, random_rate) * PayloadsConsts.DEF_RANDOM_SIZE)
+    def fill(array: np.ndarray, random_rate: float = DEF_RANDOM_RATE) -> np.ndarray:
+        m = int(min(array.size, min(1.0, random_rate) * PayloadsConsts.DEF_RANDOM_SIZE))
         array[:m] = PayloadsConsts.ARR_RANDDM_DATA[:m]
         return array
 
 
 class PayloadData:
-    def _init__(self, size: int = 0):
+    def __init__(self, size: int = 0):
         self.size = size
 
 
 class IntArrayPayloadData:
-    def _init__(self, size: int, random_rate: float):
+    def __init__(self, size: int, random_rate: float):
         self.size = size
         self.random_rate = random_rate
         self.array = PayloadsConsts.fill(np.zeros(size), random_rate)
 
 
 class Payloads:
-    INT_SZ_DEF_RND_DEF = IntArrayPayloadData(
-        PayloadsConsts.DEF_ARRAY_SIZE, PayloadsConsts.DEF_RANDOM_RATE
-    )
+    INT_SZ_DEF_RND_DEF = IntArrayPayloadData(PayloadsConsts.DEF_ARRAY_SIZE, PayloadsConsts.DEF_RANDOM_RATE)
     DEF_ARRAY = INT_SZ_DEF_RND_DEF
 
 
 # %% [markdown]
 # ### Messages
+
 
 # %%
 class MsgType(Enum):
@@ -97,9 +99,9 @@ class MsgType(Enum):
 
 
 class Message:
-    def _init__(self, msg_type: int, stream_name: str, seq: int):
+    def __init__(self, msg_type: MsgType, stream_name: str, seq: int):
         self.msg_type = msg_type
-        self.stream_name: stream_name
+        self.stream_name = stream_name
         self.seq = seq
 
     def is_data_msg(self) -> bool:
@@ -110,7 +112,7 @@ class Message:
 
 
 class ControlMessage(Message):
-    def _init__(self, msg_type: int, stream_name: str, seq: int):
+    def __init__(self, msg_type: MsgType, stream_name: str, seq: int):
         super().__init__(msg_type, stream_name, seq)
 
     def is_control_msg(self) -> bool:
@@ -118,29 +120,29 @@ class ControlMessage(Message):
 
 
 class DataMessage(Message):
-    def _init__(self, msg_type: int, stream_name: str, seq: int):
+    def __init__(self, msg_type: MsgType, stream_name: str, seq: int):
         super().__init__(msg_type, stream_name, seq)
 
 
 class StartStreamMessage(ControlMessage):
     MSG_TYPE = MsgType.CTL_BEGIN
 
-    def _init__(self, stream_name: str):
+    def __init__(self, stream_name: str):
         super().__init__(StartStreamMessage.MSG_TYPE, stream_name, 0)
 
 
 class EndStreamMessage(ControlMessage):
     MSG_TYPE = MsgType.CTL_END
 
-    def _init__(self, stream_name: str, seq: int):
+    def __init__(self, stream_name: str, seq: int):
         super().__init__(EndStreamMessage.MSG_TYPE, stream_name, seq)
 
 
-class PayloadDataMessage(ControlMessage):
+class PayloadDataMessage(DataMessage):
     MSG_TYPE = MsgType.DAT_PAYLOAD
 
-    def _init__(self, stream_name: str, seq: int):
-        super().__init__(EndStreamMessage.MSG_TYPE, stream_name, seq)
+    def __init__(self, stream_name: str, seq: int):
+        super().__init__(PayloadDataMessage.MSG_TYPE, stream_name, seq)
 
 
 # %% [markdown]
@@ -149,12 +151,7 @@ class PayloadDataMessage(ControlMessage):
 # %%
 
 # %% [markdown]
-# ## Pyhon native `multiprocessing`
-
-# %% [markdown]
-# ### multiprocessing.Queue
-
-# %%
+# ## Python native `multiprocessing`
 
 # %% [markdown]
 # ### multiprocessing.Queue
@@ -180,11 +177,8 @@ def print_elapsed_unsync(name, start):
 
 
 def print_elapsed(name, start):
-    out_sync.acquire()
-    try:
+    with out_sync:
         print_elapsed_unsync(name, start)
-    finally:
-        out_sync.release()
 
 
 def producer(q):
@@ -203,17 +197,19 @@ def consumer(q):
 
 
 # %%
-q = Queue()
-producer_process = Process(target=producer, args=(q,))
-consumer_process = Process(target=consumer, args=(q,))
-consumer_process.start()
-producer_process.start()
-consumer_process.join()
-producer_process.join()
+if __name__ == "__main__":
+    q = Queue()
+    producer_process = Process(target=producer, args=(q,))
+    consumer_process = Process(target=consumer, args=(q,))
+    consumer_process.start()
+    producer_process.start()
+    consumer_process.join()
+    producer_process.join()
 
 
 # %% [markdown]
 # ### multiprocessing.Pipe
+
 
 # %%
 class PipeQueue:
@@ -231,14 +227,15 @@ class PipeQueue:
         self.in_pipe.close()
 
 
-q = PipeQueue()
-producer_process = Process(target=producer, args=(q,))
-consumer_process = Process(target=consumer, args=(q,))
-consumer_process.start()
-producer_process.start()
-consumer_process.join()
-producer_process.join()
-q.close()
+if __name__ == "__main__":
+    q = PipeQueue()
+    producer_process = Process(target=producer, args=(q,))
+    consumer_process = Process(target=consumer, args=(q,))
+    consumer_process.start()
+    producer_process.start()
+    consumer_process.join()
+    producer_process.join()
+    q.close()
 
 
 # %%
@@ -257,27 +254,32 @@ class BytesPipeQueue:
         self.in_pipe.close()
 
 
-q = BytesPipeQueue()
-producer_process = Process(target=producer, args=(q,))
-consumer_process = Process(target=consumer, args=(q,))
-consumer_process.start()
-producer_process.start()
-consumer_process.join()
-producer_process.join()
-q.close()
+# %%
+if __name__ == "__main__":
+    q = BytesPipeQueue()
+    producer_process = Process(target=producer, args=(q,))
+    consumer_process = Process(target=consumer, args=(q,))
+    consumer_process.start()
+    producer_process.start()
+    consumer_process.join()
+    producer_process.join()
+    q.close()
 
 # %% [markdown]
-# In CPython setting `duplex=False` uses an `os.pipe` [instead of two blocking sockets](https://github.com/python/cpython/blob/3.7/Lib/multiprocessing/connection.py#L510-L519). This seems to be much slower.
+# In CPython setting `duplex=False` uses an `os.pipe`
+# [instead of two blocking sockets](https://github.com/python/cpython/blob/3.7/Lib/multiprocessing/connection.py#L510-L519).
+# This seems to be much slower.
 
 # %%
-q = BytesPipeQueue(False)
-producer_process = Process(target=producer, args=(q,))
-consumer_process = Process(target=consumer, args=(q,))
-consumer_process.start()
-producer_process.start()
-consumer_process.join()
-producer_process.join()
-q.close()
+if __name__ == "__main__":
+    q = BytesPipeQueue(False)
+    producer_process = Process(target=producer, args=(q,))
+    consumer_process = Process(target=consumer, args=(q,))
+    consumer_process.start()
+    producer_process.start()
+    consumer_process.join()
+    producer_process.join()
+    q.close()
 
 
 # %% [markdown]
@@ -285,6 +287,7 @@ q.close()
 
 # %% [markdown]
 # ### 0MQ Example
+
 
 # %%
 def zmq_producer(address):
@@ -310,98 +313,22 @@ def zmq_consumer(address):
     pull.close()
 
 
-address = "tcp://127.0.0.1:5557"
-producer_process = Process(target=zmq_producer, args=(address,))
-consumer_process = Process(target=zmq_consumer, args=(address,))
-consumer_process.start()
-producer_process.start()
-consumer_process.join()
-producer_process.join()
+# %%
+if __name__ == "__main__":
+    address = "tcp://127.0.0.1:5557"
+    producer_process = Process(target=zmq_producer, args=(address,))
+    consumer_process = Process(target=zmq_consumer, args=(address,))
+    consumer_process.start()
+    producer_process.start()
+    consumer_process.join()
+    producer_process.join()
 
 # %%
-address = "ipc:///tmp/zmqtest"
-producer_process = Process(target=zmq_producer, args=(address,))
-consumer_process = Process(target=zmq_consumer, args=(address,))
-consumer_process.start()
-producer_process.start()
-consumer_process.join()
-producer_process.join()
-
-# %% [markdown]
-# ### Pair0 Example
-#
-# ```python
-# from pynng import Pair0
-# from multiprocessing import Process
-#
-# def nng_producer(address):
-#     push = Pair0()
-#     push.listen(address)
-#     start = time()
-#     for i in range(n):
-#         push.send(big_data)
-#     print_elapsed('nng_producer', start)
-#     push.close()
-#
-# def nng_consumer(address):
-#     pull = Pair0()
-#     pull.dial(address)
-#     start = time()
-#     for i in range(n):
-#         item = pull.recv()
-#     print_elapsed('nng_consumer', start)
-#     pull.close()
-# ```
-#
-# ```python
-# address = 'tcp://127.0.0.1:5557'
-# producer_process = Process(target=nng_producer, args=(address,))
-# consumer_process = Process(target=nng_consumer, args=(address,))
-# consumer_process.start()
-# producer_process.start()
-# ```
-#
-# ```
-# nng_producer: 0.828 ms/item, 1208 item/sec
-# nng_consumer: 0.833 ms/item, 1201 item/sec
-#
-# ```
-#
-# ```python
-# address = 'ipc://127.0.0.1:5557'
-# producer_process = Process(target=nng_producer, args=(address,))
-# consumer_process = Process(target=nng_consumer, args=(address,))
-# consumer_process.start()
-# producer_process.start()
-# ```
-#
-# ```
-# nng_producer: 1.294 ms/item, 773 item/sec
-# nng_consumer: 1.301 ms/item, 768 item/sec
-#
-# ```
-#
-
-# %% [markdown]
-# ### Cinda Example
-#
-# ```python
-# # sudo apt install libboost-dev
-# # pip install cinda
-# from cinda.ipc import BytesQueue
-# from cinda.ipc import free
-#
-# free('MyQueue')
-# q = BytesQueue('MyQueue', n, len(big_data))
-# producer_process = Process(target=producer, args=(q,))
-# consumer_process = Process(target=consumer, args=(q,))
-# consumer_process.start()
-# producer_process.start()
-# ```
-#
-# ```
-# producer: 0.611 ms/item, 1637 item/sec
-# consumer: 0.614 ms/item, 1629 item/sec
-# ```
-
-# %%
+if __name__ == "__main__":
+    address = "ipc:///tmp/zmqtest"
+    producer_process = Process(target=zmq_producer, args=(address,))
+    consumer_process = Process(target=zmq_consumer, args=(address,))
+    consumer_process.start()
+    producer_process.start()
+    consumer_process.join()
+    producer_process.join()

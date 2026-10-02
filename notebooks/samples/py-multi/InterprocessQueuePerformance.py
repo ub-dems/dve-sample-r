@@ -20,15 +20,20 @@
 # * @see [@kylemcdonald:Interprocess Queue Performance.ipynb](https://gist.github.com/kylemcdonald/a2f0dcb86f01d4c57b68ac6a6c7a3068)
 
 # %% [markdown]
-# The built in `Pipe` is great if you are sending bytes. If you are not sending bytes, pickling and unpickling might become a bottleneck. 
+# The built in `Pipe` is great if you are sending bytes.
+# If you are not sending bytes, pickling and unpickling might become a bottleneck.
 #
-# I also checked https://github.com/portugueslab/arrayqueues which had very bad performance, and is specialized to numpy arrays not byte arrays.
+# I also checked https://github.com/portugueslab/arrayqueues which had very bad performance,
+# and is specialized to numpy arrays not byte arrays.
 
 # %% [markdown]
 # ## Pyhon native `multiprocessing`
 
 # %% [markdown]
 # ### multiprocessing.Queue
+
+# %%
+import zmq
 
 # %%
 from time import time
@@ -144,7 +149,9 @@ producer_process.join()
 q.close()
 
 # %% [markdown]
-# In CPython setting `duplex=False` uses an `os.pipe` [instead of two blocking sockets](https://github.com/python/cpython/blob/3.7/Lib/multiprocessing/connection.py#L510-L519). This seems to be much slower.
+# In CPython setting `duplex=False` uses an `os.pipe`
+# [instead of two blocking sockets](https://github.com/python/cpython/blob/3.7/Lib/multiprocessing/connection.py#L510-L519).
+# This seems to be much slower.
 
 # %%
 q = BytesPipeQueue(False)
@@ -163,7 +170,7 @@ q.close()
 # ### 0MQ Example
 
 # %%
-import zmq
+# import zmq
 
 
 def zmq_producer(address):

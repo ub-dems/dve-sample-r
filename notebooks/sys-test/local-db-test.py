@@ -14,7 +14,12 @@
 # ---
 
 # %% [markdown]
-# # local-db-test: local database demo with 
+# # local-db-test: local database demo with "SQLite"
+#
+# for better (Rust-based) implementtion (10x+ speed increase) look at:
+#
+# - [duckdb](https://duckdb.org/)
+# - [Polars vs Pandas](https://pola.rs/)
 
 # %%
 import logging
@@ -57,11 +62,11 @@ print(local_uri)
 
 # %%
 def sql_bind(engine):
-    def sql_exec(qry:str):
+    def sql_exec(qry: str):
         # engine.begin() automatically commits the transaction on success
         with engine.begin() as con:
             rs = con.execute(text(qry))
-        
+
         # safely check if the result set is iterable (e.g., SELECT queries)
         if rs.returns_rows:
             for row in rs:
@@ -69,30 +74,30 @@ def sql_bind(engine):
         else:
             # For CREATE/INSERT/UPDATE, just print the result status
             print(f"Executed successfully. Rows affected: {rs.rowcount}")
-    return sql_exec        
+
+    return sql_exec
 
 
 def drop_database(uri: str):
     # 0. Parse the actual file path from the SQLAlchemy URI automatically
-    db_file_path = make_url(local_uri).database
+    db_file_path = make_url(uri).database
 
     if db_file_path is None:
         return None
-        
+
     db_path = Path(db_file_path)
-    
+
     # 1. Ensure parent directory exists (creates 'dbms' and any missing parent directories)
     db_path.parent.mkdir(parents=True, exist_ok=True)
-        
+
     # 2. Delete main database file and temporary WAL/SHM journal files if present
     db_path.unlink(missing_ok=True)
     Path(f"{db_path}-wal").unlink(missing_ok=True)
     Path(f"{db_path}-shm").unlink(missing_ok=True)
-    
+
     # 3. Ensure the parent directory exists
     db_path.parent.mkdir(parents=True, exist_ok=True)
     return db_path
-
 
 
 # %%
@@ -110,17 +115,17 @@ sql_exec("SELECT current_timestamp")
 # %%
 schema_sql = """
 
-SELECT 
-  m.name as table_name, 
+SELECT
+  m.name as table_name,
   p.name as column_name
-FROM 
+FROM
   sqlite_master AS m
-JOIN 
+JOIN
   pragma_table_info(m.name) AS p
 WHERE
-  m.type = 'table' 
-ORDER BY 
-  m.name, 
+  m.type = 'table'
+ORDER BY
+  m.name,
   p.cid
 
 """
@@ -133,9 +138,9 @@ sql_exec(schema_sql)
 create_sql = """
 
 CREATE TABLE IF NOT EXISTS demo_table (
-	column1 text PRIMARY KEY,
-   	column2 text NOT NULL,
-	column3 integer DEFAULT 0
+        column1 text PRIMARY KEY,
+        column2 text NOT NULL,
+        column3 integer DEFAULT 0
 );
 
 """
@@ -148,16 +153,16 @@ INSERT INTO 'demo_table' ('column1', 'column2') VALUES
   ('c', 'data1'),
   ('d', 'data3'),
   ('e', 'data3');
-  
+
 """
 
 update_sql = """
 
 UPDATE 'demo_table' SET
   column3 = column3 + 1
- WHERE 
+ WHERE
    column2 in ('data2', 'data3');
-  
+
 """
 
 select_sql = """
@@ -200,4 +205,5 @@ sql_exec(select_sql)
 sql_exec(group_sql)
 
 # %%
-subprocess.run(["ls", "-l", db_path.parent]) 
+assert db_path
+subprocess.run(["ls", "-l", db_path.parent], check=True)

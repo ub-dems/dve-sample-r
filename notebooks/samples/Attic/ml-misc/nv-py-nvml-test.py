@@ -16,7 +16,8 @@
 # %%
 from __future__ import annotations
 import argparse
-from typing import Any
+import yaml
+from datetime import datetime
 
 # %%
 import torch
@@ -29,10 +30,105 @@ from torch.optim.lr_scheduler import StepLR
 
 # %%
 
+# from typing import TYPE_CHECKING
+
+# if TYPE_CHECKING:
+#     import pynvml
+
+from typing import Protocol
+
+
+class GpuMonitor(Protocol):
+    def memory(self) -> tuple[int, int]: ...
+    def is_available(self) -> bool: ...
+
+
+class CpuGpuMonitor:
+    def unsupportd(self):
+        return RuntimeError("GPU support is not available")
+
+    def memory(self) -> tuple[int, int]:
+        raise self.unsupportd()
+
+    def is_available(self) -> bool:
+        raise self.unsupportd()
+
+
+class NvmlGpuMonitor:
+    def __init__(self) -> None:
+        try:
+            import pynvml as _pynvml
+        except ImportError:
+            _pynvml = None
+
+        assert _pynvml
+        self._pynvml = _pynvml
+
+    def memory(self) -> tuple[int, int]:
+        self._pynvml.nvmlInit()
+        try:
+            handle = self._pynvml.nvmlDeviceGetHandleByIndex(0)
+            info = self._pynvml.nvmlDeviceGetMemoryInfo(handle)
+            return info.used, info.total
+        finally:
+            self._pynvml.nvmlShutdown()
+
+    def is_available(self) -> bool:
+        return self._pynvml is not None
+
+    def get_device_count(self) -> int:
+        return self._pynvml.nvmlDeviceGetCount()
+
 
 # %%
+assert _pynvml
+print(f"NVML: driver version={_pynvml.nvmlSystemGetDriverVersion()}")
+deviceCount = _pynvml.nvmlDeviceGetCount()
+for i in range(deviceCount):
+    handle = _pynvml.nvmlDeviceGetHandleByIndex(i)
+    info = _pynvml.nvmlDeviceGetMemoryInfo(handle)
+    print(
+        f"NVML: device[{i}]={_pynvml.nvmlDeviceGetName(handle)}"
+        f", tot={info.total:,}"
+        f", free={info.free:,}"
+        f", used={info.used:,}"
+    )
+
+
 # %%
-print(f"cuda.is_available={torch.cuda.is_available()}")
+def get_device_stats():
+    deviceCount = _pynvml.nvmlDeviceGetCount()
+    devices = {}
+
+    for i in range(deviceCount):
+        handle = _pynvml.nvmlDeviceGetHandleByIndex(i)
+
+        # Gathering Data
+        name = _pynvml.nvmlDeviceGetName(handle)
+        pci_info = _pynvml.nvmlDeviceGetPciInfo(handle)
+        temp = _pynvml.nvmlDeviceGetTemperature(handle, _pynvml.NVML_TEMPERATURE_GPU)
+        util = _pynvml.nvmlDeviceGetUtilizationRates(handle)
+
+        # Constructing the result
+        device_info = {
+            "timestamp": datetime.now().isoformat(),
+            "name": name,
+            "pci_bus_id": pci_info.busId,
+            "temperature_gpu": f"{temp} C",
+            "utilization_gpu": f"{util.gpu} %",
+            "utilization_memory": f"{util.memory} %",
+        }
+        devices[f"GPU{i}"] = device_info
+
+    devices_stats = {"driver_version": _pynvml.nvmlSystemGetDriverVersion(), "devices": devices}
+    return devices_stats
+
+
+# %%
+print(f"NVML:\n\n{yaml.safe_dump(get_device_stats())}\n")
+
+# %%
+print(f"cuda.is_available={torch.cuda.torch.cuda.is_available()}")
 
 # %%
 torch.cuda.init()
@@ -180,29 +276,18 @@ def main(argv: list[str]):
     else:
         device = torch.device("cpu")
 
-    train_kwargs: dict[str, Any] = {"batch_size": args.batch_size}
-    test_kwargs: dict[str, Any] = {"batch_size": args.test_batch_size}
-
+    train_kwargs = {"batch_size": args.batch_size}
+    test_kwargs = {"batch_size": args.test_batch_size}
     if use_cuda:
-        cuda_kwargs: dict[str, Any] = {"num_workers": 1, "pin_memory": True, "shuffle": True}
+        cuda_kwargs = {"num_workers": 1, "pin_memory": True, "shuffle": True}
         train_kwargs.update(cuda_kwargs)
         test_kwargs.update(cuda_kwargs)
 
     transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))])
     dataset1 = datasets.MNIST("../data", train=True, download=True, transform=transform)
     dataset2 = datasets.MNIST("../data", train=False, transform=transform)
-
-    # Calculate values dynamically based on use_cuda
-    workers = 1 if use_cuda else 0
-    pin = True if use_cuda else False
-
-    train_loader = torch.utils.data.DataLoader(
-        dataset1, batch_size=args.batch_size, num_workers=workers, pin_memory=pin, shuffle=True
-    )
-
-    test_loader = torch.utils.data.DataLoader(
-        dataset2, batch_size=args.test_batch_size, num_workers=workers, pin_memory=pin, shuffle=False
-    )
+    train_loader = torch.utils.data.DataLoader(dataset1, **train_kwargs)
+    test_loader = torch.utils.data.DataLoader(dataset2, **test_kwargs)
 
     model = Net().to(device)
     optimizer = optim.Adadelta(model.parameters(), lr=args.lr)
@@ -223,3 +308,9 @@ main(["--epochs=3"])
 # %%
 device = torch.cuda.current_device()
 print(f"cuda.utilization={torch.cuda.utilization(device)}")
+
+# %%
+print(f"NVML:\n\n{yaml.safe_dump(get_device_stats())}\n")
+
+# %%
+_pynvml.nvmlShutdown()

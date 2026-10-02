@@ -139,13 +139,13 @@ predictions = model(x_train[:1]).numpy()
 predictions
 
 # %% [markdown] id="tgjhDQGcIniO"
-# The `tf.nn.softmax` function converts these logits to *probabilities* for each class: 
+# The `tf.nn.softmax` function converts these logits to *probabilities* for each class:
 
 # %% id="zWSRnQ0WI5eq"
 tf.nn.softmax(predictions).numpy()
 
 # %% [markdown] id="he5u_okAYS4a"
-# Note: It is possible to bake the `tf.nn.softmax` function into the activation function for the last layer of the network. While this can make the model output more directly interpretable, this approach is discouraged as it's impossible to provide an exact and numerically stable loss calculation for all models when using a softmax output. 
+# Note: It is possible to bake the `tf.nn.softmax` function into the activation function for the last layer of the network. While this can make the model output more directly interpretable, this approach is discouraged as it's impossible to provide an exact and numerically stable loss calculation for all models when using a softmax output.
 
 # %% [markdown] id="hQyugpgRIyrA"
 # Define a loss function for training using `losses.SparseCategoricalCrossentropy`:
@@ -170,7 +170,7 @@ model.compile(optimizer="adam", loss=loss_fn, metrics=["accuracy"])
 # %% [markdown] id="ix4mEL65on-w"
 # ## Train and evaluate your model
 #
-# Use the `Model.fit` method to adjust your model parameters and minimize the loss: 
+# Use the `Model.fit` method to adjust your model parameters and minimize the loss:
 
 # %% id="y7suUbJXVLqP"
 model.fit(x_train, y_train, epochs=5)
