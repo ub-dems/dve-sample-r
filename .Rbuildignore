@@ -31,7 +31,7 @@
 ^docs$
 ^\.editorconfig$
 ^\.env$
-^\.env.defaults$
+^\.env.*$
 ^env-args.txt$
 ^etc$
 ^\.github$
