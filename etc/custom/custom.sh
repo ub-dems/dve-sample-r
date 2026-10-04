@@ -38,6 +38,61 @@ exec &> >(tee $LOGFILE)
 #trap 'exec 2>&4 1>&3' 0 1 2 3
 #exec 1>$LOGFILE 2>&1
 
+#--------------------------------------------------------------------
+
+
+#E_ROOT_DIR="$(dirname $0)"
+E_ROOT_DIR="$(pwd)"
+
+
+#-----------------------------------------------------------
+
+(type nvidia-smi && nvidia-smi -L) &> /dev/null \
+    && X_HAS_GPU=1 || X_HAS_GPU=0;
+
+case "$X_HAS_GPU" in
+     1) export X_UV_EXTRA='gpu' ;;
+     *) export X_UV_EXTRA='cpu' ;;
+esac
+export X_HAS_GPU
+
+#-----------------------------------------------------------
+
+if [ -n "$container" ]; then
+    export X_CONT_ON=1
+    export X_CONT_MODE="$container"
+else    
+    export X_CONT_ON=0
+    export X_CONT_MODE=""
+fi
+
+#-----------------------------------------------------------
+
+: ${X_ENV_FILE:='.env'}
+: ${X_ENV_DEFAULT:='.env.defaults'}
+: ${X_ENV_STRICT:='.env.strict'}
+
+#-----------------------------------------------------------
+set -a
+
+: ${E_CONF_DIR:="${E_ROOT_DIR}/docker/r-images"}
+: ${E_META_FILE:="${E_CONF_DIR}/project.conf"}
+: ${E_CONF_FILE:="${E_CONF_DIR}/runtime.conf"}
+: ${E_AUTO_FILE:="${E_CONF_DIR}/starter.conf"}
+
+[ -r "${E_META_FILE}" ] && source "${E_META_FILE}" || true
+[ -r "${E_CONF_FILE}" ] && source "${E_CONF_FILE}" || true
+[ -r "${E_AUTO_FILE}" ] && source "${E_AUTO_FILE}" || true
+
+# ------------------------------------------------------
+
+: ${X_PY_RUN:="uv run"}
+
+
+set +a
+# ------------------------------------------------------
+
+
 echo ">>> project customization, ..."
 # script-heading ends here
 
@@ -111,6 +166,60 @@ echo ""
 echo "#:< (session-info)"
 # session-info-tail ends here
 
+# System Check
+# #+NAME: system-check-haed
+
+# [[file:../../notes/custom/README.org::system-check-haed][system-check-haed]]
+echo "#:> (system-check)"
+echo "--------------------------------"
+# system-check-haed ends here
+
+
+
+# #+NAME: store-check
+
+# [[file:../../notes/custom/README.org::store-check][store-check]]
+store_fail=0
+
+
+if [ ! -d ~/work ]; then
+    store_fail=1; echo "! FAIL: ~/work NOTFOUND "
+fi
+if [ ! -d ~/data ]; then
+    store_fail=1; echo "! FAIL: ~/data NOTFOUND "
+fi
+if [ ! -d /vol ]; then
+    store_fail=1; echo "! FAIL: /vol NOTFOUND "
+fi
+if [ ! -d /user ]; then
+    store_fail=1; echo "! FAIL: /user NOTFOUND "
+fi
+if [ ! -d /data/opt/local ]; then
+    store_fail=1; echo "! FAIL: /data/opt/local NOTFOUND "
+fi
+if [ ! -d /store/local ]; then
+    store_fail=1; echo "! FAIL: /store/local NOTFOUND "
+fi
+if [ ! -d /store/share ]; then
+    store_fail=1; echo "! FAIL: /store/share NOTFOUND "
+fi
+
+case "$store_fail" in
+    0) echo "= store check passed." ;;
+    *) echo "= store check FAILED!" exit 1;;
+esac
+# store-check ends here
+
+
+
+# #+NAME: system-check-tail
+
+# [[file:../../notes/custom/README.org::system-check-tail][system-check-tail]]
+echo "--------------------------------"
+echo ""
+echo "#:< (system-check)"
+# system-check-tail ends here
+
 # Source Config
 
 # #+NAME: naming-config-head
@@ -145,14 +254,15 @@ EOF
 # #+NAME: custom-source.conf
 
 # [[file:../../notes/custom/README.org::custom-source.conf][custom-source.conf]]
-[ -f ./etc/custom/custom-source.conf ] || sed 's/^ *//' >> ./etc/custom/custom-source.conf <<-EOF
+[ -f ./etc/custom/custom-source.conf ] || sed 's/^ *//' >> ./etc/custom/custom-source.conf <<'EOF'
 ##
 # customization: project source consts
 #
 # ---(project)---
 CUST_S_PROJECT_NAME='dve-sample-r'
 # ---(package)---
-CUST_S_PACKAGE_NAME='dvesimpler'
+CUST_S_R_PACKAGE_NAME='dvesimpler'
+CUST_S_PY_PACKAGE_NAME='dve_sample_r'
 # ---(source repository)---
 CUST_S_REPO_PATH='ub-dems/ds-labs'
 CUST_S_REPO_HOST='https://gitlab.com/'
@@ -160,9 +270,9 @@ CUST_S_REPO_HOST='https://gitlab.com/'
 CUST_S_REGS_PATH='ubdems'
 CUST_S_REGS_HOST='docker.io'
 # ---(environment versions)---
-CUST_S_IMAGE_ANCHOR='rocker/geospatial:4.4.3'
-CUST_S_VERS_BASE='(>= 4.0.0)'
-CUST_S_VERS_ROXY='7.3.2'
+CUST_S_IMAGE_ANCHOR='rocker/geospatial:4.6.1'
+CUST_S_VERS_BASE='(>= 4.6.0)'
+CUST_S_VERS_ROXY='8.1.0'
 # ---(data import links)---
 CUST_S_DATA_LINK='dve-ds'
 CUST_S_DATA_DEMO='1'
@@ -172,12 +282,12 @@ CUST_S_RENV_OPTS='enable,auto'
 CUST_S_INFO_AUTH_NAME='datalab'
 CUST_S_INFO_AUTH_SURNAME='DEMS'
 CUST_S_INFO_AUTH_EMAIL='datalab@unimib.it'
-CUST_S_INFO_DESC='TODO:description'
-CUST_S_INFO_TITLE='TODO:title'
+CUST_S_INFO_TITLE='TODO(title): TITLE OF THE RESEARCH WORK'
+CUST_S_INFO_DESC='TODO(desc): SHORT DESCRIPTION OF THE RESEARCH WORK'
 # ---(image labels)---
 CUST_S_INFO_USER_EMAIL='dsuser.dems@gmail.com'
 CUST_S_INFO_AUTHORS="${CUST_S_INFO_AUTH_SURNAME}/${CUST_S_INFO_AUTH_NAME} <${CUST_S_INFO_USER_EMAIL}>"
-CUST_S_INFO_FROM='2022-08-02'
+CUST_S_INFO_FROM='2026-03-16'
 CUST_S_INFO_OWNER='ab21010'
 CUST_S_INFO_CDC='ds-101'
 CUST_S_INFO_TAGS='none'
@@ -189,14 +299,15 @@ EOF
 # #+NAME: custom-target.conf
 
 # [[file:../../notes/custom/README.org::custom-target.conf][custom-target.conf]]
-[ -f ./etc/custom/custom-target.conf ] || sed 's/^ *//' >> ./etc/custom/custom-target.conf <<-EOF
+[ -f ./etc/custom/custom-target.conf ] || sed 's/^ *//' >> ./etc/custom/custom-target.conf <<"EOF"
 ##
 # customization: project target consts
 #
 # ---(project)---
 CUST_T_PROJECT_NAME='us-proto-r'
 # ---(package)---
-CUST_T_PACKAGE_NAME='USprotoR'
+CUST_T_R_PACKAGE_NAME='USprotoR'
+CUST_T_PY_PACKAGE_NAME='us_proto_r'
 # ---(source repository)---
 CUST_T_REPO_PATH='ub-dems/cs-labs/user-dsuser'
 CUST_T_REPO_HOST='https://gitlab.com/'
@@ -204,9 +315,9 @@ CUST_T_REPO_HOST='https://gitlab.com/'
 CUST_T_REGS_PATH='ubdems'
 CUST_T_REGS_HOST='docker.io'
 # ---(environment versions)---
-CUST_T_IMAGE_ANCHOR='rocker/geospatial:4.4.3'
-CUST_T_VERS_BASE='(>= 4.0.0)'
-CUST_T_VERS_ROXY='7.3.2'
+CUST_T_IMAGE_ANCHOR='rocker/geospatial:4.6.1'
+CUST_T_VERS_BASE='(>= 4.6.0)'
+CUST_T_VERS_ROXY='8.1.0'
 # ---(data import links)---
 CUST_T_DATA_LINK='dve-ds'
 CUST_T_DATA_DEMO='1'
@@ -216,15 +327,15 @@ CUST_T_RENV_OPTS='enable,auto'
 CUST_T_INFO_AUTH_NAME='datalab'
 CUST_T_INFO_AUTH_SURNAME='DEMS'
 CUST_T_INFO_AUTH_EMAIL='datalab@unimib.it'
-CUST_T_INFO_DESC='TODO:description'
-CUST_T_INFO_TITLE='TODO:title'
+CUST_T_INFO_TITLE='TODO(title): TITLE OF THE RESEARCH WORK'
+CUST_T_INFO_DESC='TODO(desc): SHORT DESCRIPTION OF THE RESEARCH WORK'
 # ---(image labels)---
-CUST_T_INFO_USER_EMAIL='dsuser.dems@gmail.com'
+CUST_T_INFO_USER_EMAIL="${CUST_T_INFO_AUTH_EMAIL}"
 CUST_T_INFO_AUTHORS="${CUST_T_INFO_AUTH_SURNAME}/${CUST_T_INFO_AUTH_NAME} <${CUST_T_INFO_USER_EMAIL}>"
-CUST_T_INFO_FROM='2022-08-02'
+CUST_T_INFO_FROM='2026-03-16'
 CUST_T_INFO_OWNER='ab21010'
 CUST_T_INFO_CDC='ds-101'
-CUST_T_INFO_TAGS='none'
+CUST_T_INFO_TAGS="ds.user=${CUST_T_INFO_OWNER},ds.task=${CUST_T_INFO_OWNER}.1"
 EOF
 # custom-target.conf ends here
 
@@ -280,7 +391,8 @@ if [ ! "${CUST_X_CUSTOMIZED}" = '0' ] ; then
 fi
 
 [ -z "$CUST_S_PROJECT_NAME" ] && { echo "config error: CUST_S_PROJECT_NAME"; exit 1; }
-[ -z "$CUST_S_PACKAGE_NAME" ] && { echo "config error: CUST_S_PACKAGE_NAME"; exit 1; }
+[ -z "$CUST_S_R_PACKAGE_NAME" ] && { echo "config error: CUST_S_R_PACKAGE_NAME"; exit 1; }
+[ -z "$CUST_S_PY_PACKAGE_NAME" ] && { echo "config error: CUST_S_PY_PACKAGE_NAME"; exit 1; }
 [ -z "$CUST_S_REPO_PATH" ] && { echo "config error: CUST_S_REPO_PATH"; exit 1; }
 [ -z "$CUST_S_REPO_HOST" ] && { echo "config error: CUST_S_REPO_HOST"; exit 1; }
 [ -z "$CUST_S_REGS_PATH" ] && { echo "config error: CUST_S_REGS_PATH"; exit 1; }
@@ -303,7 +415,8 @@ fi
 [ -z "$CUST_S_INFO_TAGS" ] && { echo "config error: CUST_S_INFO_TAGS"; exit 1; }
 
 [ -z "$CUST_T_PROJECT_NAME" ] && { echo "config error: CUST_T_PROJECT_NAME"; exit 1; }
-[ -z "$CUST_T_PACKAGE_NAME" ] && { echo "config error: CUST_T_PACKAGE_NAME"; exit 1; }
+[ -z "$CUST_T_R_PACKAGE_NAME" ] && { echo "config error: CUST_T_R_PACKAGE_NAME"; exit 1; }
+[ -z "$CUST_T_PY_PACKAGE_NAME" ] && { echo "config error: CUST_T_PY_PACKAGE_NAME"; exit 1; }
 [ -z "$CUST_T_REPO_PATH" ] && { echo "config error: CUST_T_REPO_PATH"; exit 1; }
 [ -z "$CUST_T_REPO_HOST" ] && { echo "config error: CUST_T_REPO_HOST"; exit 1; }
 [ -z "$CUST_T_REGS_PATH" ] && { echo "config error: CUST_T_REGS_PATH"; exit 1; }
@@ -347,7 +460,11 @@ echo "#:> (cust-rename)"
 echo "--------------------------------"
 find . \
      \( -path ./home -o -path ./notes \) -prune -o \
-     -name "$CUST_S_PACKAGE_NAME*" -o -name "$CUST_S_PROJECT_NAME*"
+     -name "$CUST_S_R_PACKAGE_NAME*" -o -name "$CUST_S_R_PROJECT_NAME*"
+echo "--------------------------------"
+find . \
+     \( -path ./home -o -path ./notes \) -prune -o \
+     -name "$CUST_S_PY_PACKAGE_NAME*" -o -name "$CUST_S_PY_PROJECT_NAME*"
 echo "--------------------------------"
 echo ""
 # cust-rename-pre ends here
@@ -360,12 +477,12 @@ echo ""
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 [ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
 
-mv -v ./${CUST_S_PACKAGE_NAME}.Rproj ./${CUST_T_PACKAGE_NAME}.Rproj
-mv -v ./man/${CUST_S_PACKAGE_NAME}-package.Rd ./man/${CUST_T_PACKAGE_NAME}-package.Rd
-mv -v ./R/${CUST_S_PACKAGE_NAME}-package.r ./R/${CUST_T_PACKAGE_NAME}-package.r
+mv -v ./${CUST_S_R_PACKAGE_NAME}.Rproj ./${CUST_T_R_PACKAGE_NAME}.Rproj
+mv -v ./man/${CUST_S_R_PACKAGE_NAME}-package.Rd ./man/${CUST_T_R_PACKAGE_NAME}-package.Rd
+mv -v ./R/${CUST_S_R_PACKAGE_NAME}-package.r ./R/${CUST_T_R_PACKAGE_NAME}-package.r
 
-[ -f ./inst/include/${CUST_S_PACKAGE_NAME}.h ] && \
-mv -v ./inst/include/${CUST_S_PACKAGE_NAME}.h ./inst/include/${CUST_T_PACKAGE_NAME}.h
+[ -f ./inst/include/${CUST_S_R_PACKAGE_NAME}.h ] && \
+mv -v ./inst/include/${CUST_S_R_PACKAGE_NAME}.h ./inst/include/${CUST_T_R_PACKAGE_NAME}.h
 # cust-rename ends here
 
 
@@ -377,7 +494,7 @@ mv -v ./inst/include/${CUST_S_PACKAGE_NAME}.h ./inst/include/${CUST_T_PACKAGE_NA
 echo "--------------------------------"
 find . \
      \( -path ./home -o -path ./notes \) -prune -o \
-     -name "$CUST_T_PACKAGE_NAME*" -o -name "$CUST_T_PROJECT_NAME*"
+     -name "$CUST_T_R_PACKAGE_NAME*" -o -name "$CUST_T_PROJECT_NAME*"
 echo "--------------------------------"
 echo ""
 echo "#:< (cust-rename)"
@@ -394,7 +511,12 @@ echo "#:> (cust-packge)"
 echo "--------------------------------"
 grep -r \
      --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=home --exclude-dir=logs \
-     -I -e "$CUST_S_PACKAGE_NAME" | \
+     -I -e "$CUST_S_R_PACKAGE_NAME" | \
+    tr -s ' ' '^' | sed -e 's/:/\t/'
+echo "--------------------------------"
+grep -r \
+     --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=home --exclude-dir=logs \
+     -I -e "$CUST_S_PY_PACKAGE_NAME" | \
     tr -s ' ' '^' | sed -e 's/:/\t/'
 echo "--------------------------------"
 echo ""
@@ -408,10 +530,18 @@ echo ""
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 [ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
 
+echo "--------------------------------"
 grep -l -r \
      --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=home --exclude-dir=logs \
-     -I -e "$CUST_S_PACKAGE_NAME" | \
-    xargs -t -l1 perl -pi -e  "s{$CUST_S_PACKAGE_NAME}{$CUST_T_PACKAGE_NAME}g"
+     -I -e "$CUST_S_R_PACKAGE_NAME" | \
+    xargs -t -l1 perl -pi -e  "s{$CUST_S_R_PACKAGE_NAME}{$CUST_T_R_PACKAGE_NAME}g"
+echo "--------------------------------"
+grep -l -r \
+     --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=home --exclude-dir=logs \
+     -I -e "$CUST_S_PY_PACKAGE_NAME" | \
+    xargs -t -l1 perl -pi -e  "s{$CUST_S_PY_PACKAGE_NAME}{$CUST_T_PY_PACKAGE_NAME}g"
+echo "--------------------------------"
+echo ""
 # cust-package ends here
 
 
@@ -424,7 +554,12 @@ grep -l -r \
 echo "--------------------------------"
 grep -r \
      --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=home --exclude-dir=logs \
-     -I -e "$CUST_T_PACKAGE_NAME" | \
+     -I -e "$CUST_T_R_PACKAGE_NAME" | \
+    tr -s ' ' '^' | sed -e 's/:/\t/'
+echo "--------------------------------"
+grep -r \
+     --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=home --exclude-dir=logs \
+     -I -e "$CUST_T_PY_PACKAGE_NAME" | \
     tr -s ' ' '^' | sed -e 's/:/\t/'
 echo "--------------------------------"
 echo ""
@@ -639,7 +774,7 @@ cd ~/data
 [ ! -e ~/data/share ] && [   -e /store/share ] && ln -s -Tv /store/share  ~/data/share
 [ ! -e ~/data/share ] && [ ! -e /store/share ] && mkdir -p                ~/data/share
 
-[ ! -e ~/data/user ] && [ -e /user/$USER ] && ln -s  -Tv /user/$USER    ~/data/user
+[ ! -e ~/data/user ] && [ -e /user/$USER ] && ln -s  -Tv /user/$USER      ~/data/user
 [ ! -e ~/data/user ] && [ ! -e /user/$USER ] && mkdir -p                  ~/data/user
 
 cd -
@@ -843,25 +978,67 @@ grep -F -e "$CUST_T_IMAGE_ANCHOR" ./docker/r-images/dockerfiles/anchor.Dockerfil
 echo "#:< (env-versions)"
 # cust-vers-post ends here
 
-# Project Description
+# Local Environment
 
-# #+NAME: cust-pinfo-vers-pre
+# #+NAME: cust-dotenv-pre
 
-# [[file:../../notes/custom/README.org::cust-pinfo-vers-pre][cust-pinfo-vers-pre]]
-echo "#:> (project-desc)"
+# [[file:../../notes/custom/README.org::cust-dotenv-pre][cust-dotenv-pre]]
+echo "#:> (.env-init)"
+echo "--- .env* -------"
+ls -l .env*
+echo "-----------------"
+# cust-dotenv-pre ends here
+
+
+
+# #+NAME: cust-dotenv
+
+# [[file:../../notes/custom/README.org::cust-dotenv][cust-dotenv]]
+[ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+[ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
+
+if [ -z "${X_ENV_FILE}" ]; then
+    echo "ev - X_ENV_FILE undefined, skip"
+elif [ -f "${X_ENV_FILE}" ]; then
+    echo "ev - X_ENV_FILE=${X_ENV_FILE} found, skip"
+else
+    cat "${X_ENV_DEFAULT}" | grep '^[a-zA-Z0-9_]' > "${X_ENV_STRICT}"
+    cp -v "${X_ENV_STRICT}" "${X_ENV_FILE}"
+    ls -l "${X_ENV_FILE}" "${X_ENV_STRICT}" "${X_ENV_DEFAULT}"
+    echo "ev - X_ENV_FILE=${X_ENV_FILE} created from ${X_ENV_DEFAULT}."
+fi
+# cust-dotenv ends here
+
+
+
+# #+NAME: cust-dotenv-post
+
+# [[file:../../notes/custom/README.org::cust-dotenv-post][cust-dotenv-post]]
+echo "--- .env* -------"
+ls -l .env*
+echo "-----------------"
+echo "#:< (env-versions)"
+# cust-dotenv-post ends here
+
+# Project Description/R
+
+# #+NAME: cust-pinfo-r-vers-pre
+
+# [[file:../../notes/custom/README.org::cust-pinfo-r-vers-pre][cust-pinfo-r-vers-pre]]
+echo "#:> (project-desc/R)"
 
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 echo "--- DESCRIPTION ----------------"
-cat ./DESCRIPTION
+awk '/^Type:/,/^Imports:/' ./DESCRIPTION
 echo "--------------------------------"
 echo ""
-# cust-pinfo-vers-pre ends here
+# cust-pinfo-r-vers-pre ends here
 
 
 
-# #+NAME: cust-pinfo
+# #+NAME: cust-pinfo-r
 
-# [[file:../../notes/custom/README.org::cust-pinfo][cust-pinfo]]
+# [[file:../../notes/custom/README.org::cust-pinfo-r][cust-pinfo-r]]
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 [ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
 
@@ -870,21 +1047,113 @@ perl -pi -e  "s{(family\s*=\s*)\"\Q$CUST_S_INFO_AUTH_SURNAME\E\"}{\1\"$CUST_T_IN
 perl -pi -e  's{(email\s*=\s*)\"\Q$ENV{CUST_S_INFO_AUTH_EMAIL}\E\"}{\1\"$ENV{CUST_T_INFO_AUTH_EMAIL}\"}' ./DESCRIPTION
 perl -pi -e  "s{(Title\s*:\s*)\Q$CUST_S_INFO_TITLE\E}{\1$CUST_T_INFO_TITLE}" ./DESCRIPTION
 perl -pi -e  "s{(Description\s*:\s*)\Q$CUST_S_INFO_DESC\E}{\1$CUST_T_INFO_DESC}" ./DESCRIPTION
-# cust-pinfo ends here
+# cust-pinfo-r ends here
 
 
 
-# #+NAME: cust-pinfo-post
+# #+NAME: cust-pinfo-r-post
 
-# [[file:../../notes/custom/README.org::cust-pinfo-post][cust-pinfo-post]]
+# [[file:../../notes/custom/README.org::cust-pinfo-r-post][cust-pinfo-r-post]]
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 echo "--- DESCRIPTION ----------------"
-cat ./DESCRIPTION
+awk '/^Type:/,/^Imports:/' ./DESCRIPTION
 echo "--------------------------------"
 echo ""
 
-echo "#:< (project-desc)"
-# cust-pinfo-post ends here
+echo "#:< (project-desc/R)"
+# cust-pinfo-r-post ends here
+
+# Project Description/PY
+
+# #+NAME: cust-pinfo-py-vers-pre
+
+# [[file:../../notes/custom/README.org::cust-pinfo-py-vers-pre][cust-pinfo-py-vers-pre]]
+echo "#:> (project-desc/PY)"
+
+[ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+echo "--- pyproject.toml ----------------"
+awk '/\[project\]/,/^classifiers/' pyproject.toml
+echo "--------------------------------"
+echo ""
+# cust-pinfo-py-vers-pre ends here
+
+
+
+# #+NAME: cust-pinfo-py
+
+# [[file:../../notes/custom/README.org::cust-pinfo-py][cust-pinfo-py]]
+[ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+[ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
+
+perl -pi -e  "s{^(\s+\{\s*name=\s*)\"\Q$CUST_S_INFO_AUTH_NAME\E/}{\1\"$CUST_T_INFO_AUTH_NAME/}" pyproject.toml
+perl -pi -e  "s{^(\s+\{\s*name=\s*[^/]+/)\Q$CUST_S_INFO_AUTH_SURNAME\E\"}{\1\"$CUST_T_INFO_AUTH_SURNAME\"}" pyproject.toml
+perl -pi -e  's{(email\s*=\s*)\"\Q$ENV{CUST_S_INFO_AUTH_EMAIL}\E\"}{\1\"$ENV{CUST_T_INFO_AUTH_EMAIL}\"}' pyproject.toml
+perl -pi -e  "s{(description\s*=\s*)\Q$CUST_S_INFO_TITLE\E}{\1$CUST_T_INFO_TITLE}" pyproject.toml
+# cust-pinfo-py ends here
+
+
+
+# #+NAME: cust-pinfo-py-post
+
+# [[file:../../notes/custom/README.org::cust-pinfo-py-post][cust-pinfo-py-post]]
+[ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+echo "--- pyproject.toml ----------------"
+awk '/\[project\]/,/^classifiers/' pyproject.toml
+echo "--------------------------------"
+echo ""
+
+echo "#:< (project-desc/PY)"
+# cust-pinfo-py-post ends here
+
+# Project Description/MD
+
+# #+NAME: cust-pinfo-md-vers-pre
+
+# [[file:../../notes/custom/README.org::cust-pinfo-md-vers-pre][cust-pinfo-md-vers-pre]]
+echo "#:> (project-desc/MD)"
+
+[ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+echo "--- README.Rmd/README.md ----------------"
+head -n 25 README.md
+echo "--------------------------------"
+echo ""
+# cust-pinfo-md-vers-pre ends here
+
+
+
+# #+NAME: cust-pinfo-md
+
+# [[file:../../notes/custom/README.org::cust-pinfo-md][cust-pinfo-md]]
+[ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+[ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
+
+for f in ls README.*md; do
+    perl -pi -e  "s{\Q$CUST_S_PROJECT_NAME\E}{$CUST_T_PROJECT_NAME}" $f
+    perl -pi -e  "s{\Q$CUST_S_R_PACKAGE_NAME\E}{$CUST_T_R_PACKAGE_NAME}" $f
+    perl -pi -e  "s{\Q$CUST_S_PY_PACKAGE_NAME\E}{$CUST_T_PY_PACKAGE_NAME}" $f
+    perl -pi -e  "s{\Q$CUST_S_REPO_PATH\E}{$CUST_T_REPO_PAST}" $f
+    perl -pi -e  "s{\Q$CUST_S_REPO_HOST\E}{$CUST_T_REPO_HOST}" $f
+    perl -pi -e  "s{\Q$CUST_S_INFO_AUTH_NAME\E}{$CUST_T_INFO_AUTH_NAME}" $f
+    perl -pi -e  "s{\Q$CUST_S_INFO_AUTH_SURNAME\E}{$CUST_T_INFO_AUTH_SURNAME}" $f
+    perl -pi -e  "s{\Q$CUST_S_INFO_AUTH_EMAIL\E}{$CUST_T_INFO_AUTH_EMAIL}" $f
+    perl -pi -e  "s{\Q$CUST_S_INFO_TITLE\E}{$CUST_T_INFO_TITLE}" $f
+    perl -pi -e  "s{\Q$CUST_S_INFO_DESC\E}{$CUST_T_INFO_DESC}" $f
+done
+# cust-pinfo-md ends here
+
+
+
+# #+NAME: cust-pinfo-md-post
+
+# [[file:../../notes/custom/README.org::cust-pinfo-md-post][cust-pinfo-md-post]]
+[ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
+echo "--- README.Rmd/README.md ----------------"
+head -n 25 README.md
+echo "--------------------------------"
+echo ""
+
+echo "#:< (project-desc/PY)"
+# cust-pinfo-md-post ends here
 
 # Image Description
 

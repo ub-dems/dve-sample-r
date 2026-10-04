@@ -21,8 +21,8 @@ build-backend = "hatchling.build"
 # ============================================================
 [project]
 name = "dve_sample_r"
-version = "0.1.0"
-description = "TODO(title): TITLE OF THE RESEARCH WORK / TITOLO DEL LAVORO DI RICERCA"
+version = "1.0.0"
+description = "TODO(title): TITLE OF THE RESEARCH WORK"
 readme = "README.md"
 license-files = ["LICENSES/*.txt", "LICENSE.md"]
 requires-python = ">=3.14,<3.15"
