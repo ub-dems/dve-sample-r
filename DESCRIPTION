@@ -37,7 +37,6 @@ Imports:
     rprojroot,
     yaml
 Suggests:
-    rspm,
     argparse,
     optparse,
     cli (>= 3.3.0),
