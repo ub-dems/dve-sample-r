@@ -30,6 +30,22 @@ requires-python = ">=3.14,<3.15"
 authors = [
   { name = "Data Science Lab DEMS/datalab", email = "datalab@unimib.it" },
 ]
+classifiers = [
+  # see: https://pypi.org/classifiers/
+  
+  # Indicate who your project is intended for
+  "Intended Audience :: Science/Research",
+  "Topic :: Scientific/Engineering",
+
+  # "Environment :: GPU :: NVIDIA CUDA",
+
+  # Specify the Python versions you support here.
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.14",
+  
+  # Specify the Licence.
+  "License :: OSI Approved :: GNU Lesser General Public License v3 or later (LGPLv3+)",
+]
 
 # }}} //
 # {{{ ////////////////////////////////////////////////////////////////
