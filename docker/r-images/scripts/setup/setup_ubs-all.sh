@@ -793,6 +793,35 @@ do_ex_end() {
 # ////////////////////////////////////////////////////////////////////////
 
 
+do_sh_prompt() {
+
+    log ">(do_sh_prompt):" "sh - prompt, ..."
+
+    if ! command starship &> /dev/null; then
+        warn "?(do_sh_prompt):" "sh - 'starship' NOTFOUND, skip"
+    elif [ ! -f ~/.bashrc ]; then
+        warn "?(do_sh_prompt):" "sh - ~/.bashrc NOTFOUND, skip"
+    elif grep 'starship' ~/.bashrc &>/dev/null; then
+        info "-(do_sh_prompt):" "sh - ~/.bashrc already configured, skip"
+    else
+        echo '[ "$TERM" = "dumb" ] || [ -n "$INSIDE_EMACS" ] || eval "$(starship init bash)"' >> ~/.bashrc
+        info "-(do_sh_prompt):" "sh - 'starship' enabled in ~/.bashrc."
+
+        if [ ! -f ~/config/starship.toml ]; then
+            : ${X_SH_ENV_PRESET:='no-runtime-versions'}
+            starship preset --force ${X_SH_ENV_PRESET} -o ~/.config/starship.toml
+            info "-(do_sh_prompt):" "sh - 'starship' preset: ${X_SH_ENV_PRESET}."
+        fi    
+    fi
+
+    log "<(do_sh_prompt):" "sh - prompt, done."
+    
+}
+
+
+# ////////////////////////////////////////////////////////////////////////
+
+
 do_ev_dotenv() {
 
     log ">(do_ev_dotenv):" "ev - .env definition, ..."
@@ -1971,6 +2000,7 @@ parse_args_run() {
     
     RUN_EX_SETUP=0
     RUN_EV_DOTENV=0
+    RUN_SH_PROMPT=0
     RUN_PY_BOOT=0
     RUN_PY_CLEAR=0
     RUN_PY_RESET=0
@@ -1994,6 +2024,7 @@ parse_args_run() {
     
     X_ALL_MODE=1
     X_EXTERNAL_MODE=0
+    X_SHELL_MODE=0
     X_DOTENV_MODE=0
     X_JULIA_MODE=0
     X_PYTHON_MODE=0
@@ -2009,11 +2040,13 @@ parse_args_run() {
             --external|-E)
                 X_ALL_MODE='0'
                 X_EXTERNAL_MODE='1'
+                X_SHELL_MODE='1'
                 X_DOTENV_MODE='1'
                 X_PYTHON_MODE='1'
                 X_NVM_MODE='1'
                 X_NODE_MODE='1'
                 RUN_EX_SETUP=1
+                RUN_SH_PROMPT=1
                 RUN_EV_DOTENV=1
                 RUN_PY_BOOT=1
                 RUN_PY_VENV=1
@@ -2239,6 +2272,7 @@ parse_args_run() {
 
     env_defined RUN_EX_SETUP
     env_defined RUN_EV_DOTENV
+    env_defined RUN_SH_PROMPT
     env_defined RUN_PY_BOOT
     env_defined RUN_PY_CLEAR
     env_defined RUN_PY_RESET
@@ -2282,6 +2316,11 @@ main_run() {
     
     if [ "$RUN_EX_SETUP" = '1' ]; then
         do_ex_begin "$@"
+        rc_exit $?
+    fi
+
+    if [ "$RUN_SH_PROMPT" = '1' ]; then
+        do_sh_prompt "$@"
         rc_exit $?
     fi
 
