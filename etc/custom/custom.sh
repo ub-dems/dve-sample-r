@@ -179,8 +179,10 @@ echo "--------------------------------"
 # #+NAME: store-check
 
 # [[file:../../notes/custom/README.org::store-check][store-check]]
-store_fail=0
+# ---(store)-------------------------------------------------------
+echo "#:> store check, ..."
 
+store_fail=0
 
 if [ ! -d ~/work ]; then
     store_fail=1; echo "! FAIL: ~/work NOTFOUND "
@@ -203,11 +205,51 @@ fi
 if [ ! -d /store/share ]; then
     store_fail=1; echo "! FAIL: /store/share NOTFOUND "
 fi
+if [ ! -d /store/share/lib ]; then
+    store_fail=1; echo "! FAIL: /store/share/lib NOTFOUND "
+fi
 
 case "$store_fail" in
-    0) echo "= store check passed." ;;
-    *) echo "= store check FAILED!" exit 1;;
+    0) echo "= store check passed."
+       ;;
+    *) echo "= store check FAILED!"; exit 1
+       ;;
 esac
+
+echo "#:< store check, done."
+# ----------------------------------------------------------------
+
+# ---(write)-------------------------------------------------------
+echo "#:> write check, ..."
+
+write_fail=0
+
+if [ -d /store/local ] && [ ! touch -c /store/local ]; then
+    write_fail=1; echo "! FAIL: /store/local NOACCESS "
+fi
+if [ -d /store/local/dd ] && [ ! touch -c /store/local/dd ]; then
+    write_fail=1; echo "! FAIL: /store/local/dd NOACCESS "
+fi
+if [ -d /store/share/lib ] && [ ! touch -c /store/share/lib ]; then
+    write_fail=1; echo "! FAIL: /store/share/lib NOACCESS "
+fi
+if [ -d /store/share/lib/dd ] && [ ! touch -c /store/share/lib/dd ]; then
+    write_fail=1; echo "! FAIL: /store/share/lib/dd NOACCESS "
+fi
+if [ -d /user/$USER ] && [ ! touch -c /user/$USER ]; then
+    write_fail=1; echo "! FAIL: /user/$USER NOACCESS "
+fi
+
+
+case "$write_fail" in
+    0) echo "= write check passed."
+       ;;
+    *) echo "= write check FAILED!"; exit 1
+       ;;
+esac
+
+echo "#:< write check, done."
+# ----------------------------------------------------------------
 # store-check ends here
 
 
