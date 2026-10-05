@@ -497,19 +497,19 @@ echo "#:> write check, ..."
 
 write_fail=0
 
-if [ -d /store/local ] && [ ! touch -c /store/local ]; then
+if [ -d /store/local ] && ! touch -c /store/local; then
     write_fail=1; echo "! FAIL: /store/local NOACCESS "
 fi
-if [ -d /store/local/dd ] && [ ! touch -c /store/local/dd ]; then
+if [ -d /store/local/dd ] && ! touch -c /store/local/dd ; then
     write_fail=1; echo "! FAIL: /store/local/dd NOACCESS "
 fi
-if [ -d /store/share/lib ] && [ ! touch -c /store/share/lib ]; then
+if [ -d /store/share/lib ] && ! touch -c /store/share/lib ; then
     write_fail=1; echo "! FAIL: /store/share/lib NOACCESS "
 fi
-if [ -d /store/share/lib/dd ] && [ ! touch -c /store/share/lib/dd ]; then
+if [ -d /store/share/lib/dd ] && ! touch -c /store/share/lib/dd ; then
     write_fail=1; echo "! FAIL: /store/share/lib/dd NOACCESS "
 fi
-if [ -d /user/$USER ] && [ ! touch -c /user/$USER ]; then
+if [ -d /user/$USER ] && ! touch -c /user/$USER ; then
     write_fail=1; echo "! FAIL: /user/$USER NOACCESS "
 fi
 
