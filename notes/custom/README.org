@@ -342,8 +342,8 @@ ls  $LS -ld  /store/*
 # /store/local/dd
 #
 
-ls  $LS -ld  /store/local/dd
-ls  $LS -ld  /store/local/dd/*
+ls $LS -ld  /store/local/dd
+ls $LS -ld  /store/local/dd/*
 
 mkdir -p /store/local/dd
 
@@ -360,8 +360,8 @@ ls  $LS -ld  /store/local/dd/*
 # /store/share/dd
 #
 
-ls -ld  /store/share/lib   /store/share/lib/dd*/* /store/share/lab    /store/share/lab/data/dd
-ls -ld  /store/share/lib/* /store/share/lib/dd*/* /store/share/lab/*  /store/share/lab/data/dd/*
+ls $LS -ld  /store/share/lib   /store/share/lib/dd*/* /store/share/lib/dd*/*/*
+ls $LS -ld  /store/share/lib/* /store/share/lib/dd*/* /store/share/lib/dd*/*/*
 
 mkdir -p /store/share
 mkdir -p /store/share/lib
@@ -369,15 +369,15 @@ mkdir -p /store/share/lib
 chown -R dsdata:dsdata /store/share
 chmod -R g+rw          /store/share
 
-[ -e /store/share/lab ]        || ln -s /vol/share/d1           /store/share/lab
-[ -e /store/share/lib/dd.lab ] || ln -s /store/share/lab/dd     /store/share/lib/dd.lab
-[ -e /store/share/lib/dd ]     || ln -s /store/share/lib/dd.lab /store/share/lib/dd
+[ -e /store/share/lab ]        || ln -s /vol/share/d1            /store/share/lab
+[ -e /store/share/lib/dd.lab ] || ln -s /store/share/lab/data/dd /store/share/lib/dd.lab
+[ -e /store/share/lib/dd ]     || ln -s /store/share/lib/dd.lab  /store/share/lib/dd
 
 find /store/share/lib -type d -exec chmod -R 2775  {} \;
 find /store/share/lab -type f -exec chmod -R 664   {} \;
 
-ls -ld  /store/share/lab   /store/share/lib
-ls -ld  /store/share/lab/* /store/share/lib/*
+ls $LS -ld  /store/share/lib   /store/share/lib/dd*/* /store/share/lib/dd*/*/*
+ls $LS -ld  /store/share/lib/* /store/share/lib/dd*/* /store/share/lib/dd*/*/*
 
 
 EOF
