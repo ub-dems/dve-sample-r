@@ -1086,9 +1086,9 @@ echo ""
 [ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
 
 perl -pi -e  "s{^(\s+\{\s*name\s*=\s*)\"\Q$CUST_S_INFO_AUTH_NAME\E/}{\1\"$CUST_T_INFO_AUTH_NAME/}" pyproject.toml
-perl -pi -e  "s{^(\s+\{\s*name\s*=\s*[^/]+/)\Q$CUST_S_INFO_AUTH_SURNAME\E\"}{\1\"$CUST_T_INFO_AUTH_SURNAME\"}" pyproject.toml
+perl -pi -e  "s{^(\s+\{\s*name\s*=\s*[^/]+/)\Q$CUST_S_INFO_AUTH_SURNAME\E\"}{\1$CUST_T_INFO_AUTH_SURNAME\"}" pyproject.toml
 perl -pi -e  's{(email\s*=\s*)\"\Q$ENV{CUST_S_INFO_AUTH_EMAIL}\E\"}{\1\"$ENV{CUST_T_INFO_AUTH_EMAIL}\"}' pyproject.toml
-perl -pi -e  "s{(description\s*=\s*)\Q$CUST_S_INFO_TITLE\E}{\1$CUST_T_INFO_TITLE}" pyproject.toml
+perl -pi -e  "s{(description\s*=\s*)\"\Q$CUST_S_INFO_TITLE\E\"}{\1\"$CUST_T_INFO_TITLE\"}" pyproject.toml
 
 #+END_SRC
 
