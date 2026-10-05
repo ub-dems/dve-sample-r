@@ -1123,7 +1123,7 @@ echo ""
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 [ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
 
-for f in ls README.*md; do
+or f in README.*md; do
     perl -pi -e  "s{\Q$CUST_S_PROJECT_NAME\E}{$CUST_T_PROJECT_NAME}" $f
     perl -pi -e  "s{\Q$CUST_S_R_PACKAGE_NAME\E}{$CUST_T_R_PACKAGE_NAME}" $f
     perl -pi -e  "s{\Q$CUST_S_PY_PACKAGE_NAME\E}{$CUST_T_PY_PACKAGE_NAME}" $f
