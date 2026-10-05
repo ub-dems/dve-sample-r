@@ -394,6 +394,7 @@ fi
 [ -z "$CUST_S_R_PACKAGE_NAME" ] && { echo "config error: CUST_S_R_PACKAGE_NAME"; exit 1; }
 [ -z "$CUST_S_PY_PACKAGE_NAME" ] && { echo "config error: CUST_S_PY_PACKAGE_NAME"; exit 1; }
 [ -z "$CUST_S_REPO_PATH" ] && { echo "config error: CUST_S_REPO_PATH"; exit 1; }
+[ -z "$CUST_S_CICD_PATH" ] && { echo "config error: CUST_S_CICD_PATH"; exit 1; }
 [ -z "$CUST_S_REPO_HOST" ] && { echo "config error: CUST_S_REPO_HOST"; exit 1; }
 [ -z "$CUST_S_REGS_PATH" ] && { echo "config error: CUST_S_REGS_PATH"; exit 1; }
 [ -z "$CUST_S_REGS_HOST" ] && { echo "config error: CUST_S_REGS_HOST"; exit 1; }
@@ -418,6 +419,7 @@ fi
 [ -z "$CUST_T_R_PACKAGE_NAME" ] && { echo "config error: CUST_T_R_PACKAGE_NAME"; exit 1; }
 [ -z "$CUST_T_PY_PACKAGE_NAME" ] && { echo "config error: CUST_T_PY_PACKAGE_NAME"; exit 1; }
 [ -z "$CUST_T_REPO_PATH" ] && { echo "config error: CUST_T_REPO_PATH"; exit 1; }
+[ -z "$CUST_T_CICD_PATH" ] && { echo "config error: CUST_T_CICD_PATH"; exit 1; }
 [ -z "$CUST_T_REPO_HOST" ] && { echo "config error: CUST_T_REPO_HOST"; exit 1; }
 [ -z "$CUST_T_REGS_PATH" ] && { echo "config error: CUST_T_REGS_PATH"; exit 1; }
 [ -z "$CUST_T_REGS_HOST" ] && { echo "config error: CUST_T_REGS_HOST"; exit 1; }
@@ -600,6 +602,16 @@ grep -l -r \
      --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=home --exclude-dir=logs \
      -I -e "$CUST_S_REPO_PATH" | \
     xargs -t -l1 perl -pi -e  "s{$CUST_S_REPO_PATH}{$CUST_T_REPO_PATH}g"
+
+grep -l -r \
+     --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=home --exclude-dir=logs \
+     -I -e "CUST_S_REPO_HOST$CUST_S_CICD_PATH" | \
+    xargs -t -l1 perl -pi -e  "s{$CUST_S_REPO_HOST$CUST_S_CICD_PATH}{$CUST_T_REPO_HOST$CUST_T_CICD_PATH}g"
+
+grep -l -r \
+     --exclude-dir=.git --exclude-dir=custom --exclude-dir=notes --exclude-dir=home --exclude-dir=logs \
+     -I -e "$CUST_S_CICD_PATH" | \
+    xargs -t -l1 perl -pi -e  "s{$CUST_S_CICD_PATH}{$CUST_T_CICD_PATH}g"
 # cust-repo ends here
 
 
@@ -1085,8 +1097,8 @@ echo ""
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 [ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
 
-perl -pi -e  "s{^(\s+\{\s*name=\s*)\"\Q$CUST_S_INFO_AUTH_NAME\E/}{\1\"$CUST_T_INFO_AUTH_NAME/}" pyproject.toml
-perl -pi -e  "s{^(\s+\{\s*name=\s*[^/]+/)\Q$CUST_S_INFO_AUTH_SURNAME\E\"}{\1\"$CUST_T_INFO_AUTH_SURNAME\"}" pyproject.toml
+perl -pi -e  "s{^(\s+\{\s*name\s*=\s*)\"\Q$CUST_S_INFO_AUTH_NAME\E/}{\1\"$CUST_T_INFO_AUTH_NAME/}" pyproject.toml
+perl -pi -e  "s{^(\s+\{\s*name\s*=\s*[^/]+/)\Q$CUST_S_INFO_AUTH_SURNAME\E\"}{\1\"$CUST_T_INFO_AUTH_SURNAME\"}" pyproject.toml
 perl -pi -e  's{(email\s*=\s*)\"\Q$ENV{CUST_S_INFO_AUTH_EMAIL}\E\"}{\1\"$ENV{CUST_T_INFO_AUTH_EMAIL}\"}' pyproject.toml
 perl -pi -e  "s{(description\s*=\s*)\Q$CUST_S_INFO_TITLE\E}{\1$CUST_T_INFO_TITLE}" pyproject.toml
 # cust-pinfo-py ends here
@@ -1244,6 +1256,10 @@ mkdir -p ./etc/custom/done/$T
 echo "=== reset renv dependecies, ..."
 [ -f ./renv.lock ] && mv -v  ./renv.lock ./etc/custom/done/$T
 echo "=== run renv::init() to re-initialize."
+
+echo "=== reset uv dependecies, ..."
+[ -f ./uv.lock ] && mv -v  ./uv.lock ./etc/custom/done/$T
+echo "=== run uv lock to re-initialize."
 
 cp -pv   ./etc/custom/*.conf ./etc/custom/done/$T
 

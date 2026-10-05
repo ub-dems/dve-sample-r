@@ -28,7 +28,7 @@ license-files = ["LICENSES/*.txt", "LICENSE.md"]
 requires-python = ">=3.14,<3.15"
 
 authors = [
-  { name = "Data Science Lab DEMS/datalab", email = "datalab@unimib.it" },
+  { name = "dsuser/ub-dems", email = "dsuser@campus.unimib.it" },
 ]
 classifiers = [
   # see: https://pypi.org/classifiers/
