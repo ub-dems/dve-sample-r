@@ -92,6 +92,168 @@ set -a
 set +a
 # ------------------------------------------------------
 
+exit_store() {
+
+echo "Store Check Errors: $*"
+
+cat <<EOF
+
+Verify System Store Configuration (as 'root'):
+
+
+# --(access)---------------------------
+
+##
+# global
+#
+
+getent group dsdata
+getent passwd dsdata
+
+groups dsdata
+
+grep dsdata /etc/group
+grep dsdata /etc/passwd
+
+# ---
+
+groupadd --gid 840 dsdata
+useradd -r -m -d /var/lib/dsdata -u 840 -g dsdata -Gstaff,users,dsuser -s/bin/bash dsdatapasswd -l dsdata
+chmod 750 /var/lib/dsdata
+usermod  -a -G dsdata root
+chgrp -R dsdata ~/data/def/dd
+
+##
+# user
+#
+
+: "${X_USER:=dsuser}"
+echo "X_USER=${X_USER}"
+
+getent group "${X_USER}"
+getent passwd "${X_USER}"
+
+groups "${X_USER}"
+
+grep "${X_USER}" /etc/group
+grep "${X_USER}" /etc/passwd
+
+# ---
+
+usermod -a -G dsdata "${X_USER}"
+
+# ---
+
+getent group "${X_USER}"
+getent passwd "${X_USER}"
+
+groups "${X_USER}"
+
+grep "${X_USER}" /etc/group
+grep "${X_USER}" /etc/passwd
+
+
+# --(store)---------------------------
+
+##
+# /data
+#
+
+ls -ld /data /data/store /data/opt/local
+ls -l  /data /data/store /data/opt/local
+
+[ -d /data ] || mkdir -p /data
+[ -d /data/store ] || mkdir -p /data/store
+[ -d /data/opt/local ] || mkdir -p /data/opt/local
+
+ls -ld /data /data/store /data/opt/local
+ls -l  /data /data/store /data/opt/local
+
+##
+# /vol
+#
+
+ls -ld /vol /vol/data /vol/share/d1 /vol/share/d1/data/dd
+ls -l  /vol /vol/data /vol/share/d1 /vol/share/d1/data/dd
+t
+mount | grep '/vol'
+cat /etc/fstab | grep '/vol'
+ls -l /etc/smbcredentials
+
+[ -d /vol ]          || mkdir -p /vol
+
+[ -d /vol/share ]    || mkdir -p /vol/share
+[ -d /vol/share/d1 ] || mkdir -p /vol/share/d1
+
+[ -d /vol/share/d1/data/dd ] || mkdir -p /vol/share/d1/data/dd
+
+# chown root:users /vol/share/d1 # mount options
+
+[ -d /vol/data ] || mkdir -p /vol/data
+# chown dsdata:dsdata /vol/data # mount options
+
+ls -ld /vol /vol/data /vol/share/d1 /vol/share/d1/data/dd
+ls -l  /vol /vol/data /vol/share/d1 /vol/share/d1/data/dd
+
+##
+# /store
+#
+
+[ -L /store ] || ln -s /data/store /store
+
+[ -d /store/local ] || mkdir -p /store/local
+[ -d /store/share ] || mkdir -p /store/share
+
+
+##
+# /store/local/dd
+#
+
+ls -ld /store/local/dd
+ls -l  /store/local/dd
+
+mkdir -p /store/local/dd
+
+chown -R dsdata:dsdata /store/local/dd
+chmod -R g+rw          /store/local/dd
+
+find /store/local/dd -type d -exec chmod -R 2775  {} \;
+find /store/local/dd -type f -exec chmod -R 664   {} \;
+
+ls -ld /store/local/dd
+ls -l  /store/local/dd
+
+##
+# /store/share/dd
+#
+
+ls -ld /store/share/lib /store/share/lab
+ls -l  /store/share/lib /store/share/lab
+
+mkdir -p /store/share
+mkdir -p /store/share/lib
+
+chown -R dsdata:dsdata /store/share
+chmod -R g+rw          /store/share
+
+[ -e /store/share/lab ]        || ln -s /vol/share/d1           /store/share/lab
+[ -e /store/share/lib/dd.lab ] || ln -s /store/share/lab/dd     /store/share/lib/dd.lab
+[ -e /store/share/lib/dd ]     || ln -s /store/share/lib/dd.lab /store/share/lib/dd
+
+find /store/share/lib -type d -exec chmod -R 2775  {} \;
+find /store/share/lab -type f -exec chmod -R 664   {} \;
+
+ls -ld /store/share/lib /store/share/lab
+ls -l  /store/share/lib /store/share/lab
+
+
+EOF
+
+  exit 1
+}
+
+
+# ------------------------------------------------------
 
 echo ">>> project customization, ..."
 # script-heading ends here
@@ -212,7 +374,7 @@ fi
 case "$store_fail" in
     0) echo "= store check passed."
        ;;
-    *) echo "= store check FAILED!"; exit 1
+    *) echo "= store check FAILED!"; exit_store "STORE FAILED"
        ;;
 esac
 
@@ -244,7 +406,7 @@ fi
 case "$write_fail" in
     0) echo "= write check passed."
        ;;
-    *) echo "= write check FAILED!"; exit 1
+    *) echo "= write check FAILED!"; exit_store "WRITE FAILED"
        ;;
 esac
 
