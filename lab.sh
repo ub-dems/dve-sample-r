@@ -180,9 +180,9 @@ run_exec() {
 
    cd "$E_ROOT_DIR" || true
     
-   echo "${X_PY_EXEC} ${X_LAB_EXEC} ${X_LAB_MODE} ${X_LAB_OPTIONS} $*"
+   echo "${X_PY_RUN} ${X_LAB_EXEC} ${X_LAB_MODE} ${X_LAB_OPTIONS} $*"
    
-   ${X_PY_EXEC} ${X_LAB_EXEC} ${X_LAB_MODE} ${X_LAB_OPTIONS} "$@"
+   ${X_PY_RUN} ${X_LAB_EXEC} ${X_LAB_MODE} ${X_LAB_OPTIONS} "$@"
    rc=$?
    #set +x
    return $rc
