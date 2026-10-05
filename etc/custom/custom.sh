@@ -40,7 +40,7 @@ exec &> >(tee $LOGFILE)
 
 #--------------------------------------------------------------------
 
-
+LS="--color=none"
 #E_ROOT_DIR="$(dirname $0)"
 E_ROOT_DIR="$(pwd)"
 
@@ -96,7 +96,7 @@ exit_store() {
 
 echo "Store Check Errors: $*"
 
-cat <<EOF
+cat <<'EOF'
 
 Verify System Store Configuration (as 'root'):
 
@@ -120,12 +120,12 @@ grep dsdata /etc/passwd
 groupadd --gid 840 dsdata
 useradd -r -m -d /var/lib/dsdata -u 840 -g dsdata -Gstaff,users,dsuser -s/bin/bash dsdatapasswd -l dsdata
 chmod 750 /var/lib/dsdata
-usermod  -a -G dsdata root
-chgrp -R dsdata ~/data/def/dd
 
 ##
 # user
 #
+
+# unset X_USER
 
 : "${X_USER:=dsuser}"
 echo "X_USER=${X_USER}"
@@ -170,17 +170,28 @@ ls -ld /data /data/store /data/opt/local
 ls -l  /data /data/store /data/opt/local
 
 ##
-# /vol
+# /vol/share
 #
 
-ls -ld /vol /vol/data /vol/share/d1 /vol/share/d1/data/dd
-ls -l  /vol /vol/data /vol/share/d1 /vol/share/d1/data/dd
-t
+ls $LS -ld /vol
+ls $LS -ld /vol/*
+
+df -h | grep '/vol'
 mount | grep '/vol'
 cat /etc/fstab | grep '/vol'
 ls -l /etc/smbcredentials
 
 [ -d /vol ]          || mkdir -p /vol
+
+ls $LS -ld /vol
+ls $LS -ld /vol/*
+
+##
+# /vol/share
+#
+
+ls $LS -ld /vol/share/d1   /vol/share/d1/data/dd
+ls $LS -ld /vol/share/d1/* /vol/share/d1/data/dd/*
 
 [ -d /vol/share ]    || mkdir -p /vol/share
 [ -d /vol/share/d1 ] || mkdir -p /vol/share/d1
@@ -189,28 +200,67 @@ ls -l /etc/smbcredentials
 
 # chown root:users /vol/share/d1 # mount options
 
+ls $LS -ld /vol/share/d1   /vol/share/d1/data/dd
+ls $LS -ld /vol/share/d1/* /vol/share/d1/data/dd/*
+
+
+##
+# /user
+#
+
+ls $LS -ld /user   /user/"${X_USER:-dsuser}"
+ls $LS -ld /user/* /user/"${X_USER:-dsuser}"/*
+
+[ -d /user/"${X_USER:-dsuser}" ] || mkdir -p /user/"${X_USER:-dsuser}"
+
+# chown root:users /vol/share/d1 # mount options
+
+ls $LS -ld /user   /user/"${X_USER:-dsuser}"
+ls $LS -ld /user/* /user/"${X_USER:-dsuser}"/*
+
+
+
+##
+# /vol/data
+#
+
+ls $LS -ld /vol/data   /vol/data/*    /vol/data/*/*
+ls $LS -ld /vol/data/* /vol/data/*/*/ /vol/data/*/*/*
+
+df -h | grep '/vol/data'
+mount | grep '/vol/data'
+cat /etc/fstab | grep '/vol/data'
+ls -l /etc/smbcredentials
+
 [ -d /vol/data ] || mkdir -p /vol/data
 # chown dsdata:dsdata /vol/data # mount options
 
-ls -ld /vol /vol/data /vol/share/d1 /vol/share/d1/data/dd
-ls -l  /vol /vol/data /vol/share/d1 /vol/share/d1/data/dd
+ls $LS -ld /vol/data   /vol/data/*    /vol/data/*/*
+ls $LS -ld /vol/data/* /vol/data/*/*/ /vol/data/*/*/*
 
 ##
 # /store
 #
+
+ls  $LS -ld  /store
+ls  $LS -ld  /store/*
 
 [ -L /store ] || ln -s /data/store /store
 
 [ -d /store/local ] || mkdir -p /store/local
 [ -d /store/share ] || mkdir -p /store/share
 
+ls  $LS -ld  /store
+ls  $LS -ld  /store/*
+
+
 
 ##
 # /store/local/dd
 #
 
-ls -ld /store/local/dd
-ls -l  /store/local/dd
+ls  $LS -ld  /store/local/dd
+ls  $LS -ld  /store/local/dd/*
 
 mkdir -p /store/local/dd
 
@@ -220,15 +270,15 @@ chmod -R g+rw          /store/local/dd
 find /store/local/dd -type d -exec chmod -R 2775  {} \;
 find /store/local/dd -type f -exec chmod -R 664   {} \;
 
-ls -ld /store/local/dd
-ls -l  /store/local/dd
+ls  $LS -ld  /store/local/dd
+ls  $LS -ld  /store/local/dd/*
 
 ##
 # /store/share/dd
 #
 
-ls -ld /store/share/lib /store/share/lab
-ls -l  /store/share/lib /store/share/lab
+ls -ld  /store/share/lib   /store/share/lib/dd*/* /store/share/lab    /store/share/lab/data/dd
+ls -ld  /store/share/lib/* /store/share/lib/dd*/* /store/share/lab/*  /store/share/lab/data/dd/*
 
 mkdir -p /store/share
 mkdir -p /store/share/lib
@@ -243,8 +293,8 @@ chmod -R g+rw          /store/share
 find /store/share/lib -type d -exec chmod -R 2775  {} \;
 find /store/share/lab -type f -exec chmod -R 664   {} \;
 
-ls -ld /store/share/lib /store/share/lab
-ls -l  /store/share/lib /store/share/lab
+ls -ld  /store/share/lab   /store/share/lib
+ls -ld  /store/share/lab/* /store/share/lib/*
 
 
 EOF
@@ -1345,7 +1395,7 @@ echo ""
 [ -f ./etc/custom/custom.conf ] && . ./etc/custom/custom.conf
 [ "${CUST_X_CUSTOMIZED}" = '0' ] || exit 1
 
-or f in README.*md; do
+for f in README.*md; do
     perl -pi -e  "s{\Q$CUST_S_PROJECT_NAME\E}{$CUST_T_PROJECT_NAME}" $f
     perl -pi -e  "s{\Q$CUST_S_R_PACKAGE_NAME\E}{$CUST_T_R_PACKAGE_NAME}" $f
     perl -pi -e  "s{\Q$CUST_S_PY_PACKAGE_NAME\E}{$CUST_T_PY_PACKAGE_NAME}" $f
@@ -1514,4 +1564,6 @@ echo '
 '
 echo "see:  $LOGFILE "
 echo " "
+
+less -SRX $LOGFILE
 # script-tail ends here
