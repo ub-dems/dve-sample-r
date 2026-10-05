@@ -96,7 +96,7 @@ exit_store() {
 
 echo "Store Check Errors: $*"
 
-cat <<'EOF'
+(cat <<'EOF'
 
 Verify System Store Configuration (as 'root'):
 
@@ -298,6 +298,7 @@ ls -ld  /store/share/lab/* /store/share/lib/*
 
 
 EOF
+) | "${PAGER:-less -SRX}"
 
   exit 1
 }
