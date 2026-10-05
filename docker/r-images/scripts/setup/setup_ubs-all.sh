@@ -797,7 +797,7 @@ do_sh_prompt() {
 
     log ">(do_sh_prompt):" "sh - prompt, ..."
 
-    if ! command starship &> /dev/null; then
+    if ! command -v starship &> /dev/null; then
         warn "?(do_sh_prompt):" "sh - 'starship' NOTFOUND, skip"
     elif [ ! -f ~/.bashrc ]; then
         warn "?(do_sh_prompt):" "sh - ~/.bashrc NOTFOUND, skip"
@@ -1434,8 +1434,6 @@ do_py_show() {
               error "undefined X_PY_MODE=$X_PY_MODE"
               ;;
       esac
-
-      R -e "reticulate::py_config()"
       
     )
 
