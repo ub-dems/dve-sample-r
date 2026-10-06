@@ -1,0 +1,13 @@
+name = "dve_sample_r"
+
+[deps]
+DuckDB = "d2f5444f-75bc-4fdf-ac35-56f514c445e1"
+Dynare = "5203de40-99df-439e-afbc-014de65cb9ef"
+IJulia = "7073ff75-c697-5162-941a-fcdaad2a7d2a"
+LanguageServer = "2b0e0bc5-e4fd-59b4-8912-456d1b03d8d7"
+Plotly = "58dd65bb-95f3-509e-9936-c39a10fdeae7"
+Pluto = "c3e4b0f8-55cb-11ea-2926-15256bba5781"
+PlutoPlotly = "8e989ff0-3d88-8e9f-f020-2b208a939ff0"
+PythonCall = "6099a3de-0909-46bc-b1f4-468b9a2dfc0d"
+PythonPlot = "274fc56d-3b97-40fa-a1cd-1b4a50311bf9"
+SymPyPythonCall = "bc8888f7-b21e-4b7c-a06a-5d9c9496438c"
