@@ -65,6 +65,7 @@ set -a
 : "${JULIA_HOME:=$JULIA_ROOT}"
 : "${JULIA_URL:=https://julialang-s3.julialang.org}"
 : "${JULIA_VERSION:=${X_JU_JULIA_VERSION:-latest}}"
+: "${JULIA_CTL:=./etc/julia/juliactl.jl}"
 # ------------------------------------------------------
 
 : ${PYTHON_VERSION=${Y_PY_PYTHON_VERSION:-'3.14'}}
@@ -1144,9 +1145,9 @@ do_py_lock() {
     
 }
 
-do_py_install() {
+do_py_sync() {
 
-    log ">(do_py_install):" "py - install define, ..."
+    log ">(do_py_sync):" "py - install define, ..."
 
     case "$X_PY_MODE" in
         uv)
@@ -1170,7 +1171,7 @@ do_py_install() {
         ;;
     esac
 
-    log "<(do_py_install):" "py - install,  done."
+    log "<(do_py_sync):" "py - install,  done."
     
 }
 
@@ -1225,7 +1226,7 @@ do_py_reticulate() {
 PATH=${X_ENV_PATH}
 #X_ENV_VENV=${X_ENV_VENV}
 #VIRTUAL_ENV=${VIRTUAL_ENV}
-RETICULATE_PYTHON_ENV=${RETICULATE_PYTHON_ENV}
+RETICULATE_PYTHON_ENV=${RETICULATE_PYTHON_ENV#"$HOME"/\${HOME}}
 _R_CHECK_SYSTEM_CLOCK_=0
 EOR
       
@@ -1572,32 +1573,32 @@ do_renv_init() {
 
     set +x
 
-    log "<(do_renv_install):" "renv - install, done."
+    log "<(do_renv_sync):" "renv - install, done."
     
-    return $rc_renv_install
+    return $rc_renv_sync
 }
 
 
-do_renv_install() {
+do_renv_sync() {
 
-    log ">(do_renv_install):" "renv - install, ..."
+    log ">(do_renv_sync):" "renv - install, ..."
 
     # run in venv activated subshell
 
     ( activate
 
-      R -q -e 'renv::install(dependencies = TRUE)' ; rc_renv_install=$?
+      R -q -e 'renv::install(dependencies = TRUE)' ; rc_renv_sync=$?
 
-      case "$rc_renv_install" in
-          0) info "=(do_renv_install):" "renv - install => ok" ;;
-          *) error "#(do_renv_install):" "renv - install => KO -- (rc:$rc_renv_install)" ;;
+      case "$rc_renv_sync" in
+          0) info "=(do_renv_sync):" "renv - install => ok" ;;
+          *) error "#(do_renv_sync):" "renv - install => KO -- (rc:$rc_renv_sync)" ;;
       esac    
       
     )
 
-    log "<(do_renv_install):" "renv - install, done."
+    log "<(do_renv_sync):" "renv - install, done."
     
-    return $rc_renv_install
+    return $rc_renv_sync
 }
 
 do_renv_upgrade() {
@@ -1777,11 +1778,11 @@ do_re_setup() {
         
     else
 
-        do_renv_install ; rc_renv_install=$?
+        do_renv_sync ; rc_renv_sync=$?
     
-        case "$rc_renv_install" in
+        case "$rc_renv_sync" in
             0) ;;
-            *) return $rc_renv_install
+            *) return $rc_renv_sync
                ;;
         esac
 
@@ -1840,9 +1841,9 @@ do_re_doc() {
 # ////////////////////////////////////////////////////////////////////////
 
 
-do_ju_install() {
+do_ju_boot() {
 
-    log ">(do_ju_install):" "ju - Julia install, ..."
+    log ">(do_ju_boot):" "ju - Julia install, ..."
 
     export JULIA_VERSION=$(python3 - <<'EOF'
 import urllib.request
@@ -1891,12 +1892,229 @@ EOF
 
     ls -l ~/.local/bin/julia
 
-    info "<(do_ju_install):" "ju - Julia: $(julia --version)."
+    info "<(do_ju_boot):" "ju - Julia: $(julia --version)."
 
 
-    log "<(do_ju_install):" "ju - Julia install, done."
+    log "<(do_ju_boot):" "ju - Julia install, done."
     
 }
+
+do_ju_venv() {
+
+    log ">(do_ju_venv):" "ju - venv check, ..."
+
+    if [ -f './Project.toml' ]; then
+        export X_JULIA_VENV=1
+        info ">(do_ju_venv):" "ju - venv defined: Project.toml found, ..."
+    else
+        export X_JULIA_VENV=0
+        info ">(do_ju_venv):" "ju - venv undefined: Project.toml not found, ..."
+    fi
+    
+    log "<(do_ju_venv):" "py - venv chech,  done."
+    
+}
+
+
+do_ju_reset() {
+
+    log ">(do_ju_reset):" "ju - unlock, ..."
+
+    if [ -f ./Manifest.toml ]; then
+        rm ./Manifest.toml
+    else
+        warn "./Manifest.toml not found, skip"
+    fi
+
+    # do_ju_remove
+
+    log "<(do_ju_reset):" "ju - unlock,  done."
+    
+}
+
+do_ju_clear() {
+
+    log ">(do_ju_clear):" "ju - clear($X_DOTS_MODE$X_CACHE_MODE), ..."
+
+    # do_ju_remove
+
+    # if [ "$X_DOTS_MODE" = "1" ]; then
+    #     do_ju_dots
+    # fi
+       
+    # if [ "$X_CACHE_MODE" = "1" ]; then
+    #     do_ju_cache
+    # fi
+
+    log "<(do_ju_clear):" "ju clear($X_DOTS_MODE$X_CACHE_MODE), done."
+    
+}
+
+do_ju_lock() {
+
+    log ">(do_ju_lock):" "ju - lock, ..."
+
+    rc_ju_lock=0
+
+    if [ ! -f './Project.toml' ]; then
+        info ">(do_ju_lock):" "ju - venv undefined: Project.toml not found, skip ..."
+    elif [ -f './Manifest.toml' ]; then
+        info ">(do_ju_lock):" "ju - lock defined: Manifest.toml found, skip ..."
+    elif [ ! -x "$JULIA_CTL" ]; then
+        warn ">(do_ju_lock):" "ju - juliactl missing: $JULIA_CTL not found, skip ..."
+        rc_ju_lock=2
+    else
+        # run in venv activated subshell
+
+        ( activate
+          export JULIA_PYTHONCALL_EXE='python'
+          export JULIA_CONDAPKG_BACKEND='Null'
+
+          "$JULIA_CTL" lock ; rc_ju_lock=$?
+    
+          case "$rc_renv_upgrade" in
+              0) info "juliactl sync -- (rc: $?) -- $(ls -l Manifest.toml)" ;;
+              *) error "juliactl sync -- (rc: $?) -- $(ls -l Manifest.toml)" ;;
+          esac    
+          
+        )
+    fi
+
+    log "<(do_ju_lock):" "ju - lock,  done."
+
+    return $rc_ju_lock
+    
+}
+
+do_ju_sync() {
+
+    log ">(do_ju_sync):" "ju - sync, ..."
+
+    rc_ju_sync=0
+
+    if [ ! -f './Project.toml' ]; then
+        info ">(do_ju_sync):" "ju - venv undefined: Project.toml not found, skip ..."
+    elif [ ! -f './Manifest.toml' ]; then
+        warn ">(do_ju_sync):" "ju - sync defined: Manifest.toml not found, skip ..."
+    elif [ ! -x "$JULIA_CTL" ]; then
+        warn ">(do_ju_sync):" "ju - juliactl missing: $JULIA_CTL not found, skip ..."
+        rc_ju_sync=2
+    else
+        # run in venv activated subshell
+
+        ( activate
+          export JULIA_PYTHONCALL_EXE='python'
+          export JULIA_CONDAPKG_BACKEND='Null'
+
+          "$JULIA_CTL" sync ; rc_ju_sync=$?
+    
+          case "$rc_renv_upgrade" in
+              0) info "juliactl sync -- (rc: $?) -- $(ls -l Manifest.toml)" ;;
+              *) error "juliactl sync -- (rc: $?) -- $(ls -l Manifest.toml)" ;;
+          esac    
+          
+        )
+    fi
+
+    log "<(do_ju_sync):" "ju - sync,  done."
+
+    return $rc_ju_sync
+    
+    
+}
+
+
+do_ju_connector() {
+
+    log ">(do_ju_connector):" "ju - connector config, ..."
+
+    # run in venv activated subshell
+
+    ( activate
+
+      # @see: docker/r-images/scripts/base/install_ubs-julia.sh
+      
+      # R - python
+      # install2.r --error --skipmissing --skipinstalled -n $NCPUS  JuliaCall  JuliaConnectoR
+
+      touch ~/.Rsession
+      touch ~/.Renviron
+    
+      sed -i '/JULIA_BINDIR=/d' \
+          ~/.Renviron
+
+      julia_bindir="$(dirname "$(realpath "$(command -v julia)")")"
+
+      case "$julia_bindir" in
+          "$HOME"/*)
+              # path inside $HOME -> make it HOME-relative, expanded by R at startup
+              rel="${julia_bindir#"$HOME"/}"
+              line="JULIA_BINDIR=\${HOME}/${rel}"
+              ;;
+          *)
+              # outside $HOME (e.g. /usr/bin) -> no portable form exists, keep absolute
+              line="JULIA_BINDIR=${julia_bindir}"
+              ;;
+      esac
+
+      printf '%s\n' "$line" >> ~/.Renviron
+
+      sed -i '/JULIA_PYTHONCALL_EXE=/d' \
+          ~/.Renviron
+      sed -i '/JULIA_CONDAPKG_BACKEND=/d' \
+          ~/.Renviron
+      
+      cat <<EOF >> ~/.Renviron
+JULIA_PYTHONCALL_EXE=python
+JULIA_CONDAPKG_BACKEND=Null
+EOF      
+      
+    )
+
+    log "<(do_ju_connector):" "py - reticulate config, done."
+    
+}
+
+
+
+do_ju_show() {
+
+    log ">(do_ju_show):" "ju - show config, ..."
+
+    # run in venv activated subshell
+
+    ( activate
+      export JULIA_PYTHONCALL_EXE='python'
+      export JULIA_CONDAPKG_BACKEND='Null'
+
+      which julia
+      julia --version
+
+      # Step 1: Capture the path with clean nested double quotes
+      raw_julia_bindir="$(dirname "$(realpath "$(command -v julia)")")"
+
+      # Step 2: Replace leading $HOME with ~ (using standard parameter expansion)
+      julia_bindir="${raw_julia_bindir/#"$HOME"/~}"
+
+      # julia_bindir="$(dirname "$(realpath "$(command -v julia)")")" | \
+      #                         sed "s|^$HOME|~|"
+
+      echo "JULIA_BINDIR=$julia_bindir"
+      env | grep ^JULIA | sort
+
+      julia -e '
+        using Pkg
+          # Activate project package
+          Pkg.activate(".")
+          '
+      
+    )
+
+    log "<(do_ju_show):" "py - show config, done."
+    
+}
+
+
 
 
 
@@ -2003,7 +2221,7 @@ parse_args_run() {
     RUN_PY_CLEAR=0
     RUN_PY_RESET=0
     RUN_PY_VENV=0
-    RUN_PY_INSTALL=0
+    RUN_PY_SYNC=0
     RUN_PY_JUPYTER=0
     RUN_PY_SHOW=0
     RUN_JS_NVM=0
@@ -2017,7 +2235,11 @@ parse_args_run() {
     RUN_RE_SHOW=0
     RUN_RE_DOC=0
     RUN_RE_CFFR=0
-    RUN_JU_INSTALL=0
+    RUN_JU_BOOT=0
+    RUN_JU_CLEAR=0
+    RUN_JU_RESET=0
+    RUN_JU_VENV=0
+    RUN_JU_SYNC=0
     RUN_JU_JUPYTER=0
     
     X_ALL_MODE=1
@@ -2048,10 +2270,12 @@ parse_args_run() {
                 RUN_EV_DOTENV=1
                 RUN_PY_BOOT=1
                 RUN_PY_VENV=1
-                RUN_PY_INSTALL=1
+                RUN_PY_SYNC=1
                 RUN_PY_JUPYTER=1
                 RUN_PY_SHOW=1
-                RUN_JU_INSTALL=1
+                RUN_JU_BOOT=1
+                RUN_JU_VENV=1
+                RUN_JU_SYNC=1
                 RUN_JU_JUPYTER=1
                 RUN_JS_NVM=1
                 RUN_JS_NODE=1
@@ -2071,12 +2295,14 @@ parse_args_run() {
             --clear)
                 RUN_PY_CLEAR=1
                 RUN_RE_CLEAR=1
+                RUN_JU_CLEAR=1
                 cmds="$cmds --clear"
                 ;;
             
             --upgrade)
                 RUN_PY_RESET=1
                 RUN_RE_RESET=1
+                RUN_JU_RESET=1
                 RUN_RE_UPGRADE="$Y_RE_RENV_UPGRADE"
                 RUN_RE_RESTORE="$Y_RE_RENV_RESTORE"
                 cmds="$cmds --upgrade"
@@ -2086,12 +2312,15 @@ parse_args_run() {
                 RUN_EV_DOTENV=1
                 RUN_PY_BOOT=1
                 RUN_PY_VENV=1
-                RUN_PY_INSTALL=1
+                RUN_PY_SYNC=1
                 RUN_PY_BIND=1
                 RUN_PY_JUPYTER=1
                 RUN_PY_SHOW=1
                 RUN_JS_CODE=1
                 RUN_JS_NODE=1
+                RUN_JU_BOOT=1
+                RUN_JU_VENV=1
+                RUN_JU_SYNC=1
                 RUN_JU_JUPYTER=1
                 RUN_RE_SETUP=1
                 RUN_RE_JUPYTER=1
@@ -2121,6 +2350,12 @@ parse_args_run() {
                 cmds="$cmds -R"
                 ;;
             
+            --julia|-J)
+                X_ALL_MODE='0'
+                X_JULIA_MODE='1'
+                cmds="$cmds -J"
+                ;;
+            
             --nvm|-N)
                 X_ALL_MODE='0'
                 X_NODE_MODE='1'
@@ -2128,10 +2363,10 @@ parse_args_run() {
                 cmds="$cmds -J"
                 ;;
             
-            --node|-J)
+            --node|-JS)
                 X_ALL_MODE='0'
                 X_NODE_MODE='1'
-                cmds="$cmds -J"
+                cmds="$cmds -JS"
                 ;;
             
             --full|-F)
@@ -2184,7 +2419,7 @@ parse_args_run() {
             RUN_PY_CLEAR=0
             RUN_PY_RESET=0
             RUN_PY_VENV=0
-            RUN_PY_INSTALL=0
+            RUN_PY_SYNC=0
             RUN_PY_SHOW=0
             ;;
         *)
@@ -2194,7 +2429,7 @@ parse_args_run() {
     RE_OPTS=""
     RE_OPTS="$RE_OPTS:$Y_RE_ANY_SUPPORT"
     RE_OPTS="$RE_OPTS:$Y_RE_RENV_SUPPORT"
-    RE_OPTS="$RE_OPTS:$Y_RE_RENV_INSTALL"
+    RE_OPTS="$RE_OPTS:$Y_RE_RENV_SYNC"
     
     case "$RE_OPTS" in
         :0:*|:*:0:*|:*:*:0)
@@ -2206,6 +2441,23 @@ parse_args_run() {
             RUN_RE_DOC=0
             RUN_RE_CFFR=0
             RUN_RE_SHOW=0
+            ;;
+        *)
+            ;;
+    esac
+
+    JU_OPTS=""
+    JU_OPTS="$JU_OPTS:$Y_JU_ANY_SUPPORT"
+    JU_OPTS="$JU_OPTS:$Y_JU_JULIA_SUPPORT"
+    
+    case "$JU_OPTS" in
+        :0:*|:*:0*)
+            RUN_JU_CLEAR=0
+            RUN_JU_RESET=0
+
+            RUN_JU_VENV=0
+            RUN_JU_SYNC=0
+            RUN_JU_SHOW=0
             ;;
         *)
             ;;
@@ -2228,7 +2480,7 @@ parse_args_run() {
             RUN_PY_CLEAR=0
             RUN_PY_RESET=0
             RUN_PY_VENV=0
-            RUN_PY_INSTALL=0
+            RUN_PY_SYNC=0
             RUN_PY_SHOW=0
             ;;
         *)  ;;
@@ -2271,10 +2523,11 @@ parse_args_run() {
     env_defined RUN_EX_SETUP
     env_defined RUN_EV_DOTENV
     env_defined RUN_SH_PROMPT
+    
     env_defined RUN_PY_BOOT
     env_defined RUN_PY_CLEAR
     env_defined RUN_PY_RESET
-    env_defined RUN_PY_INSTALL
+    env_defined RUN_PY_SYNC
     env_defined RUN_PY_VENV
     env_defined RUN_PY_SHOW
 
@@ -2288,7 +2541,12 @@ parse_args_run() {
     env_defined RUN_RE_CFFR
     env_defined RUN_RE_SHOW
     
-    env_defined RUN_JU_INSTALL
+    env_defined RUN_JU_BOOT
+    env_defined RUN_JU_CLEAR
+    env_defined RUN_JU_RESET
+    env_defined RUN_JU_SYNC
+    env_defined RUN_JU_VENV
+    env_defined RUN_JU_SHOW
     env_defined RUN_JU_JUPYTER
     
     env_defined RUN_JS_CODE
@@ -2327,6 +2585,16 @@ main_run() {
         rc_exit $?
     fi
 
+    if [ "$RUN_JS_NVM" = '1' ]; then
+        do_js_nvm "$@"
+        rc_exit $?
+    fi
+
+    if [ "$RUN_JS_NODE" = '1' ]; then
+        do_js_node "$@"
+        rc_exit $?
+    fi
+
     if [ "$RUN_PY_BOOT" = '1' ]; then
         do_py_boot "$@"
         rc_exit $?
@@ -2347,9 +2615,9 @@ main_run() {
         rc_exit $?
     fi
 
-    if [ "$RUN_PY_INSTALL" = '1' ]; then
+    if [ "$RUN_PY_SYNC" = '1' ]; then
         do_py_lock "$@"
-        do_py_install "$@"
+        do_py_sync "$@"
         rc_exit $?
     fi
 
@@ -2360,6 +2628,42 @@ main_run() {
 
     if [ "$RUN_PY_SHOW" = '1' ]; then
         do_py_show "$@"
+        rc_exit $?
+    fi
+
+    if [ "$RUN_JU_BOOT" = '1' ]; then
+        do_ju_boot "$@"
+        rc_exit $?
+    fi
+
+    if [ "$RUN_JU_CLEAR" = '1' ]; then
+        do_ju_clear "$@"
+        rc_exit $?
+    fi
+
+    if [ "$RUN_JU_RESET" = '1' ]; then
+        do_ju_reset "$@"
+        rc_exit $?
+    fi
+
+    if [ "$RUN_JU_VENV" = '1' ]; then
+        do_ju_venv "$@"
+        rc_exit $?
+    fi
+
+    if [ "$RUN_JU_SYNC" = '1' ]; then
+        do_ju_lock "$@"
+        do_ju_sync "$@"
+        rc_exit $?
+    fi
+
+    if [ "$RUN_JU_BIND" = '1' ]; then
+        do_ju_connector "$@"
+        rc_exit $?
+    fi
+
+    if [ "$RUN_JU_SHOW" = '1' ]; then
+        do_ju_show "$@"
         rc_exit $?
     fi
 
@@ -2390,21 +2694,6 @@ main_run() {
 
     if [ "$RUN_RE_SHOW" = '1' ]; then
         do_re_show "$@"
-        rc_exit $?
-    fi
-
-    if [ "$RUN_JU_INSTALL" = '1' ]; then
-        do_ju_install "$@"
-        rc_exit $?
-    fi
-
-    if [ "$RUN_JS_NVM" = '1' ]; then
-        do_js_nvm "$@"
-        rc_exit $?
-    fi
-
-    if [ "$RUN_JS_NODE" = '1' ]; then
-        do_js_node "$@"
         rc_exit $?
     fi
 

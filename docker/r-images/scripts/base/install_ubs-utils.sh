@@ -147,17 +147,6 @@ function install_apps_starship() {
 
     [ "$Y_BASE_APPS_STARSHIP" = 1 ] || return 0
 
-    for f in \
-        FiraCode \
-            Inconsolata \
-            JetBrainsMono ; do
-        wget https://github.com/ryanoasis/nerd-fonts/releases/download/v3.5.1/$f.zip
-        mkdir -p /usr/local/share/fonts/z-nerd/$f
-        unzip $f.zip -d /usr/local/share/fonts/z-nerd/$f
-        rm $f.zip
-    done
-    fc-cache -fv
-
     curl -fsSL https://starship.rs/install.sh | bash --posix -s -- --yes
     
 }
