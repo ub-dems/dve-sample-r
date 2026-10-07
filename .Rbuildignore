@@ -61,6 +61,7 @@
 ^Makefile.*$
 ^Makefile$
 ^man-roxygen$
+^Manifest\.toml$
 ^\.markdownlint-cli2.jsonc$
 ^Meta$
 ^meta-inf\.toml$
