@@ -266,7 +266,7 @@ function install_commons_fonts() {
         FiraCode \
             Inconsolata \
             JetBrainsMono ; do
-        wget https://github.com/ryanoasis/nerd-fonts/releases/download/v3.5.1/$f.zip
+        wget -nv https://github.com/ryanoasis/nerd-fonts/releases/download/v3.5.1/$f.zip
         mkdir -p /usr/local/share/fonts/z-nerd/$f
         unzip $f.zip -d /usr/local/share/fonts/z-nerd/$f
         rm $f.zip
