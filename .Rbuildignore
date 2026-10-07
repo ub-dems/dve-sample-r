@@ -29,6 +29,7 @@
 ^\.dockerignore.*$
 ^dist$
 ^docs$
+^src/Dve.jl$
 ^\.editorconfig$
 ^\.env$
 ^\.env.*$

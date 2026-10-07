@@ -53,6 +53,7 @@ Integrations (init only):
   --duckdb        Julia native DuckDB.jl
   --polars        Python polars through PythonCall
   --dynare        Julia native Dynare.jl
+  --plotly        legacy Plotly.jl (pins HTTP 0.9: may hold Pluto back)
 """
 
 function exit_usage(code::Integer = 1)
@@ -80,8 +81,11 @@ const REGISTRY_UUIDS = Dict{String,String}(
 # Template packages (Julia side) and what they need on the Python side
 # (PythonPlot -> matplotlib, SymPyPythonCall -> sympy). With the CondaPkg
 # backend disabled, these must live in the uv-managed venv.
+# Note: the legacy Plotly.jl wrapper is NOT in the template (see --plotly): its
+# latest release pins HTTP 0.9, which forces the resolver to downgrade Pluto to
+# 0.14.x (broken on recent Julia). PlutoPlotly already brings PlotlyBase.
 const BASE_JULIA = ["PythonCall", "PythonPlot", "IJulia", "Pluto",
-                    "LanguageServer", "Plotly", "PlutoPlotly", "SymPyPythonCall"]
+                    "LanguageServer", "PlutoPlotly", "SymPyPythonCall"]
 const BASE_PYTHON = ["matplotlib", "sympy"]
 
 struct Extra
@@ -95,6 +99,7 @@ const EXTRAS = Dict{Symbol,Extra}(
     :duckdb  => Extra(["DuckDB"], String[]),            # native client available
     :polars  => Extra(String[],   ["polars"]),          # no mature native package
     :dynare  => Extra(["Dynare"], String[]),            # native (Dynare.jl)
+    :plotly  => Extra(["Plotly"], String[]),            # legacy; may hold Pluto back
 )
 
 const ALIASES = Dict("torch" => "pytorch")
@@ -347,6 +352,9 @@ function exec(::Val{:lock}, o::Options)
     withenv("JULIA_PKG_PRECOMPILE_AUTO" => "0") do
         Pkg.update()
     end
+    # Packages held back by [compat] constraints are marked and their blockers listed.
+    logmsg("packages not at their latest version (and why):")
+    Pkg.status(; outdated = true)
     logmsg(isfile(manifest_file(o)) ? "wrote $(manifest_file(o))" :
            "Manifest.toml was not created"; level = isfile(manifest_file(o)) ? "LOG" : "WARN")
     logmsg(":< LOCK, done.")
@@ -359,8 +367,9 @@ function exec(::Val{:sync}, o::Options)
         logmsg("no Manifest.toml: resolving first (run 'juliactl lock' to upgrade)"; level = "WARN")
     configure_python!(o)
     Pkg.activate(o.dir)
-    Pkg.instantiate()
-    Pkg.precompile()
+    Pkg.instantiate(; allow_autoprecomp = false)
+    # strict: a package that fails to precompile (e.g. Pluto) makes 'sync' fail
+    Pkg.precompile(; strict = true)
     logmsg(":< SYNC, done.")
 end
 
