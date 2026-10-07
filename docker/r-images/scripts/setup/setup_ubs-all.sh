@@ -2241,6 +2241,7 @@ parse_args_run() {
     RUN_JU_RESET=0
     RUN_JU_VENV=0
     RUN_JU_SYNC=0
+    RUN_JU_SHOW=0
     RUN_JU_JUPYTER=0
 
     X_ALL_MODE=1
@@ -2264,6 +2265,7 @@ parse_args_run() {
                 X_SHELL_MODE='1'
                 X_DOTENV_MODE='1'
                 X_PYTHON_MODE='1'
+                X_JULIA_MODE='1'
                 X_NVM_MODE='1'
                 X_NODE_MODE='1'
                 RUN_EX_SETUP=1
@@ -2277,6 +2279,7 @@ parse_args_run() {
                 RUN_JU_BOOT=1
                 RUN_JU_VENV=1
                 RUN_JU_SYNC=1
+                RUN_JU_SHOW=1
                 RUN_JU_JUPYTER=1
                 RUN_JS_NVM=1
                 RUN_JS_NODE=1
@@ -2322,6 +2325,7 @@ parse_args_run() {
                 RUN_JU_BOOT=1
                 RUN_JU_VENV=1
                 RUN_JU_SYNC=1
+                RUN_JU_SHOW=1
                 RUN_JU_JUPYTER=1
                 RUN_RE_SETUP=1
                 RUN_RE_JUPYTER=1
@@ -2469,6 +2473,7 @@ parse_args_run() {
             X_DOTENV_MODE="1"
             X_PYTHON_MODE="1"
             X_R_MODE="1"
+            X_JULIA_MODE="1"
             X_CODE_MODE="1"
             X_NODE_MODE="1"
             ;;
@@ -2498,6 +2503,19 @@ parse_args_run() {
             RUN_RE_DOC=0
             RUN_RE_CFFR=0
             RUN_RE_SHOW=0
+            ;;
+        *)  ;;
+    esac
+
+    case "$X_JULIA_MODE" in
+        0)
+            RUN_JU_BOOT=0
+            RUN_JU_CLEAR=0
+            RUN_JU_RESET=0
+            RUN_JU_VENV=0
+            RUN_JU_SYNC=0
+            RUN_JU_SHOW=0
+            RUN_JU_JUPYTER=0
             ;;
         *)  ;;
     esac
