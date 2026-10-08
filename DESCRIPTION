@@ -41,9 +41,12 @@ Suggests:
     optparse,
     cli (>= 3.3.0),
     lintr,
+    duckdb,
+    polars,
     ggplot2,
     ggraph,
     igraph,
+    JuliaCall,
     logging,
     languageserver,
     gitcreds,
@@ -56,7 +59,6 @@ Suggests:
     assertthat,
     devtools,
     usethis,
-    rspm,
     knitr,
     rmarkdown,
     roxygen2 (>= 8.1.0),
@@ -64,6 +66,8 @@ Suggests:
     RcppGSL,
     RcppParallel,
     RcppEigen
+Remotes: 
+    community.r-multiverse.org/polars
 LinkingTo: Rcpp, RcppArmadillo, RcppParallel, RcppGSL
 SystemRequirements: GNU Scientific Library (GSL) (>= 2.0)
 VignetteBuilder: 

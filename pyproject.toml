@@ -229,6 +229,14 @@ agents = [
 
 ]
 
+julia = [
+
+  # --- lang ---
+  "juliacall",
+  
+
+]
+
 jupyter = [
 
   # --- core ---
