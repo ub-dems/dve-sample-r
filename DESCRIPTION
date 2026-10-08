@@ -42,7 +42,6 @@ Suggests:
     cli (>= 3.3.0),
     lintr,
     duckdb,
-    polars,
     ggplot2,
     ggraph,
     igraph,
@@ -66,8 +65,6 @@ Suggests:
     RcppGSL,
     RcppParallel,
     RcppEigen
-Remotes: 
-    community.r-multiverse.org/polars
 LinkingTo: Rcpp, RcppArmadillo, RcppParallel, RcppGSL
 SystemRequirements: GNU Scientific Library (GSL) (>= 2.0)
 VignetteBuilder: 
