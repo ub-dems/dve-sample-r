@@ -809,11 +809,11 @@ do_sh_prompt() {
         echo '[ "$TERM" = "dumb" ] || [ -n "$INSIDE_EMACS" ] || eval "$(starship init bash)"' >> ~/.bashrc
         info "-(do_sh_prompt):" "sh - 'starship' enabled in ~/.bashrc."
 
-        if [ ! -f ~/config/starship.toml ]; then
-            : ${X_SH_ENV_PRESET:='no-runtime-versions'}
-            starship preset --force ${X_SH_ENV_PRESET} -o ~/.config/starship.toml
-            info "-(do_sh_prompt):" "sh - 'starship' preset: ${X_SH_ENV_PRESET}."
-        fi
+        # if [ ! -f ~/config/starship.toml ]; then
+        #     : ${X_SH_ENV_PRESET:='no-runtime-versions'}
+        #     starship preset --force ${X_SH_ENV_PRESET} -o ~/.config/starship.toml
+        #     info "-(do_sh_prompt):" "sh - 'starship' preset: ${X_SH_ENV_PRESET}."
+        # fi
     fi
 
     log "<(do_sh_prompt):" "sh - prompt, done."
@@ -1934,6 +1934,8 @@ EOF
         ls -l ~/.local/bin/julia
 
         info "<(do_ju_boot):" "ju - Julia: $(julia --version)."
+
+        do_ju_cache
 
     fi    
 

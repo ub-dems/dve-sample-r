@@ -141,6 +141,12 @@ ENV  X_ENV_FILE=$Y_ENV_FILE
 
 ENV UV_ENV_FILE=$Y_ENV_FILE
 
+# julia support
+
+ENV JULIA_PYTHONCALL_EXE=python
+ENV JULIA_CONDAPKG_BACKEND=Null
+
+
 # python support
 
 ENV UV_LINK_MODE=copy
