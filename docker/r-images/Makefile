@@ -71,11 +71,7 @@ IMG_WORKER ?= $(shell (grep 'org.opencontainers.image.title' ${DKF_WORKER} | cut
 
 # ---(registry)------------------------------------------------
 
-ACR_REGISTRY ?= svsi680reg.azurecr.io
-ACR_BASEPATH ?= ubdems
-
-REGISTRY_HOST := ${ACR_REGISTRY}
-REGISTRY_PATH := ${ACR_BASEPATH}
+REGISTRY_HOST := svsi680reg.azurecr.io
 
 # ---(tag)------------------------------------------------
 
@@ -88,7 +84,7 @@ IMAGE_REVISION ?= $(COMMIT_HASH)
 GIT_COMMIT     := $(shell git rev-parse HEAD)
 GIT_TREE_STATE := $(shell test -n "`git status --porcelain`" && echo "-dirty" || echo "")
 
-REGISTRY ?= $(REGISTRY_HOST)/$(REGISTRY_PATH)
+REGISTRY ?= $(REGISTRY_HOST)/ubdems
 TAG      ?= sha-$(GIT_COMMIT)$(GIT_TREE_STATE)
 TAG      ?= "latest"
 
@@ -132,21 +128,13 @@ PRC_WORKER ?= "wrk-${ID_PROJECT}"
 
 Y_BUILD_CONF ?= /etc/build.conf
 X_BUILD_CONF ?= ${CONF_DIR}/build.conf
-Y_CUDA_CONF ?= /etc/cuda.conf
-X_CUDA_CONF ?= ${CONF_DIR}/cuda.conf
 Y_RUNTIME_CONF ?= /etc/runtime.conf
 X_RUNTIME_CONF ?= ${CONF_DIR}/runtime.conf
 
-# ---(BUILD CONFIG)------------------------------------------------
-
-Y_DEBUG_ENV ?= 0
-
 # ---(PYTHON)------------------------------------------------
 
-Y_PY_PYTHON_VERSION ?= $(shell (cd ${ROOT_DIR} && cat .python-version))
-X_PY_PYENV_VERSION = $(Y_PY_PYTHON_VERSION)
-Y_PY_MODE ?= uv
-X_PY_RUN ?= uv run
+X_PY_PYENV_VERSION ?= $(shell (cd ${ROOT_DIR} && cat .python-version))
+X_PY_RUN ?= poetry run
 
 # ---(runtime)------------------------------------------------
 
@@ -156,7 +144,7 @@ RUN_PORT_A_EXT ?= 8888
 RUN_PORT_B_INT ?= 8787
 RUN_PORT_B_EXT ?= 28787
 RUN_PORT_C_INT ?= 8686
-RUN_PORT_C_EXT ?= 8686
+RUN_PORT_C_EXT ?= 28686
 RUN_PORT_D_INT ?= 8080
 RUN_PORT_D_EXT ?= 28080
 RUN_USER_UID = 0
@@ -179,14 +167,6 @@ BUILD_DIRS = ${TEMP_DIR} ${LOGS_DIR} ${LOGB_DIR} ${LOGR_DIR} ${HOME_DIR}
 CLEAN_DIRS = ${TEMP_DIR}
 
 XDG_DIRS = ~/Desktop ~/Documents ~/Downloads ~/Pictures
-
-# ---(dotenv)------------------------------------------------
-
-X_ENV_DEFAULT ?= ${ROOT_DIR}/.env.defaults
-X_ENV_STRICT ?= ${ROOT_DIR}/.env.strict
-
-X_ENV_FILE ?= ${ROOT_DIR}/.env
-UV_ENV_FILE ?= ${X_ENV_FILE}
 
 
 # ---(venv)------------------------------------------------
@@ -232,77 +212,48 @@ DOCKER_BUILD_PULL := --pull
 
 # ---(gpu)------------------------------------------------
 
-Y_HAS_GPU := $(shell (type nvidia-smi && nvidia-smi -L) &> /dev/null  && echo 1 || echo 0)
-X_HAS_GPU = $(Y_HAS_GPU)
+# Check if nvidia-detector command exists and returns something other than "None"
+GPU_DETECT_CMD := nvidia-detector
+GPU_AVAILABLE := $(shell command -v $(GPU_DETECT_CMD) >/dev/null 2>&1 && \
+                         [ "$$($(GPU_DETECT_CMD))" != "None" ] && echo 1 || echo 0)
 
-ifeq (${X_HAS_GPU},1)
-X_UV_EXTRA := gpu
-else
-X_UV_EXTRA := cpu
-endif
+ifeq ($(GPU_AVAILABLE),1)
 
+DOCKER_NVIDIA_TOOLKIT_CTK := /etc/cdi/nvidia.yaml
 
-ifeq ($(X_HAS_GPU),1)
-
+ifneq ("$(wildcard $(DOCKER_NVIDIA_TOOLKIT_CTK))","")
     DOCKER_NVIDIA_CTK_OPTIONS = \
            --security-opt label=type:nvidia_container_t  \
 	   --device nvidia.com/gpu=all \
+
+#          --runtime nvidia --gpus=all \
+#          --security-opt=label=disable \
+#          --security-opt=no-new-privileges --cap-drop=ALL \  #rstudio compatibility
 
 else
     DOCKER_NVIDIA_CTK_OPTIONS =
 endif
 
-DOCKER_NVIDIA_OPTIONS := $(DOCKER_NVIDIA_CTK_OPTIONS)
+DOCKER_NVIDIA_TOOLKIT_OCI := /usr/share/containers/oci/hooks.d/oci-nvidia-hook.json
+ifneq ("$(wildcard $(DOCKER_NVIDIA_TOOLKIT_OCI))","")
+    DOCKER_NVIDIA_OCI_OPTIONS = \
+           --hooks-dir=/usr/share/containers/oci/hooks.d/ \
 
-
-# if podman mode
-
-DOCKER_RUNTIME_OPTIONS := --ulimit=host --group-add keep-groups $(DOCKER_NVIDIA_OPTIONS) $(DOCKER_ARGS)
-
+else
+    DOCKER_NVIDIA_OCI_OPTIONS =
 endif
 
-# # Check if nvidia-detector command exists and returns something other than "None"
-# GPU_DETECT_CMD := nvidia-detector
-# GPU_AVAILABLE := $(shell command -v $(GPU_DETECT_CMD) >/dev/null 2>&1 && \
-#                          [ "$$($(GPU_DETECT_CMD))" != "None" ] && echo 1 || echo 0)
+DOCKER_NVIDIA_OPTIONS := $(DOCKER_NVIDIA_CTK_OPTIONS) $(DOCKER_NVIDIA_OCI_OPTIONS)
 
-# ifeq ($(GPU_AVAILABLE),1)
+else
+DOCKER_NVIDIA_OPTIONS =
+endif
 
-# DOCKER_NVIDIA_TOOLKIT_CTK := /etc/cdi/nvidia.yaml
-
-# ifneq ("$(wildcard $(DOCKER_NVIDIA_TOOLKIT_CTK))","")
-#     DOCKER_NVIDIA_CTK_OPTIONS = \
-#            --security-opt label=type:nvidia_container_t  \
-# 	   --device nvidia.com/gpu=all \
-
-# #          --runtime nvidia --gpus=all \
-# #          --security-opt=label=disable \
-# #          --security-opt=no-new-privileges --cap-drop=ALL \  #rstudio compatibility
-
-# else
-#     DOCKER_NVIDIA_CTK_OPTIONS =
-# endif
-
-# DOCKER_NVIDIA_TOOLKIT_OCI := /usr/share/containers/oci/hooks.d/oci-nvidia-hook.json
-# ifneq ("$(wildcard $(DOCKER_NVIDIA_TOOLKIT_OCI))","")
-#     DOCKER_NVIDIA_OCI_OPTIONS = \
-#            --hooks-dir=/usr/share/containers/oci/hooks.d/ \
-
-# else
-#     DOCKER_NVIDIA_OCI_OPTIONS =
-# endif
-
-# DOCKER_NVIDIA_OPTIONS := $(DOCKER_NVIDIA_CTK_OPTIONS) $(DOCKER_NVIDIA_OCI_OPTIONS)
-
-# else
-# DOCKER_NVIDIA_OPTIONS =
-# endif
-
-# #DOCKER_RUNTIME_OPTIONS := --ulimit=host --group-add dsdata
-# #DOCKER_RUNTIME_OPTIONS := --ulimit=host --group-add keep-groups --subgidname=dsuser
-# DOCKER_RUNTIME_OPTIONS := --ulimit=host --group-add keep-groups $(DOCKER_NVIDIA_OPTIONS) $(DOCKER_ARGS)
-# #DOCKER_RUNTIME_OPTIONS := --ulimit=host --annotation run.oci.keep_original_groups=1 
-# endif
+#DOCKER_RUNTIME_OPTIONS := --ulimit=host --group-add dsdata
+#DOCKER_RUNTIME_OPTIONS := --ulimit=host --group-add keep-groups --subgidname=dsuser
+DOCKER_RUNTIME_OPTIONS := --ulimit=host --group-add keep-groups $(DOCKER_NVIDIA_OPTIONS) $(DOCKER_ARGS)
+#DOCKER_RUNTIME_OPTIONS := --ulimit=host --annotation run.oci.keep_original_groups=1 
+endif
 
 # ---(x)------------------------------------------------
 
@@ -317,19 +268,15 @@ ifdef DISPLAY
     X_NET_OPTIONS = \
 	  -v /tmp/.X11-unix:/tmp/.X11-unix:ro \
 	  -v ${XAUTHORITY}:/root/.Xauthority:ro
-    X_SEC_OPTIONS = \
-	  --security-opt label=type:container_runtime_t
 else
     X_NET_OPTIONS =
     X_ENV_OPTIONS =
-    X_SEC_OPTIONS =
 endif
 else
     X_NET_OPTIONS =
     X_ENV_OPTIONS =
-    X_SEC_OPTIONS =
 endif
-X_RUNTIME_OPTIONS := $(X_ENV_OPTIONS) $(X_NET_OPTIONS) $(X_SEC_OPTIONS)
+X_RUNTIME_OPTIONS := $(X_ENV_OPTIONS) $(X_NET_OPTIONS)
 
 # ---(xdg)------------------------------------------------
 
@@ -383,15 +330,6 @@ RUNTIME_CHECK_OPTS := 'check'
 
 # ---(rscript)------------------------------------------------
 
-SHELL_EXTRA_RUNTIME_OPTIONS := 
-SHELL_DEFAULT_RUNTIME_OPTIONS := $(SHELL_EXTRA_RUNTIME_OPTIONS) 
-SHELL_RUNTIME_OPTIONS := $(SHELL_DEFAULT_RUNTIME_OPTIONS)
-
-RUNTIME_SHELL_OPTS := $(SHELL_RUNTIME_OPTIONS)
-
-
-# ---(rscript)------------------------------------------------
-
 RSCRIPT_EXTRA_RUNTIME_OPTIONS := 
 RSCRIPT_DEFAULT_RUNTIME_OPTIONS := $(RSCRIPT_EXTRA_RUNTIME_OPTIONS) 
 RSCRIPT_RUNTIME_OPTIONS := $(RSCRIPT_DEFAULT_RUNTIME_OPTIONS)
@@ -417,24 +355,6 @@ PYRUN_RUNTIME_OPTIONS := $(PYRUN_DEFAULT_RUNTIME_OPTIONS)
 RUNTIME_PYRUN_OPTS := $(PYRUN_RUNTIME_OPTIONS)
 
 
-# ---(julia)------------------------------------------------
-
-JULIA_EXTRA_RUNTIME_OPTIONS := 
-JULIA_DEFAULT_RUNTIME_OPTIONS := $(JULIA_EXTRA_RUNTIME_OPTIONS) 
-JULIA_RUNTIME_OPTIONS := $(JULIA_DEFAULT_RUNTIME_OPTIONS)
-
-RUNTIME_JULIA_OPTS := $(JULIA_RUNTIME_OPTIONS)
-
-
-# ---(jrun)------------------------------------------------
-
-JRUN_EXTRA_RUNTIME_OPTIONS := 
-JRUN_DEFAULT_RUNTIME_OPTIONS := $(JRUN_EXTRA_RUNTIME_OPTIONS) 
-JRUN_RUNTIME_OPTIONS := $(JRUN_DEFAULT_RUNTIME_OPTIONS)
-
-RUNTIME_JRUN_OPTS := $(JRUN_RUNTIME_OPTIONS)
-
-
 # ---(auto)------------------------------------------------
 
 AUTO_EXTRA_RUNTIME_OPTIONS := 
@@ -451,44 +371,6 @@ CLI_DEFAULT_RUNTIME_OPTIONS := $(AUTO_EXTRA_RUNTIME_OPTIONS)
 CLI_RUNTIME_OPTIONS := $(AUTO_DEFAULT_RUNTIME_OPTIONS)
 
 RUNTIME_CLI_OPTS := "bash" "-c" $(CLI_RUNTIME_OPTIONS)
-
-
-# ---(dev)------------------------------------------------
-
-# --accept-server-license-terms
-DEV_EXTRA_RUNTIME_OPTIONS := 
-DEV_DEFAULT_RUNTIME_OPTIONS := $(DEV_EXTRA_RUNTIME_OPTIONS) 
-DEV_RUNTIME_OPTIONS := $(DEV_DEFAULT_RUNTIME_OPTIONS)
-
-RUNTIME_DEV_OPTS := $(DEV_RUNTIME_OPTIONS)
-
-
-# ---(antigravity)------------------------------------------------
-
-ANTIGRAVITY_EXTRA_RUNTIME_OPTIONS :=  --disable-gpu --no-sandbox 
-ANTIGRAVITY_DEFAULT_RUNTIME_OPTIONS := $(ANTIGRAVITY_EXTRA_RUNTIME_OPTIONS) 
-ANTIGRAVITY_RUNTIME_OPTIONS := $(ANTIGRAVITY_DEFAULT_RUNTIME_OPTIONS)
-
-RUNTIME_ANTIGRAVITY_OPTS := $(ANTIGRAVITY_RUNTIME_OPTIONS)
-
-
-# ---(cursor)------------------------------------------------
-
-CURSOR_EXTRA_RUNTIME_OPTIONS := 
-CURSOR_DEFAULT_RUNTIME_OPTIONS := $(CURSOR_EXTRA_RUNTIME_OPTIONS) 
-CURSOR_RUNTIME_OPTIONS := $(CURSOR_DEFAULT_RUNTIME_OPTIONS)
-
-RUNTIME_CURSOR_OPTS := $(CURSOR_RUNTIME_OPTIONS)
-
-
-# ---(code)------------------------------------------------
-
-# --accept-server-license-terms
-CODE_EXTRA_RUNTIME_OPTIONS := 
-CODE_DEFAULT_RUNTIME_OPTIONS := $(CODE_EXTRA_RUNTIME_OPTIONS) 
-CODE_RUNTIME_OPTIONS := $(CODE_DEFAULT_RUNTIME_OPTIONS)
-
-RUNTIME_CODE_OPTS := $(CODE_RUNTIME_OPTIONS)
 
 
 # ---(code)------------------------------------------------
@@ -513,6 +395,18 @@ JUPYTER_LAB_RUNTIME_OPTIONS := lab $(JUPYTER_DEFAULT_RUNTIME_OPTIONS)
 
 RUNTIME_JUPYTER_LAB_OPTS := $(JUPYTER_LAB_RUNTIME_OPTIONS)
 RUNTIME_JUPYTER_NOTEBOOK_OPTS := $(JUPYTER_NOTEBOOK_RUNTIME_OPTIONS)
+
+X_LAB_EXEC ?= 'jupyter'
+X_LAB_MODE ?= 'lab'
+X_LAB_ADDR ?= '0.0.0.0'
+X_LAB_PORT ?= '8888'
+X_LAB_BASE ?= 'notebooks'
+X_LAB_AUTH ?= '--ServerApp.allow_remote_access=true'
+X_LAB_USER ?= '--allow-root'
+X_LAB_AUTO ?= '--no-browser'
+X_LAB_OPTS ?= ''
+X_LAB_OPTIONS ?= ''
+
 
 # ---(rstudio)------------------------------------------------
 
@@ -599,10 +493,7 @@ build-upgrade: build-update
 
 # ---(run)------------------------------------------------
 
-.PHONY: runtime%
-
 .PHONY: runtime runtime-repl runtime-cli runtime-rstudio runtime-auto runtime-pyrun
-#.PHONY: runtime-shell runtime-dev runtime-antigravity runtime-cursor runtime-code
 
 runtime: init run/runtime
 
@@ -614,15 +505,9 @@ runtime-ipython: init run/python-repl
 
 runtime-pyrun: init run/python-run
 
-runtime-julia: init run/julia-repl
-
-runtime-jrun: init run/julia-run
-
 runtime-auto: init run/exec-auto
 
 runtime-cli: init run/exec-cli
-
-runtime-raw: init run/raw
 
 runtime-shell: init run/shell
 
@@ -649,12 +534,6 @@ runtime-command: init run/command
 runtime-term: init run/term
 
 runtime-xterm: init run/xterm
-
-runtime-dev: init run/dev
-
-runtime-antigravity: init run/antigravity
-
-runtime-cursor: init run/cursor
 
 runtime-code: init run/code-server
 
@@ -711,18 +590,13 @@ worker-help:  help/worker
 
 .PHONY: init%
 
-init: $(BUILD_DIRS) $(XDG_DIRS) $(X_ENV_FILE)
+init: $(BUILD_DIRS) $(XDG_DIRS)
 
 $(BUILD_DIRS):
 	@mkdir -p $@
 
 $(XDG_DIRS):
 	@mkdir -p $@
-
-$(X_ENV_FILE):
-	cat $(X_ENV_DEFAULT) | grep '^[a-zA-Z0-9_]' > $(X_ENV_STRICT)
-	cp -v $(X_ENV_STRICT) $(X_ENV_FILE)
-	ls -l $(X_ENV_FILE) $(X_ENV_STRICT) $(X_ENV_DEFAULT)
 
 # ---(clean)------------------------------------------------
 
@@ -750,18 +624,12 @@ build-image/%:
 	export X_BLD_IMAGE_NAME="$$(grep 'org.opencontainers.image.title' $$X_BLD_DOCKERFILE | cut -d\" -f2)"; \
 	: $${X_BLD_IMAGE_NAME:=$(patsubst %,${ID_USER}/${ID_PROJECT}.%,$*)}; \
 	export X_BLD_LOGFILE=${LOGB_DIR}/$$(basename $${X_BLD_IMAGE_NAME}).log; \
-	echo -e "# ${C_BWhite}#BUILD[*]:>> $$(date -Isec) - ${C_BYellow}$$X_BLD_IMAGE_NAME${C_BWhite} <<- $$X_BLD_DOCKERFILE ${C_OFF}" |\
-	tee -a ${LOGB_DIR}/build-summary.log; \
+	echo -e "# ${C_BWhite}#BUILD[*]:>> $$(date -Isec) - ${C_BYellow}$$X_BLD_IMAGE_NAME${C_BWhite} <<- $$X_BLD_DOCKERFILE ${C_OFF}" | tee -a ${LOGB_DIR}/build-summary.log; \
 	$(DOCKER) build \
 		-f $$X_BLD_DOCKERFILE \
 		-t $$X_BLD_IMAGE_NAME \
 		--build-arg Y_WORK_DIR="${RUN_USER_HOME}/${WORK_DIR}" \
-		--build-arg Y_DEBUG_ENV="${Y_DEBUG_ENV}" \
-		--build-arg Y_HAS_GPU="${Y_HAS_GPU}" \
-		--build-arg Y_NV_CONDA_ENV_NAME="${Y_NV_CONDA_ENV_NAME}" \
-		--build-arg Y_NV_CONDA_ENV_FILE="${Y_NV_CONDA_ENV_FILE}" \
-		--build-arg Y_PY_MODE="${Y_PY_MODE}" \
-		--build-arg Y_PY_PYTHON_VERSION="${Y_PY_PYTHON_VERSION}" \
+		--build-arg Y_DEBUG_ENV="${Y_DEBUG_ENV:-0}" \
 		--label="it.unimib.datalab.project=${ID_PROJECT}" \
 		--label="it.unimib.datalab.branch=${BRANCH_NAME}" \
 		--label="it.unimib.datalab.commit=${COMMIT_HASH}" \
@@ -770,8 +638,7 @@ build-image/%:
 		$(BUILD_OPTIONS) \
 		. 2>&1 | tee -a $$X_BLD_LOGFILE; \
 		RC=$${PIPESTATUS[0]} ; \
-	echo -e "# ${C_BWhite}#BUILD($$RC):<< $$(date -Isec) - ${C_BYellow}$$X_BLD_IMAGE_NAME${C_BWhite} <<- $$X_BLD_DOCKERFILE ${C_OFF}" |\
-	tee -a ${LOGB_DIR}/build-summary.log; \
+	echo -e "# ${C_BWhite}#BUILD($$RC):<< $$(date -Isec) - ${C_BYellow}$$X_BLD_IMAGE_NAME${C_BWhite} <<- $$X_BLD_DOCKERFILE ${C_OFF}" | tee -a ${LOGB_DIR}/build-summary.log; \
 	exit $$RC
 
 # . 2>&1 | tee -a $$X_BLD_LOGFILE ; \
@@ -803,8 +670,8 @@ build-image/${BLD_WORKER}: build-image/${BLD_RUNTIME}
 # -p ${RUN_PORT_C_EXT}:${RUN_PORT_C_INT} \
 # -p ${RUN_PORT_D_EXT}:${RUN_PORT_D_INT} \
 
-run/raw:
-	@echo "CLI: raw (shell no-venv) ${RUNTIME_ARGS}"
+run/shell:
+	@echo "CLI: shell ${RUNTIME_ARGS}"
 	@[ "${X_X}" = 1 ] && [ -n "${DISPLAY}" ] && echo "DISPLAY=${DISPLAY}" || true
 	@export _passw_=$$(cat ~/.rup/*); set -x; \
 	$(DOCKER)  run \
@@ -830,13 +697,9 @@ run/raw:
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
-		-e X_CUDA_CONF="${X_CUDA_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
-		-e X_HAS_GPU="${X_HAS_GPU}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
-		-e X_ENV_FILE="${X_ENV_FILE:-.env}" \
-		-e UV_ENV_FILE="${UV_ENV_FILE:-$ENV_FILE}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		${XDG_RUNTIME_OPTIONS} \
 		${X_RUNTIME_OPTIONS} \
@@ -873,13 +736,9 @@ run/status:
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
-		-e X_CUDA_CONF="${X_CUDA_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
-		-e X_HAS_GPU="${X_HAS_GPU}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
-		-e X_ENV_FILE="${X_ENV_FILE:-.env}" \
-		-e UV_ENV_FILE="${UV_ENV_FILE:-$ENV_FILE}" \
 		-e X_AUTO_ENV=0  \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		-e REV_ID_PROJECT=${ID_PROJECT}  \
@@ -925,13 +784,9 @@ run/setup:
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
-		-e X_CUDA_CONF="${X_CUDA_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
-		-e X_HAS_GPU="${X_HAS_GPU}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
-		-e X_ENV_FILE="${X_ENV_FILE:-.env}" \
-		-e UV_ENV_FILE="${UV_ENV_FILE:-$ENV_FILE}" \
 		-e X_AUTO_ENV=0  \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		-ti  \
@@ -965,13 +820,9 @@ run/upgrade:
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
-		-e X_CUDA_CONF="${X_CUDA_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
-		-e X_HAS_GPU="${X_HAS_GPU}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
-		-e X_ENV_FILE="${X_ENV_FILE:-.env}" \
-		-e UV_ENV_FILE="${UV_ENV_FILE:-$ENV_FILE}" \
 		-e X_AUTO_ENV=0  \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		-ti  \
@@ -1005,13 +856,9 @@ run/clear:
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
-		-e X_CUDA_CONF="${X_CUDA_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
-		-e X_HAS_GPU="${X_HAS_GPU}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
-		-e X_ENV_FILE="${X_ENV_FILE:-.env}" \
-		-e UV_ENV_FILE="${UV_ENV_FILE:-$ENV_FILE}" \
 		-e X_AUTO_ENV=0  \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		-ti  \
@@ -1049,13 +896,9 @@ run/environ:
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
-		-e X_CUDA_CONF="${X_CUDA_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
-		-e X_HAS_GPU="${X_HAS_GPU}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
-		-e X_ENV_FILE="${X_ENV_FILE:-.env}" \
-		-e UV_ENV_FILE="${UV_ENV_FILE:-$ENV_FILE}" \
 		-e X_AUTO_ENV=0  \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		-ti  \
@@ -1091,13 +934,9 @@ run/profile:
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
-		-e X_CUDA_CONF="${X_CUDA_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
-		-e X_HAS_GPU="${X_HAS_GPU}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
-		-e X_ENV_FILE="${X_ENV_FILE:-.env}" \
-		-e UV_ENV_FILE="${UV_ENV_FILE:-$ENV_FILE}" \
 		-e X_AUTO_ENV=0  \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		${X_RUNTIME_OPTIONS} \
@@ -1119,7 +958,7 @@ run/term:
 		${X_ENV_OPTIONS} \
 		-ti  \
 		$(shell ${DOCKER} ps | grep ${IMG_RUNTIME} | cut -d' ' -f1 ) \
-		'/bin/bash' ${RUNTIME_SHELL_OPTS} ${RUNTIME_ARGS} || true
+		'/bin/bash' ${RUNTIME_RSCRIPT_OPTS} ${RUNTIME_ARGS} || true
 
 run/xterm:
         #@echo "CLI: xterm ${RUNTIME_ARGS}"
@@ -1132,7 +971,7 @@ run/xterm:
 		'/usr/bin/xterm' \
 		'-fn' '9x15' \
 		'-T'  "${IMG_RUNTIME}-$${CONTAINER_ID}" \
-		'-e' ${X_PY_RUN} $${SHELL} ${RUNTIME_SHELL_OPTS} ${RUNTIME_ARGS} &
+		'-e' $${SHELL} ${RUNTIME_RSCRIPT_OPTS} ${RUNTIME_ARGS} &
 
 
 # xterm -title "RStudio Container Terminal" \
@@ -1179,53 +1018,6 @@ run/xterm:
 #   "xauth add $(xauth list | grep $DISPLAY)"
 
 
-# ---(shell)------------------------------------------------
-
-
-run/shell:
-	@echo "CLI: shell ${RUNTIME_ARGS}"
-	@[ "${X_X}" = 1 ] && [ -n "${DISPLAY}" ] && echo "DISPLAY=${DISPLAY}" || true
-	@export _passw_=$$(cat ~/.rup/*); set -x; \
-	$(DOCKER)  run \
-		--rm \
-		${DOCKER_RUNTIME_OPTIONS} \
-		-v ${HOME_DIR}:${RUN_USER_HOME}:Z  \
-		-v ~/work:${RUN_USER_HOME}/work:Z  \
-		-v ~/data:${RUN_USER_HOME}/data:Z  \
-		-v ~/data:${HOME}/data:Z  \
-		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
-		-v /usr/local:/usr/local/.import:Z,ro  \
-		-v /opt:/opt/.import:Z  \
-		-v /data/opt/local:/data/opt/local:Z  \
-		-v /etc/terminfo:/etc/terminfo:Z  \
-		-v /store/local:/store/local:Z  \
-		-v /store/share:/store/share  \
-		-v /user:/user  \
-		-v /vol:/vol  \
-		-w ${RUN_USER_HOME}/${CURR_DIR}  \
-		-e PASSWORD=$$_passw_ \
-		-e USER=${RUN_USER_NAME} \
-		-e USERID=${RUN_USER_UID} \
-		-e GROUPID=${RUN_USER_GID} \
-		-e ROOT=true  \
-		-e X_BUILD_CONF="${X_BUILD_CONF}" \
-		-e X_CUDA_CONF="${X_CUDA_CONF}" \
-		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
-		-e X_HAS_GPU="${X_HAS_GPU}" \
-		-e X_DEBUG="${X_DEBUG:-0}" \
-		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
-		-e X_ENV_FILE="${X_ENV_FILE:-.env}" \
-		-e UV_ENV_FILE="${UV_ENV_FILE:-$ENV_FILE}" \
-		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
-		${XDG_RUNTIME_OPTIONS} \
-		${X_RUNTIME_OPTIONS} \
-		-ti  \
-		--name  \
-		${PRC_RUNTIME}.sh-$$PPID \
-		${IMG_RUNTIME} \
-		${X_PY_RUN} \
-		'/bin/bash' ${RUNTIME_RSCRIPT_OPTS} ${RUNTIME_ARGS} || true
-
 # ---(R)------------------------------------------------
 
 run/r-repl:
@@ -1254,11 +1046,8 @@ run/r-repl:
 		-e ROOT=true  \
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
-		-e X_HAS_GPU="${X_HAS_GPU}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
-		-e X_ENV_FILE="${X_ENV_FILE:-.env}" \
-		-e UV_ENV_FILE="${UV_ENV_FILE:-$ENV_FILE}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		${XDG_RUNTIME_OPTIONS} \
 		${X_RUNTIME_OPTIONS} \
@@ -1294,13 +1083,9 @@ run/rscript-rs:
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
-		-e X_CUDA_CONF="${X_CUDA_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
-		-e X_HAS_GPU="${X_HAS_GPU}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
-		-e X_ENV_FILE="${X_ENV_FILE:-.env}" \
-		-e UV_ENV_FILE="${UV_ENV_FILE:-$ENV_FILE}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		${XDG_RUNTIME_OPTIONS} \
 		${X_RUNTIME_OPTIONS} \
@@ -1338,13 +1123,9 @@ run/python-repl:
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
-		-e X_CUDA_CONF="${X_CUDA_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
-		-e X_HAS_GPU="${X_HAS_GPU}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
-		-e X_ENV_FILE="${X_ENV_FILE:-.env}" \
-		-e UV_ENV_FILE="${UV_ENV_FILE:-$ENV_FILE}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		${XDG_RUNTIME_OPTIONS} \
 		${X_RUNTIME_OPTIONS} \
@@ -1353,10 +1134,10 @@ run/python-repl:
 		${PRC_RUNTIME}.r-$$PPID \
 		${IMG_RUNTIME} \
 		${X_PY_RUN} \
-		'ipython' ${RUNTIME_IPYTHON_OPTS} ${RUNTIME_ARGS}
+		${PYVENV_RUN} ${RUNTIME_IPYTHON_OPTS} ${RUNTIME_ARGS}
 
 run/python-run:
-	@echo "CLI: Python run ${RUNTIME_ARGS}"
+	@echo "CLI: Rscript ${RUNTIME_ARGS}"
 	@export _passw_=$$(cat ~/.rup/*); \
 	$(DOCKER)  run \
 		--rm \
@@ -1380,13 +1161,9 @@ run/python-run:
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
-		-e X_CUDA_CONF="${X_CUDA_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
-		-e X_HAS_GPU="${X_HAS_GPU}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
-		-e X_ENV_FILE="${X_ENV_FILE:-.env}" \
-		-e UV_ENV_FILE="${UV_ENV_FILE:-$ENV_FILE}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		${XDG_RUNTIME_OPTIONS} \
 		${X_RUNTIME_OPTIONS} \
@@ -1396,92 +1173,6 @@ run/python-run:
 		${IMG_RUNTIME} \
 		${X_PY_RUN} \
 		${PYVENV_RUN} ${RUNTIME_PYRUN_OPTS} ${RUNTIME_ARGS}
-
-# ---(julia)------------------------------------------------
-
-run/julia-repl:
-	@[ "${X_X}" = 1 ] && [ -n "${DISPLAY}" ] && echo "DISPLAY=${DISPLAY}" || true
-	@export _passw_=$$(cat ~/.rup/*); \
-	$(DOCKER)  run \
-		--rm \
-		${DOCKER_RUNTIME_OPTIONS} \
-		-v ${HOME_DIR}:${RUN_USER_HOME}:Z  \
-		-v ~/work:${RUN_USER_HOME}/work:Z  \
-		-v ~/data:${RUN_USER_HOME}/data:Z  \
-		-v ~/data:${HOME}/data:Z  \
-		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
-		-v /usr/local:/usr/local/.import:Z,ro  \
-		-v /opt:/opt/.import:Z  \
-		-v /data/opt/local:/data/opt/local:Z  \
-		-v /store/local:/store/local:Z  \
-		-v /store/share:/store/share  \
-		-v /user:/user  \
-		-v /vol:/vol  \
-		-w ${RUN_USER_HOME}/${CURR_DIR}  \
-		-e PASSWORD=$$_passw_ \
-		-e USER=${RUN_USER_NAME} \
-		-e USERID=${RUN_USER_UID} \
-		-e GROUPID=${RUN_USER_GID} \
-		-e ROOT=true  \
-		-e X_BUILD_CONF="${X_BUILD_CONF}" \
-		-e X_CUDA_CONF="${X_CUDA_CONF}" \
-		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
-		-e X_HAS_GPU="${X_HAS_GPU}" \
-		-e X_DEBUG="${X_DEBUG:-0}" \
-		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
-		-e X_ENV_FILE="${X_ENV_FILE:-.env}" \
-		-e UV_ENV_FILE="${UV_ENV_FILE:-$ENV_FILE}" \
-		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
-		${XDG_RUNTIME_OPTIONS} \
-		${X_RUNTIME_OPTIONS} \
-		-ti  \
-		--name  \
-		${PRC_RUNTIME}.r-$$PPID \
-		${IMG_RUNTIME} \
-		${X_PY_RUN} \
-		'julia' ${RUNTIME_JULIA_OPTS} ${RUNTIME_ARGS}
-
-run/julia-run:
-	@echo "CLI: Julia run ${RUNTIME_ARGS}"
-	@export _passw_=$$(cat ~/.rup/*); \
-	$(DOCKER)  run \
-		--rm \
-		${DOCKER_RUNTIME_OPTIONS} \
-		-v ${HOME_DIR}:${RUN_USER_HOME}:Z  \
-		-v ~/work:${RUN_USER_HOME}/work:Z  \
-		-v ~/data:${RUN_USER_HOME}/data:Z  \
-		-v ~/data:${HOME}/data:Z  \
-		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
-		-v /usr/local:/usr/local/.import:Z,ro  \
-		-v /opt:/opt/.import:Z  \
-		-v /data/opt/local:/data/opt/local:Z  \
-		-v /store/local:/store/local:Z  \
-		-v /store/share:/store/share  \
-		-v /user:/user  \
-		-v /vol:/vol  \
-		-w ${RUN_USER_HOME}/${CURR_DIR}  \
-		-e PASSWORD=$$_passw_ \
-		-e USER=${RUN_USER_NAME} \
-		-e USERID=${RUN_USER_UID} \
-		-e GROUPID=${RUN_USER_GID} \
-		-e ROOT=true  \
-		-e X_BUILD_CONF="${X_BUILD_CONF}" \
-		-e X_CUDA_CONF="${X_CUDA_CONF}" \
-		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
-		-e X_HAS_GPU="${X_HAS_GPU}" \
-		-e X_DEBUG="${X_DEBUG:-0}" \
-		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
-		-e X_ENV_FILE="${X_ENV_FILE:-.env}" \
-		-e UV_ENV_FILE="${UV_ENV_FILE:-$ENV_FILE}" \
-		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
-		${XDG_RUNTIME_OPTIONS} \
-		${X_RUNTIME_OPTIONS} \
-		-ti  \
-		--name  \
-		${PRC_RUNTIME}.rs-$$PPID \
-		${IMG_RUNTIME} \
-		${X_PY_RUN} \
-		'julia' ${RUNTIME_JRUN_OPTS} ${RUNTIME_ARGS}
 
 # ---(exec)------------------------------------------------
 
@@ -1511,13 +1202,9 @@ run/exec-auto:
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
-		-e X_CUDA_CONF="${X_CUDA_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
-		-e X_HAS_GPU="${X_HAS_GPU}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
-		-e X_ENV_FILE="${X_ENV_FILE:-.env}" \
-		-e UV_ENV_FILE="${UV_ENV_FILE:-$ENV_FILE}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		${XDG_RUNTIME_OPTIONS} \
 		${X_RUNTIME_OPTIONS} \
@@ -1554,13 +1241,9 @@ run/rscript-cli:
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
-		-e X_CUDA_CONF="${X_CUDA_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
-		-e X_HAS_GPU="${X_HAS_GPU}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
-		-e X_ENV_FILE="${X_ENV_FILE:-.env}" \
-		-e UV_ENV_FILE="${UV_ENV_FILE:-$ENV_FILE}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		${XDG_RUNTIME_OPTIONS} \
 		${X_RUNTIME_OPTIONS} \
@@ -1601,13 +1284,9 @@ run/build:
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
-		-e X_CUDA_CONF="${X_CUDA_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
-		-e X_HAS_GPU="${X_HAS_GPU}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
-		-e X_ENV_FILE="${X_ENV_FILE:-.env}" \
-		-e UV_ENV_FILE="${UV_ENV_FILE:-$ENV_FILE}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		${XDG_RUNTIME_OPTIONS} \
 		${X_RUNTIME_OPTIONS} \
@@ -1643,13 +1322,9 @@ run/test:
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
-		-e X_CUDA_CONF="${X_CUDA_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
-		-e X_HAS_GPU="${X_HAS_GPU}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
-		-e X_ENV_FILE="${X_ENV_FILE:-.env}" \
-		-e UV_ENV_FILE="${UV_ENV_FILE:-$ENV_FILE}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		${XDG_RUNTIME_OPTIONS} \
 		${X_RUNTIME_OPTIONS} \
@@ -1685,13 +1360,9 @@ run/check:
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
-		-e X_CUDA_CONF="${X_CUDA_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
-		-e X_HAS_GPU="${X_HAS_GPU}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
-		-e X_ENV_FILE="${X_ENV_FILE:-.env}" \
-		-e UV_ENV_FILE="${UV_ENV_FILE:-$ENV_FILE}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		${XDG_RUNTIME_OPTIONS} \
 		${X_RUNTIME_OPTIONS} \
@@ -1701,8 +1372,6 @@ run/check:
 		${IMG_RUNTIME} \
 		${X_PY_RUN} \
 		'./build.sh' ${RUNTIME_CHECK_OPTS} ${RUNTIME_ARGS}
-
-# ---(edit)------------------------------------------------
 
 run/command:
         #@echo "CLI: command ${RUNTIME_ARGS}"
@@ -1729,13 +1398,9 @@ run/command:
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
-		-e X_CUDA_CONF="${X_CUDA_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
-		-e X_HAS_GPU="${X_HAS_GPU}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
-		-e X_ENV_FILE="${X_ENV_FILE:-.env}" \
-		-e UV_ENV_FILE="${UV_ENV_FILE:-$ENV_FILE}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		${XDG_RUNTIME_OPTIONS} \
 		${X_RUNTIME_OPTIONS} \
@@ -1744,141 +1409,6 @@ run/command:
 		${IMG_RUNTIME} \
 		${X_PY_RUN} \
 		${RUNTIME_ARGS} ${RUNTIME_RSCRIPT_OPTS}
-
-# ---(dev)------------------------------------------------
-
-run/dev:
-	@echo "DEV: local ${RUNTIME_ARGS}"
-	@echo "SHELL=$${SHELL}" 
-	@[ "${X_X}" = 1 ] && [ -n "${DISPLAY}" ] && echo "DISPLAY=${DISPLAY}" || true
-	export _passw_=$$(cat ~/.rup/*); \
-	$(DOCKER)  run \
-		--rm \
-		${DOCKER_RUNTIME_OPTIONS} \
-		-v ${HOME_DIR}:${RUN_USER_HOME}:Z  \
-		-v ~/work:${RUN_USER_HOME}/work:Z  \
-		-v ~/data:${RUN_USER_HOME}/data:Z  \
-		-v ~/data:${HOME}/data:Z  \
-		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
-		-v /usr/local:/usr/local/.import:Z,ro  \
-		-v /opt:/opt/.import:Z  \
-		-v /data/opt/local:/data/opt/local:Z  \
-		-v /store/local:/store/local:Z  \
-		-v /store/share:/store/share  \
-		-v /user:/user  \
-		-v /vol:/vol  \
-		-w ${RUN_USER_HOME}/${WORK_DIR}  \
-		-e PASSWORD=$$_passw_ \
-		-e USER=${RUN_USER_NAME} \
-		-e USERID=${RUN_USER_UID} \
-		-e GROUPID=${RUN_USER_GID} \
-		-e ROOT=true  \
-		-e X_BUILD_CONF="${X_BUILD_CONF}" \
-		-e X_CUDA_CONF="${X_CUDA_CONF}" \
-		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
-		-e X_HAS_GPU="${X_HAS_GPU}" \
-		-e X_DEBUG="${X_DEBUG:-0}" \
-		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
-		-e X_ENV_FILE="${X_ENV_FILE:-.env}" \
-		-e UV_ENV_FILE="${UV_ENV_FILE:-$ENV_FILE}" \
-		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
-		${XDG_RUNTIME_OPTIONS} \
-		${X_RUNTIME_OPTIONS} \
-		-ti  \
-		--name  \
-		${PRC_RUNTIME}.dev \
-		${IMG_RUNTIME} \
-		${X_PY_RUN} \
-		$$SHELL  ${RUNTIME_DEV_OPTS} ${RUNTIME_ARGS}
-
-# ---(edit)------------------------------------------------
-
-run/antigravity:
-	@echo "ANTIGRAVITY: local ${RUNTIME_ARGS}"
-	@[ "${X_X}" = 1 ] && [ -n "${DISPLAY}" ] && echo "DISPLAY=${DISPLAY}" || true
-	export _passw_=$$(cat ~/.rup/*); \
-	$(DOCKER)  run \
-		--rm \
-		${DOCKER_RUNTIME_OPTIONS} \
-		-v ${HOME_DIR}:${RUN_USER_HOME}:Z  \
-		-v ~/work:${RUN_USER_HOME}/work:Z  \
-		-v ~/data:${RUN_USER_HOME}/data:Z  \
-		-v ~/data:${HOME}/data:Z  \
-		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
-		-v /usr/local:/usr/local/.import:Z,ro  \
-		-v /opt:/opt/.import:Z  \
-		-v /data/opt/local:/data/opt/local:Z  \
-		-v /store/local:/store/local:Z  \
-		-v /store/share:/store/share  \
-		-v /user:/user  \
-		-v /vol:/vol  \
-		-w ${RUN_USER_HOME}/${WORK_DIR}  \
-		-e PASSWORD=$$_passw_ \
-		-e USER=${RUN_USER_NAME} \
-		-e USERID=${RUN_USER_UID} \
-		-e GROUPID=${RUN_USER_GID} \
-		-e ROOT=true  \
-		-e X_BUILD_CONF="${X_BUILD_CONF}" \
-		-e X_CUDA_CONF="${X_CUDA_CONF}" \
-		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
-		-e X_HAS_GPU="${X_HAS_GPU}" \
-		-e X_DEBUG="${X_DEBUG:-0}" \
-		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
-		-e X_ENV_FILE="${X_ENV_FILE:-.env}" \
-		-e UV_ENV_FILE="${UV_ENV_FILE:-$ENV_FILE}" \
-		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
-		${XDG_RUNTIME_OPTIONS} \
-		${X_RUNTIME_OPTIONS} \
-		-ti  \
-		--name  \
-		${PRC_RUNTIME}.antigravity-$$PPID \
-		${IMG_RUNTIME} \
-		${X_PY_RUN} \
-		'antigravity' ${RUNTIME_ANTIGRAVITY_OPTS} ${RUNTIME_ARGS}
-
-run/cursor:
-	@echo "CURSOR: local ${RUNTIME_ARGS}"
-	@[ "${X_X}" = 1 ] && [ -n "${DISPLAY}" ] && echo "DISPLAY=${DISPLAY}" || true
-	@export _passw_=$$(cat ~/.rup/*); \
-	$(DOCKER)  run \
-		--rm \
-		${DOCKER_RUNTIME_OPTIONS} \
-		-v ${HOME_DIR}:${RUN_USER_HOME}:Z  \
-		-v ~/work:${RUN_USER_HOME}/work:Z  \
-		-v ~/data:${RUN_USER_HOME}/data:Z  \
-		-v ~/data:${HOME}/data:Z  \
-		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
-		-v /usr/local:/usr/local/.import:Z,ro  \
-		-v /opt:/opt/.import:Z  \
-		-v /data/opt/local:/data/opt/local:Z  \
-		-v /store/local:/store/local:Z  \
-		-v /store/share:/store/share  \
-		-v /user:/user  \
-		-v /vol:/vol  \
-		-w ${RUN_USER_HOME}/${WORK_DIR}  \
-		-e PASSWORD=$$_passw_ \
-		-e USER=${RUN_USER_NAME} \
-		-e USERID=${RUN_USER_UID} \
-		-e GROUPID=${RUN_USER_GID} \
-		-e ROOT=true  \
-		-e X_BUILD_CONF="${X_BUILD_CONF}" \
-		-e X_CUDA_CONF="${X_CUDA_CONF}" \
-		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
-		-e X_HAS_GPU="${X_HAS_GPU}" \
-		-e X_DEBUG="${X_DEBUG:-0}" \
-		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
-		-e X_ENV_FILE="${X_ENV_FILE:-.env}" \
-		-e UV_ENV_FILE="${UV_ENV_FILE:-$ENV_FILE}" \
-		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
-		${XDG_RUNTIME_OPTIONS} \
-		${X_RUNTIME_OPTIONS} \
-		-ti  \
-		--name  \
-		${PRC_RUNTIME}.cursor-$$PPID \
-		${IMG_RUNTIME} \
-		${X_PY_RUN} \
-		'cursor' ${RUNTIME_CURSOR_OPTS} ${RUNTIME_ARGS}
-
 
 run/code-server:
 	@echo "CODE: server ${RUNTIME_ARGS}"
@@ -1907,13 +1437,9 @@ run/code-server:
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
-		-e X_CUDA_CONF="${X_CUDA_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
-		-e X_HAS_GPU="${X_HAS_GPU}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
-		-e X_ENV_FILE="${X_ENV_FILE:-.env}" \
-		-e UV_ENV_FILE="${UV_ENV_FILE:-$ENV_FILE}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		${XDG_RUNTIME_OPTIONS} \
 		${X_RUNTIME_OPTIONS} \
@@ -1923,7 +1449,6 @@ run/code-server:
 		${X_PY_RUN} \
 		'code-server' ${RUNTIME_CODE_OPTS} ${RUNTIME_ARGS}
 
-# ---(servers)------------------------------------------------
 
 run/jupyter-lab:
 	@echo "JUPYTER: lab ${RUNTIME_ARGS}"
@@ -1952,21 +1477,26 @@ run/jupyter-lab:
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
-		-e X_CUDA_CONF="${X_CUDA_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
-		-e X_HAS_GPU="${X_HAS_GPU}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
-		-e X_ENV_FILE="${X_ENV_FILE:-.env}" \
-		-e UV_ENV_FILE="${UV_ENV_FILE:-$ENV_FILE}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		-e X_LAB_EXEC=${X_LAB_EXEC}  \
+		-e X_LAB_MODE=${X_LAB_MODE}  \
+		-e X_LAB_ADDR=${X_LAB_ADDR}  \
+		-e X_LAB_PORT=${X_LAB_PORT}  \
+		-e X_LAB_BASE=${X_LAB_BASE}  \
+		-e X_LAB_AUTH=${X_LAB_AUTH}  \
+		-e X_LAB_USER=${X_LAB_USER}  \
+		-e X_LAB_AUTO=${X_LAB_AUTO}  \
+		-e X_LAB_OPTS=${X_LAB_OPTS}  \
+		-e X_LAB_OPTIONS=${X_LAB_OPTIONS}  \
 		${XDG_RUNTIME_OPTIONS} \
 		${X_RUNTIME_OPTIONS} \
 		--name  \
 		${PRC_RUNTIME}.lab-$$PPID \
 		${IMG_RUNTIME} \
-		${X_PY_RUN} \
-		'jupyter' ${RUNTIME_JUPYTER_LAB_OPTS} ${RUNTIME_ARGS}
+		'./lab.sh'  ${RUNTIME_ARGS}
 
 
 run/jupyter-notebook:
@@ -1996,13 +1526,9 @@ run/jupyter-notebook:
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
-		-e X_CUDA_CONF="${X_CUDA_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
-		-e X_HAS_GPU="${X_HAS_GPU}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
-		-e X_ENV_FILE="${X_ENV_FILE:-.env}" \
-		-e UV_ENV_FILE="${UV_ENV_FILE:-$ENV_FILE}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		${XDG_RUNTIME_OPTIONS} \
 		${X_RUNTIME_OPTIONS} \
@@ -2027,7 +1553,7 @@ run/rstudio-server:
 	@echo " X2Go:      chromium-browser http://localhost:${RUN_PORT_B_EXT}"
 	@echo " nomachine: firefox          http://localhost:${RUN_PORT_B_EXT}"
 	@echo ""
-	@[ -n "${DISPLAY}" ] && echo "DISPLAY=${DISPLAY}   -   X_X=${X_X}" || true
+	@[ -n "${DISPLAY}" ] && echo "DISPLAY=${DISPLAY}   -   X_X=${X_X}"
 	@echo ""
 	@export _passw_=$$(cat ~/.rup/*); \
 	$(DOCKER)  run \
@@ -2054,13 +1580,9 @@ run/rstudio-server:
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
-		-e X_CUDA_CONF="${X_CUDA_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
-		-e X_HAS_GPU="${X_HAS_GPU}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
-		-e X_ENV_FILE="${X_ENV_FILE:-.env}" \
-		-e UV_ENV_FILE="${UV_ENV_FILE:-$ENV_FILE}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
 		${XDG_RUNTIME_OPTIONS} \
 		${X_RUNTIME_OPTIONS} \
