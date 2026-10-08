@@ -6,7 +6,7 @@
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
-#       jupytext_version: 1.19.5
+#       jupytext_version: 1.19.6
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -16,8 +16,25 @@
 # %% [markdown]
 # # NVIDIA system check
 
+# %% language="bash"
+#
+# (type nvidia-smi && nvidia-smi -L) &> /dev/null \
+#     && X_HAS_GPU=1 || X_HAS_GPU=0;
+#
+# case "$X_HAS_GPU" in
+#      1) export X_UV_EXTRA='gpu' ;;
+#      *) export X_UV_EXTRA='cpu' ;;
+# esac
+# export X_HAS_GPU
+#
+# echo "X_HAS_GPU=$X_HAS_GPU"
+# echo "X_UV_EXTRA=$X_UV_EXTRA"
+
 # %%
 # !echo $PATH | tr ':' '\n'
+
+# %%
+# !which -a nvidia-smi
 
 # %%
 # !nvidia-smi
@@ -32,7 +49,7 @@
 # !lspci
 
 # %%
-# !lsmod | grep nv
+# ! ldd $(which nvidia-smi)
 
 # %%
 # !apt list --installed | grep -i -e nvidia -e cuda -e blas -e cudnn
@@ -48,5 +65,3 @@
 
 # %%
 # ! uv tree --no-dedupe --no-group jupyter --show-sizes
-
-# %%
