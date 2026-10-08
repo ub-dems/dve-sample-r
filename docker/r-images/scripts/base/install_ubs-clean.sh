@@ -38,7 +38,7 @@ function upgrade_commons_all() {
 
 
 function clean_up() {
-    rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/* 2> /dev/null
     rm -rf /tmp/downloaded_packages
 }
 
