@@ -1,14 +1,14 @@
 Type: Package
 Package: dvesimpler
-Title: TODO:title 
+Title: TODO(title): TITLE OF THE RESEARCH WORK
 Version: 1.0.0
 Authors@R: 
-    c(person(given = "datalab",
-             family = "DEMS",
+    c(person(given = "dsuser",
+             family = "ub-dems",
              role = c("aut", "cre", "cph"),
-             email = "datalab@unimib.it",
+             email = "dsuser@campus.unimib.it",
              comment = c()))
-Description: TODO:description.
+Description: TODO(desc): SHORT DESCRIPTION OF THE RESEARCH WORK
     see "CITATION.cff" for details.
 License: GPL (>= 3)
 URL: https://www.unimib.it,
@@ -37,7 +37,6 @@ Imports:
     rprojroot,
     yaml
 Suggests:
-    rspm,
     argparse,
     optparse,
     cli (>= 3.3.0),

@@ -252,15 +252,26 @@ function install_commons_xwindow() {
 
 function install_commons_fonts() {
 
-	[ "$Y_BASE_COMMONS_FONTS" = 1 ] || return 0
+    [ "$Y_BASE_COMMONS_FONTS" = 1 ] || return 0
 
-	apt_install \
-            fonts-roboto \
-            fonts-open-sans \
-            fonts-cascadia-code \
-            fonts-jetbrains-mono \
-            fonts-firacode \
-            fonts-inconsolata
+    apt_install \
+        fonts-roboto \
+        fonts-open-sans \
+        fonts-cascadia-code \
+        fonts-jetbrains-mono \
+        fonts-firacode \
+        fonts-inconsolata
+
+    for f in \
+        FiraCode \
+            Inconsolata \
+            JetBrainsMono ; do
+        wget -nv https://github.com/ryanoasis/nerd-fonts/releases/download/v3.5.1/$f.zip
+        mkdir -p /usr/local/share/fonts/z-nerd/$f
+        unzip $f.zip -d /usr/local/share/fonts/z-nerd/$f
+        rm $f.zip
+    done
+    fc-cache -fv
 
 }
 

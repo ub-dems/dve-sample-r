@@ -29,9 +29,10 @@
 ^\.dockerignore.*$
 ^dist$
 ^docs$
+^src/Dve.jl$
 ^\.editorconfig$
 ^\.env$
-^\.env.defaults$
+^\.env.*$
 ^env-args.txt$
 ^etc$
 ^\.github$
@@ -60,6 +61,7 @@
 ^Makefile.*$
 ^Makefile$
 ^man-roxygen$
+^Manifest\.toml$
 ^\.markdownlint-cli2.jsonc$
 ^Meta$
 ^meta-inf\.toml$

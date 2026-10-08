@@ -143,6 +143,14 @@ function install_utils_cran() {
     
 }
 
+function install_apps_starship() {
+
+    [ "$Y_BASE_APPS_STARSHIP" = 1 ] || return 0
+
+    curl -fsSL https://starship.rs/install.sh | bash --posix -s -- --yes
+    
+}
+
 
 function install_apps_emacs() {
 
@@ -221,6 +229,7 @@ function install_utils() {
 
 function install_apps() {
     
+    install_apps_starship
     install_apps_emacs
     install_apps_cursor
     install_apps_antigravity
