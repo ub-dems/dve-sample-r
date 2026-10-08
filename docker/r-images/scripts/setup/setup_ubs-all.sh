@@ -1973,7 +1973,7 @@ do_ju_lock() {
 
           "$JULIA_CTL" lock ; rc_ju_lock=$?
 
-          case "$rc_renv_upgrade" in
+          case "$rc_ju_lock" in
               0) info "juliactl sync -- (rc: $?) -- $(ls -l Manifest.toml)" ;;
               *) error "juliactl sync -- (rc: $?) -- $(ls -l Manifest.toml)" ;;
           esac
@@ -2009,7 +2009,7 @@ do_ju_sync() {
 
           "$JULIA_CTL" sync ; rc_ju_sync=$?
 
-          case "$rc_renv_upgrade" in
+          case "$rc_ju_sync" in
               0) info "juliactl sync -- (rc: $?) -- $(ls -l Manifest.toml)" ;;
               *) error "juliactl sync -- (rc: $?) -- $(ls -l Manifest.toml)" ;;
           esac
