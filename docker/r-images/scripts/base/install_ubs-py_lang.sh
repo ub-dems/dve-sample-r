@@ -117,7 +117,7 @@ function install_reticulate() {
 
 
 function clean_up() {
-    rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/*  2> /dev/null
 }
 
 

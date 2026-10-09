@@ -56,6 +56,12 @@ set -a
 
 # ------------------------------------------------------
 
+: ${JULIA_PYTHONCALL_EXE:="python"}
+: ${JULIA_CONDAPKG_BACKEND:="Null"}
+
+
+# ------------------------------------------------------
+
 : ${X_PY_RUN:="uv run"}
 
 : ${X_LAB_EXEC:="jupyter"}

@@ -134,7 +134,7 @@ Target aliases:
    build    => bld, build.sh
    test     => pytest
    check    => validate
-   raw      => base
+   raw      => base, bare
    shell    => sh, prompt
    bash     => do, command
    term     => in, attach
@@ -394,7 +394,7 @@ case "${command}" in
         shift
         target=runtime-cli
         ;;
-    bare|raw)
+    bare|base|raw)
         shift
         target=runtime-raw
         ;;
