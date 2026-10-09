@@ -702,7 +702,7 @@ do_us_bash() {
     
     log ">(do_us_bash):" "us - bash config, ..."
 
-    bash_files=(".bashrc .bash_aliases" ".aliases")
+    bash_files=(".bashrc" ".bash_aliases" ".aliases")
 
     for bash_file in "${bash_files[@]}"; do
         [ -e ~/$bash_file ] || { \
