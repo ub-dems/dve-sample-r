@@ -514,6 +514,18 @@ JUPYTER_LAB_RUNTIME_OPTIONS := lab $(JUPYTER_DEFAULT_RUNTIME_OPTIONS)
 RUNTIME_JUPYTER_LAB_OPTS := $(JUPYTER_LAB_RUNTIME_OPTIONS)
 RUNTIME_JUPYTER_NOTEBOOK_OPTS := $(JUPYTER_NOTEBOOK_RUNTIME_OPTIONS)
 
+X_LAB_EXEC ?= 'jupyter'
+X_LAB_MODE ?= 'lab'
+X_LAB_ADDR ?= '0.0.0.0'
+X_LAB_PORT ?= '8888'
+X_LAB_BASE ?= 'notebooks'
+X_LAB_AUTH ?= '--ServerApp.allow_remote_access=true'
+X_LAB_USER ?= '--allow-root'
+X_LAB_AUTO ?= '--no-browser'
+X_LAB_OPTS ?= ''
+X_LAB_OPTIONS ?= ''
+
+
 # ---(rstudio)------------------------------------------------
 
 RSTUDIO_EXTRA_RUNTIME_OPTIONS := 
@@ -1960,13 +1972,22 @@ run/jupyter-lab:
 		-e X_ENV_FILE="${X_ENV_FILE:-.env}" \
 		-e UV_ENV_FILE="${UV_ENV_FILE:-$ENV_FILE}" \
 		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
-		${XDG_RUNTIME_OPTIONS} \
-		${X_RUNTIME_OPTIONS} \
-		--name  \
-		${PRC_RUNTIME}.lab-$$PPID \
-		${IMG_RUNTIME} \
-		${X_PY_RUN} \
-		'jupyter' ${RUNTIME_JUPYTER_LAB_OPTS} ${RUNTIME_ARGS}
+                -e X_LAB_EXEC=${X_LAB_EXEC}  \
+                -e X_LAB_MODE=${X_LAB_MODE}  \
+                -e X_LAB_ADDR=${X_LAB_ADDR}  \
+                -e X_LAB_PORT=${X_LAB_PORT}  \
+                -e X_LAB_BASE=${X_LAB_BASE}  \
+                -e X_LAB_AUTH=${X_LAB_AUTH}  \
+                -e X_LAB_USER=${X_LAB_USER}  \
+                -e X_LAB_AUTO=${X_LAB_AUTO}  \
+                -e X_LAB_OPTS=${X_LAB_OPTS}  \
+                -e X_LAB_OPTIONS=${X_LAB_OPTIONS}  \
+                ${XDG_RUNTIME_OPTIONS} \
+                ${X_RUNTIME_OPTIONS} \
+                --name  \
+                ${PRC_RUNTIME}.lab-$$PPID \
+                ${IMG_RUNTIME} \
+                './lab.sh'  ${RUNTIME_ARGS}
 
 
 run/jupyter-notebook:

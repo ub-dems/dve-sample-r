@@ -141,25 +141,11 @@ ENV  X_ENV_FILE=$Y_ENV_FILE
 
 ENV UV_ENV_FILE=$Y_ENV_FILE
 
-# python support
-
-ENV UV_LINK_MODE=copy
-ENV UV_PROJECT_ENVIRONMENT=.venv.cdk
-
-ENV VIRTUAL_ENV=
-
-# ENV VIRTUAL_IMG=/opt/venv.img
-
-# ENV PYENV_ROOT=/opt/pyenv
-# ENV PIPX_GLOBAL_HOME=/opt/pipx
-# ENV PIPX_GLOBAL_BIN_DIR=/opt/pipx/bin
-# ENV POETRY_HOME=/opt/poetry
-# ENV PYVENVS_ROOT=/opt/pyvenvs
-# ENV GLOBAL_VENV=/opt/pyvenvs/global
-
 # julia support
 
 ENV JULIA_ROOT=/opt/julia
+ENV JULIA_PYTHONCALL_EXE=python
+ENV JULIA_CONDAPKG_BACKEND=Null
 
 # node support
 
@@ -173,10 +159,34 @@ ENV RUST_ROOT=/opt/rust
 ENV RUSTUP_HOME=/opt/rust
 ENV CARGO_HOME=/opt/cargo
 
-# RUN mkdir -p ${POETRY_HOME}/bin ${PIPX_GLOBAL_HOME} ${PIPX_GLOBAL_BIN_DIR} ${PYVENVS_ROOT} ${GLOBAL_VENV}/bin ${PYENV_ROOT}/bin ${PYENV_ROOT}/shims ${PYENV_ROOT}/plugins/pyenv-virtualenv/shims
-# RUN echo "# +++ #base(123): zzz"
-# ENV PATH=${POETRY_HOME}/bin:${PIPX_GLOBAL_BIN_DIR}:${PYENV_ROOT}/shims:${PYENV_ROOT}/bin:${PYENV_ROOT}/plugins/pyenv-virtualenv/shims:${GLOBAL_VENV}/bin:${NODE_ROOT}/bin:${CARGO_HOME}/bin:${RUSTUP_HOME}/bin:${PATH}
+# python support
+
+ENV UV_LINK_MODE=copy
+ENV UV_PROJECT_ENVIRONMENT=.venv.cdk
+
+ENV VIRTUAL_ENV=
+
+# jupyter support
+
+ENV X_LAB_EXEC=jupyter
+ENV X_LAB_MODE=lab
+ENV X_LAB_ADDR=0.0.0.0
+ENV X_LAB_PORT=8888
+ENV X_LAB_BASE=notebooks
+ENV X_LAB_AUTH=--ServerApp.allow_remote_access=true
+ENV X_LAB_USER=--allow-root
+ENV X_LAB_AUTO=--no-browser
+ENV X_LAB_OPTS=
+ENV X_LAB_OPTIONS=
+
+
+# xdg path
+
 ENV PATH=/root/.local/bin:${PATH}:${NODE_ROOT}/bin:${CARGO_HOME}/bin:${RUSTUP_HOME}/bin:
+
+
+# build calls
+
 RUN echo "# +++ #base(pre): PATH=${PATH}"
 
 RUN /rocker_scripts/install_ubs-rs_rust.sh

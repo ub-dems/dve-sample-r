@@ -806,14 +806,14 @@ do_sh_prompt() {
     elif grep 'starship' ~/.bashrc &>/dev/null; then
         info "-(do_sh_prompt):" "sh - ~/.bashrc already configured, skip"
     else
-        echo '[ "$TERM" = "dumb" ] || [ -n "$INSIDE_EMACS" ] || eval "$(starship init bash)"' >> ~/.bashrc
+        echo '[ "$TERM" = "dumb" ] || [ "$TERM" = "tramp" ]|| [ -n "$INSIDE_EMACS" ] || eval "$(starship init bash)"' >> ~/.bashrc
         info "-(do_sh_prompt):" "sh - 'starship' enabled in ~/.bashrc."
 
-        if [ ! -f ~/config/starship.toml ]; then
-            : ${X_SH_ENV_PRESET:='no-runtime-versions'}
-            starship preset --force ${X_SH_ENV_PRESET} -o ~/.config/starship.toml
-            info "-(do_sh_prompt):" "sh - 'starship' preset: ${X_SH_ENV_PRESET}."
-        fi
+        # if [ ! -f ~/config/starship.toml ]; then
+        #     : ${X_SH_ENV_PRESET:='no-runtime-versions'}
+        #     starship preset --force ${X_SH_ENV_PRESET} -o ~/.config/starship.toml
+        #     info "-(do_sh_prompt):" "sh - 'starship' preset: ${X_SH_ENV_PRESET}."
+        # fi
     fi
 
     log "<(do_sh_prompt):" "sh - prompt, done."
@@ -1842,6 +1842,43 @@ do_re_doc() {
 # ////////////////////////////////////////////////////////////////////////
 
 
+do_ju_remove() {
+
+    log ">(do_ju_remove):" "ju - uninstall julia, ..."
+
+
+    tar zxf "julia-${JULIA_VERSION}-linux-${ARCH_LONG}.tar.gz" -C "${JULIA_ROOT}" --strip-components 1
+    rm -f "julia-${JULIA_VERSION}-linux-${ARCH_LONG}.tar.gz"
+    [ -L ~/.local/bin/julia ] && rm -f ~/.local/bin/julia
+    
+    if [ -d "${JULIA_ROOT}" ]; then
+        rm -rf       ${JULIA_ROOT}
+        [ -L ~/.local/bin/julia ] && rm -f ~/.local/bin/julia
+        info "julia removed from ${JULIA_ROOT}, skip"
+    else
+        warn "julia not found in ${JULIA_ROOT}, skip"
+    fi
+
+    log "<(do_ju_remove):" "ju - uninstall julia, done."
+
+}
+
+do_ju_cache() {
+
+    log ">(do_ju_cache):" "ju - cache remove, ..."
+
+    set -x
+
+    [ -d ~/.julia ] && rm -rf ./.julia
+
+    set +x
+
+    log "<(do_ju_cache):" "ju - cache remove,  done."
+
+}
+
+
+
 do_ju_boot() {
 
     log ">(do_ju_boot):" "ju - Julia install, ..."
@@ -1860,41 +1897,47 @@ EOF
            )
 
     # Verify it was set correctly
-    echo "Latest stable Julia version is: $JULIA_VERSION"
+    info "Latest stable Julia version is: $JULIA_VERSION"
 
-    echo "Instaling Julia ${JULIA_VERSION} ..."
+    if [ -d "${JULIA_ROOT}" ]; then
+        info "<(do_ju_boot):" "ju - Julia: $(julia --version) found in ${JULIA_ROOT}, skip."
+    else
 
-    JULIA_MINOR_VERSION=${JULIA_VERSION%.*}
+        info "Instaling Julia ${JULIA_VERSION} ..."
+        
+        JULIA_MINOR_VERSION=${JULIA_VERSION%.*}
 
-    ARCH_LONG=$(uname -p)
-    ARCH_SHORT=$ARCH_LONG
+        ARCH_LONG=$(uname -p)
+        ARCH_SHORT=$ARCH_LONG
 
-    if [ "$ARCH_LONG" = "x86_64" ]; then
-        ARCH_SHORT="x64"
-    fi
+        if [ "$ARCH_LONG" = "x86_64" ]; then
+            ARCH_SHORT="x64"
+        fi
 
+        mkdir -p /tmp/downloaded_packages
+        cd /tmp/downloaded_packages
 
-    mkdir -p /tmp/downloaded_packages
-    cd /tmp/downloaded_packages
+        set -x
 
-    set -x
+        # Download Julia and create a symbolic link.
+        wget -nv "https://julialang-s3.julialang.org/bin/linux/${ARCH_SHORT}/${JULIA_MINOR_VERSION}/julia-${JULIA_VERSION}-linux-${ARCH_LONG}.tar.gz"
+        mkdir -p "${JULIA_ROOT}"
+        tar zxf "julia-${JULIA_VERSION}-linux-${ARCH_LONG}.tar.gz" -C "${JULIA_ROOT}" --strip-components 1
+        rm -f "julia-${JULIA_VERSION}-linux-${ARCH_LONG}.tar.gz"
+        [ -L ~/.local/bin/julia ] && rm -f ~/.local/bin/julia
+        ln -s ${JULIA_ROOT}/bin/julia ~/.local/bin/julia
 
-    # Download Julia and create a symbolic link.
-    wget -nv "https://julialang-s3.julialang.org/bin/linux/${ARCH_SHORT}/${JULIA_MINOR_VERSION}/julia-${JULIA_VERSION}-linux-${ARCH_LONG}.tar.gz"
-    mkdir -p "${JULIA_ROOT}"
-    tar zxf "julia-${JULIA_VERSION}-linux-${ARCH_LONG}.tar.gz" -C "${JULIA_ROOT}" --strip-components 1
-    rm -f "julia-${JULIA_VERSION}-linux-${ARCH_LONG}.tar.gz"
-    [ -L ~/.local/bin/julia ] && rm -f ~/.local/bin/julia
-    ln -s ${JULIA_ROOT}/bin/julia ~/.local/bin/julia
+        set +x
 
-    set +x
+        cd -
 
-    cd -
+        ls -l ~/.local/bin/julia
 
-    ls -l ~/.local/bin/julia
+        info "<(do_ju_boot):" "ju - Julia: $(julia --version)."
 
-    info "<(do_ju_boot):" "ju - Julia: $(julia --version)."
+        do_ju_cache
 
+    fi    
 
     log "<(do_ju_boot):" "ju - Julia install, done."
 
@@ -1937,7 +1980,8 @@ do_ju_clear() {
 
     log ">(do_ju_clear):" "ju - clear($X_DOTS_MODE$X_CACHE_MODE), ..."
 
-    # do_ju_remove
+    do_ju_remove
+    do_ju_cache
 
     # if [ "$X_DOTS_MODE" = "1" ]; then
     #     do_ju_dots
@@ -1973,7 +2017,7 @@ do_ju_lock() {
 
           "$JULIA_CTL" lock ; rc_ju_lock=$?
 
-          case "$rc_renv_upgrade" in
+          case "$rc_ju_lock" in
               0) info "juliactl sync -- (rc: $?) -- $(ls -l Manifest.toml)" ;;
               *) error "juliactl sync -- (rc: $?) -- $(ls -l Manifest.toml)" ;;
           esac
@@ -2009,7 +2053,7 @@ do_ju_sync() {
 
           "$JULIA_CTL" sync ; rc_ju_sync=$?
 
-          case "$rc_renv_upgrade" in
+          case "$rc_ju_sync" in
               0) info "juliactl sync -- (rc: $?) -- $(ls -l Manifest.toml)" ;;
               *) error "juliactl sync -- (rc: $?) -- $(ls -l Manifest.toml)" ;;
           esac

@@ -113,7 +113,7 @@ function setenv_rehash() {
 function apt_install() {
         aq=" -qq -o=Dpkg::Use-Pty=0 "
 	if ! dpkg -s "$@" >/dev/null 2>&1; then
-		if [ "$(find /var/lib/apt/lists/* | wc -l)" = "0" ]; then
+		if [ "$(find /var/lib/apt/lists/*  2> /dev/null | wc -l)" = "0" ]; then
 			apt-get update $aq
 		fi
 		apt-get install $aq -y --no-install-recommends "$@"

@@ -6,7 +6,7 @@
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
-#       jupytext_version: 1.19.5
+#       jupytext_version: 1.19.6
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -24,16 +24,21 @@
 #
 
 # %%
-# ruff: disable[B018]
-# pyright: reportUnusedExpression=false
+##
+#  ruff: disable[B018]
+#  pyright: reportUnusedExpression=false
 
 # %%
-from sympy import init_printing, symbols, Integral, integrate, diff, oo, exp, sin
+from sympy import init_printing, symbols, Function, Derivative, Integral, Eq, integrate, diff, dsolve, checkodesol, oo, exp, sin
+from sympy.abc import x
 from spb import plot
 
 init_printing()
 
 
+
+# %% [markdown]
+# ## Integral
 
 # %%
 x, y, z, t = symbols("x y z t")
@@ -47,6 +52,9 @@ Integral(*F)
 
 # %%
 integrate(*F)
+
+# %% [markdown]
+# ## Derivative
 
 # %%
 g = sin(x) / x
@@ -62,6 +70,21 @@ dg
 
 # %%
 plot(g, dg)
+
+# %% [markdown]
+# ## Differential Equation (ODE)
+
+# %%
+y = Function('y')
+eq = Derivative(y(x), x, x) + 9*y(x)
+Eq(eq,0)
+
+# %%
+sol = dsolve(eq, y(x))
+sol
+
+# %%
+checkodesol(eq, sol)
 
 # %%
 # ruff: enable[B018]
