@@ -509,6 +509,8 @@ runtime-auto: init run/exec-auto
 
 runtime-cli: init run/exec-cli
 
+runtime-raw: init run/raw
+
 runtime-shell: init run/shell
 
 runtime-clear: init run/clear
@@ -670,8 +672,8 @@ build-image/${BLD_WORKER}: build-image/${BLD_RUNTIME}
 # -p ${RUN_PORT_C_EXT}:${RUN_PORT_C_INT} \
 # -p ${RUN_PORT_D_EXT}:${RUN_PORT_D_INT} \
 
-run/shell:
-	@echo "CLI: shell ${RUNTIME_ARGS}"
+run/raw:
+	@echo "CLI: sh (bare) ${RUNTIME_ARGS}"
 	@[ "${X_X}" = 1 ] && [ -n "${DISPLAY}" ] && echo "DISPLAY=${DISPLAY}" || true
 	@export _passw_=$$(cat ~/.rup/*); set -x; \
 	$(DOCKER)  run \
@@ -1017,6 +1019,47 @@ run/xterm:
 # podman exec -it $CONTAINER_ID bash -c \
 #   "xauth add $(xauth list | grep $DISPLAY)"
 
+
+# ---(shell)------------------------------------------------
+
+run/shell:
+	@echo "CLI: shell ${RUNTIME_ARGS}"
+	@[ "${X_X}" = 1 ] && [ -n "${DISPLAY}" ] && echo "DISPLAY=${DISPLAY}" || true
+	@export _passw_=$$(cat ~/.rup/*); set -x; \
+	$(DOCKER)  run \
+		--rm \
+		${DOCKER_RUNTIME_OPTIONS} \
+		-v ${HOME_DIR}:${RUN_USER_HOME}:Z  \
+		-v ~/work:${RUN_USER_HOME}/work:Z  \
+		-v ~/data:${RUN_USER_HOME}/data:Z  \
+		-v ~/data:${HOME}/data:Z  \
+		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
+		-v /usr/local:/usr/local/.import:Z,ro  \
+		-v /opt:/opt/.import:Z  \
+		-v /data/opt/local:/data/opt/local:Z  \
+		-v /etc/terminfo:/etc/terminfo:Z  \
+		-v /store/local:/store/local:Z  \
+		-v /store/share:/store/share  \
+		-v /user:/user  \
+		-v /vol:/vol  \
+		-w ${RUN_USER_HOME}/${CURR_DIR}  \
+		-e PASSWORD=$$_passw_ \
+		-e USER=${RUN_USER_NAME} \
+		-e USERID=${RUN_USER_UID} \
+		-e GROUPID=${RUN_USER_GID} \
+		-e ROOT=true  \
+		-e X_BUILD_CONF="${X_BUILD_CONF}" \
+		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
+		-e X_DEBUG="${X_DEBUG:-0}" \
+		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
+		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		${XDG_RUNTIME_OPTIONS} \
+		${X_RUNTIME_OPTIONS} \
+		--name  \
+		${PRC_RUNTIME}.sh-$$PPID \
+		${IMG_RUNTIME} \
+		${X_PY_RUN} \
+		'/bin/bash'  ${RUNTIME_ARGS}
 
 # ---(R)------------------------------------------------
 
