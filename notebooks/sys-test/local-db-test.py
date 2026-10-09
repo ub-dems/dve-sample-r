@@ -6,7 +6,7 @@
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
-#       jupytext_version: 1.19.5
+#       jupytext_version: 1.19.6
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -175,7 +175,7 @@ ORDER BY column2, column1 DESC;
 group_sql = """
 
 SELECT column2, sum(column3) as tot3 FROM 'demo_table'
-GROUp BY column2 HAVING tot3 > 0
+GROUP BY column2 HAVING tot3 > 0
 ORDER BY tot3 DESC, column2;
 
 """

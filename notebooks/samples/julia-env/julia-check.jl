@@ -15,7 +15,7 @@
 # ---
 
 # %% [markdown]
-# # Julia Environmnet Check
+# # Julia Environment Check
 #
 #
 # ## Language Integrations
@@ -50,25 +50,20 @@ bash"""
 
 """
 
+# %% [markdown]
+# ## Plotting
+
 # %%
-using PythonCall
-math = pyimport("math")
-math.sin(math.pi / 4) # returns ≈ 1/√2 = 0.70710678...
+### `Plots` examples
 
 # %%
 using Pkg
 
 # %%
-Pkg.add("Plots")
+# Pkg.add("Plots")
 
 # %%
-Pkg.build("Plots")
-
-# %%
-using PythonCall
-math = pyimport("math")
-math.sin(math.pi / 4) # returns ≈ 1/√2 = 0.70710678...
-
+# Pkg.build("Plots")
 
 # %%
 using Plots
@@ -86,5 +81,83 @@ xlims!(0, 2pi)
 title!("Trigonometric functions")
 xlabel!("x")
 ylabel!("y")
+
+# %% [markdown]
+# ## Python Integration
+
+# %%
+using PythonCall
+
+
+# %% [markdown]
+# ### Stdandard lib Example
+
+# %%
+math = pyimport("math")
+math.sin(math.pi / 4) # returns ≈ 1/√2 = 0.70710678...
+
+# %% [markdown]
+# ### `pandas` Dataframe Example
+
+# %%
+pd = pyimport("pandas")
+pyio = pyimport("io")
+
+data = Dict(
+    "column1" => ["a", "b", "c", "d", "e"],
+    "column2" => ["data1", "data2", "data1", "data3", "data3"],
+    "column3" => [0, 0, 0, 0, 0]
+)
+df = pd.DataFrame(pydict(data))
+
+println("--- DataFrame Structure ---")
+buf = pyio.StringIO()
+df.info(buf=buf)
+println(buf.getvalue())
+
+for _ in 1:3
+    mask = df["column2"].isin(pylist(["data2", "data3"]))
+    df.loc[mask, "column3"] = df.loc[mask, "column3"].add(1)
+end
+
+println("--- SELECT 1: Ordered Data ---")
+select1 = df.sort_values(by=pylist(["column2", "column1"]), ascending=pylist([true, false]))
+display(select1)
+
+println("\n--- SELECT 2: Grouped & Filtered Data ---")
+grouped = df.groupby("column2")["column3"].sum().reset_index(name="tot3")
+filtered = grouped[grouped["tot3"].gt(0)]
+select2 = filtered.sort_values(by=pylist(["tot3", "column2"]), ascending=pylist([false, true]))
+display(select2)
+
+# %% [markdown]
+# ### @pyexec Macro
+
+# %%
+@pyexec """
+           global re
+           import re
+
+           def my_sentence(s):
+               words = re.findall("[a-zA-Z]+", s)
+               sentence = " ".join(words)
+               return sentence
+           """ => my_sentence
+
+sentence = my_sentence("PythonCall.jl is very useful!")
+
+# %% [markdown]
+# ### Python `JuliaCall` Example
+
+ # %%
+ @pyexec """
+           global jl, jx
+           from juliacall import Main as jl
+
+           def my_question(x, y=7):
+               answer = jl.eval(jl.Meta.parse(f"{x} * {y}"))
+               return answer
+           """ => my_question
+answer = my_question(6)
 
 # %%
