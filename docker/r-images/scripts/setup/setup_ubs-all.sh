@@ -806,7 +806,7 @@ do_sh_prompt() {
     elif grep 'starship' ~/.bashrc &>/dev/null; then
         info "-(do_sh_prompt):" "sh - ~/.bashrc already configured, skip"
     else
-        echo '[ "$TERM" = "dumb" ] || [ -n "$INSIDE_EMACS" ] || eval "$(starship init bash)"' >> ~/.bashrc
+        echo '[ "$TERM" = "dumb" ] || [ "$TERM" = "tramp" ]|| [ -n "$INSIDE_EMACS" ] || eval "$(starship init bash)"' >> ~/.bashrc
         info "-(do_sh_prompt):" "sh - 'starship' enabled in ~/.bashrc."
 
         # if [ ! -f ~/config/starship.toml ]; then
