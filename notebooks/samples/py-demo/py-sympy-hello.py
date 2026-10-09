@@ -25,7 +25,7 @@
 
 # %%
 ##
-#  ruff: disable[B018]
+#  ruff: disable[B018,E501,F811]
 #  pyright: reportUnusedExpression=false
 
 # %%
@@ -75,7 +75,7 @@ plot(g, dg)
 # ## Differential Equation (ODE)
 
 # %%
-y = Function('y')
+y = Function("y")
 eq = Derivative(y(x), x, x) + 9*y(x)
 Eq(eq,0)
 
@@ -87,4 +87,4 @@ sol
 checkodesol(eq, sol)
 
 # %%
-# ruff: enable[B018]
+# ruff: enable[B018,E501,F811]
