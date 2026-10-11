@@ -154,8 +154,12 @@ set +a
 
 exit_usage() {
 
-echo "$XS -- illegal args: $*"
-echo ""
+rc=0    
+if [ -n "$1" ]; then
+    echo "$XS -- illegal args: $*"
+    echo ""
+    rc=1
+fi
 
 cat <<EOF
 
@@ -169,7 +173,8 @@ where command is:
 
 EOF
 
-  exit 1
+exit $rc
+
 }
 
 
