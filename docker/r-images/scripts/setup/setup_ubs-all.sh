@@ -380,9 +380,9 @@ $(echo "${LD_LIBRARY_PATH}" | tr ':' '\n' | sl)
     poetry: "$(which poetry 2>/dev/null || echo NOPOETRY )"
     poetry-version: "$(which poetry &>/dev/null && poetry --version || echo NOPOETRY )"
     uv-venv: |
- $( (which uv &>/dev/null && uv python find   || echo NOUVVENV) | sl)
+$( (which uv &>/dev/null && uv python find   || echo NOUVVENV) | sl)
     poetry-venv: |
- $( (which poetry &>/dev/null && poetry env info 2>/dev/null  || echo NOPOETRYVENV) | sl)
+$( (which poetry &>/dev/null && poetry env info 2>/dev/null  || echo NOPOETRYVENV) | sl)
 
   r-bindings:
    config:
@@ -393,16 +393,16 @@ $(R -q -e 'reticulate::py_config()' | sl)
    binaries:
     jupyter: "$(which jupyter 2>/dev/null || echo NOJUPYTER )"
     jupyter-version: |
- $( (which jupyter &>/dev/null && jupyter --version 2>&1 || echo NOJUPYTER) | sl)
+$( (which jupyter &>/dev/null && jupyter --version 2>&1 || echo NOJUPYTER) | sl)
    config:
      lab-extensions: |
- $( (which jupyter &>/dev/null && jupyter labextension list 2>&1 || echo NOJUPYTER) | sl)
+$( (which jupyter &>/dev/null && jupyter labextension list 2>&1 || echo NOJUPYTER) | sl)
      kernels: |
- $( (which jupyter &>/dev/null && jupyter kernelspec list 2>&1 || echo NOJUPYTER) | sl)
+$( (which jupyter &>/dev/null && jupyter kernelspec list 2>&1 || echo NOJUPYTER) | sl)
 
   python-deps:
    list: |
- $( (which uv &>/dev/null && uv pip list ) | sl)
+$( (which uv &>/dev/null && uv pip list ) | sl)
    project: |
 $(ls -l pyproject.toml *.lock | sl)
 
