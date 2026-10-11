@@ -12,7 +12,7 @@ Based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Removed
 
-## [3.2608.0] - 2026-09-30
+## [3.2608.0] - 2026-10-12
 
 ### Added
 
