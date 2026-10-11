@@ -13,8 +13,46 @@
 #     name: python3
 # ---
 
+# %% [markdown]
+# # PyTorch CUDA Check
+#
+# - see: [pyproject.toml#optional-dependencies](https://gitlab.com/ub-dems/ds-labs/dve-sample-r/-/blob/main/pyproject.toml#L156)
+#
+
+# %% [markdown]
+# ## GPU Autodetection
+#
+
+# %% language="bash"
+#
+# (type nvidia-smi && nvidia-smi -L) &> /dev/null \
+#     && X_HAS_GPU=1 || X_HAS_GPU=0;
+#
+# case "$X_HAS_GPU" in
+#      1) export X_UV_EXTRA='gpu' ;;
+#      *) export X_UV_EXTRA='cpu' ;;
+# esac
+# export X_HAS_GPU
+#
+# echo "X_HAS_GPU=$X_HAS_GPU"
+# echo "X_UV_EXTRA=$X_UV_EXTRA"
+
+# %% [markdown]
+# ## NVIDIA CUDA Linkage
+#
+# ```bash
+# uv lock
+# uv sync --extra"$X_UV_EXTRA" --all-groups
+# ```
+
 # %%
-from __future__ import annotations
+# ! uv pip list | grep -e keras -e torch -e tensorflow -e ^nv
+
+# %% [markdown]
+# ## PyTorch Test
+
+# %%
+#from __future__ import annotations
 import argparse
 from typing import Any
 
@@ -27,10 +65,6 @@ from torch import optim
 from torchvision import datasets, transforms
 from torch.optim.lr_scheduler import StepLR
 
-# %%
-
-
-# %%
 # %%
 print(f"cuda.is_available={torch.cuda.is_available()}")
 
@@ -223,3 +257,5 @@ main(["--epochs=3"])
 # %%
 device = torch.cuda.current_device()
 print(f"cuda.utilization={torch.cuda.utilization(device)}")
+
+# %%

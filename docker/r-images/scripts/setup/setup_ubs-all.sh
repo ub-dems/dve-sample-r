@@ -154,8 +154,12 @@ set +a
 
 exit_usage() {
 
-echo "$XS -- illegal args: $*"
-echo ""
+rc=0    
+if [ -n "$1" ]; then
+    echo "$XS -- illegal args: $*"
+    echo ""
+    rc=1
+fi
 
 cat <<EOF
 
@@ -169,7 +173,8 @@ where command is:
 
 EOF
 
-  exit 1
+exit $rc
+
 }
 
 
@@ -289,19 +294,19 @@ dump_extras_status() {
    binaries:
     cargo:
      path: |
-$( (which cargo  2>/dev/null || echo NOCARGO) | sk)
+$( (which cargo  2>/dev/null || echo NOCARGO) | sl)
      vers: |
-$( (cargo --version || echo NOCARGO) | sk)
+$( (cargo --version || echo NOCARGO) | sl)
     rustup:
      path: |
-$( (which rustup  2>/dev/null || echo NORUSTUP) | sk)
+$( (which rustup  2>/dev/null || echo NORUSTUP) | sl)
      vers: |
-$( (rustup --version 2>/dev/null || echo NORUSTUP) | sk)
+$( (rustup --version 2>/dev/null || echo NORUSTUP) | sl)
     rustc:
      path: |
-$( (which rustc  2>/dev/null || echo NORUSTC) | sk)
+$( (which rustc  2>/dev/null || echo NORUSTC) | sl)
      vers: |
-$( (rustc --version || echo NORUSTC) | sk)
+$( (rustc --version || echo NORUSTC) | sl)
 
 
   node:
@@ -311,19 +316,19 @@ $( (rustc --version || echo NORUSTC) | sk)
    binaries:
     fnm:
      path: |
-$( (which fnm  2>/dev/null || echo NOFNM) | sk)
+$( (which fnm  2>/dev/null || echo NOFNM) | sl)
      vers: |
-$( (fnm --version || echo NOFNM) | sk)
+$( (fnm --version || echo NOFNM) | sl)
     node:
      path: |
-$( (which node  2>/dev/null || echo NONODE) | sk)
+$( (which node  2>/dev/null || echo NONODE) | sl)
      vers: |
-$( (node --version || echo NONODE) | sk)
+$( (node --version || echo NONODE) | sl)
     npm:
      path: |
-$( (which npm 2>/dev/null || echo NONPM) | sk)
+$( (which npm 2>/dev/null || echo NONPM) | sl)
      vers: |
-$( (npm --version || echo NONPM) | sk)
+$( (npm --version || echo NONPM) | sl)
 
 
   julia:
@@ -332,11 +337,11 @@ $( (npm --version || echo NONPM) | sk)
    binaries:
     julia:
      path: |
-$( (which julia  2>/dev/null || echo NOJULIA) | sk)
+$( (which julia  2>/dev/null || echo NOJULIA) | sl)
      link: |
-$( (ls -l $(which julia  2>/dev/null) || echo NOJULIA) | sk)
+$( (ls -l $(which julia  2>/dev/null) || echo NOJULIA) | sl)
      vers: |
-$( (which julia  &>/dev/null && julia --version || echo NOJULIA) | sk)
+$( (which julia  &>/dev/null && julia --version || echo NOJULIA) | sl)
 
 
 
@@ -375,9 +380,9 @@ $(echo "${LD_LIBRARY_PATH}" | tr ':' '\n' | sl)
     poetry: "$(which poetry 2>/dev/null || echo NOPOETRY )"
     poetry-version: "$(which poetry &>/dev/null && poetry --version || echo NOPOETRY )"
     uv-venv: |
- $( (which uv &>/dev/null && uv python find   || echo NOUVVENV) | sl)
+$( (which uv &>/dev/null && uv python find   || echo NOUVVENV) | sl)
     poetry-venv: |
- $( (which poetry &>/dev/null && poetry env info 2>/dev/null  || echo NOPOETRYVENV) | sl)
+$( (which poetry &>/dev/null && poetry env info 2>/dev/null  || echo NOPOETRYVENV) | sl)
 
   r-bindings:
    config:
@@ -388,16 +393,16 @@ $(R -q -e 'reticulate::py_config()' | sl)
    binaries:
     jupyter: "$(which jupyter 2>/dev/null || echo NOJUPYTER )"
     jupyter-version: |
- $( (which jupyter &>/dev/null && jupyter --version 2>&1 || echo NOJUPYTER) | sl)
+$( (which jupyter &>/dev/null && jupyter --version 2>&1 || echo NOJUPYTER) | sl)
    config:
      lab-extensions: |
- $( (which jupyter &>/dev/null && jupyter labextension list 2>&1 || echo NOJUPYTER) | sl)
+$( (which jupyter &>/dev/null && jupyter labextension list 2>&1 || echo NOJUPYTER) | sl)
      kernels: |
- $( (which jupyter &>/dev/null && jupyter kernelspec list 2>&1 || echo NOJUPYTER) | sl)
+$( (which jupyter &>/dev/null && jupyter kernelspec list 2>&1 || echo NOJUPYTER) | sl)
 
   python-deps:
    list: |
- $( (which uv &>/dev/null && uv pip list || which poetry 2>/dev/null && poetry show) | sl)
+$( (which uv &>/dev/null && uv pip list ) | sl)
    project: |
 $(ls -l pyproject.toml *.lock | sl)
 
@@ -1210,6 +1215,8 @@ do_py_reticulate() {
       eval "export X_ENV_PATH=$(bash --login -i -c 'printf \"%s\" "$PATH"' | tail -n1)"
 
       export RETICULATE_PYTHON_ENV="${X_ENV_VENV}"
+      # RETICULATE_PYTHON_ENV=${RETICULATE_PYTHON_ENV#"$HOME"/\${HOME}}
+
 
       touch ~/.Rsession
       touch ~/.Renviron
@@ -1227,7 +1234,7 @@ do_py_reticulate() {
 PATH=${X_ENV_PATH}
 #X_ENV_VENV=${X_ENV_VENV}
 #VIRTUAL_ENV=${VIRTUAL_ENV}
-RETICULATE_PYTHON_ENV=${RETICULATE_PYTHON_ENV#"$HOME"/\${HOME}}
+RETICULATE_PYTHON_ENV=${RETICULATE_PYTHON_ENV}
 _R_CHECK_SYSTEM_CLOCK_=0
 EOR
 
