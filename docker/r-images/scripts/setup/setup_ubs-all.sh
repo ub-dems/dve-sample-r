@@ -294,19 +294,19 @@ dump_extras_status() {
    binaries:
     cargo:
      path: |
-$( (which cargo  2>/dev/null || echo NOCARGO) | sk)
+$( (which cargo  2>/dev/null || echo NOCARGO) | sl)
      vers: |
-$( (cargo --version || echo NOCARGO) | sk)
+$( (cargo --version || echo NOCARGO) | sl)
     rustup:
      path: |
-$( (which rustup  2>/dev/null || echo NORUSTUP) | sk)
+$( (which rustup  2>/dev/null || echo NORUSTUP) | sl)
      vers: |
-$( (rustup --version 2>/dev/null || echo NORUSTUP) | sk)
+$( (rustup --version 2>/dev/null || echo NORUSTUP) | sl)
     rustc:
      path: |
-$( (which rustc  2>/dev/null || echo NORUSTC) | sk)
+$( (which rustc  2>/dev/null || echo NORUSTC) | sl)
      vers: |
-$( (rustc --version || echo NORUSTC) | sk)
+$( (rustc --version || echo NORUSTC) | sl)
 
 
   node:
@@ -316,19 +316,19 @@ $( (rustc --version || echo NORUSTC) | sk)
    binaries:
     fnm:
      path: |
-$( (which fnm  2>/dev/null || echo NOFNM) | sk)
+$( (which fnm  2>/dev/null || echo NOFNM) | sl)
      vers: |
-$( (fnm --version || echo NOFNM) | sk)
+$( (fnm --version || echo NOFNM) | sl)
     node:
      path: |
-$( (which node  2>/dev/null || echo NONODE) | sk)
+$( (which node  2>/dev/null || echo NONODE) | sl)
      vers: |
-$( (node --version || echo NONODE) | sk)
+$( (node --version || echo NONODE) | sl)
     npm:
      path: |
-$( (which npm 2>/dev/null || echo NONPM) | sk)
+$( (which npm 2>/dev/null || echo NONPM) | sl)
      vers: |
-$( (npm --version || echo NONPM) | sk)
+$( (npm --version || echo NONPM) | sl)
 
 
   julia:
@@ -337,11 +337,11 @@ $( (npm --version || echo NONPM) | sk)
    binaries:
     julia:
      path: |
-$( (which julia  2>/dev/null || echo NOJULIA) | sk)
+$( (which julia  2>/dev/null || echo NOJULIA) | sl)
      link: |
-$( (ls -l $(which julia  2>/dev/null) || echo NOJULIA) | sk)
+$( (ls -l $(which julia  2>/dev/null) || echo NOJULIA) | sl)
      vers: |
-$( (which julia  &>/dev/null && julia --version || echo NOJULIA) | sk)
+$( (which julia  &>/dev/null && julia --version || echo NOJULIA) | sl)
 
 
 
