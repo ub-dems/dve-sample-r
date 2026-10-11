@@ -387,7 +387,7 @@ $(echo "${LD_LIBRARY_PATH}" | tr ':' '\n' | sl)
   r-bindings:
    config:
      reticulate: |
-$(R -q -e 'reticulate::py_config()' | sl)
+$(uv run R -q -e 'reticulate::py_config()' | sl)
 
   jupyter:
    binaries:
