@@ -387,7 +387,7 @@ $(echo "${LD_LIBRARY_PATH}" | tr ':' '\n' | sl)
   r-bindings:
    config:
      reticulate: |
-$(uv run R -q -e 'reticulate::py_config()' | sl)
+$(R -q -e 'reticulate::py_config()' | sl)
 
   jupyter:
    binaries:
@@ -402,7 +402,7 @@ $(uv run R -q -e 'reticulate::py_config()' | sl)
 
   python-deps:
    list: |
- $( (which uv &>/dev/null && uv pip list || which poetry 2>/dev/null && poetry show) | sl)
+ $( (which uv &>/dev/null && uv pip list ) | sl)
    project: |
 $(ls -l pyproject.toml *.lock | sl)
 
@@ -1215,6 +1215,8 @@ do_py_reticulate() {
       eval "export X_ENV_PATH=$(bash --login -i -c 'printf \"%s\" "$PATH"' | tail -n1)"
 
       export RETICULATE_PYTHON_ENV="${X_ENV_VENV}"
+      # RETICULATE_PYTHON_ENV=${RETICULATE_PYTHON_ENV#"$HOME"/\${HOME}}
+
 
       touch ~/.Rsession
       touch ~/.Renviron
@@ -1232,7 +1234,7 @@ do_py_reticulate() {
 PATH=${X_ENV_PATH}
 #X_ENV_VENV=${X_ENV_VENV}
 #VIRTUAL_ENV=${VIRTUAL_ENV}
-RETICULATE_PYTHON_ENV=${RETICULATE_PYTHON_ENV#"$HOME"/\${HOME}}
+RETICULATE_PYTHON_ENV=${RETICULATE_PYTHON_ENV}
 _R_CHECK_SYSTEM_CLOCK_=0
 EOR
 
