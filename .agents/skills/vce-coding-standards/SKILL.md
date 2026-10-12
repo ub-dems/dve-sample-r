@@ -78,8 +78,26 @@ R is **not** available natively.
 - Scope: JupyterLab extensions and optional skill scripts (`package.json`).
 - Never mix application logic into the `docker/` subtree.
 
-## C / C++ / Rust / Julia
+## C / C++
+
+Follow Rcpp CRAN guidelines for Rcpp coding. Prefer RcppArmadillo over RcppEigen unless requested.
+Run `Rcpp::compileAttributes()`, `devtools::document()` and `devtools:check()` to validate. The only CRAN violatiom admitted is the `-march=native` annotation about portability.
+Use "Google C/C++ Style Guideline" for code.
+
+
+## Julia
+
+Keep package code in `src/Dve.jl` unless requested. Different position may require affition in `.Rbuildignore` to avoid warmings.
+Put scripts under `exec/` directory
+To implement cross-language integration use
+
+- Julia->Python: `PythonCall`
+- R->Julia: `JuliaCall`
+- Python->Julia: `JuliaCall`
+  
+
+## Rust / Node
 
 No project-wide standard is defined yet. Match the surrounding code; use a formatter
-(`clang-format`, `cargo fmt`, `JuliaFormatter`) only if its config file is already in the repo;
+(`cargo fmt`) only if its config file is already in the repo;
 ask before adding new tooling or dependencies.

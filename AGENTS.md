@@ -65,20 +65,28 @@ Two sibling layouts (`python`, `R`) share one codebase.
 
 ### Python (native, or inside the container)
 
-| Task                | Command                                                                |
-|---------------------|------------------------------------------------------------------------|
-| Single test         | `uv run pytest path/to/test.py::Class::method -xvs`                    |
-| Test file           | `uv run pytest path/to/test.py -xvs`                                   |
-| Package tests       | `uv run pytest path/to/package -xvs`                                   |
-| Run Python script   | `uv run python dev/my_script.py`                                       |
-| Type check          | `uv run basedpyright path/to/code`                                     |
-| Lint                | `uv run ruff check --fix <file>`                                       |
-| Format              | `uv run ruff format <file>`                                            |
-| License check       | `uv run reuse lint`                                                    |
-| Install Python deps | `uv lock && uv sync --extra=$X_UV_EXTRA --all-groups`                  |
-| Install Node deps   | `uv run jlpm up && uv run jlpm install`                                |
-| Manual checks       | `uv run prek run --from-ref <target_branch> --stage manual`            |
-| Jupyter (human)     | `uv run jupyter lab --notebook-dir=notebooks --no-browser`             |
+| Task                | Command                                                                         |
+|---------------------+---------------------------------------------------------------------------------|
+| Single test         | `uv run pytest path/to/test.py::Class::method -xvs`                             |
+| Test file           | `uv run pytest path/to/test.py -xvs`                                            |
+| Package tests       | `uv run pytest path/to/package -xvs`                                            |
+| Run Python script   | `uv run python exec/my_script.py ...`                                           |
+| Python Type check   | `uv run basedpyright path/to/code`                                              |
+| Python Lint         | `uv run ruff check --fix <file>`                                                |
+| Python Format       | `uv run ruff format <file>`                                                     |
+| License check       | `uv run reuse lint`                                                             |
+| Install Python deps | add to pyproject.toml and `uv lock && uv sync --extra=$X_UV_EXTRA --all-groups` |
+| Install R deps      | add to DESCRIPTION then `uv run Rscript -e 'renv::install(); renv::snapshot()'` |
+| R Rcpp stubs        | `uv run Rscript -e 'Rcc::compileAttributes()'`                                  |
+| R Project Test      | `uv run Rscript -e 'devtools::test()'`                                          |
+| R Project Document  | `uv run Rscript -e 'devtools::document()'`                                      |
+| R Project Check     | `uv run Rscript -e 'devtools::check()'`                                         |
+| Run R script        | `uv run Rscript exec/my_script.r ...`                                           |
+| Install Julia deps  | `uv run julia -e 'using Pkg; Pkg.add("PkgA","PkgB")'`                           |
+| Run Julia script    | `uv run env -S julia --color=yes --startup-file=no exec/my_script.jl ...r`      |
+| Install Node deps   | `uv run jlpm up && uv run jlpm install`                                         |
+| Manual checks       | `uv run prek run --from-ref <target_branch> --stage manual`                     |
+| Jupyter (human)     | `./lab.sh`                                                                      |
 
 ### Project level (both modes) — see skill `vce-project-scripts`
 
@@ -96,7 +104,24 @@ Two sibling layouts (`python`, `R`) share one codebase.
 
 ---
 
-## 4. Boundaries
+## 4. Scripts
+
+Place executable scripts  under `./exec/` folder (or in subdirectories).
+Always place a correct "SheBang" (`#!`) line and make it executable `chmod a+x`
+Insert a preamble for loading package code, if needed.
+Use standard argument parsing libraries, documenting command-line arguments, with a `--help` option.
+
+| Language | Shebang Line                                                       | Preamble                                    |
+|----------+--------------------------------------------------------------------+---------------------------------------------|
+| Python   | `#!/usr/bin/env uv run python`                                     | `from dve.config.conf import cfg # example` |
+| R        | `#!/usr/bin/env uv run Rscript`                                    | `devtools::load_all(".")`                   |
+| Julia    | `#!/usr/bin/env uv run env -S julia --color=yes --startup-file=no` | `using Dve`                                 |
+
+
+
+---
+
+## 5. Boundaries
 
 **Always**
 
@@ -126,7 +151,7 @@ Two sibling layouts (`python`, `R`) share one codebase.
 
 ---
 
-## 5. Commits and PRs
+## 6. Commits and PRs
 
 Write commit messages (imperative, ≤72 chars) focused on **user impact**, not implementation details.
 
@@ -138,7 +163,7 @@ Write commit messages (imperative, ≤72 chars) focused on **user impact**, not 
 
 ---
 
-## 6. Skills
+## 7. Skills
 
 Skills live in `.agents/skills/<name>/SKILL.md`. Load the matching skill **before** acting.
 Agents without native skill support: open the `SKILL.md` yourself when a trigger matches.
@@ -150,5 +175,6 @@ Agents without native skill support: open the `SKILL.md` yourself when a trigger
 | `vce-coding-standards` | writing, editing, reviewing or testing Python / R / JS code; lint, types, pytest, testthat |
 
 <!--
-LocalWords:  esac uv Rcpp renv
+LocalWords:  esac uv Rcpp renv Jupyter deps compileAttributes PkgB jl
+LocalWords:  pyproject julia Rscript env dataclass codebase Dve
 -->

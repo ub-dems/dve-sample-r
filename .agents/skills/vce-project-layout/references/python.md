@@ -3,17 +3,18 @@
 Apply when `project.layout = 'python'`.
 
 | Path                    | Role                                                                  |
-|-------------------------|-----------------------------------------------------------------------|
+|-------------------------+-----------------------------------------------------------------------|
 | `src/`                  | Application source code                                               |
 | `src/*/cli/__main__.py` | Main CLI entry-point (declared in `pyproject.toml [project.scripts]`) |
-| `src/*/scripts/`        | Alternative script entry-points                                       |
+| `src/*/scripts/`        | Alternative "in-package" script entry-points                          |
 | `src/vce/`              | Shared utility library                                                |
 | `notebooks/`            | Jupyter notebooks                                                     |
+| `exec/`                 | Alternative "out-of-package" executable scripts                       |
 | `tests/pytest/`         | pytest unit tests (mirror the `src/` package structure)               |
 | `doc/`                  | Sphinx documentation (`*.rst`)                                        |
 | `data/`                 | Local datasets (git-ignored)                                          |
 | `pyproject.toml`        | `uv`-based PEP 621 project definition                                 |
-| `.venv/`, `.venv.cdk/`  | `uv` virtual environments — **do not touch**                          |
+| `.venv/`, `.venv.cdk/`  | `uv` virtual environments — **do not touch**                         |
 
 Placement rules:
 
