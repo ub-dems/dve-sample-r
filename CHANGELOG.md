@@ -23,6 +23,7 @@ Based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - julia environment
 - .env environment
 - external setup
+- AGENTS.md
 
 ### Changed
 
