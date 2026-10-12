@@ -103,8 +103,8 @@ stages:
 default:
   # see: https://docs.gitlab.com/ci/runners/hosted_runners/linux/
   tags:
-    - saas-linux-small-amd64
-    # - saas-linux-medium-amd64
+    # - saas-linux-small-amd64
+    - saas-linux-medium-amd64
     # - saas-linux-large-amd64
     # - saas-linux-xlarge-amd64
     # - saas-linux-2xlarge-amd64
