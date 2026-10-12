@@ -58,10 +58,12 @@
 # !nvidia-smi -q
 
 # %%
-# !uv pip list
+# !uv pip list | grep -e keras -e torch -e tensorflow -e ^nv
 
 # %%
 # ! uv tree --no-dedupe --no-group jupyter --show-sizes | grep -i -e nvidia -e torch -e keras -e tensorflow
 
 # %%
 # ! uv tree --no-dedupe --no-group jupyter --show-sizes
+
+# %%

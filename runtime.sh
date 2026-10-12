@@ -330,7 +330,7 @@ workdir:
 
 EOF
 
-exit 1
+exit 0
 
 }
 

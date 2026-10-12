@@ -154,7 +154,7 @@ rt=3; F=/tmp/environ-$(date -Isec).log; (./runtime.sh environ) 2>&1 | tee $F ; e
 
 EOF
 
-exit 1
+exit 0
 
 }
 
